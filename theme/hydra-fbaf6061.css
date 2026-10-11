@@ -1,0 +1,68 @@
+/* Hydra's look on mdBook's navy theme: the web page's colours, scoped to
+   .navy so the other themes in the picker stay their own. */
+.navy {
+  --bg: #0d1115;
+  --fg: #dddcd7;
+  --sidebar-bg: #181e24;
+  --sidebar-fg: #a4aeb7;
+  --sidebar-non-existant: #35404a;
+  --sidebar-active: #d7ad63;
+  --sidebar-spacer: #35404a;
+  --sidebar-header-border-color: #765f39;
+  --scrollbar: #35404a;
+  --icons: #a4aeb7;
+  --icons-hover: #d7ad63;
+  --links: #6ca6e0;
+  --inline-code-color: #d7ad63;
+  --theme-popup-bg: #181e24;
+  --theme-popup-border: #35404a;
+  --theme-hover: #20272e;
+  --quote-bg: #181e24;
+  --quote-border: #765f39;
+  --warning-border: #e0b84c;
+  --table-border-color: #35404a;
+  --table-header-bg: #20272e;
+  --table-alternate-bg: #181e24;
+  --searchbar-border-color: #35404a;
+  --searchbar-bg: #20272e;
+  --searchbar-fg: #dddcd7;
+  --searchbar-shadow-color: #0d1115;
+  --searchresults-header-fg: #a4aeb7;
+  --searchresults-border-color: #35404a;
+  --searchresults-li-bg: #181e24;
+  --search-mark-bg: #765f39;
+  --footnote-highlight: #765f39;
+  --overlay-bg: rgba(13, 17, 21, 0.6);
+  --blockquote-note-color: #6ca6e0;
+  --blockquote-tip-color: #79d08f;
+  --blockquote-important-color: #d7ad63;
+  --blockquote-warning-color: #e0b84c;
+  --blockquote-caution-color: #e06c6c;
+  --color-scheme: dark;
+}
+:root {
+  --mono-font: "Iosevka", "Cascadia Mono", "DejaVu Sans Mono", Consolas, monospace;
+}
+html {
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+code, pre, kbd {
+  font-family: var(--mono-font);
+}
+.navy .menu-title {
+  color: #d7ad63;
+}
+.navy .content h1, .navy .content h2, .navy .content h3 {
+  color: #f0d090;
+}
+.navy .hljs {
+  background: #181e24;
+}
+.content img {
+  display: block;
+  max-width: 100%;
+  margin: 1em auto;
+  border: 1px solid #35404a;
+  border-radius: 6px;
+  background: #181e24;
+}

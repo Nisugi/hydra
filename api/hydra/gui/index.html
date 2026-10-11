@@ -1,0 +1,39 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="`hydra`, `hydra gui` and `hydra serve`: Hydra’s own process, every character on a supervised session in one host table, and its windows whenever they are wanted."><title>hydra::gui - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="hydra" data-themes="" data-resource-suffix="" data-rustdoc-version="1.96.1 (31fca3adb 2026-06-26)" data-channel="1.96.1" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc mod"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Module gui</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../hydra/index.html">hydra</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module gui</a></h2><h3><a href="#structs">Module Items</a></h3><ul class="block"><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#enums" title="Enums">Enums</a></li><li><a href="#functions" title="Functions">Functions</a></li></ul></section><div id="rustdoc-modnav"><h2 class="in-crate"><a href="../index.html">In crate hydra</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../index.html">hydra</a></div><h1>Module <span>gui</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/hydra/gui.rs.html#1-308">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p><code>hydra</code>, <code>hydra gui</code> and <code>hydra serve</code>: Hydra’s own process, every
+character on a supervised session in one host table, and its windows
+whenever they are wanted.</p>
+<p>Hydra runs once on a data folder at a time (<code>instance</code>). Another launch
+on it opens the windows of the process running, and leaves.</p>
+<p>Hydra rests between its windows: its characters play on, the web page is
+served while its setting is on (<code>hydra_web::serve</code>), and the computer is
+kept awake while a character plays (<code>rest</code>). On Windows its icon is in
+the tray throughout (<code>tray</code>). <code>hydra serve</code> starts it resting; <code>hydra</code>
+and <code>hydra gui</code> open the windows at once. The windows take the main
+thread while they are open, so the sessions and their feeds run on the
+runtime’s workers.</p>
+<p>Characters named on the command line start at once, their passwords asked
+at the terminal when none is kept; the hub and the web page start the
+roster’s. Closing the hub hides it while another window is open, and
+once none is the windows close and Hydra rests. Its Shut down, or Ctrl-C,
+stops every character in order: <code>quit</code> to each, a wait for the game to
+close each connection, then the sessions end. A second Ctrl-C leaves at
+once.</p>
+<p>Rested long enough with nothing playing, Hydra starts fresh
+(<code>rest::until_fresh</code>): it starts the next process in the background,
+resting, and leaves, the lock held to its end; the next waits for it to
+go. A web page a team started for the web had is served by the next as
+well. A page open on a phone loses its connection for a moment and finds
+the next by itself.</p>
+</div></details><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.Told.html" title="struct hydra::gui::Told">Told</a><span title="Restricted Visibility">&nbsp;🔒</span> </dt><dd>What a start was told besides its characters and whether its windows
+open at once.</dd></dl><h2 id="enums" class="section-header">Enums<a href="#enums" class="anchor">§</a></h2><dl class="item-table"><dt><a class="enum" href="enum.Rested.html" title="enum hydra::gui::Rested">Rested</a><span title="Restricted Visibility">&nbsp;🔒</span> </dt><dd>How a rest between the windows ended.</dd></dl><h2 id="functions" class="section-header">Functions<a href="#functions" class="anchor">§</a></h2><dl class="item-table"><dt><a class="fn" href="fn.claim.html" title="fn hydra::gui::claim">claim</a><span title="Restricted Visibility">&nbsp;🔒</span> </dt><dd>Claim <code>data</code>, the data folder, for this process: its lock, and where
+other launches ask it for its windows. <code>None</code> when Hydra already runs
+there and this process leaves: having asked for the windows when <code>open</code>,
+or because it was started fresh (<code>told.again</code>) and another took its
+place.</dd><dt><a class="fn" href="fn.run.html" title="fn hydra::gui::run">run</a><span title="Restricted Visibility">&nbsp;🔒</span> </dt><dd>Log every target in and run Hydra until it is shut down: its windows
+open at once when <code>open</code>, and whenever another launch asks for them.</dd><dt><a class="fn" href="fn.seat.html" title="fn hydra::gui::seat">seat</a><span title="Restricted Visibility">&nbsp;🔒</span> </dt><dd>Serve the web page on <code>runtime</code> while it is wanted: by the settings the
+window keeps, kept in <code>data</code>, so with no window open too, and on the
+port <code>told.web</code> says for the run.
+The sessions and the table over them, answering the hub, with each
+character of <code>logins</code> started and the roster offered.</dd><dt><a class="fn" href="fn.serve_page.html" title="fn hydra::gui::serve_page">serve_<wbr>page</a><span title="Restricted Visibility">&nbsp;🔒</span> </dt><dt><a class="fn" href="fn.start_next.html" title="fn hydra::gui::start_next">start_<wbr>next</a><span title="Restricted Visibility">&nbsp;🔒</span> </dt><dd>Start the next process, fresh and resting, and leave: the web page a team
+started for the web had served goes on being served. Said, when it
+cannot be started, and this one ends all the same.</dd><dt><a class="fn" href="fn.stop_on_ctrl_c.html" title="fn hydra::gui::stop_on_ctrl_c">stop_<wbr>on_<wbr>ctrl_<wbr>c</a><span title="Restricted Visibility">&nbsp;🔒</span> </dt><dd>Ctrl-C shuts Hydra down in order, as the hub’s Shut down does; a second
+leaves at once.</dd></dl></section></div></main></body></html>

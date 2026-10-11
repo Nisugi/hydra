@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["TITLE"],"fn":["run"],"mod":["bar"]};
