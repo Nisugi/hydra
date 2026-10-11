@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["base_duration","to_bonus"],"mod":["cost"],"struct":["Spellsong"]};

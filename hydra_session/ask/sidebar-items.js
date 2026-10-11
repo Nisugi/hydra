@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["ANSWER_WAIT","LONGEST_ROUNDTIME","QUIET_WAIT","SETTLE"],"enum":["Lost"],"struct":["Listener","Reply"]};

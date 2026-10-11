@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Affiliation","SocietyEvent"],"fn":["citizenship_line","covert_arts_line","profile_affiliation","psm_change","resource_line","society_line","suffused_line","urchin_line","urchin_until","warcry_line"],"struct":["PsmChange","ResourceAmounts","Standing"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["ArmamentKind","Coverage"],"fn":["alias_count","armor","armors","resolve","shield","shields","weapon","weapons","weapons_named"],"struct":["Armor","Shield","Weapon"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Cmp","Condition","DayPhase","EffectCategory","HandSlot","NameMatch","VitalKind","VitalUnit"],"struct":["Edge","Flags","World"]};

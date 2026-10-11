@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Confidence","EventTarget","Fact","LossCause","Subject","UcsKind"],"struct":["AttackEvent","ChunkFacts","Crit","FlareEvent","Hit","ParentFlare","Redirect"]};

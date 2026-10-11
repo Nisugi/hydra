@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["EFFECT_DIALOGS","SHROUD_OF_DECEPTION"],"fn":["is_effect_dialog"],"struct":["Effect","Effects"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Progress","Resume"],"fn":["survey"],"struct":["Setting","Summary"],"type":["Teller"]};

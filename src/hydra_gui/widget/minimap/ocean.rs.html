@@ -1,0 +1,525 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates\hydra-gui\src\widget\minimap\ocean.rs`."><title>ocean.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../..\../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../..\../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../..\../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../../..\../" data-static-root-path="../../..\../static.files/" data-current-crate="hydra_gui" data-themes="" data-resource-suffix="" data-rustdoc-version="1.96.1 (31fca3adb 2026-06-26)" data-channel="1.96.1" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../..\../static.files/storage-41dd4d93.js"></script><script defer src="../../..\../static.files/src-script-813739b1.js"></script><script defer src="../../..\../src-files.js"></script><script defer src="../../..\../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../../..\../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../..\../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../..\../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><h1><div class="sub-heading">hydra_gui\widget\minimap/</div>ocean.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap digits-3"><pre class="rust"><code><a href=#1 id=1 data-nosnippet>1</a><span class="doccomment">//! The minimap aboard a ship: the ocean's chart, the ship on it, and the
+<a href=#2 id=2 data-nosnippet>2</a>//! deck plan small in a corner.
+<a href=#3 id=3 data-nosnippet>3</a>//!
+<a href=#4 id=4 data-nosnippet>4</a>//! The chart is the whole ocean, a room a cell, drawn from
+<a href=#5 id=5 data-nosnippet>5</a>//! [`hydra_map::ocean`]: each room a dot, a line to each room a heading
+<a href=#6 id=6 data-nosnippet>6</a>//! leads to when that room is the next cell that way, each port ringed and
+<a href=#7 id=7 data-nosnippet>7</a>//! named, each sea named over its middle. The ship is ringed where it is
+<a href=#8 id=8 data-nosnippet>8</a>//! ([`Sailing`]), with a tick the way it last moved; in port the ring is on
+<a href=#9 id=9 data-nosnippet>9</a>//! the port. A ring drawn broken is a place reckoned from the ship's moves,
+<a href=#10 id=10 data-nosnippet>10</a>//! not one the game stated. A course travel shows (`.sail`) is drawn from
+<a href=#11 id=11 data-nosnippet>11</a>//! the ship on, and said at the top: where the wheel is turned, the rooms
+<a href=#12 id=12 data-nosnippet>12</a>//! left, and the heading to
+<a href=#13 id=13 data-nosnippet>13</a>//! hold next.
+<a href=#14 id=14 data-nosnippet>14</a>//!
+<a href=#15 id=15 data-nosnippet>15</a>//! The camera is the minimap's own kind, kept apart from the land map's:
+<a href=#16 id=16 data-nosnippet>16</a>//! it follows the ship, the wheel zooms, a drag pans, a double-click comes
+<a href=#17 id=17 data-nosnippet>17</a>//! back. A click on a port asks for its course to be shown, and a click on
+<a href=#18 id=18 data-nosnippet>18</a>//! the port the course shown rings asks for it to be sailed.
+<a href=#19 id=19 data-nosnippet>19</a>
+<a href=#20 id=20 data-nosnippet>20</a></span><span class="kw">use </span>std::sync::{Arc, OnceLock};
+<a href=#21 id=21 data-nosnippet>21</a>
+<a href=#22 id=22 data-nosnippet>22</a><span class="kw">use </span>egui::{FontId, Id, Pos2, Rect, Shape, Stroke, Vec2, vec2};
+<a href=#23 id=23 data-nosnippet>23</a><span class="kw">use </span>hydra_map::{Heading, MapScene, MinimapView, Ocean, OceanRoom, Sailing, ShownCourse};
+<a href=#24 id=24 data-nosnippet>24</a>
+<a href=#25 id=25 data-nosnippet>25</a><span class="kw">use </span><span class="kw">super</span>::<span class="kw">super</span>::Clicked;
+<a href=#26 id=26 data-nosnippet>26</a><span class="kw">use </span>super::{Camera, DEAD_ZONE, GLIDE, cell, draw_lines, draw_rooms, keep_in_view, steer, waiting};
+<a href=#27 id=27 data-nosnippet>27</a><span class="kw">use </span><span class="kw">crate</span>::theme::{<span class="self">self</span>, T};
+<a href=#28 id=28 data-nosnippet>28</a>
+<a href=#29 id=29 data-nosnippet>29</a><span class="doccomment">/// Pixels an ocean cell at first.
+<a href=#30 id=30 data-nosnippet>30</a></span><span class="kw">const </span>ZOOM: f32 = <span class="number">16.0</span>;
+<a href=#31 id=31 data-nosnippet>31</a><span class="doccomment">/// The deck plan's corner: its share of the view's width, and the most
+<a href=#32 id=32 data-nosnippet>32</a>/// pixels it takes each way.
+<a href=#33 id=33 data-nosnippet>33</a></span><span class="kw">const </span>DECK_SHARE: f32 = <span class="number">0.4</span>;
+<a href=#34 id=34 data-nosnippet>34</a><span class="kw">const </span>DECK_MOST: Vec2 = vec2(<span class="number">150.0</span>, <span class="number">110.0</span>);
+<a href=#35 id=35 data-nosnippet>35</a><span class="doccomment">/// Below this many pixels a cell, the seas are named and the ports are not.
+<a href=#36 id=36 data-nosnippet>36</a></span><span class="kw">const </span>NAMES_PORTS_FROM: f32 = <span class="number">6.0</span>;
+<a href=#37 id=37 data-nosnippet>37</a>
+<a href=#38 id=38 data-nosnippet>38</a><span class="doccomment">/// What the minimap draws aboard.
+<a href=#39 id=39 data-nosnippet>39</a></span><span class="kw">struct </span>Aboard&lt;<span class="lifetime">'a</span>&gt; {
+<a href=#40 id=40 data-nosnippet>40</a>    <span class="doccomment">/// Where the ship is.
+<a href=#41 id=41 data-nosnippet>41</a>    </span>sailing: Sailing,
+<a href=#42 id=42 data-nosnippet>42</a>    <span class="doccomment">/// The way it last moved.
+<a href=#43 id=43 data-nosnippet>43</a>    </span>heading: <span class="prelude-ty">Option</span>&lt;Heading&gt;,
+<a href=#44 id=44 data-nosnippet>44</a>    <span class="doccomment">/// Where the wheel is turned, as the game put it.
+<a href=#45 id=45 data-nosnippet>45</a>    </span>wheel: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>str&gt;,
+<a href=#46 id=46 data-nosnippet>46</a>    <span class="doccomment">/// The deck plan, and the room of it the character is in.
+<a href=#47 id=47 data-nosnippet>47</a>    </span>deck: <span class="prelude-ty">Option</span>&lt;(<span class="kw-2">&amp;</span><span class="lifetime">'a </span>Arc&lt;MapScene&gt;, u32)&gt;,
+<a href=#48 id=48 data-nosnippet>48</a>    <span class="doccomment">/// The course shown.
+<a href=#49 id=49 data-nosnippet>49</a>    </span>course: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>ShownCourse&gt;,
+<a href=#50 id=50 data-nosnippet>50</a>    <span class="doccomment">/// Whether marks run along it.
+<a href=#51 id=51 data-nosnippet>51</a>    </span>flow: bool,
+<a href=#52 id=52 data-nosnippet>52</a>}
+<a href=#53 id=53 data-nosnippet>53</a>
+<a href=#54 id=54 data-nosnippet>54</a><span class="doccomment">/// Each sea's name and the middle of its rooms, worked out once.
+<a href=#55 id=55 data-nosnippet>55</a></span><span class="kw">fn </span>seas(ocean: <span class="kw-2">&amp;</span>Ocean) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>[(String, Vec2)] {
+<a href=#56 id=56 data-nosnippet>56</a>    <span class="kw">static </span>SEAS: OnceLock&lt;Vec&lt;(String, Vec2)&gt;&gt; = OnceLock::new();
+<a href=#57 id=57 data-nosnippet>57</a>    SEAS.get_or_init(|| {
+<a href=#58 id=58 data-nosnippet>58</a>        <span class="kw">let </span><span class="kw-2">mut </span>sums: std::collections::BTreeMap&lt;<span class="kw-2">&amp;</span>str, (Vec2, f32)&gt; =
+<a href=#59 id=59 data-nosnippet>59</a>            std::collections::BTreeMap::new();
+<a href=#60 id=60 data-nosnippet>60</a>        <span class="kw">for </span>room <span class="kw">in </span>ocean.rooms() {
+<a href=#61 id=61 data-nosnippet>61</a>            <span class="kw">let </span>(sum, count) = sums.entry(room.sea.as_str()).or_default();
+<a href=#62 id=62 data-nosnippet>62</a>            <span class="kw-2">*</span>sum += cell(room.cell);
+<a href=#63 id=63 data-nosnippet>63</a>            <span class="kw-2">*</span>count += <span class="number">1.0</span>;
+<a href=#64 id=64 data-nosnippet>64</a>        }
+<a href=#65 id=65 data-nosnippet>65</a>        sums.into_iter()
+<a href=#66 id=66 data-nosnippet>66</a>            .map(|(sea, (sum, count))| (sea.to_owned(), sum / count.max(<span class="number">1.0</span>)))
+<a href=#67 id=67 data-nosnippet>67</a>            .collect()
+<a href=#68 id=68 data-nosnippet>68</a>    })
+<a href=#69 id=69 data-nosnippet>69</a>}
+<a href=#70 id=70 data-nosnippet>70</a>
+<a href=#71 id=71 data-nosnippet>71</a><span class="doccomment">/// Whether the chart was drawn.
+<a href=#72 id=72 data-nosnippet>72</a></span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">enum </span>Chart {
+<a href=#73 id=73 data-nosnippet>73</a>    <span class="doccomment">/// The view is not the one aboard a ship: nothing was drawn.
+<a href=#74 id=74 data-nosnippet>74</a>    </span>NotAboard,
+<a href=#75 id=75 data-nosnippet>75</a>    <span class="doccomment">/// It was, and this is what a click on it asked for.
+<a href=#76 id=76 data-nosnippet>76</a>    </span>Drawn(<span class="prelude-ty">Option</span>&lt;Clicked&gt;),
+<a href=#77 id=77 data-nosnippet>77</a>}
+<a href=#78 id=78 data-nosnippet>78</a>
+<a href=#79 id=79 data-nosnippet>79</a><span class="doccomment">/// Draw `view` when it is the view aboard a ship.
+<a href=#80 id=80 data-nosnippet>80</a></span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>shown(
+<a href=#81 id=81 data-nosnippet>81</a>    ui: <span class="kw-2">&amp;</span>egui::Ui,
+<a href=#82 id=82 data-nosnippet>82</a>    response: <span class="kw-2">&amp;</span>egui::Response,
+<a href=#83 id=83 data-nosnippet>83</a>    rect: Rect,
+<a href=#84 id=84 data-nosnippet>84</a>    (id, look): (Id, <span class="kw">super</span>::MinimapLook),
+<a href=#85 id=85 data-nosnippet>85</a>    view: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>MinimapView&gt;,
+<a href=#86 id=86 data-nosnippet>86</a>) -&gt; Chart {
+<a href=#87 id=87 data-nosnippet>87</a>    <span class="kw">let </span><span class="prelude-val">Some</span>(MinimapView::Ocean {
+<a href=#88 id=88 data-nosnippet>88</a>        sailing,
+<a href=#89 id=89 data-nosnippet>89</a>        heading,
+<a href=#90 id=90 data-nosnippet>90</a>        wheel,
+<a href=#91 id=91 data-nosnippet>91</a>        deck,
+<a href=#92 id=92 data-nosnippet>92</a>        course,
+<a href=#93 id=93 data-nosnippet>93</a>    }) = view
+<a href=#94 id=94 data-nosnippet>94</a>    <span class="kw">else </span>{
+<a href=#95 id=95 data-nosnippet>95</a>        <span class="kw">return </span>Chart::NotAboard;
+<a href=#96 id=96 data-nosnippet>96</a>    };
+<a href=#97 id=97 data-nosnippet>97</a>    <span class="kw">let </span>aboard = Aboard {
+<a href=#98 id=98 data-nosnippet>98</a>        sailing: <span class="kw-2">*</span>sailing,
+<a href=#99 id=99 data-nosnippet>99</a>        heading: <span class="kw-2">*</span>heading,
+<a href=#100 id=100 data-nosnippet>100</a>        wheel: wheel.as_deref(),
+<a href=#101 id=101 data-nosnippet>101</a>        deck: deck.as_ref().map(|(scene, room)| (scene, <span class="kw-2">*</span>room)),
+<a href=#102 id=102 data-nosnippet>102</a>        course: course.as_deref(),
+<a href=#103 id=103 data-nosnippet>103</a>        flow: look.flow,
+<a href=#104 id=104 data-nosnippet>104</a>    };
+<a href=#105 id=105 data-nosnippet>105</a>    Chart::Drawn(draw(ui, response, rect, id, <span class="kw-2">&amp;</span>aboard))
+<a href=#106 id=106 data-nosnippet>106</a>}
+<a href=#107 id=107 data-nosnippet>107</a>
+<a href=#108 id=108 data-nosnippet>108</a><span class="doccomment">/// Draw the chart into `rect`, already filled with the map's ground.
+<a href=#109 id=109 data-nosnippet>109</a></span><span class="kw">fn </span>draw(
+<a href=#110 id=110 data-nosnippet>110</a>    ui: <span class="kw-2">&amp;</span>egui::Ui,
+<a href=#111 id=111 data-nosnippet>111</a>    response: <span class="kw-2">&amp;</span>egui::Response,
+<a href=#112 id=112 data-nosnippet>112</a>    rect: Rect,
+<a href=#113 id=113 data-nosnippet>113</a>    id: Id,
+<a href=#114 id=114 data-nosnippet>114</a>    aboard: <span class="kw-2">&amp;</span>Aboard&lt;<span class="lifetime">'_</span>&gt;,
+<a href=#115 id=115 data-nosnippet>115</a>) -&gt; <span class="prelude-ty">Option</span>&lt;Clicked&gt; {
+<a href=#116 id=116 data-nosnippet>116</a>    <span class="kw">let </span>painter = ui.painter_at(rect);
+<a href=#117 id=117 data-nosnippet>117</a>    <span class="kw">let </span>ocean = <span class="kw">match </span>hydra_map::ocean() {
+<a href=#118 id=118 data-nosnippet>118</a>        <span class="prelude-val">Ok</span>(ocean) =&gt; ocean,
+<a href=#119 id=119 data-nosnippet>119</a>        <span class="prelude-val">Err</span>(why) =&gt; {
+<a href=#120 id=120 data-nosnippet>120</a>            waiting(<span class="kw-2">&amp;</span>painter, rect, <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"No ocean chart: {why}."</span>));
+<a href=#121 id=121 data-nosnippet>121</a>            <span class="kw">return </span><span class="prelude-val">None</span>;
+<a href=#122 id=122 data-nosnippet>122</a>        }
+<a href=#123 id=123 data-nosnippet>123</a>    };
+<a href=#124 id=124 data-nosnippet>124</a>    <span class="kw">let </span>(ship, stated) = <span class="kw">match </span>aboard.sailing {
+<a href=#125 id=125 data-nosnippet>125</a>        Sailing::At { room, stated } =&gt; (ocean.room(room), stated),
+<a href=#126 id=126 data-nosnippet>126</a>        Sailing::Docked { port } =&gt; (port.and_then(|port| ocean.room(port)), <span class="bool-val">true</span>),
+<a href=#127 id=127 data-nosnippet>127</a>        Sailing::Ashore | Sailing::Lost =&gt; (<span class="prelude-val">None</span>, <span class="bool-val">false</span>),
+<a href=#128 id=128 data-nosnippet>128</a>    };
+<a href=#129 id=129 data-nosnippet>129</a>    <span class="comment">// Until the ship is found, the first port's waters.
+<a href=#130 id=130 data-nosnippet>130</a>    </span><span class="kw">let </span>home = ocean
+<a href=#131 id=131 data-nosnippet>131</a>        .ports()
+<a href=#132 id=132 data-nosnippet>132</a>        .first()
+<a href=#133 id=133 data-nosnippet>133</a>        .and_then(|port| ocean.room(port.uid))
+<a href=#134 id=134 data-nosnippet>134</a>        .map_or(Vec2::ZERO, |room| cell(room.cell));
+<a href=#135 id=135 data-nosnippet>135</a>    <span class="kw">let </span>camera = aimed(
+<a href=#136 id=136 data-nosnippet>136</a>        ui,
+<a href=#137 id=137 data-nosnippet>137</a>        id.with(<span class="string">"ocean"</span>),
+<a href=#138 id=138 data-nosnippet>138</a>        response,
+<a href=#139 id=139 data-nosnippet>139</a>        rect,
+<a href=#140 id=140 data-nosnippet>140</a>        ship.map(|at| cell(at.cell)),
+<a href=#141 id=141 data-nosnippet>141</a>        home,
+<a href=#142 id=142 data-nosnippet>142</a>    );
+<a href=#143 id=143 data-nosnippet>143</a>    <span class="kw">let </span>now = ui.input(|i| i.time);
+<a href=#144 id=144 data-nosnippet>144</a>    <span class="kw">let </span>(centre, zoom) = camera.drawn(now);
+<a href=#145 id=145 data-nosnippet>145</a>    <span class="kw">if </span>camera.glide.is_some_and(|(.., start)| now - start &lt; GLIDE) {
+<a href=#146 id=146 data-nosnippet>146</a>        ui.ctx().request_repaint();
+<a href=#147 id=147 data-nosnippet>147</a>    }
+<a href=#148 id=148 data-nosnippet>148</a>    <span class="kw">let </span>to_screen = |p: Vec2| rect.center() + (p - centre) * zoom;
+<a href=#149 id=149 data-nosnippet>149</a>    draw_water(<span class="kw-2">&amp;</span>painter, rect, ocean, <span class="kw-2">&amp;</span>to_screen, zoom);
+<a href=#150 id=150 data-nosnippet>150</a>    draw_names(<span class="kw-2">&amp;</span>painter, rect, ocean, <span class="kw-2">&amp;</span>to_screen, zoom);
+<a href=#151 id=151 data-nosnippet>151</a>    <span class="kw">let </span>ahead = aboard.course.map(|course| {
+<a href=#152 id=152 data-nosnippet>152</a>        <span class="kw">let </span>how = (zoom, aboard.flow);
+<a href=#153 id=153 data-nosnippet>153</a>        draw_course(<span class="kw-2">&amp;</span>painter, (rect, ocean), course, ship, <span class="kw-2">&amp;</span>to_screen, how)
+<a href=#154 id=154 data-nosnippet>154</a>    });
+<a href=#155 id=155 data-nosnippet>155</a>    <span class="kw">if let </span><span class="prelude-val">Some</span>(at) = ship {
+<a href=#156 id=156 data-nosnippet>156</a>        draw_ship(<span class="kw-2">&amp;</span>painter, to_screen(cell(at.cell)), zoom, stated, aboard);
+<a href=#157 id=157 data-nosnippet>157</a>    }
+<a href=#158 id=158 data-nosnippet>158</a>    <span class="kw">let </span>note = <span class="kw">match </span>aboard.sailing {
+<a href=#159 id=159 data-nosnippet>159</a>        Sailing::Lost =&gt; <span class="prelude-val">Some</span>(<span class="string">"The ship's place is not known."</span>.to_owned()),
+<a href=#160 id=160 data-nosnippet>160</a>        Sailing::Docked { port } =&gt; <span class="prelude-val">Some</span>(port.and_then(|port| ocean.port_at(port)).map_or_else(
+<a href=#161 id=161 data-nosnippet>161</a>            || <span class="string">"In port."</span>.to_owned(),
+<a href=#162 id=162 data-nosnippet>162</a>            |port| <span class="macro">format!</span>(<span class="string">"In port: {}."</span>, port.name),
+<a href=#163 id=163 data-nosnippet>163</a>        )),
+<a href=#164 id=164 data-nosnippet>164</a>        Sailing::At { .. } | Sailing::Ashore =&gt; ahead.flatten(),
+<a href=#165 id=165 data-nosnippet>165</a>    };
+<a href=#166 id=166 data-nosnippet>166</a>    <span class="comment">// The wheel first: it is what the player turns.
+<a href=#167 id=167 data-nosnippet>167</a>    </span><span class="kw">let </span>wheel = aboard
+<a href=#168 id=168 data-nosnippet>168</a>        .wheel
+<a href=#169 id=169 data-nosnippet>169</a>        .filter(|<span class="kw">_</span>| !<span class="macro">matches!</span>(aboard.sailing, Sailing::Docked { .. }))
+<a href=#170 id=170 data-nosnippet>170</a>        .map(|wheel| <span class="macro">format!</span>(<span class="string">"Wheel {wheel}."</span>));
+<a href=#171 id=171 data-nosnippet>171</a>    <span class="kw">let </span>note = <span class="kw">match </span>(wheel, note) {
+<a href=#172 id=172 data-nosnippet>172</a>        (<span class="prelude-val">Some</span>(wheel), <span class="prelude-val">Some</span>(note)) =&gt; <span class="prelude-val">Some</span>(<span class="macro">format!</span>(<span class="string">"{wheel} {note}"</span>)),
+<a href=#173 id=173 data-nosnippet>173</a>        (wheel, note) =&gt; wheel.or(note),
+<a href=#174 id=174 data-nosnippet>174</a>    };
+<a href=#175 id=175 data-nosnippet>175</a>    <span class="kw">if let </span><span class="prelude-val">Some</span>(note) = note {
+<a href=#176 id=176 data-nosnippet>176</a>        <span class="comment">// On the map's ground, so the water under it does not show through.
+<a href=#177 id=177 data-nosnippet>177</a>        </span><span class="kw">let </span>muted = theme::color(ui.ctx(), T::MapMuted);
+<a href=#178 id=178 data-nosnippet>178</a>        <span class="kw">let </span>words = painter.layout_no_wrap(note, FontId::proportional(<span class="number">11.0</span>), muted);
+<a href=#179 id=179 data-nosnippet>179</a>        <span class="kw">let </span>at = rect.left_top() + vec2(<span class="number">4.0</span>, <span class="number">4.0</span>);
+<a href=#180 id=180 data-nosnippet>180</a>        <span class="kw">let </span>backing = Rect::from_min_size(at, words.size() + vec2(<span class="number">8.0</span>, <span class="number">4.0</span>));
+<a href=#181 id=181 data-nosnippet>181</a>        <span class="kw">let </span>ground = theme::color(ui.ctx(), T::MapBackground);
+<a href=#182 id=182 data-nosnippet>182</a>        painter.rect_filled(backing, theme::corner(ui.ctx()), ground);
+<a href=#183 id=183 data-nosnippet>183</a>        painter.galley(at + vec2(<span class="number">4.0</span>, <span class="number">2.0</span>), words, muted);
+<a href=#184 id=184 data-nosnippet>184</a>    }
+<a href=#185 id=185 data-nosnippet>185</a>    <span class="kw">let </span>from_screen = |p: Pos2| centre + (p - rect.center()) / zoom;
+<a href=#186 id=186 data-nosnippet>186</a>    <span class="kw">let </span>pointed = hover(ui, response, ocean, <span class="kw-2">&amp;</span>from_screen);
+<a href=#187 id=187 data-nosnippet>187</a>    <span class="kw">if let </span><span class="prelude-val">Some</span>((scene, room)) = aboard.deck {
+<a href=#188 id=188 data-nosnippet>188</a>        draw_deck(ui, rect, scene, room);
+<a href=#189 id=189 data-nosnippet>189</a>    }
+<a href=#190 id=190 data-nosnippet>190</a>    <span class="comment">// A click on a room: its course shown, or sailed when it is shown. A
+<a href=#191 id=191 data-nosnippet>191</a>    // port by its name; any other room by its number, where the anchor
+<a href=#192 id=192 data-nosnippet>192</a>    // is dropped.
+<a href=#193 id=193 data-nosnippet>193</a>    </span><span class="kw">let </span>room = pointed<span class="question-mark">?</span>;
+<a href=#194 id=194 data-nosnippet>194</a>    <span class="kw">let </span>plain = response.clicked() &amp;&amp; !response.double_clicked();
+<a href=#195 id=195 data-nosnippet>195</a>    <span class="kw">if </span>!plain || ui.input(|i| i.modifiers.any()) {
+<a href=#196 id=196 data-nosnippet>196</a>        <span class="kw">return </span><span class="prelude-val">None</span>;
+<a href=#197 id=197 data-nosnippet>197</a>    }
+<a href=#198 id=198 data-nosnippet>198</a>    <span class="kw">let </span>name = ocean
+<a href=#199 id=199 data-nosnippet>199</a>        .port_at(room)
+<a href=#200 id=200 data-nosnippet>200</a>        .map_or_else(|| room.to_string(), |port| port.name.clone());
+<a href=#201 id=201 data-nosnippet>201</a>    <span class="kw">let </span>shown = aboard.course.is_some_and(|course| course.port == name);
+<a href=#202 id=202 data-nosnippet>202</a>    <span class="prelude-val">Some</span>(Clicked::Command(<span class="kw">if </span>shown {
+<a href=#203 id=203 data-nosnippet>203</a>        <span class="macro">format!</span>(<span class="string">"sail {name}"</span>)
+<a href=#204 id=204 data-nosnippet>204</a>    } <span class="kw">else </span>{
+<a href=#205 id=205 data-nosnippet>205</a>        <span class="macro">format!</span>(<span class="string">"sail route {name}"</span>)
+<a href=#206 id=206 data-nosnippet>206</a>    }))
+<a href=#207 id=207 data-nosnippet>207</a>}
+<a href=#208 id=208 data-nosnippet>208</a>
+<a href=#209 id=209 data-nosnippet>209</a><span class="doccomment">/// The camera for this frame, kept for the next: on the ship, following it.
+<a href=#210 id=210 data-nosnippet>210</a></span><span class="kw">fn </span>aimed(
+<a href=#211 id=211 data-nosnippet>211</a>    ui: <span class="kw-2">&amp;</span>egui::Ui,
+<a href=#212 id=212 data-nosnippet>212</a>    id: Id,
+<a href=#213 id=213 data-nosnippet>213</a>    response: <span class="kw-2">&amp;</span>egui::Response,
+<a href=#214 id=214 data-nosnippet>214</a>    rect: Rect,
+<a href=#215 id=215 data-nosnippet>215</a>    ship: <span class="prelude-ty">Option</span>&lt;Vec2&gt;,
+<a href=#216 id=216 data-nosnippet>216</a>    home: Vec2,
+<a href=#217 id=217 data-nosnippet>217</a>) -&gt; Camera {
+<a href=#218 id=218 data-nosnippet>218</a>    <span class="kw">let </span>now = ui.input(|i| i.time);
+<a href=#219 id=219 data-nosnippet>219</a>    <span class="kw">let </span>kept = ui.data(|d| d.get_temp::&lt;Camera&gt;(id));
+<a href=#220 id=220 data-nosnippet>220</a>    <span class="kw">let </span><span class="kw-2">mut </span>camera = kept.unwrap_or(Camera {
+<a href=#221 id=221 data-nosnippet>221</a>        centre: ship.unwrap_or(home),
+<a href=#222 id=222 data-nosnippet>222</a>        zoom: ZOOM,
+<a href=#223 id=223 data-nosnippet>223</a>        follow: <span class="bool-val">true</span>,
+<a href=#224 id=224 data-nosnippet>224</a>        area: <span class="number">0</span>,
+<a href=#225 id=225 data-nosnippet>225</a>        inside: <span class="bool-val">false</span>,
+<a href=#226 id=226 data-nosnippet>226</a>        glide: <span class="prelude-val">None</span>,
+<a href=#227 id=227 data-nosnippet>227</a>    });
+<a href=#228 id=228 data-nosnippet>228</a>    <span class="kw">let </span>before = (camera.centre, camera.zoom);
+<a href=#229 id=229 data-nosnippet>229</a>    steer(ui, response, rect, <span class="kw-2">&amp;mut </span>camera);
+<a href=#230 id=230 data-nosnippet>230</a>    <span class="kw">if </span>(camera.centre, camera.zoom) != before {
+<a href=#231 id=231 data-nosnippet>231</a>        camera.glide = <span class="prelude-val">None</span>;
+<a href=#232 id=232 data-nosnippet>232</a>    } <span class="kw">else if </span>camera.follow
+<a href=#233 id=233 data-nosnippet>233</a>        &amp;&amp; <span class="kw">let </span><span class="prelude-val">Some</span>(ship) = ship
+<a href=#234 id=234 data-nosnippet>234</a>    {
+<a href=#235 id=235 data-nosnippet>235</a>        <span class="kw">let </span>was = camera.drawn(now);
+<a href=#236 id=236 data-nosnippet>236</a>        keep_in_view(<span class="kw-2">&amp;mut </span>camera, ship, rect.size(), DEAD_ZONE);
+<a href=#237 id=237 data-nosnippet>237</a>        <span class="kw">if </span>camera.centre != before.<span class="number">0 </span>{
+<a href=#238 id=238 data-nosnippet>238</a>            camera.glide_from(was, now);
+<a href=#239 id=239 data-nosnippet>239</a>        }
+<a href=#240 id=240 data-nosnippet>240</a>    }
+<a href=#241 id=241 data-nosnippet>241</a>    ui.data_mut(|d| d.insert_temp(id, camera));
+<a href=#242 id=242 data-nosnippet>242</a>    camera
+<a href=#243 id=243 data-nosnippet>243</a>}
+<a href=#244 id=244 data-nosnippet>244</a>
+<a href=#245 id=245 data-nosnippet>245</a><span class="doccomment">/// The rooms and the open water between them.
+<a href=#246 id=246 data-nosnippet>246</a></span><span class="kw">fn </span>draw_water(
+<a href=#247 id=247 data-nosnippet>247</a>    painter: <span class="kw-2">&amp;</span>egui::Painter,
+<a href=#248 id=248 data-nosnippet>248</a>    rect: Rect,
+<a href=#249 id=249 data-nosnippet>249</a>    ocean: <span class="kw-2">&amp;</span>Ocean,
+<a href=#250 id=250 data-nosnippet>250</a>    to_screen: <span class="kw-2">&amp;</span><span class="kw">dyn </span>Fn(Vec2) -&gt; Pos2,
+<a href=#251 id=251 data-nosnippet>251</a>    zoom: f32,
+<a href=#252 id=252 data-nosnippet>252</a>) {
+<a href=#253 id=253 data-nosnippet>253</a>    <span class="kw">let </span>line = Stroke::new(
+<a href=#254 id=254 data-nosnippet>254</a>        <span class="number">1.0</span>,
+<a href=#255 id=255 data-nosnippet>255</a>        theme::color(painter.ctx(), T::MapLine).gamma_multiply(<span class="number">0.6</span>),
+<a href=#256 id=256 data-nosnippet>256</a>    );
+<a href=#257 id=257 data-nosnippet>257</a>    <span class="kw">let </span>room_colour = theme::color(painter.ctx(), T::MapRoom);
+<a href=#258 id=258 data-nosnippet>258</a>    <span class="kw">let </span>edge = theme::color(painter.ctx(), T::MapRoomEdge);
+<a href=#259 id=259 data-nosnippet>259</a>    <span class="kw">let </span>dot = (zoom * <span class="number">0.22</span>).clamp(<span class="number">1.2</span>, <span class="number">4.5</span>);
+<a href=#260 id=260 data-nosnippet>260</a>    <span class="kw">let </span>seen = rect.expand(zoom);
+<a href=#261 id=261 data-nosnippet>261</a>    <span class="kw">for </span>room <span class="kw">in </span>ocean.rooms() {
+<a href=#262 id=262 data-nosnippet>262</a>        <span class="kw">let </span>at = to_screen(cell(room.cell));
+<a href=#263 id=263 data-nosnippet>263</a>        <span class="kw">if </span>!seen.contains(at) {
+<a href=#264 id=264 data-nosnippet>264</a>            <span class="kw">continue</span>;
+<a href=#265 id=265 data-nosnippet>265</a>        }
+<a href=#266 id=266 data-nosnippet>266</a>        <span class="comment">// Each link once: the four headings that lead east or south.
+<a href=#267 id=267 data-nosnippet>267</a>        </span><span class="kw">for </span>heading <span class="kw">in </span>[
+<a href=#268 id=268 data-nosnippet>268</a>            Heading::East,
+<a href=#269 id=269 data-nosnippet>269</a>            Heading::Southeast,
+<a href=#270 id=270 data-nosnippet>270</a>            Heading::South,
+<a href=#271 id=271 data-nosnippet>271</a>            Heading::Southwest,
+<a href=#272 id=272 data-nosnippet>272</a>        ] {
+<a href=#273 id=273 data-nosnippet>273</a>            <span class="kw">if let </span><span class="prelude-val">Some</span>(there) = neighbour(ocean, room, heading) {
+<a href=#274 id=274 data-nosnippet>274</a>                painter.line_segment([at, to_screen(cell(there.cell))], line);
+<a href=#275 id=275 data-nosnippet>275</a>            }
+<a href=#276 id=276 data-nosnippet>276</a>        }
+<a href=#277 id=277 data-nosnippet>277</a>    }
+<a href=#278 id=278 data-nosnippet>278</a>    <span class="kw">for </span>room <span class="kw">in </span>ocean.rooms() {
+<a href=#279 id=279 data-nosnippet>279</a>        <span class="kw">let </span>at = to_screen(cell(room.cell));
+<a href=#280 id=280 data-nosnippet>280</a>        <span class="kw">if </span>seen.contains(at) {
+<a href=#281 id=281 data-nosnippet>281</a>            painter.circle(at, dot, room_colour, Stroke::new(<span class="number">0.8</span>, edge));
+<a href=#282 id=282 data-nosnippet>282</a>        }
+<a href=#283 id=283 data-nosnippet>283</a>    }
+<a href=#284 id=284 data-nosnippet>284</a>}
+<a href=#285 id=285 data-nosnippet>285</a>
+<a href=#286 id=286 data-nosnippet>286</a><span class="doccomment">/// The room `heading` leads to from `room`, when it is the next cell that
+<a href=#287 id=287 data-nosnippet>287</a>/// way: a heading that leads anywhere else is not a line on the chart.
+<a href=#288 id=288 data-nosnippet>288</a></span><span class="kw">fn </span>neighbour&lt;<span class="lifetime">'a</span>&gt;(ocean: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Ocean, room: <span class="kw-2">&amp;</span>OceanRoom, heading: Heading) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>OceanRoom&gt; {
+<a href=#289 id=289 data-nosnippet>289</a>    <span class="kw">let </span>(dx, dy) = heading.step();
+<a href=#290 id=290 data-nosnippet>290</a>    <span class="kw">let </span>next = (room.cell.<span class="number">0 </span>+ dx, room.cell.<span class="number">1 </span>+ dy);
+<a href=#291 id=291 data-nosnippet>291</a>    <span class="kw">let </span>there = room
+<a href=#292 id=292 data-nosnippet>292</a>        .toward(heading)
+<a href=#293 id=293 data-nosnippet>293</a>        .and_then(|uid| ocean.room(uid))
+<a href=#294 id=294 data-nosnippet>294</a>        .filter(|there| there.cell == next);
+<a href=#295 id=295 data-nosnippet>295</a>    <span class="comment">// A link told from the far side only is one too.
+<a href=#296 id=296 data-nosnippet>296</a>    </span>there.or_else(|| {
+<a href=#297 id=297 data-nosnippet>297</a>        ocean
+<a href=#298 id=298 data-nosnippet>298</a>            .at(next)
+<a href=#299 id=299 data-nosnippet>299</a>            .filter(|there| there.toward(heading.back()) == <span class="prelude-val">Some</span>(room.uid))
+<a href=#300 id=300 data-nosnippet>300</a>    })
+<a href=#301 id=301 data-nosnippet>301</a>}
+<a href=#302 id=302 data-nosnippet>302</a>
+<a href=#303 id=303 data-nosnippet>303</a><span class="doccomment">/// The seas' names, and the ports ringed and named.
+<a href=#304 id=304 data-nosnippet>304</a></span><span class="kw">fn </span>draw_names(
+<a href=#305 id=305 data-nosnippet>305</a>    painter: <span class="kw-2">&amp;</span>egui::Painter,
+<a href=#306 id=306 data-nosnippet>306</a>    rect: Rect,
+<a href=#307 id=307 data-nosnippet>307</a>    ocean: <span class="kw-2">&amp;</span>Ocean,
+<a href=#308 id=308 data-nosnippet>308</a>    to_screen: <span class="kw-2">&amp;</span><span class="kw">dyn </span>Fn(Vec2) -&gt; Pos2,
+<a href=#309 id=309 data-nosnippet>309</a>    zoom: f32,
+<a href=#310 id=310 data-nosnippet>310</a>) {
+<a href=#311 id=311 data-nosnippet>311</a>    <span class="comment">// Each name on a patch of the map's ground, so the water does not
+<a href=#312 id=312 data-nosnippet>312</a>    // run through its letters; and none over another: a name that would
+<a href=#313 id=313 data-nosnippet>313</a>    // land on one placed before it moves down until it is clear.
+<a href=#314 id=314 data-nosnippet>314</a>    </span><span class="kw">let </span>muted = theme::color(painter.ctx(), T::MapMuted);
+<a href=#315 id=315 data-nosnippet>315</a>    <span class="kw">let </span>ground = theme::color(painter.ctx(), T::MapBackground);
+<a href=#316 id=316 data-nosnippet>316</a>    <span class="kw">let </span>font = FontId::proportional((zoom * <span class="number">0.9</span>).clamp(<span class="number">10.0</span>, <span class="number">15.0</span>));
+<a href=#317 id=317 data-nosnippet>317</a>    <span class="kw">let </span><span class="kw-2">mut </span>placed: Vec&lt;Rect&gt; = Vec::new();
+<a href=#318 id=318 data-nosnippet>318</a>    <span class="kw">for </span>(sea, middle) <span class="kw">in </span>seas(ocean) {
+<a href=#319 id=319 data-nosnippet>319</a>        <span class="kw">let </span>at = to_screen(<span class="kw-2">*</span>middle);
+<a href=#320 id=320 data-nosnippet>320</a>        <span class="kw">if </span>!rect.expand(<span class="number">60.0</span>).contains(at) {
+<a href=#321 id=321 data-nosnippet>321</a>            <span class="kw">continue</span>;
+<a href=#322 id=322 data-nosnippet>322</a>        }
+<a href=#323 id=323 data-nosnippet>323</a>        <span class="kw">let </span>words = painter.layout_no_wrap(sea.clone(), font.clone(), muted);
+<a href=#324 id=324 data-nosnippet>324</a>        <span class="kw">let </span>size = words.size() + vec2(<span class="number">8.0</span>, <span class="number">2.0</span>);
+<a href=#325 id=325 data-nosnippet>325</a>        <span class="kw">let </span><span class="kw-2">mut </span>backing = Rect::from_center_size(at, size);
+<a href=#326 id=326 data-nosnippet>326</a>        <span class="kw">for _ in </span><span class="number">0</span>..<span class="number">8 </span>{
+<a href=#327 id=327 data-nosnippet>327</a>            <span class="kw">match </span>placed.iter().find(|taken| taken.intersects(backing)) {
+<a href=#328 id=328 data-nosnippet>328</a>                <span class="prelude-val">Some</span>(taken) =&gt; {
+<a href=#329 id=329 data-nosnippet>329</a>                    backing = backing.translate(vec2(<span class="number">0.0</span>, taken.max.y - backing.min.y + <span class="number">2.0</span>));
+<a href=#330 id=330 data-nosnippet>330</a>                }
+<a href=#331 id=331 data-nosnippet>331</a>                <span class="prelude-val">None </span>=&gt; <span class="kw">break</span>,
+<a href=#332 id=332 data-nosnippet>332</a>            }
+<a href=#333 id=333 data-nosnippet>333</a>        }
+<a href=#334 id=334 data-nosnippet>334</a>        placed.push(backing);
+<a href=#335 id=335 data-nosnippet>335</a>        painter.rect_filled(
+<a href=#336 id=336 data-nosnippet>336</a>            backing,
+<a href=#337 id=337 data-nosnippet>337</a>            theme::corner(painter.ctx()),
+<a href=#338 id=338 data-nosnippet>338</a>            ground.gamma_multiply(<span class="number">0.85</span>),
+<a href=#339 id=339 data-nosnippet>339</a>        );
+<a href=#340 id=340 data-nosnippet>340</a>        painter.galley(backing.min + vec2(<span class="number">4.0</span>, <span class="number">1.0</span>), words, muted);
+<a href=#341 id=341 data-nosnippet>341</a>    }
+<a href=#342 id=342 data-nosnippet>342</a>    <span class="kw">let </span>door = theme::color(painter.ctx(), T::MapDoor);
+<a href=#343 id=343 data-nosnippet>343</a>    <span class="kw">for </span>port <span class="kw">in </span>ocean.ports() {
+<a href=#344 id=344 data-nosnippet>344</a>        <span class="kw">let </span><span class="prelude-val">Some</span>(room) = ocean.room(port.uid) <span class="kw">else </span>{
+<a href=#345 id=345 data-nosnippet>345</a>            <span class="kw">continue</span>;
+<a href=#346 id=346 data-nosnippet>346</a>        };
+<a href=#347 id=347 data-nosnippet>347</a>        <span class="kw">let </span>at = to_screen(cell(room.cell));
+<a href=#348 id=348 data-nosnippet>348</a>        <span class="kw">if </span>!rect.expand(zoom).contains(at) {
+<a href=#349 id=349 data-nosnippet>349</a>            <span class="kw">continue</span>;
+<a href=#350 id=350 data-nosnippet>350</a>        }
+<a href=#351 id=351 data-nosnippet>351</a>        <span class="kw">let </span>r = (zoom * <span class="number">0.4</span>).clamp(<span class="number">3.0</span>, <span class="number">7.0</span>);
+<a href=#352 id=352 data-nosnippet>352</a>        painter.circle_filled(at, r, door);
+<a href=#353 id=353 data-nosnippet>353</a>        <span class="kw">if </span>zoom &gt;= NAMES_PORTS_FROM {
+<a href=#354 id=354 data-nosnippet>354</a>            painter.text(
+<a href=#355 id=355 data-nosnippet>355</a>                at + vec2(r + <span class="number">3.0</span>, <span class="number">0.0</span>),
+<a href=#356 id=356 data-nosnippet>356</a>                egui::Align2::LEFT_CENTER,
+<a href=#357 id=357 data-nosnippet>357</a>                <span class="kw-2">&amp;</span>port.name,
+<a href=#358 id=358 data-nosnippet>358</a>                FontId::proportional(<span class="number">11.0</span>),
+<a href=#359 id=359 data-nosnippet>359</a>                door,
+<a href=#360 id=360 data-nosnippet>360</a>            );
+<a href=#361 id=361 data-nosnippet>361</a>        }
+<a href=#362 id=362 data-nosnippet>362</a>    }
+<a href=#363 id=363 data-nosnippet>363</a>}
+<a href=#364 id=364 data-nosnippet>364</a>
+<a href=#365 id=365 data-nosnippet>365</a><span class="doccomment">/// The course from the ship on, in the route's colour: a line room to
+<a href=#366 id=366 data-nosnippet>366</a>/// room and a ring on the port. What it says of it: the rooms left, and
+<a href=#367 id=367 data-nosnippet>367</a>/// the heading to hold next and for how many rooms.
+<a href=#368 id=368 data-nosnippet>368</a></span><span class="kw">fn </span>draw_course(
+<a href=#369 id=369 data-nosnippet>369</a>    painter: <span class="kw-2">&amp;</span>egui::Painter,
+<a href=#370 id=370 data-nosnippet>370</a>    (rect, ocean): (Rect, <span class="kw-2">&amp;</span>Ocean),
+<a href=#371 id=371 data-nosnippet>371</a>    course: <span class="kw-2">&amp;</span>ShownCourse,
+<a href=#372 id=372 data-nosnippet>372</a>    ship: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>OceanRoom&gt;,
+<a href=#373 id=373 data-nosnippet>373</a>    to_screen: <span class="kw-2">&amp;</span><span class="kw">dyn </span>Fn(Vec2) -&gt; Pos2,
+<a href=#374 id=374 data-nosnippet>374</a>    (zoom, flow): (f32, bool),
+<a href=#375 id=375 data-nosnippet>375</a>) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
+<a href=#376 id=376 data-nosnippet>376</a>    <span class="kw">let </span>rooms = ship.map_or(course.rooms.as_slice(), |ship| course.from(ship.uid));
+<a href=#377 id=377 data-nosnippet>377</a>    <span class="kw">let </span>cells: Vec&lt;(i32, i32)&gt; = rooms
+<a href=#378 id=378 data-nosnippet>378</a>        .iter()
+<a href=#379 id=379 data-nosnippet>379</a>        .filter_map(|uid| ocean.room(<span class="kw-2">*</span>uid))
+<a href=#380 id=380 data-nosnippet>380</a>        .map(|room| room.cell)
+<a href=#381 id=381 data-nosnippet>381</a>        .collect();
+<a href=#382 id=382 data-nosnippet>382</a>    <span class="kw">if </span>cells.len() &lt; <span class="number">2 </span>{
+<a href=#383 id=383 data-nosnippet>383</a>        <span class="kw">return </span><span class="prelude-val">None</span>;
+<a href=#384 id=384 data-nosnippet>384</a>    }
+<a href=#385 id=385 data-nosnippet>385</a>    <span class="kw">let </span>colour = theme::color(painter.ctx(), T::MapRoute);
+<a href=#386 id=386 data-nosnippet>386</a>    <span class="kw">let </span>width = (zoom * <span class="number">0.2</span>).clamp(<span class="number">2.0</span>, <span class="number">4.0</span>);
+<a href=#387 id=387 data-nosnippet>387</a>    <span class="kw">let </span>points: Vec&lt;Pos2&gt; = cells.iter().map(|at| to_screen(cell(<span class="kw-2">*</span>at))).collect();
+<a href=#388 id=388 data-nosnippet>388</a>    painter.add(Shape::line(points.clone(), Stroke::new(width, colour)));
+<a href=#389 id=389 data-nosnippet>389</a>    <span class="kw">if </span>flow {
+<a href=#390 id=390 data-nosnippet>390</a>        <span class="kw">super</span>::route::draw_flow(painter, rect, <span class="kw-2">&amp;</span>points, colour, width);
+<a href=#391 id=391 data-nosnippet>391</a>    }
+<a href=#392 id=392 data-nosnippet>392</a>    <span class="kw">if let </span><span class="prelude-val">Some</span>(port) = points.last() {
+<a href=#393 id=393 data-nosnippet>393</a>        painter.circle_stroke(
+<a href=#394 id=394 data-nosnippet>394</a>            <span class="kw-2">*</span>port,
+<a href=#395 id=395 data-nosnippet>395</a>            (zoom * <span class="number">0.4</span>).clamp(<span class="number">3.0</span>, <span class="number">7.0</span>) + <span class="number">4.0</span>,
+<a href=#396 id=396 data-nosnippet>396</a>            Stroke::new(<span class="number">2.5</span>, colour),
+<a href=#397 id=397 data-nosnippet>397</a>        );
+<a href=#398 id=398 data-nosnippet>398</a>    }
+<a href=#399 id=399 data-nosnippet>399</a>    <span class="comment">// The first run: the heading out of the first room, held while it lasts.
+<a href=#400 id=400 data-nosnippet>400</a>    </span><span class="kw">let </span>step = |pair: <span class="kw-2">&amp;</span>[(i32, i32)]| (pair[<span class="number">1</span>].<span class="number">0 </span>- pair[<span class="number">0</span>].<span class="number">0</span>, pair[<span class="number">1</span>].<span class="number">1 </span>- pair[<span class="number">0</span>].<span class="number">1</span>);
+<a href=#401 id=401 data-nosnippet>401</a>    <span class="kw">let </span>first = cells.windows(<span class="number">2</span>).next().map(step)<span class="question-mark">?</span>;
+<a href=#402 id=402 data-nosnippet>402</a>    <span class="kw">let </span>run = cells
+<a href=#403 id=403 data-nosnippet>403</a>        .windows(<span class="number">2</span>)
+<a href=#404 id=404 data-nosnippet>404</a>        .take_while(|pair| step(pair) == first)
+<a href=#405 id=405 data-nosnippet>405</a>        .count();
+<a href=#406 id=406 data-nosnippet>406</a>    <span class="kw">let </span>left = cells.len() - <span class="number">1</span>;
+<a href=#407 id=407 data-nosnippet>407</a>    <span class="kw">let </span>rooms_word = |count: usize| <span class="kw">if </span>count == <span class="number">1 </span>{ <span class="string">"room" </span>} <span class="kw">else </span>{ <span class="string">"rooms" </span>};
+<a href=#408 id=408 data-nosnippet>408</a>    <span class="kw">let </span>hold = Heading::ALL
+<a href=#409 id=409 data-nosnippet>409</a>        .into_iter()
+<a href=#410 id=410 data-nosnippet>410</a>        .find(|heading| heading.step() == first)
+<a href=#411 id=411 data-nosnippet>411</a>        .map_or_else(String::new, |heading| {
+<a href=#412 id=412 data-nosnippet>412</a>            <span class="macro">format!</span>(<span class="string">" Hold {} for {run}."</span>, heading.word())
+<a href=#413 id=413 data-nosnippet>413</a>        });
+<a href=#414 id=414 data-nosnippet>414</a>    <span class="prelude-val">Some</span>(<span class="macro">format!</span>(
+<a href=#415 id=415 data-nosnippet>415</a>        <span class="string">"To {}: {left} {}.{hold}"</span>,
+<a href=#416 id=416 data-nosnippet>416</a>        course.port,
+<a href=#417 id=417 data-nosnippet>417</a>        rooms_word(left)
+<a href=#418 id=418 data-nosnippet>418</a>    ))
+<a href=#419 id=419 data-nosnippet>419</a>}
+<a href=#420 id=420 data-nosnippet>420</a>
+<a href=#421 id=421 data-nosnippet>421</a><span class="doccomment">/// The ship: a ring, broken when its place is reckoned, and a tick the way
+<a href=#422 id=422 data-nosnippet>422</a>/// it last moved.
+<a href=#423 id=423 data-nosnippet>423</a></span><span class="kw">fn </span>draw_ship(painter: <span class="kw-2">&amp;</span>egui::Painter, at: Pos2, zoom: f32, stated: bool, aboard: <span class="kw-2">&amp;</span>Aboard&lt;<span class="lifetime">'_</span>&gt;) {
+<a href=#424 id=424 data-nosnippet>424</a>    <span class="kw">let </span>you = theme::color(painter.ctx(), T::MapYou);
+<a href=#425 id=425 data-nosnippet>425</a>    <span class="kw">let </span>r = (zoom * <span class="number">0.45</span>).clamp(<span class="number">5.0</span>, <span class="number">11.0</span>);
+<a href=#426 id=426 data-nosnippet>426</a>    <span class="kw">let </span>stroke = Stroke::new(<span class="number">2.5</span>, you);
+<a href=#427 id=427 data-nosnippet>427</a>    <span class="kw">if </span>stated {
+<a href=#428 id=428 data-nosnippet>428</a>        painter.circle_stroke(at, r, stroke);
+<a href=#429 id=429 data-nosnippet>429</a>    } <span class="kw">else </span>{
+<a href=#430 id=430 data-nosnippet>430</a>        <span class="kw">let </span>around: Vec&lt;Pos2&gt; = (<span class="number">0</span>..=<span class="number">24u8</span>)
+<a href=#431 id=431 data-nosnippet>431</a>            .map(|step| {
+<a href=#432 id=432 data-nosnippet>432</a>                <span class="kw">let </span>angle = f32::from(step) / <span class="number">24.0 </span>* std::f32::consts::TAU;
+<a href=#433 id=433 data-nosnippet>433</a>                at + vec2(angle.cos(), angle.sin()) * r
+<a href=#434 id=434 data-nosnippet>434</a>            })
+<a href=#435 id=435 data-nosnippet>435</a>            .collect();
+<a href=#436 id=436 data-nosnippet>436</a>        painter.extend(Shape::dashed_line(<span class="kw-2">&amp;</span>around, stroke, <span class="number">4.0</span>, <span class="number">3.0</span>));
+<a href=#437 id=437 data-nosnippet>437</a>    }
+<a href=#438 id=438 data-nosnippet>438</a>    <span class="kw">let </span>at_sea = <span class="macro">matches!</span>(aboard.sailing, Sailing::At { .. });
+<a href=#439 id=439 data-nosnippet>439</a>    <span class="kw">if let </span><span class="prelude-val">Some</span>(heading) = aboard.heading.filter(|<span class="kw">_</span>| at_sea) {
+<a href=#440 id=440 data-nosnippet>440</a>        <span class="kw">let </span>(dx, dy) = heading.step();
+<a href=#441 id=441 data-nosnippet>441</a>        <span class="attr">#[allow(clippy::cast_precision_loss)]
+<a href=#442 id=442 data-nosnippet>442</a>        </span><span class="kw">let </span>way = vec2(dx <span class="kw">as </span>f32, dy <span class="kw">as </span>f32).normalized();
+<a href=#443 id=443 data-nosnippet>443</a>        painter.line_segment([at + way * r, at + way * (r + r * <span class="number">0.9</span>)], stroke);
+<a href=#444 id=444 data-nosnippet>444</a>    }
+<a href=#445 id=445 data-nosnippet>445</a>}
+<a href=#446 id=446 data-nosnippet>446</a>
+<a href=#447 id=447 data-nosnippet>447</a><span class="doccomment">/// The card for the ocean room under the pointer: its sea, its number, and
+<a href=#448 id=448 data-nosnippet>448</a>/// its port; not while a button is down or let go, or the click would land
+<a href=#449 id=449 data-nosnippet>449</a>/// on it. The room pointed at, card or none.
+<a href=#450 id=450 data-nosnippet>450</a></span><span class="kw">fn </span>hover(
+<a href=#451 id=451 data-nosnippet>451</a>    ui: <span class="kw-2">&amp;</span>egui::Ui,
+<a href=#452 id=452 data-nosnippet>452</a>    response: <span class="kw-2">&amp;</span>egui::Response,
+<a href=#453 id=453 data-nosnippet>453</a>    ocean: <span class="kw-2">&amp;</span>Ocean,
+<a href=#454 id=454 data-nosnippet>454</a>    from_screen: <span class="kw-2">&amp;</span><span class="kw">dyn </span>Fn(Pos2) -&gt; Vec2,
+<a href=#455 id=455 data-nosnippet>455</a>) -&gt; <span class="prelude-ty">Option</span>&lt;i64&gt; {
+<a href=#456 id=456 data-nosnippet>456</a>    <span class="kw">let </span>pressing = ui.input(|i| i.pointer.any_down() || i.pointer.any_released());
+<a href=#457 id=457 data-nosnippet>457</a>    <span class="kw">let </span>room = response
+<a href=#458 id=458 data-nosnippet>458</a>        .hover_pos()
+<a href=#459 id=459 data-nosnippet>459</a>        .or_else(|| response.interact_pointer_pos())
+<a href=#460 id=460 data-nosnippet>460</a>        .map(from_screen)
+<a href=#461 id=461 data-nosnippet>461</a>        .and_then(|at| {
+<a href=#462 id=462 data-nosnippet>462</a>            <span class="attr">#[allow(clippy::cast_possible_truncation)]
+<a href=#463 id=463 data-nosnippet>463</a>            </span><span class="kw">let </span>nearest = (at.x.round() <span class="kw">as </span>i32, at.y.round() <span class="kw">as </span>i32);
+<a href=#464 id=464 data-nosnippet>464</a>            ocean
+<a href=#465 id=465 data-nosnippet>465</a>                .at(nearest)
+<a href=#466 id=466 data-nosnippet>466</a>                .filter(|room| (cell(room.cell) - at).length() &lt;= <span class="number">0.45</span>)
+<a href=#467 id=467 data-nosnippet>467</a>        })<span class="question-mark">?</span>;
+<a href=#468 id=468 data-nosnippet>468</a>    <span class="kw">if </span>pressing {
+<a href=#469 id=469 data-nosnippet>469</a>        <span class="kw">return </span><span class="prelude-val">Some</span>(room.uid);
+<a href=#470 id=470 data-nosnippet>470</a>    }
+<a href=#471 id=471 data-nosnippet>471</a>    <span class="kw">let </span><span class="kw-2">mut </span>lines = <span class="macro">vec!</span>[
+<a href=#472 id=472 data-nosnippet>472</a>        <span class="macro">format!</span>(<span class="string">"{}, {}"</span>, room.sea, room.ocean),
+<a href=#473 id=473 data-nosnippet>473</a>        room.uid.to_string(),
+<a href=#474 id=474 data-nosnippet>474</a>    ];
+<a href=#475 id=475 data-nosnippet>475</a>    <span class="kw">if let </span><span class="prelude-val">Some</span>(port) = ocean.port_at(room.uid) {
+<a href=#476 id=476 data-nosnippet>476</a>        lines.insert(<span class="number">0</span>, <span class="macro">format!</span>(<span class="string">"Port: {}"</span>, port.name));
+<a href=#477 id=477 data-nosnippet>477</a>    }
+<a href=#478 id=478 data-nosnippet>478</a>    response.clone().on_hover_ui_at_pointer(|ui| {
+<a href=#479 id=479 data-nosnippet>479</a>        <span class="kw">for </span>line <span class="kw">in </span>lines {
+<a href=#480 id=480 data-nosnippet>480</a>            ui.add(egui::Label::new(line).selectable(<span class="bool-val">false</span>));
+<a href=#481 id=481 data-nosnippet>481</a>        }
+<a href=#482 id=482 data-nosnippet>482</a>    });
+<a href=#483 id=483 data-nosnippet>483</a>    <span class="prelude-val">Some</span>(room.uid)
+<a href=#484 id=484 data-nosnippet>484</a>}
+<a href=#485 id=485 data-nosnippet>485</a>
+<a href=#486 id=486 data-nosnippet>486</a><span class="doccomment">/// The deck plan, fitted into the view's lower right corner, the room the
+<a href=#487 id=487 data-nosnippet>487</a>/// character is in ringed.
+<a href=#488 id=488 data-nosnippet>488</a></span><span class="kw">fn </span>draw_deck(ui: <span class="kw-2">&amp;</span>egui::Ui, rect: Rect, scene: <span class="kw-2">&amp;</span>MapScene, you: u32) {
+<a href=#489 id=489 data-nosnippet>489</a>    <span class="kw">let </span><span class="prelude-val">Some</span>(first) = scene.rooms.first() <span class="kw">else </span>{
+<a href=#490 id=490 data-nosnippet>490</a>        <span class="kw">return</span>;
+<a href=#491 id=491 data-nosnippet>491</a>    };
+<a href=#492 id=492 data-nosnippet>492</a>    <span class="kw">let </span>size = vec2(rect.width() * DECK_SHARE, rect.height() * DECK_SHARE).min(DECK_MOST);
+<a href=#493 id=493 data-nosnippet>493</a>    <span class="kw">let </span>corner = Rect::from_min_size(rect.right_bottom() - size - vec2(<span class="number">4.0</span>, <span class="number">4.0</span>), size);
+<a href=#494 id=494 data-nosnippet>494</a>    <span class="kw">let </span>painter = ui.painter_at(corner);
+<a href=#495 id=495 data-nosnippet>495</a>    <span class="kw">let </span>ground = theme::color(ui.ctx(), T::MapBackground);
+<a href=#496 id=496 data-nosnippet>496</a>    <span class="kw">let </span>edge = theme::color(ui.ctx(), T::MapRoomEdge);
+<a href=#497 id=497 data-nosnippet>497</a>    painter.rect(
+<a href=#498 id=498 data-nosnippet>498</a>        corner,
+<a href=#499 id=499 data-nosnippet>499</a>        theme::corner(ui.ctx()),
+<a href=#500 id=500 data-nosnippet>500</a>        ground,
+<a href=#501 id=501 data-nosnippet>501</a>        Stroke::new(<span class="number">1.0</span>, edge.gamma_multiply(<span class="number">0.6</span>)),
+<a href=#502 id=502 data-nosnippet>502</a>        egui::StrokeKind::Inside,
+<a href=#503 id=503 data-nosnippet>503</a>    );
+<a href=#504 id=504 data-nosnippet>504</a>    <span class="kw">let </span>(<span class="kw-2">mut </span>least, <span class="kw-2">mut </span>most) = (cell(first.cell), cell(first.cell));
+<a href=#505 id=505 data-nosnippet>505</a>    <span class="kw">for </span>room <span class="kw">in </span><span class="kw-2">&amp;</span>scene.rooms {
+<a href=#506 id=506 data-nosnippet>506</a>        least = least.min(cell(room.cell));
+<a href=#507 id=507 data-nosnippet>507</a>        most = most.max(cell(room.cell));
+<a href=#508 id=508 data-nosnippet>508</a>    }
+<a href=#509 id=509 data-nosnippet>509</a>    <span class="kw">let </span>span = (most - least).max(vec2(<span class="number">1.0</span>, <span class="number">1.0</span>));
+<a href=#510 id=510 data-nosnippet>510</a>    <span class="kw">let </span>room_for = (corner.size() - vec2(<span class="number">28.0</span>, <span class="number">28.0</span>)).max(vec2(<span class="number">8.0</span>, <span class="number">8.0</span>));
+<a href=#511 id=511 data-nosnippet>511</a>    <span class="kw">let </span>zoom = (room_for.x / span.x).min(room_for.y / span.y).min(<span class="number">12.0</span>);
+<a href=#512 id=512 data-nosnippet>512</a>    <span class="kw">let </span>middle = (least + most) / <span class="number">2.0</span>;
+<a href=#513 id=513 data-nosnippet>513</a>    <span class="kw">let </span>to_screen = |p: Vec2| corner.center() + (p - middle) * zoom;
+<a href=#514 id=514 data-nosnippet>514</a>    draw_lines(<span class="kw-2">&amp;</span>painter, scene, <span class="kw-2">&amp;</span>to_screen, zoom, <span class="kw-2">&amp;</span>|<span class="kw">_</span>| <span class="number">1.0</span>);
+<a href=#515 id=515 data-nosnippet>515</a>    draw_rooms(<span class="kw-2">&amp;</span>painter, corner, scene, <span class="kw-2">&amp;</span>to_screen, zoom, <span class="kw-2">&amp;</span>|<span class="kw">_</span>| <span class="number">1.0</span>);
+<a href=#516 id=516 data-nosnippet>516</a>    <span class="kw">if let </span><span class="prelude-val">Some</span>(here) = scene.room(you) {
+<a href=#517 id=517 data-nosnippet>517</a>        <span class="kw">let </span>square = (zoom * <span class="number">0.7</span>).clamp(<span class="number">3.0</span>, <span class="number">10.0</span>);
+<a href=#518 id=518 data-nosnippet>518</a>        painter.circle_stroke(
+<a href=#519 id=519 data-nosnippet>519</a>            to_screen(cell(here.cell)),
+<a href=#520 id=520 data-nosnippet>520</a>            square * <span class="number">0.9 </span>+ <span class="number">2.0</span>,
+<a href=#521 id=521 data-nosnippet>521</a>            Stroke::new(<span class="number">2.0</span>, theme::color(ui.ctx(), T::MapYou)),
+<a href=#522 id=522 data-nosnippet>522</a>        );
+<a href=#523 id=523 data-nosnippet>523</a>    }
+<a href=#524 id=524 data-nosnippet>524</a>}
+</code></pre></div></section></main></body></html>

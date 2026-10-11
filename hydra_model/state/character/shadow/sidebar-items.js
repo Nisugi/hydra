@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["MAX"],"enum":["ShadowEssence"],"fn":["essences_for","line"]};

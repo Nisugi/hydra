@@ -1,0 +1,54 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Matching a game line against the bestiary’s messages: every kind – arrival, flee, death, decay, the attacks, the triggers, the casting preparations, standing up, shaking off a stun, searching, the description and the ambient flavor."><title>hydra_model::state::creature_message - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="hydra_model" data-themes="" data-resource-suffix="" data-rustdoc-version="1.96.1 (31fca3adb 2026-06-26)" data-channel="1.96.1" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../../static.files/storage-41dd4d93.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-044be391.svg"></head><body class="rustdoc mod"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Module creature_message</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../../hydra_model/index.html">hydra_<wbr>model</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module creature_<wbr>message</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#the-gap-this-closes" title="The gap this closes">The gap this closes</a></li><li><a href="#what-this-is-for-and-what-it-is-not-for" title="What this is for, and what it is NOT for">What this is for, and what it is NOT for</a></li><li><a href="#not-wired-and-deliberately-named-as-such" title="NOT WIRED, and deliberately named as such">NOT WIRED, and deliberately named as such</a></li><li><a href="#placeholders-and-why-matching-is-not-a-plain-compare" title="Placeholders, and why matching is not a plain compare">Placeholders, and why matching is not a plain compare</a></li><li><a href="#target-and-weapon-are-wildcards" title="`{target}` and `{weapon}` are wildcards"><code>{target}</code> and <code>{weapon}</code> are wildcards</a></li></ul><h3><a href="#structs">Module Items</a></h3><ul class="block"><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#functions" title="Functions">Functions</a></li></ul></section><div id="rustdoc-modnav"><h2><a href="../index.html">In hydra_<wbr>model::<wbr>state</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../../index.html">hydra_model</a>::<wbr><a href="../index.html">state</a></div><h1>Module <span>creature_<wbr>message</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../../src/hydra_model/state/creature_message.rs.html#1-236">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Matching a game line against the bestiary’s messages: <strong>every kind</strong> –
+arrival, flee, death, decay, the attacks, the triggers, the casting
+preparations, standing up, shaking off a stun, searching, the description
+and the ambient flavor.</p>
+<h2 id="the-gap-this-closes"><a class="doc-anchor" href="#the-gap-this-closes">§</a>The gap this closes</h2>
+<p><code>creature_messages.tsv</code> holds <strong>7,158</strong> lines, joined onto every creature
+by <a href="../creature/struct.Creature.html#method.messages_of" title="method hydra_model::state::creature::Creature::messages_of"><code>Creature::messages_of</code></a>.
+This is what matches a line against them.</p>
+<p>A match of an <a href="../creature/enum.MessageKind.html#variant.Attack" title="variant hydra_model::state::creature::MessageKind::Attack"><code>MessageKind::Attack</code></a> or <a href="../creature/enum.MessageKind.html#variant.Trigger" title="variant hydra_model::state::creature::MessageKind::Trigger"><code>MessageKind::Trigger</code></a> line
+also says <strong>which</strong>: the attack’s name, or the effect – <code>bind</code>, <code>web</code>,
+<code>silence</code> – the creature is about to land. That is the cause behind a
+symptom, available before the symptom.</p>
+<h2 id="what-this-is-for-and-what-it-is-not-for"><a class="doc-anchor" href="#what-this-is-for-and-what-it-is-not-for">§</a>What this is for, and what it is NOT for</h2>
+<p><strong>It is not how arrivals, departures and hides are told apart.</strong> Leaving
+a room carries a direction in <code>&lt;d&gt;</code>; arriving does not, and hiding does
+not. MEASURED over eight combat logs: of the lines carrying a creature
+link, all <strong>195</strong> departures carry a direction <code>&lt;d&gt;</code>, and <strong>0</strong> of 142
+arrivals and 0 of 38 hides do. So <code>departure.rs</code> reads all three apart
+from the markup alone.</p>
+<p><strong>It is not the earliest death signal either.</strong> <code>&lt;crtrStatus&gt;</code> carries
+<code>dead="1"</code> at the start of the blob, and the death line is usually
+towards the end – the status tag and the prose are in one blob, the tag
+first. <code>&lt;crtrStatus dead="1"&gt;</code> is the authority on death and this is not.
+MEASURED for what it is worth: 184 <code>dead=</code> attributes across three logs,
+every one inside a <code>room objs</code> component.</p>
+<p>So what this is for is narrow: it recognises a creature’s prose as prose
+– which a log reader, a transcript or a highlight rule wants, and which
+nothing else can do. It is not how a behavior learns that something died.</p>
+<h2 id="not-wired-and-deliberately-named-as-such"><a class="doc-anchor" href="#not-wired-and-deliberately-named-as-such">§</a>NOT WIRED, and deliberately named as such</h2>
+<p>Nothing in the library calls this yet. The consumer is a hunting
+behavior, and wiring death prose into <code>Creatures</code> now would mean choosing
+between it and <code>&lt;crtrStatus&gt;</code> as the authority on one creature’s death –
+a decision with no caller to justify it. It stays a tested classifier
+with a stated purpose until something needs it.</p>
+<h2 id="placeholders-and-why-matching-is-not-a-plain-compare"><a class="doc-anchor" href="#placeholders-and-why-matching-is-not-a-plain-compare">§</a>Placeholders, and why matching is not a plain compare</h2>
+<p>MEASURED: <strong>2,633 of the 7,158 lines carry a placeholder</strong> – 1,119 attack,
+802 flee, 171 death, 162 arrival, 121 spell prep, 88 stun break, the rest
+scattered – so two thirds of flee lines cannot be compared as text:</p>
+<div class="example-wrap"><pre class="language-text"><code>An Agresh bear lumbers {direction}.
+An Agresh bear slowly backs away, {pronoun} teeth bared.</code></pre></div>
+<p>Each placeholder has a closed list of forms, and a form missing from a
+list makes an otherwise-correct message unmatchable – <code>its</code> and <code>their</code>
+(possessives) and <code>out</code> (a flee direction) must be there.</p>
+<p>The template’s literal text is matched as is, and each <code>{name}</code> as one of
+its forms. It is done without a regex engine – the template is split on
+its placeholders and the parts are matched in order, which is the same
+decision <code>afflictions.rs</code> made for the same reason.</p>
+<h2 id="target-and-weapon-are-wildcards"><a class="doc-anchor" href="#target-and-weapon-are-wildcards">§</a><code>{target}</code> and <code>{weapon}</code> are wildcards</h2>
+<p>MEASURED: 362 lines carry <code>{target}</code> and 337 carry <code>{weapon}</code>, most of them
+attacks. Neither has a closed list of forms.</p>
+<p>Both are treated here as <strong>wildcards over a single segment</strong>: any run of
+text with no line break. The alternative is silently never matching 362
+real lines.</p>
+</div></details><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.Match.html" title="struct hydra_model::state::creature_message::Match">Match</a></dt><dd>What a matched message says happened.</dd></dl><h2 id="functions" class="section-header">Functions<a href="#functions" class="anchor">§</a></h2><dl class="item-table"><dt><a class="fn" href="fn.classify.html" title="fn hydra_model::state::creature_message::classify">classify</a></dt><dd>Match a line against one creature’s messages of the given kinds.</dd><dt><a class="fn" href="fn.match_template.html" title="fn hydra_model::state::creature_message::match_template">match_<wbr>template</a></dt><dd>Whether <code>line</code> is this template, and what it captured.</dd></dl></section></div></main></body></html>

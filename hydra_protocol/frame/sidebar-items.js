@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Frame","LinkKind","ObjectivesAction"],"struct":["ActiveEffect","Amount","Capacity","CmdListEntry","CmdListUpdate","Continuation","DialogWidgets","InventoryItem","InventoryResponse","ItemDetail","ItemView","Link","Menu","MenuItem","Objective","ObjectiveAction","ObjectiveReward","ProgressBar","RoomMeta","Style","TextFrame"],"type":["Attrs"]};

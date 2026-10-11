@@ -1,0 +1,48 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates\hydra-ui\src\highlight.rs`."><title>highlight.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="hydra_ui" data-themes="" data-resource-suffix="" data-rustdoc-version="1.96.1 (31fca3adb 2026-06-26)" data-channel="1.96.1" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="../../static.files/src-script-813739b1.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><h1><div class="sub-heading">hydra_ui/</div>highlight.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap digits-2"><pre class="rust"><code><a href=#1 id=1 data-nosnippet>1</a><span class="doccomment">//! Highlights: words or a pattern in what the game says, and what Hydra does
+<a href=#2 id=2 data-nosnippet>2</a>//! when they come -- colour them or their whole line, hide the line, play a
+<a href=#3 id=3 data-nosnippet>3</a>//! sound, raise a banner, show a notification.
+<a href=#4 id=4 data-nosnippet>4</a>//!
+<a href=#5 id=5 data-nosnippet>5</a>//! Display and attention alone: conditions, sends, substitutions, redirects
+<a href=#6 id=6 data-nosnippet>6</a>//! and flags are automation, and automation is Lich's job.
+<a href=#7 id=7 data-nosnippet>7</a>//!
+<a href=#8 id=8 data-nosnippet>8</a>//! # The file
+<a href=#9 id=9 data-nosnippet>9</a>//!
+<a href=#10 id=10 data-nosnippet>10</a>//! One file in the data folder, `highlights.toml`: a `[highlight."name"]`
+<a href=#11 id=11 data-nosnippet>11</a>//! table for each, and `[categories]` switching a category off whole.
+<a href=#12 id=12 data-nosnippet>12</a>//!
+<a href=#13 id=13 data-nosnippet>13</a>//! ```toml
+<a href=#14 id=14 data-nosnippet>14</a>//! [categories]
+<a href=#15 id=15 data-nosnippet>15</a>//! "Wrayth ignores" = false
+<a href=#16 id=16 data-nosnippet>16</a>//!
+<a href=#17 id=17 data-nosnippet>17</a>//! [highlight."Nisugi"]
+<a href=#18 id=18 data-nosnippet>18</a>//! category = "Friends"
+<a href=#19 id=19 data-nosnippet>19</a>//! text = "Nisugi"
+<a href=#20 id=20 data-nosnippet>20</a>//! color = "#ecc013"
+<a href=#21 id=21 data-nosnippet>21</a>//! background = "#311c1c"
+<a href=#22 id=22 data-nosnippet>22</a>//! case_sensitive = true
+<a href=#23 id=23 data-nosnippet>23</a>//! whole_word = true
+<a href=#24 id=24 data-nosnippet>24</a>//! line = false          # the whole line, not only the words
+<a href=#25 id=25 data-nosnippet>25</a>//! sound = "ding.wav"    # a file name in the data folder's sounds folder
+<a href=#26 id=26 data-nosnippet>26</a>//! alert = true          # a banner of the line; or alert = "words to show"
+<a href=#27 id=27 data-nosnippet>27</a>//! notify = "Nisugi!"    # a notification from the computer; or true
+<a href=#28 id=28 data-nosnippet>28</a>//! squelch = false       # hide the line (an alert still comes)
+<a href=#29 id=29 data-nosnippet>29</a>//! characters = ["GS3:Ashryn"]   # whose; none, everyone's
+<a href=#30 id=30 data-nosnippet>30</a>//! ```
+<a href=#31 id=31 data-nosnippet>31</a>//!
+<a href=#32 id=32 data-nosnippet>32</a>//! # Where it is applied
+<a href=#33 id=33 data-nosnippet>33</a>//!
+<a href=#34 id=34 data-nosnippet>34</a>//! Once, as each line of the game's is finished in a character's story
+<a href=#35 id=35 data-nosnippet>35</a>//! ([`crate::Story`]), before any window draws it: the story's lines and
+<a href=#36 id=36 data-nosnippet>36</a>//! every stream's. The player log keeps what the game said.
+<a href=#37 id=37 data-nosnippet>37</a>
+<a href=#38 id=38 data-nosnippet>38</a></span><span class="kw">mod </span>edit;
+<a href=#39 id=39 data-nosnippet>39</a><span class="kw">mod </span>file;
+<a href=#40 id=40 data-nosnippet>40</a><span class="kw">mod </span>matcher;
+<a href=#41 id=41 data-nosnippet>41</a><span class="kw">pub mod </span>sound;
+<a href=#42 id=42 data-nosnippet>42</a><span class="kw">mod </span>wrayth;
+<a href=#43 id=43 data-nosnippet>43</a>
+<a href=#44 id=44 data-nosnippet>44</a><span class="kw">pub use </span>edit::change;
+<a href=#45 id=45 data-nosnippet>45</a><span class="kw">pub use </span>file::{FILE, HighlightFile, Mark, Rule, Say};
+<a href=#46 id=46 data-nosnippet>46</a><span class="kw">pub use </span>matcher::{Fired, Matcher, Response, Timing};
+<a href=#47 id=47 data-nosnippet>47</a><span class="kw">pub use </span>wrayth::{Imported, import_wrayth};
+</code></pre></div></section></main></body></html>

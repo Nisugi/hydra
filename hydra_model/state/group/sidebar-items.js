@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["GroupEvent","GroupStatus","Leader"],"fn":["classify"],"struct":["Group","Member"]};

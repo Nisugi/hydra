@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["FILE"],"fn":["character_path"],"mod":["file","interact","names","rumble","touch","tuning","wheel"],"struct":["Binds"]};

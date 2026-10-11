@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["AmbushKind","TargetKind"],"fn":["attackerless_line","coup_kill_location","swing_weapon"],"struct":["AmbushPrefix","AttackLine","RedirectPrefix"]};

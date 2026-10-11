@@ -1,0 +1,44 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="The first-word bucket index that makes matching 2,394 patterns per line affordable, and the one pattern Rust’s `regex` cannot compile."><title>hydra_model::crit::match_index - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="hydra_model" data-themes="" data-resource-suffix="" data-rustdoc-version="1.96.1 (31fca3adb 2026-06-26)" data-channel="1.96.1" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../../static.files/storage-41dd4d93.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-044be391.svg"></head><body class="rustdoc mod"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Module match_index</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../../hydra_model/index.html">hydra_<wbr>model</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module match_<wbr>index</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#the-index-is-exact-not-an-approximation" title="The index is exact, not an approximation">The index is exact, not an approximation</a></li><li><a href="#why-buckets-and-not-one-regexset" title="Why buckets and not one `RegexSet`">Why buckets and not one <code>RegexSet</code></a></li><li><a href="#a-set-over-the-residual" title="A set over the residual">A set over the residual</a></li><li><a href="#what-is-verified" title="What is verified">What is verified</a></li></ul><h3><a href="#structs">Module Items</a></h3><ul class="block"><li><a href="#structs" title="Structs">Structs</a></li></ul></section><div id="rustdoc-modnav"><h2><a href="../index.html">In hydra_<wbr>model::<wbr>crit</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../../index.html">hydra_model</a>::<wbr><a href="../index.html">crit</a></div><h1>Module <span>match_<wbr>index</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../../src/hydra_model/crit/match_index.rs.html#1-355">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>The first-word bucket index that makes matching 2,394 patterns per line
+affordable, and the one pattern Rust’s <code>regex</code> cannot compile.</p>
+<h2 id="the-index-is-exact-not-an-approximation"><a class="doc-anchor" href="#the-index-is-exact-not-an-approximation">§</a>The index is exact, not an approximation</h2>
+<p>A pattern anchored <code>^Word</code> can only match a line whose first word is
+<code>Word</code>, so bucketing by that word cannot lose a match. Patterns not so
+anchored go in a residual list checked on every line.</p>
+<h2 id="why-buckets-and-not-one-regexset"><a class="doc-anchor" href="#why-buckets-and-not-one-regexset">§</a>Why buckets and not one <code>RegexSet</code></h2>
+<p>A single <code>RegexSet</code> over all 2,394 patterns is slow at this scale: its
+lazy-DFA cache thrashes. Raising <code>dfa_size_limit</code> helps a great deal, but
+bucketing still won on most lines in a one-off comparison, and it is
+simpler than tuning a cache budget. Those comparison figures were not kept
+as a reproducible bench, so they are not quoted here.</p>
+<p>Note on memory: a <code>regex</code> cache belongs to a <code>Regex</code> (or <code>RegexSet</code>) and is
+pooled per concurrently-matching thread, not per session. With the tables
+behind an <code>Arc</code>, the cost scales with worker threads, not sessions. The
+same holds for the 2,394 separate <code>Regex</code> values this code uses, whose
+aggregate cache footprint has not been measured.</p>
+<h2 id="a-set-over-the-residual"><a class="doc-anchor" href="#a-set-over-the-residual">§</a>A set over the residual</h2>
+<p>The residual list (~195 unanchored patterns) was most of the cost when
+tried one by one. It sits behind one <code>RegexSet</code> with a raised DFA budget.
+Measured in release, warm, over every line of the 85 combat replay blobs:
+<code>CritTables::parse</code> went from 17-20us to 1.6us per call. The set only
+nominates; <code>entry_matches</code> still decides, so the veto is untouched.
+<code>tests/combat_gate.rs</code> compares the result with a full scan of all 2,394
+entries on every real fixture line, beside <code>tests/crit_index.rs</code>’s
+synthesised ones.</p>
+<h2 id="what-is-verified"><a class="doc-anchor" href="#what-is-verified">§</a>What is verified</h2>
+<p><code>tests/crit_index.rs</code> compares the index against a full scan for every
+pattern it can turn into a literal matching line. 45 patterns cannot be
+literalised – they carry an unescaped <code>(</code>, <code>)</code>, <code>|</code>, <code>{</code>, <code>}</code> or <code>$</code>, or
+are unanchored – and the test asserts that skip count is exactly 45, so a
+pattern becoming unliteralisable is a visible change rather than a silent
+widening of the gap. (A pattern with <strong>escaped</strong> parentheses, such as
+<code>^Burn exposes the spine \(from the front\).</code>, is handled; a
+character-class scan over the data would wrongly count it.)</p>
+<p>The 45 remain checked by shape rather than by match: the loader compiles
+every pattern, and <code>crit_parity.rs</code>’s digest covers every field of every
+entry. Synthesising a line for a pattern whose language is not a single
+literal needs a regex-to-string generator, a larger thing than the gap it
+would close.</p>
+<p>Measured shape (<code>tests/crit_index.rs</code>, which asserts each): <strong>454 buckets,
+195 residual</strong>, largest bucket 72.</p>
+</div></details><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.MatchIndex.html" title="struct hydra_model::crit::match_index::MatchIndex">Match<wbr>Index</a></dt><dd>Compiled patterns, indexed by the first literal word of each anchored
+pattern.</dd><dt><a class="struct" href="struct.PatternError.html" title="struct hydra_model::crit::match_index::PatternError">Pattern<wbr>Error</a></dt><dd>A pattern that would not compile, with its index and the regex error.</dd></dl></section></div></main></body></html>

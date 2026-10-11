@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Health","Slot"],"fn":["assign","of","tag"],"struct":["Mark","Shown","Style"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["MAX_REMEDIES","MAX_ROLLS"],"enum":["MoveFailure"],"fn":["classify","roll_cause","stand_failure_cause"]};

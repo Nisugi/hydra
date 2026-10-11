@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["TRAITS"],"fn":["assessed","trait_of"]};

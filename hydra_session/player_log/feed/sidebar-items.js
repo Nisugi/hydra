@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["COMBAT","MAX_HELD","SECTION"],"fn":["tag"],"struct":["Capture","Feed","LogSettings"]};

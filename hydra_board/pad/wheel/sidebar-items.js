@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["DEFAULT","MIN_SPAN","PORTALS"],"enum":["FireMode","Place"],"fn":["lay_out","seat_at_angle"],"struct":["Meta","Open","Seat","Slice","Timing","View","Wheels"]};

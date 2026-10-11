@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["ANAL_ROOM","CAST_SPELLS","FORAGE_SENSE","LOCATION","PORTAL_NOUNS","SENSE","SPLASH","TRACK_AREA"],"enum":["Magic","Splash"],"fn":["analyzed_exits","go_commands","is_portal_noun","listed","location","magic","noun_of","sensed","splash","tracked"],"struct":["Sensed"]};

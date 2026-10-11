@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["ShapeOut"],"fn":["doll","injuries"],"struct":["DollOut","InjuryOut","PartOut"]};

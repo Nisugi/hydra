@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["MoveFeedback"],"fn":["classify","patterns_compiled"]};

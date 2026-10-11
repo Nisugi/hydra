@@ -1,0 +1,192 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates\hydra-model\src\state\cooldowns.rs`."><title>cooldowns.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="hydra_model" data-themes="" data-resource-suffix="" data-rustdoc-version="1.96.1 (31fca3adb 2026-06-26)" data-channel="1.96.1" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../../static.files/storage-41dd4d93.js"></script><script defer src="../../../static.files/src-script-813739b1.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><h1><div class="sub-heading">hydra_model\state/</div>cooldowns.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap digits-3"><pre class="rust"><code><a href=#1 id=1 data-nosnippet>1</a><span class="doccomment">//! Which characters a spell has locked out.
+<a href=#2 id=2 data-nosnippet>2</a>//!
+<a href=#3 id=3 data-nosnippet>3</a>//! Tracks the spell cooldowns a casting puts on the characters it lands on.
+<a href=#4 id=4 data-nosnippet>4</a>//!
+<a href=#5 id=5 data-nosnippet>5</a>//! # Two cast mechanics, two ways of learning the target
+<a href=#6 id=6 data-nosnippet>6</a>//!
+<a href=#7 id=7 data-nosnippet>7</a>//! The spells that look at the group members are the ones that are self cast
+<a href=#8 id=8 data-nosnippet>8</a>//! but affect your group.
+<a href=#9 id=9 data-nosnippet>9</a>//!
+<a href=#10 id=10 data-nosnippet>10</a>//! | Kind | Cast | How the target is learned |
+<a href=#11 id=11 data-nosnippet>11</a>//! |---|---|---|
+<a href=#12 id=12 data-nosnippet>12</a>//! | [`CooldownKind::Group`] | **on yourself**, lands on everyone grouped | it is not — stamp every member |
+<a href=#13 id=13 data-nosnippet>13</a>//! | [`CooldownKind::Target`] | at one character | the `target-start` message names them |
+<a href=#14 id=14 data-nosnippet>14</a>//!
+<a href=#15 id=15 data-nosnippet>15</a>//! Five spells declare one, and the invariant is checked over the whole table
+<a href=#16 id=16 data-nosnippet>16</a>//! in `spells.rs`: every `target` cooldown has a `target-start` message and no
+<a href=#17 id=17 data-nosnippet>17</a>//! `group` cooldown has one, because a self-cast names nobody.
+<a href=#18 id=18 data-nosnippet>18</a>//!
+<a href=#19 id=19 data-nosnippet>19</a>//! # The group case is optimistic, and bounded
+<a href=#20 id=20 data-nosnippet>20</a>//!
+<a href=#21 id=21 data-nosnippet>21</a>//! The caster's **only** notice that a group casting landed is a clause inside
+<a href=#22 id=22 data-nosnippet>22</a>//! their own start message — each of the three is one pattern with `your
+<a href=#23 id=23 data-nosnippet>23</a>//! group` as an optional part, and the presence of `your group` tells the two
+<a href=#24 id=24 data-nosnippet>24</a>//! views apart.
+<a href=#25 id=25 data-nosnippet>25</a>//!
+<a href=#26 id=26 data-nosnippet>26</a>//! So everyone grouped at the time is stamped. A member who was out of range,
+<a href=#27 id=27 data-nosnippet>27</a>//! or who was already on cooldown from an earlier casting, gets a stamp that
+<a href=#28 id=28 data-nosnippet>28</a>//! is too early — the next casting corrects it, so the error is bounded by
+<a href=#29 id=29 data-nosnippet>29</a>//! one cooldown and does not accumulate.
+<a href=#30 id=30 data-nosnippet>30</a>//!
+<a href=#31 id=31 data-nosnippet>31</a>//! **A member still locked out is skipped rather than re-stamped**: they did
+<a href=#32 id=32 data-nosnippet>32</a>//! not receive this casting, so their own cooldown keeps running. Getting
+<a href=#33 id=33 data-nosnippet>33</a>//! that wrong would extend a cooldown every time someone else got a buff.
+<a href=#34 id=34 data-nosnippet>34</a>//!
+<a href=#35 id=35 data-nosnippet>35</a>//! # Keyed by noun, and the target case needs no group
+<a href=#36 id=36 data-nosnippet>36</a>//!
+<a href=#37 id=37 data-nosnippet>37</a>//! A target cooldown counts whoever the spell landed on, in or out of the
+<a href=#38 id=38 data-nosnippet>38</a>//! group: seeing someone else put a target on cooldown is as useful as doing
+<a href=#39 id=39 data-nosnippet>39</a>//! it yourself.
+<a href=#40 id=40 data-nosnippet>40</a>//!
+<a href=#41 id=41 data-nosnippet>41</a>//! # Nothing here sends
+<a href=#42 id=42 data-nosnippet>42</a>//!
+<a href=#43 id=43 data-nosnippet>43</a>//! Reading the group's members must never send `GROUP` and wait for a reply
+<a href=#44 id=44 data-nosnippet>44</a>//! that only the reading thread could parse. Nothing here sends anything, so
+<a href=#45 id=45 data-nosnippet>45</a>//! the hazard does not arise -- but it is the kind of constraint worth
+<a href=#46 id=46 data-nosnippet>46</a>//! keeping in mind for any caller.
+<a href=#47 id=47 data-nosnippet>47</a>
+<a href=#48 id=48 data-nosnippet>48</a></span><span class="kw">use </span>std::collections::BTreeMap;
+<a href=#49 id=49 data-nosnippet>49</a>
+<a href=#50 id=50 data-nosnippet>50</a><span class="kw">use </span><span class="kw">crate</span>::spells::{<span class="self">self</span>, CooldownKind};
+<a href=#51 id=51 data-nosnippet>51</a><span class="kw">use </span><span class="kw">crate</span>::state::GameState;
+<a href=#52 id=52 data-nosnippet>52</a><span class="kw">use </span><span class="kw">crate</span>::state::group::Member;
+<a href=#53 id=53 data-nosnippet>53</a>
+<a href=#54 id=54 data-nosnippet>54</a><span class="doccomment">/// When each character becomes castable again, by spell number then noun.
+<a href=#55 id=55 data-nosnippet>55</a>///
+<a href=#56 id=56 data-nosnippet>56</a>/// Expiries in server seconds.
+<a href=#57 id=57 data-nosnippet>57</a></span><span class="attr">#[derive(Clone, Debug, Default, PartialEq, Eq)]
+<a href=#58 id=58 data-nosnippet>58</a></span><span class="kw">pub struct </span>Cooldowns {
+<a href=#59 id=59 data-nosnippet>59</a>    <span class="doccomment">/// Spell number -&gt; member noun -&gt; the server second it expires.
+<a href=#60 id=60 data-nosnippet>60</a>    </span>expiries: BTreeMap&lt;u16, BTreeMap&lt;String, u32&gt;&gt;,
+<a href=#61 id=61 data-nosnippet>61</a>}
+<a href=#62 id=62 data-nosnippet>62</a>
+<a href=#63 id=63 data-nosnippet>63</a><span class="kw">impl </span>Cooldowns {
+<a href=#64 id=64 data-nosnippet>64</a>    <span class="doccomment">/// Stamp every member for a group casting.
+<a href=#65 id=65 data-nosnippet>65</a>    ///
+<a href=#66 id=66 data-nosnippet>66</a>    /// Returns how many were stamped. A member **already locked out is
+<a href=#67 id=67 data-nosnippet>67</a>    /// skipped**, not re-stamped — see the module doc.
+<a href=#68 id=68 data-nosnippet>68</a>    </span><span class="kw">pub fn </span>record_group(<span class="kw-2">&amp;mut </span><span class="self">self</span>, spell: u16, members: <span class="kw-2">&amp;</span>[Member], now: u32) -&gt; usize {
+<a href=#69 id=69 data-nosnippet>69</a>        <span class="kw">let </span><span class="prelude-val">Some</span>(seconds) = spells::spell(spell).and_then(|s| s.cooldown(CooldownKind::Group))
+<a href=#70 id=70 data-nosnippet>70</a>        <span class="kw">else </span>{
+<a href=#71 id=71 data-nosnippet>71</a>            <span class="kw">return </span><span class="number">0</span>;
+<a href=#72 id=72 data-nosnippet>72</a>        };
+<a href=#73 id=73 data-nosnippet>73</a>        <span class="kw">let </span>expires = now.saturating_add(seconds);
+<a href=#74 id=74 data-nosnippet>74</a>        <span class="kw">let </span>held = <span class="self">self</span>.expiries.entry(spell).or_default();
+<a href=#75 id=75 data-nosnippet>75</a>        <span class="kw">let </span><span class="kw-2">mut </span>stamped = <span class="number">0</span>;
+<a href=#76 id=76 data-nosnippet>76</a>        <span class="kw">for </span>member <span class="kw">in </span>members {
+<a href=#77 id=77 data-nosnippet>77</a>            <span class="comment">// Still locked out: they did not receive this casting, so their
+<a href=#78 id=78 data-nosnippet>78</a>            // own cooldown keeps running rather than being extended by it.
+<a href=#79 id=79 data-nosnippet>79</a>            </span><span class="kw">if </span>held.get(<span class="kw-2">&amp;</span>member.noun).is_some_and(|at| <span class="kw-2">*</span>at &gt; now) {
+<a href=#80 id=80 data-nosnippet>80</a>                <span class="kw">continue</span>;
+<a href=#81 id=81 data-nosnippet>81</a>            }
+<a href=#82 id=82 data-nosnippet>82</a>            held.insert(member.noun.clone(), expires);
+<a href=#83 id=83 data-nosnippet>83</a>            stamped += <span class="number">1</span>;
+<a href=#84 id=84 data-nosnippet>84</a>        }
+<a href=#85 id=85 data-nosnippet>85</a>        stamped
+<a href=#86 id=86 data-nosnippet>86</a>    }
+<a href=#87 id=87 data-nosnippet>87</a>
+<a href=#88 id=88 data-nosnippet>88</a>    <span class="doccomment">/// Stamp one character a spell landed on.
+<a href=#89 id=89 data-nosnippet>89</a>    ///
+<a href=#90 id=90 data-nosnippet>90</a>    /// **Not restricted to the group**: the cooldown belongs to the character,
+<a href=#91 id=91 data-nosnippet>91</a>    /// so it counts whoever cast it and whether or not they are grouped.
+<a href=#92 id=92 data-nosnippet>92</a>    </span><span class="kw">pub fn </span>record_target(<span class="kw-2">&amp;mut </span><span class="self">self</span>, spell: u16, noun: <span class="kw-2">&amp;</span>str, now: u32) -&gt; bool {
+<a href=#93 id=93 data-nosnippet>93</a>        <span class="kw">let </span><span class="prelude-val">Some</span>(seconds) = spells::spell(spell).and_then(|s| s.cooldown(CooldownKind::Target))
+<a href=#94 id=94 data-nosnippet>94</a>        <span class="kw">else </span>{
+<a href=#95 id=95 data-nosnippet>95</a>            <span class="kw">return </span><span class="bool-val">false</span>;
+<a href=#96 id=96 data-nosnippet>96</a>        };
+<a href=#97 id=97 data-nosnippet>97</a>        <span class="self">self</span>.expiries
+<a href=#98 id=98 data-nosnippet>98</a>            .entry(spell)
+<a href=#99 id=99 data-nosnippet>99</a>            .or_default()
+<a href=#100 id=100 data-nosnippet>100</a>            .insert(noun.to_owned(), now.saturating_add(seconds));
+<a href=#101 id=101 data-nosnippet>101</a>        <span class="bool-val">true
+<a href=#102 id=102 data-nosnippet>102</a>    </span>}
+<a href=#103 id=103 data-nosnippet>103</a>
+<a href=#104 id=104 data-nosnippet>104</a>    <span class="doccomment">/// Seconds before a character can receive this spell again.
+<a href=#105 id=105 data-nosnippet>105</a>    ///
+<a href=#106 id=106 data-nosnippet>106</a>    /// **Zero when nothing is recorded**, which is the right answer: a
+<a href=#107 id=107 data-nosnippet>107</a>    /// character nobody has seen
+<a href=#108 id=108 data-nosnippet>108</a>    /// buffed is castable, and `None` would make every caller handle a case
+<a href=#109 id=109 data-nosnippet>109</a>    /// that means "yes".
+<a href=#110 id=110 data-nosnippet>110</a>    </span><span class="attr">#[must_use]
+<a href=#111 id=111 data-nosnippet>111</a>    </span><span class="kw">pub fn </span>remaining(<span class="kw-2">&amp;</span><span class="self">self</span>, spell: u16, noun: <span class="kw-2">&amp;</span>str, now: u32) -&gt; u32 {
+<a href=#112 id=112 data-nosnippet>112</a>        <span class="self">self</span>.expiries
+<a href=#113 id=113 data-nosnippet>113</a>            .get(<span class="kw-2">&amp;</span>spell)
+<a href=#114 id=114 data-nosnippet>114</a>            .and_then(|held| held.get(noun))
+<a href=#115 id=115 data-nosnippet>115</a>            .map_or(<span class="number">0</span>, |at| at.saturating_sub(now))
+<a href=#116 id=116 data-nosnippet>116</a>    }
+<a href=#117 id=117 data-nosnippet>117</a>
+<a href=#118 id=118 data-nosnippet>118</a>    <span class="doccomment">/// Whether this character can receive the spell now.
+<a href=#119 id=119 data-nosnippet>119</a>    </span><span class="attr">#[must_use]
+<a href=#120 id=120 data-nosnippet>120</a>    </span><span class="kw">pub fn </span>ready(<span class="kw-2">&amp;</span><span class="self">self</span>, spell: u16, noun: <span class="kw-2">&amp;</span>str, now: u32) -&gt; bool {
+<a href=#121 id=121 data-nosnippet>121</a>        <span class="self">self</span>.remaining(spell, noun, now) == <span class="number">0
+<a href=#122 id=122 data-nosnippet>122</a>    </span>}
+<a href=#123 id=123 data-nosnippet>123</a>
+<a href=#124 id=124 data-nosnippet>124</a>    <span class="doccomment">/// Forget everything.
+<a href=#125 id=125 data-nosnippet>125</a>    ///
+<a href=#126 id=126 data-nosnippet>126</a>    /// Called on a reconnect: these are stamps on **other people**, taken
+<a href=#127 id=127 data-nosnippet>127</a>    /// against a clock this session was keeping, and both assumptions break
+<a href=#128 id=128 data-nosnippet>128</a>    /// while we are away.
+<a href=#129 id=129 data-nosnippet>129</a>    </span><span class="kw">pub fn </span>clear(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+<a href=#130 id=130 data-nosnippet>130</a>        <span class="self">self</span>.expiries.clear();
+<a href=#131 id=131 data-nosnippet>131</a>    }
+<a href=#132 id=132 data-nosnippet>132</a>
+<a href=#133 id=133 data-nosnippet>133</a>    <span class="doccomment">/// Whether anything is recorded.
+<a href=#134 id=134 data-nosnippet>134</a>    </span><span class="attr">#[must_use]
+<a href=#135 id=135 data-nosnippet>135</a>    </span><span class="kw">pub fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+<a href=#136 id=136 data-nosnippet>136</a>        <span class="self">self</span>.expiries.is_empty()
+<a href=#137 id=137 data-nosnippet>137</a>    }
+<a href=#138 id=138 data-nosnippet>138</a>}
+<a href=#139 id=139 data-nosnippet>139</a>
+<a href=#140 id=140 data-nosnippet>140</a><span class="kw">impl </span>GameState {
+<a href=#141 id=141 data-nosnippet>141</a>    <span class="doccomment">/// Stamp a cooldown a closing chunk's line started.
+<a href=#142 id=142 data-nosnippet>142</a>    ///
+<a href=#143 id=143 data-nosnippet>143</a>    /// # What drives [`Cooldowns`]
+<a href=#144 id=144 data-nosnippet>144</a>    ///
+<a href=#145 id=145 data-nosnippet>145</a>    /// This is the production caller of `record_group` and `record_target`.
+<a href=#146 id=146 data-nosnippet>146</a>    /// A cooldown tracker that is never fed answers "ready" forever, which is
+<a href=#147 id=147 data-nosnippet>147</a>    /// the one answer that makes a buff behavior waste casts.
+<a href=#148 id=148 data-nosnippet>148</a>    ///
+<a href=#149 id=149 data-nosnippet>149</a>    /// The input is the caster's start message, when it says `your group`, and the third-person
+<a href=#150 id=150 data-nosnippet>150</a>    /// message naming a target. [`crate::spells::cooldown_landing`] reads
+<a href=#151 id=151 data-nosnippet>151</a>    /// both from the spell table's messages, and `close_chunk` calls this per
+<a href=#152 id=152 data-nosnippet>152</a>    /// line, after that line's group event. `now` is the prompt's server
+<a href=#153 id=153 data-nosnippet>153</a>    /// second, the clock every other stamp in this model uses.
+<a href=#154 id=154 data-nosnippet>154</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>record_cooldown(<span class="kw-2">&amp;mut </span><span class="self">self</span>, landing: <span class="kw-2">&amp;</span><span class="kw">crate</span>::spells::CooldownLanding, now: u32) {
+<a href=#155 id=155 data-nosnippet>155</a>        <span class="kw">match </span>landing {
+<a href=#156 id=156 data-nosnippet>156</a>            <span class="kw">crate</span>::spells::CooldownLanding::Group { spell } =&gt; {
+<a href=#157 id=157 data-nosnippet>157</a>                <span class="self">self</span>.cooldowns
+<a href=#158 id=158 data-nosnippet>158</a>                    .record_group(<span class="kw-2">*</span>spell, <span class="self">self</span>.group.members(), now);
+<a href=#159 id=159 data-nosnippet>159</a>            }
+<a href=#160 id=160 data-nosnippet>160</a>            <span class="kw">crate</span>::spells::CooldownLanding::Target { spell, noun } =&gt; {
+<a href=#161 id=161 data-nosnippet>161</a>                <span class="self">self</span>.cooldowns.record_target(<span class="kw-2">*</span>spell, noun, now);
+<a href=#162 id=162 data-nosnippet>162</a>            }
+<a href=#163 id=163 data-nosnippet>163</a>        }
+<a href=#164 id=164 data-nosnippet>164</a>    }
+<a href=#165 id=165 data-nosnippet>165</a>
+<a href=#166 id=166 data-nosnippet>166</a>    <span class="doccomment">/// Which of the current group a spell would actually affect.
+<a href=#167 id=167 data-nosnippet>167</a>    ///
+<a href=#168 id=168 data-nosnippet>168</a>    /// Empty when the group is
+<a href=#169 id=169 data-nosnippet>169</a>    /// empty or every member is locked out — and **also** when the server
+<a href=#170 id=170 data-nosnippet>170</a>    /// time is unknown, because a cooldown cannot be judged without a clock.
+<a href=#171 id=171 data-nosnippet>171</a>    </span><span class="attr">#[must_use]
+<a href=#172 id=172 data-nosnippet>172</a>    </span><span class="kw">pub fn </span>spell_cooldown_ready(<span class="kw-2">&amp;</span><span class="self">self</span>, spell: u16) -&gt; Vec&lt;<span class="kw-2">&amp;</span>Member&gt; {
+<a href=#173 id=173 data-nosnippet>173</a>        <span class="kw">let </span><span class="prelude-val">Some</span>(now) = <span class="self">self</span>.game_time_now() <span class="kw">else </span>{
+<a href=#174 id=174 data-nosnippet>174</a>            <span class="kw">return </span>Vec::new();
+<a href=#175 id=175 data-nosnippet>175</a>        };
+<a href=#176 id=176 data-nosnippet>176</a>        <span class="self">self</span>.group
+<a href=#177 id=177 data-nosnippet>177</a>            .members()
+<a href=#178 id=178 data-nosnippet>178</a>            .iter()
+<a href=#179 id=179 data-nosnippet>179</a>            .filter(|member| <span class="self">self</span>.cooldowns.ready(spell, <span class="kw-2">&amp;</span>member.noun, now))
+<a href=#180 id=180 data-nosnippet>180</a>            .collect()
+<a href=#181 id=181 data-nosnippet>181</a>    }
+<a href=#182 id=182 data-nosnippet>182</a>
+<a href=#183 id=183 data-nosnippet>183</a>    <span class="doccomment">/// Seconds before a character can receive this spell again.
+<a href=#184 id=184 data-nosnippet>184</a>    ///
+<a href=#185 id=185 data-nosnippet>185</a>    /// `None` when the server time is unknown, which is distinct from the
+<a href=#186 id=186 data-nosnippet>186</a>    /// `0` that means "ready now".
+<a href=#187 id=187 data-nosnippet>187</a>    </span><span class="attr">#[must_use]
+<a href=#188 id=188 data-nosnippet>188</a>    </span><span class="kw">pub fn </span>spell_cooldown_left(<span class="kw-2">&amp;</span><span class="self">self</span>, spell: u16, noun: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;u32&gt; {
+<a href=#189 id=189 data-nosnippet>189</a>        <span class="prelude-val">Some</span>(<span class="self">self</span>.cooldowns.remaining(spell, noun, <span class="self">self</span>.game_time_now()<span class="question-mark">?</span>))
+<a href=#190 id=190 data-nosnippet>190</a>    }
+<a href=#191 id=191 data-nosnippet>191</a>}
+</code></pre></div></section></main></body></html>

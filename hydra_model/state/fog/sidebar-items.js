@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["MAX_ROOM_UID","RIFT_ROOM"],"enum":["FogMethod"],"fn":["society_circle","uidless"],"struct":["Position"]};

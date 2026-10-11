@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["STANCES"],"enum":["Chosen"],"struct":["CasterSettings","Options"]};

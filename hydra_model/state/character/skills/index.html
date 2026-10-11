@@ -1,0 +1,73 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="The 46 skills and the 12 spell circles, and the classifier that reads a `skills` table row."><title>hydra_model::state::character::skills - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="hydra_model" data-themes="" data-resource-suffix="" data-rustdoc-version="1.96.1 (31fca3adb 2026-06-26)" data-channel="1.96.1" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../../../static.files/storage-41dd4d93.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../../../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-044be391.svg"></head><body class="rustdoc mod"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Module skills</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../../../hydra_model/index.html">hydra_<wbr>model</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module skills</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#the-table-measured" title="The table, MEASURED">The table, MEASURED</a></li><li><a href="#the-names" title="The names">The names</a></li><li><a href="#folded-from-the-wire-by-read_table" title="Folded from the wire by `read_table`">Folded from the wire by <code>read_table</code></a></li></ul><h3><a href="#structs">Module Items</a></h3><ul class="block"><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#enums" title="Enums">Enums</a></li><li><a href="#functions" title="Functions">Functions</a></li></ul></section><div id="rustdoc-modnav"><h2><a href="../index.html">In hydra_<wbr>model::<wbr>state::<wbr>character</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../../../index.html">hydra_model</a>::<wbr><a href="../../index.html">state</a>::<wbr><a href="../index.html">character</a></div><h1>Module <span>skills</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../../../src/hydra_model/state\character/skills.rs.html#1-707">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>The 46 skills and the 12 spell circles, and the classifier that reads a
+<code>skills</code> table row.</p>
+<p>Like <a href="../stats/index.html" title="mod hydra_model::state::character::stats"><code>stats</code></a> these are typed named fields, because the
+vocabulary is closed, and like that module the classifier is stateless:
+one reassembled line in, a typed <code>Option</code> out.</p>
+<h2 id="the-table-measured"><a class="doc-anchor" href="#the-table-measured">§</a>The table, MEASURED</h2>
+<p>Cut from a recorded session and committed as <code>character_skills.xml</code>. The
+command was <code>skills full</code>:</p>
+<div class="example-wrap"><pre class="language-text"><code>  Skill Name                         | Current Current
+                                     |   Bonus   Ranks
+  Two Weapon Combat..................|     312     212
+  Armor Use..........................|       0       0
+  ...
+
+Spell Lists
+  Minor Spiritual....................|              40
+
+Spell Lists
+  Ranger.............................|             162
+
+Training Points: 3673 Phy 0 Mnt (2866 Phy converted to Mnt)</code></pre></div>
+<p>Four facts that shape this file, each read off that capture rather than
+assumed:</p>
+<p><strong>1. The columns are <code>Bonus</code> then <code>Ranks</code></strong> – the reverse of how skills are
+spoken about, and the reverse of the order this module’s types list them in.
+This is exactly the hazard
+<a href="../stats/index.html" title="mod hydra_model::state::character::stats"><code>stats</code></a> hit from the other direction, where the column
+meaning changes between <code>info</code> and <code>info full</code>; the header line is in the
+fixture so the order is under test rather than in a comment.</p>
+<p><strong>2. In <code>skills full</code>, all 46 skills arrive, zeros included.</strong>
+<code>Armor Use....| 0 0</code> is present for a character who has never trained it.
+An untrained skill is a <em>zero</em>, not an absence – which is what makes
+<a href="struct.SkillSet.html#method.clear" title="method hydra_model::state::character::skills::SkillSet::clear"><code>SkillSet::clear</code></a> before applying a table safe, and necessary: it is the
+only way a skill that <em>dropped</em> to zero is ever recorded.</p>
+<p>Unlike <code>info</code>, which genuinely omits a column, <code>skills full</code> omits nothing.
+Plain <code>skills</code> omits the untrained ones – see the last section – so
+<a href="struct.SkillSet.html#method.replace" title="method hydra_model::state::character::skills::SkillSet::replace"><code>SkillSet::replace</code></a> records every skill a table left out as zero.</p>
+<p><strong>3. Bold marks enhancement per CELL, not per row.</strong> Both numbers are
+individually wrapped, and the fragments arrive with their leading spaces
+(<code>"  312"</code>, <code>"212"</code>), which is why matching trims. Same wire signal
+<a href="../stats/index.html" title="mod hydra_model::state::character::stats"><code>stats</code></a> reads, and the same reason: the game is telling us
+which numbers an item is inflating.</p>
+<p><strong>4. Spell circles are NOT rows of the skill table.</strong> Each gets its own
+<code>Spell Lists</code> header and a row carrying <strong>one</strong> number, in the Ranks column,
+with Bonus blank. A pattern for the circle row would also match a skill
+row and take its <em>bonus</em> as the rank, if it were tried first.</p>
+<p>So this module does not rely on trying patterns in an order.
+<a href="enum.SkillLine.html#method.classify" title="associated function hydra_model::state::character::skills::SkillLine::classify"><code>SkillLine::classify</code></a> counts the numeric fields itself, so a circle row
+and a skill row are distinguished by their own shape rather than by which
+pattern was tried first. A classifier that needed to know what had already
+been tried would not be stateless.</p>
+<h2 id="the-names"><a class="doc-anchor" href="#the-names">§</a>The names</h2>
+<p>The 46 display names are written down in <a href="enum.SkillKind.html#method.display_name" title="method hydra_model::state::character::skills::SkillKind::display_name"><code>SkillKind::display_name</code></a>, and
+<code>tests/character_skills.rs</code> asserts every one of them appears in the real
+capture – so a typo is a test failure, not a skill that silently never
+parses.</p>
+<h2 id="folded-from-the-wire-by-read_table"><a class="doc-anchor" href="#folded-from-the-wire-by-read_table">§</a>Folded from the wire by <a href="fn.read_table.html" title="fn hydra_model::state::character::skills::read_table"><code>read_table</code></a></h2>
+<p>The sync sends <code>skills full</code>, and <code>Character::consume_chunk</code> folds the
+table into <code>character.skills</code>, which the hunt reads (multi-opponent
+combat, for <code>mstrike</code>).</p>
+<p>A table is three parts: the header <code>&lt;Name&gt; (at level N), your current skill bonuses and ranks</code>, the rows, and the <code>Training Points: N Phy N Mnt</code>
+footer that commits them. Only a table with both ends is folded, because
+the next point needs a complete one.</p>
+<p><strong><code>skills</code> and <code>skills full</code> print the same header and differ in the rows.</strong>
+The game’s help: <code>SKILLS - Display your current skills known</code>; <code>SKILLS FULL - Display current value of all skills</code>, <em>“including those not trained
+in”</em>; its plain example has 14 rows and no zero. So a skill a complete
+plain table does not list is recorded untrained – <code>Some(0)</code> – rather than
+left unknown: INFERRED from the help text. <code>SKILLS BASE</code> has its own header
+(<code>your base skill bonuses, ranks and goals are:</code>) and is never read as this
+table.</p>
+</div></details><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.Skill.html" title="struct hydra_model::state::character::skills::Skill">Skill</a></dt><dd>One skill’s two numbers, and whether the wire bolded them.</dd><dt><a class="struct" href="struct.SkillSet.html" title="struct hydra_model::state::character::skills::SkillSet">Skill<wbr>Set</a></dt><dd>Every skill and circle a character has been told about.</dd></dl><h2 id="enums" class="section-header">Enums<a href="#enums" class="anchor">§</a></h2><dl class="item-table"><dt><a class="enum" href="enum.SkillKind.html" title="enum hydra_model::state::character::skills::SkillKind">Skill<wbr>Kind</a></dt><dd>The 46 skills, in the wire’s print order.</dd><dt><a class="enum" href="enum.SkillLine.html" title="enum hydra_model::state::character::skills::SkillLine">Skill<wbr>Line</a></dt><dd>One row of the <code>skills</code> table, classified.</dd></dl><h2 id="functions" class="section-header">Functions<a href="#functions" class="anchor">§</a></h2><dl class="item-table"><dt><a class="fn" href="fn.is_table_end.html" title="fn hydra_model::state::character::skills::is_table_end">is_<wbr>table_<wbr>end</a></dt><dd>The line that closes a table: <code>Training Points: 3673 Phy 0 Mnt ...</code>.</dd><dt><a class="fn" href="fn.is_table_header.html" title="fn hydra_model::state::character::skills::is_table_header">is_<wbr>table_<wbr>header</a></dt><dd>The line that opens a <code>skills</code> or <code>skills full</code> table.</dd><dt><a class="fn" href="fn.read_table.html" title="fn hydra_model::state::character::skills::read_table">read_<wbr>table</a></dt><dd>The last complete <code>skills</code> table in a chunk: every row between a header
+and its <code>Training Points:</code> footer, each with whether it arrived bolded.</dd><dt><a class="fn" href="fn.training_footer.html" title="fn hydra_model::state::character::skills::training_footer">training_<wbr>footer</a></dt><dd>The footer’s numbers: physical and mental training points, and how many
+physical were converted to mental, 0 when the footer says none.</dd></dl></section></div></main></body></html>

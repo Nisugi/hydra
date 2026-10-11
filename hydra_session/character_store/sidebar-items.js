@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["IDLE_WINDOW"],"enum":["LoadError"],"fn":["load","merge_and_save","save","store_path"]};

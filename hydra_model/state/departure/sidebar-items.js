@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["classify","is_direction"],"struct":["Departure"]};

@@ -1,0 +1,40 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="What the map may ask of a character, read from its model: a `Walker`."><title>hydra_travel::facts - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="hydra_travel" data-themes="" data-resource-suffix="" data-rustdoc-version="1.96.1 (31fca3adb 2026-06-26)" data-channel="1.96.1" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc mod"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Module facts</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../hydra_travel/index.html">hydra_<wbr>travel</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module facts</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#unknown-stays-unknown" title="Unknown stays unknown">Unknown stays unknown</a></li><li><a href="#mounted-is-the-one-fact-taken-as-no" title="Mounted is the one fact taken as no">Mounted is the one fact taken as no</a></li></ul><h3><a href="#functions">Module Items</a></h3><ul class="block"><li><a href="#functions" title="Functions">Functions</a></li></ul></section><div id="rustdoc-modnav"><h2 class="in-crate"><a href="../index.html">In crate hydra_<wbr>travel</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../index.html">hydra_travel</a></div><h1>Module <span>facts</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/hydra_travel/facts.rs.html#1-532">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>What the map may ask of a character, read from its model: a
+<a href="../struct.Walker.html" title="struct hydra_travel::Walker"><code>Walker</code></a>.</p>
+<p><strong>Pure</strong>: a state
+and the travel settings and memories in, a <code>Walker</code> out, so every line is
+tested without a game.</p>
+<h2 id="unknown-stays-unknown"><a class="doc-anchor" href="#unknown-stays-unknown">§</a>Unknown stays unknown</h2>
+<p>A fact is <code>None</code> until the game has said something, and a question about
+it then has no answer: an exit priced on it is shut, which is safe and
+not free. So nothing here defaults: a status never reported is not
+<code>false</code>, and no effect ever listed is “not told”, not “nothing is up”.
+The settings are the exception, and not one: an unset setting is not
+set, which is an answer (<a href="../settings/index.html" title="mod hydra_travel::settings"><code>crate::settings</code></a>).</p>
+<div><table><thead><tr><th>walker fact</th><th>from</th></tr></thead><tbody>
+<tr><td><code>settings</code></td><td>the Travel page (<a href="../settings/struct.TravelSettings.html#method.for_walker" title="method hydra_travel::settings::TravelSettings::for_walker"><code>TravelSettings::for_walker</code></a>)</td></tr>
+<tr><td><code>memories</code></td><td>the travel file</td></tr>
+<tr><td><code>profession</code>, <code>race</code>, <code>gender</code></td><td><code>character.identity</code></td></tr>
+<tr><td><code>level</code></td><td>the number in <code>Level 100</code></td></tr>
+<tr><td><code>posture</code>; flags <code>stunned</code>, <code>hidden</code>, <code>invisible</code></td><td><code>status</code>, only when reported</td></tr>
+<tr><td>flag <code>mounted</code></td><td>no, until the game says otherwise (below)</td></tr>
+<tr><td>flags <code>premium_account</code>, <code>platinum</code></td><td>the account the game named</td></tr>
+<tr><td>flag <code>urchin_access</code></td><td>the urchins’ paid-for date, with <code>use_urchins</code> on</td></tr>
+<tr><td><code>exits</code>, <code>sees</code></td><td>the room</td></tr>
+<tr><td><code>encumbrance</code></td><td><code>character.encumbrance.percent</code></td></tr>
+<tr><td><code>active_spells</code></td><td>effects still running at the game’s clock</td></tr>
+<tr><td><code>skills</code></td><td>the 46 by name, and the circles by theirs (<code>crate::knows</code>)</td></tr>
+<tr><td><code>known_spells</code>, <code>affordable_spells</code></td><td>the circles’ ranks and the gauges (<code>crate::knows</code>)</td></tr>
+<tr><td><code>society</code>, <code>society_rank</code>, <code>citizenship</code></td><td><code>character.standing</code></td></tr>
+<tr><td><code>worn</code>, <code>worn_nouns</code></td><td>what the inventory lists <code>worn</code> on the player</td></tr>
+<tr><td><code>month</code></td><td>the game’s clock</td></tr>
+</tbody></table>
+</div><h2 id="mounted-is-the-one-fact-taken-as-no"><a class="doc-anchor" href="#mounted-is-the-one-fact-taken-as-no">§</a>Mounted is the one fact taken as no</h2>
+<p>The game has no indicator for a mount and never says a character is on
+foot, so <code>mounted</code> could never be known to be no, and every way that
+asks for a walker on foot – the urchin guides are one – would stay
+shut for good. It is no here; a walk that is refused for being mounted
+says yes for the rest of that walk.</p>
+<p><strong>Not yet</strong>, and so unknown: <code>hunting</code>, <code>own_disk_here</code>,
+<code>leading_group</code>, and the day passes held – each is the walk’s to learn.</p>
+</div></details><h2 id="functions" class="section-header">Functions<a href="#functions" class="anchor">§</a></h2><dl class="item-table"><dt><a class="fn" href="fn.walker_from.html" title="fn hydra_travel::facts::walker_from">walker_<wbr>from</a></dt><dd>The walker’s facts, as the model, the Travel page and the travel file’s
+<code>memories</code> have them now.</dd></dl></section></div></main></body></html>

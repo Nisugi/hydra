@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["TYPED_LINES","WIRE_CHUNKS"],"enum":["LineFrom","Mark","Sending","View"],"struct":["Attached","LichDoor","Typing","Wire"]};

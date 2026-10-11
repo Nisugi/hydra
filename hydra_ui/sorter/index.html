@@ -1,0 +1,48 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="The sorter: a container look shown as its contents by item type."><title>hydra_ui::sorter - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="hydra_ui" data-themes="" data-resource-suffix="" data-rustdoc-version="1.96.1 (31fca3adb 2026-06-26)" data-channel="1.96.1" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc mod"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Module sorter</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../hydra_ui/index.html">hydra_<wbr>ui</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module sorter</a></h2><h3><a href="#structs">Module Items</a></h3><ul class="block"><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#enums" title="Enums">Enums</a></li><li><a href="#constants" title="Constants">Constants</a></li><li><a href="#functions" title="Functions">Functions</a></li></ul></section><div id="rustdoc-modnav"><h2 class="in-crate"><a href="../index.html">In crate hydra_<wbr>ui</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../index.html">hydra_ui</a></div><h1>Module <span>sorter</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/hydra_ui/sorter.rs.html#1-614">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>The sorter: a container look shown as its contents by item type.</p>
+<p>A look such as</p>
+<div class="example-wrap"><pre class="language-text"><code>In the mahogany box you see a bright gold ingot, some silver coins, a smooth amber wand, a piece of brown jade, a steel lockpick, a pinch of electrum dust and a tar black tourmaline.</code></pre></div>
+<p>is shown as</p>
+<div class="example-wrap"><pre class="language-text"><code>In the mahogany box:
+valuable (1): a bright gold ingot
+other (1): some silver coins
+wand (1): a smooth amber wand
+gem (3): a pinch of electrum dust, a piece of brown jade, a tar black tourmaline
+lockpick (1): a steel lockpick</code></pre></div>
+<p>or, given a width, each type’s label on a line of its own and its items
+under it in columns that fit the width.</p>
+<p>The look carries every item as an <code>&lt;a exist= noun=&gt;</code> link, so the line is
+what is sorted, and each item keeps its link. The look leaves out what
+the game says after an item’s name (<code>a pair of heavy pewter earrings with a cluster of jasper accents</code>); the <code>&lt;inv&gt;</code> lines the game sends before it
+have it, and <a href="struct.Listed.html" title="struct hydra_ui::sorter::Listed"><code>Listed</code></a> keeps it for the look that follows.</p>
+<ul>
+<li><strong>What is a look:</strong> a line starting <code>In the </code> or <code>On the </code> with
+<code>you see</code>, or <code>Peering into </code> with <code>you see </code>, and never one naming
+both an <code>In the</code> and an <code>On the</code> (<a href="fn.is_container_look.html" title="fn hydra_ui::sorter::is_container_look"><code>is_container_look</code></a>). The first
+object link is the container; the rest are the items.</li>
+<li><strong>Only a whole list is sorted:</strong> after the container <code>you see</code> and an
+article; between items <code>, </code> or <code>and</code> and an article; after the last a
+<code>.</code> that ends the line. Any other shape is shown as it came: the herb
+kit’s look goes on past its list (<code>The kit contains DOSEs of ...</code>), and
+sorting it would lose the doses. Text after an item’s link that is not
+a sentence stays with the item: <code>leather journal embossed with a peacock feather</code>.</li>
+<li><strong>The type</strong> is every type the item’s noun and name have
+(<a href="../../hydra_model/state/gameobj/fn.classify.html" title="fn hydra_model::state::gameobj::classify"><code>classify</code></a>), joined by commas, or <code>other</code>. Types join in name order.</li>
+<li><strong>Names:</strong> each item whole, as the <code>&lt;inv&gt;</code> lines say it: its article,
+its name, and what follows the name; or, with long names off, its name
+alone and what the look says after it. An item <code>containing</code> something
+says it in brackets, <code>a glass vial (some red liquid)</code>; a crystalline
+flask is named by what it holds.</li>
+<li><strong>Order:</strong> types as first seen; within one, items by the last word of
+the whole name; the same item twice is one, with its count.</li>
+</ul>
+</div></details><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.Listed.html" title="struct hydra_ui::sorter::Listed">Listed</a></dt><dd>What the game’s <code>&lt;inv&gt;</code> lines say around each item’s name, by its
+<code>exist</code> id: <code>a</code> before <code>pair of heavy pewter earrings</code>, <code>with a cluster of jasper accents</code> after. A look’s container is emptied (<code>&lt;clearContainer&gt;</code>)
+and listed again just before the look, so each emptying starts afresh.</dd><dt><a class="struct" href="struct.Sorted.html" title="struct hydra_ui::sorter::Sorted">Sorted</a></dt><dd>How a look is sorted, while the sorter is on.</dd><dt><a class="struct" href="struct.Sorting.html" title="struct hydra_ui::sorter::Sorting">Sorting</a></dt><dd>A character’s settings file’s <code>sorter</code> section (<code>.sorter</code>, the General
+page): whether its looks are sorted, in columns how wide, and with each
+thing’s long name or its short one.</dd></dl><h2 id="enums" class="section-header">Enums<a href="#enums" class="anchor">§</a></h2><dl class="item-table"><dt><a class="enum" href="enum.Layout.html" title="enum hydra_ui::sorter::Layout">Layout</a></dt><dd>How a sorted look lays out each type’s items.</dd></dl><h2 id="constants" class="section-header">Constants<a href="#constants" class="anchor">§</a></h2><dl class="item-table"><dt><a class="constant" href="constant.MAX_SORTED_RUNS.html" title="constant hydra_ui::sorter::MAX_SORTED_RUNS">MAX_<wbr>SORTED_<wbr>RUNS</a></dt><dd>Runs a line may have and still be sorted; past it the line is shown as
+it came. The longest look in a month of play named 108 items, 217 runs.</dd></dl><h2 id="functions" class="section-header">Functions<a href="#functions" class="anchor">§</a></h2><dl class="item-table"><dt><a class="fn" href="fn.is_container_look.html" title="fn hydra_ui::sorter::is_container_look">is_<wbr>container_<wbr>look</a></dt><dd>Whether <code>text</code>, a story line’s plain text, is a container look: a cheap
+first test, <a href="fn.sort.html" title="fn hydra_ui::sorter::sort"><code>sort</code></a> also requires a whole list.</dd><dt><a class="fn" href="fn.sort.html" title="fn hydra_ui::sorter::sort">sort</a></dt><dd>The lines a container look is shown as when sorted: a header, then each
+type’s items, as a list or, given <code>width</code> in characters, in columns.
+Given <code>listing</code>, each item is named long, as it says, or as the look
+does where it says nothing; without, short, its name and the look’s own
+text after it. <code>None</code> when <code>line</code> is not a look, or not a whole list.</dd></dl></section></div></main></body></html>

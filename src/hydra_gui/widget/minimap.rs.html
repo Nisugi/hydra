@@ -1,0 +1,551 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates\hydra-gui\src\widget\minimap.rs`."><title>minimap.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="hydra_gui" data-themes="" data-resource-suffix="" data-rustdoc-version="1.96.1 (31fca3adb 2026-06-26)" data-channel="1.96.1" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../../static.files/storage-41dd4d93.js"></script><script defer src="../../../static.files/src-script-813739b1.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><h1><div class="sub-heading">hydra_gui\widget/</div>minimap.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap digits-3"><pre class="rust"><code><a href=#1 id=1 data-nosnippet>1</a><span class="doccomment">//! The minimap: the area the character is in, laid out by hydra-mapper's
+<a href=#2 id=2 data-nosnippet>2</a>//! engine (`hydra_map`), drawn in the theme's map colours and following
+<a href=#3 id=3 data-nosnippet>3</a>//! you, with the maps next door drawn dimmed beside it. Its route is in
+<a href=#4 id=4 data-nosnippet>4</a>//! [`route`]: what `.route2` shows. Aboard a ship it is the ocean's chart
+<a href=#5 id=5 data-nosnippet>5</a>//! ([`ocean`]).
+<a href=#6 id=6 data-nosnippet>6</a>//!
+<a href=#7 id=7 data-nosnippet>7</a>//! A pure painter over a [`MapScene`] and a camera kept in egui's memory
+<a href=#8 id=8 data-nosnippet>8</a>//! for the widget. The camera follows you, moving only when you leave a dead
+<a href=#9 id=9 data-nosnippet>9</a>//! zone in the middle of the view, or, kept centred on its page, with every
+<a href=#10 id=10 data-nosnippet>10</a>//! step; the wheel zooms about the pointer, a drag pans and stops the
+<a href=#11 id=11 data-nosnippet>11</a>//! following, and a double-click comes back to you. In a building, the
+<a href=#12 id=12 data-nosnippet>12</a>//! building is drawn opened on its area's sheet where its door was, the rest
+<a href=#13 id=13 data-nosnippet>13</a>//! dimmed, and the camera zooms in: two zooms, outside and in, each back to
+<a href=#14 id=14 data-nosnippet>14</a>//! its default at a door, and a glide between. Resetting to the default at a
+<a href=#15 id=15 data-nosnippet>15</a>//! door keeps the view predictable. Walking into a map drawn next door, the
+<a href=#16 id=16 data-nosnippet>16</a>//! view moves by where that map was drawn, so nothing jumps.
+<a href=#17 id=17 data-nosnippet>17</a>//!
+<a href=#18 id=18 data-nosnippet>18</a>//! Under the pointer, a room's card: its title, number, building and ways
+<a href=#19 id=19 data-nosnippet>19</a>//! out. Shift+click says the room in the story, and Ctrl+click its number
+<a href=#20 id=20 data-nosnippet>20</a>//! and title. A click on a room shows the way there (`.route2`, in a line),
+<a href=#21 id=21 data-nosnippet>21</a>//! and a click on the goal it rings walks it (`.go2`); a click on nothing
+<a href=#22 id=22 data-nosnippet>22</a>//! takes the way off (right-click is the window's menu). A way-in dot stands
+<a href=#23 id=23 data-nosnippet>23</a>//! for the place behind it. The zooms and how many maps out are the widget's
+<a href=#24 id=24 data-nosnippet>24</a>//! own page's ([`look`]). On the ocean's chart a click on a port shows the
+<a href=#25 id=25 data-nosnippet>25</a>//! course there (`.sail route`), and a click on the port the course rings
+<a href=#26 id=26 data-nosnippet>26</a>//! sails it (`.sail`).
+<a href=#27 id=27 data-nosnippet>27</a>
+<a href=#28 id=28 data-nosnippet>28</a></span><span class="kw">use </span>hydra_map::{EdgeKind, MapScene, MinimapView, NextDoor, SceneEdge};
+<a href=#29 id=29 data-nosnippet>29</a>
+<a href=#30 id=30 data-nosnippet>30</a><span class="kw">use </span><span class="kw">super</span>::Clicked;
+<a href=#31 id=31 data-nosnippet>31</a><span class="kw">use </span><span class="kw">crate</span>::theme::{<span class="self">self</span>, T};
+<a href=#32 id=32 data-nosnippet>32</a><span class="kw">use </span>egui::{FontId, Id, Pos2, Rect, Sense, Shape, Stroke, Vec2, vec2};
+<a href=#33 id=33 data-nosnippet>33</a>
+<a href=#34 id=34 data-nosnippet>34</a><span class="doccomment">/// Pixels a cell outdoors at first, and in a place, whose rooms are drawn
+<a href=#35 id=35 data-nosnippet>35</a>/// at half the streets' scale: zoomed in so they are no more crowded than
+<a href=#36 id=36 data-nosnippet>36</a>/// the streets are; and the least and most either may be zoomed to.
+<a href=#37 id=37 data-nosnippet>37</a></span><span class="kw">const </span>ZOOM: f32 = <span class="number">7.0</span>;
+<a href=#38 id=38 data-nosnippet>38</a><span class="kw">const </span>ZOOM_INSIDE: f32 = <span class="number">16.0</span>;
+<a href=#39 id=39 data-nosnippet>39</a><span class="kw">const </span>ZOOM_RANGE: (f32, f32) = (<span class="number">2.0</span>, <span class="number">40.0</span>);
+<a href=#40 id=40 data-nosnippet>40</a><span class="doccomment">/// Seconds a glide takes.
+<a href=#41 id=41 data-nosnippet>41</a></span><span class="kw">const </span>GLIDE: f64 = <span class="number">0.25</span>;
+<a href=#42 id=42 data-nosnippet>42</a><span class="doccomment">/// How much of its colour what is outside the place you are in keeps.
+<a href=#43 id=43 data-nosnippet>43</a></span><span class="kw">const </span>FADED: f32 = <span class="number">0.35</span>;
+<a href=#44 id=44 data-nosnippet>44</a><span class="doccomment">/// How far from the middle you may go, as a share of the view each way,
+<a href=#45 id=45 data-nosnippet>45</a>/// before the camera moves (24 x 16 of an 80 x 56 view).
+<a href=#46 id=46 data-nosnippet>46</a></span><span class="kw">const </span>DEAD_ZONE: f32 = <span class="number">0.3</span>;
+<a href=#47 id=47 data-nosnippet>47</a>
+<a href=#48 id=48 data-nosnippet>48</a><span class="doccomment">/// The camera, kept per widget between frames.
+<a href=#49 id=49 data-nosnippet>49</a></span><span class="attr">#[derive(Clone, Copy, Debug)]
+<a href=#50 id=50 data-nosnippet>50</a></span><span class="kw">struct </span>Camera {
+<a href=#51 id=51 data-nosnippet>51</a>    <span class="doccomment">/// The cell in the middle of the view.
+<a href=#52 id=52 data-nosnippet>52</a>    </span>centre: Vec2,
+<a href=#53 id=53 data-nosnippet>53</a>    <span class="doccomment">/// Pixels a cell.
+<a href=#54 id=54 data-nosnippet>54</a>    </span>zoom: f32,
+<a href=#55 id=55 data-nosnippet>55</a>    <span class="doccomment">/// Whether it follows you; a drag stops it until a double-click.
+<a href=#56 id=56 data-nosnippet>56</a>    </span>follow: bool,
+<a href=#57 id=57 data-nosnippet>57</a>    <span class="doccomment">/// The area it was last on: another area recentres.
+<a href=#58 id=58 data-nosnippet>58</a>    </span>area: u64,
+<a href=#59 id=59 data-nosnippet>59</a>    <span class="doccomment">/// Whether you were in a place: a door crossed zooms to the other
+<a href=#60 id=60 data-nosnippet>60</a>    /// side's default.
+<a href=#61 id=61 data-nosnippet>61</a>    </span>inside: bool,
+<a href=#62 id=62 data-nosnippet>62</a>    <span class="doccomment">/// A glide under way to `centre` and `zoom`: where it started, and
+<a href=#63 id=63 data-nosnippet>63</a>    /// when.
+<a href=#64 id=64 data-nosnippet>64</a>    </span>glide: <span class="prelude-ty">Option</span>&lt;(Vec2, f32, f64)&gt;,
+<a href=#65 id=65 data-nosnippet>65</a>}
+<a href=#66 id=66 data-nosnippet>66</a>
+<a href=#67 id=67 data-nosnippet>67</a><span class="kw">impl </span>Camera {
+<a href=#68 id=68 data-nosnippet>68</a>    <span class="doccomment">/// Where the view is this frame: part way along a glide, or where it
+<a href=#69 id=69 data-nosnippet>69</a>    /// is going.
+<a href=#70 id=70 data-nosnippet>70</a>    </span><span class="kw">fn </span>drawn(<span class="kw-2">&amp;</span><span class="self">self</span>, now: f64) -&gt; (Vec2, f32) {
+<a href=#71 id=71 data-nosnippet>71</a>        <span class="kw">let </span><span class="prelude-val">Some</span>((from, zoom, start)) = <span class="self">self</span>.glide <span class="kw">else </span>{
+<a href=#72 id=72 data-nosnippet>72</a>            <span class="kw">return </span>(<span class="self">self</span>.centre, <span class="self">self</span>.zoom);
+<a href=#73 id=73 data-nosnippet>73</a>        };
+<a href=#74 id=74 data-nosnippet>74</a>        <span class="attr">#[allow(clippy::cast_possible_truncation)]
+<a href=#75 id=75 data-nosnippet>75</a>        </span><span class="kw">let </span>t = (((now - start) / GLIDE).clamp(<span class="number">0.0</span>, <span class="number">1.0</span>)) <span class="kw">as </span>f32;
+<a href=#76 id=76 data-nosnippet>76</a>        <span class="kw">let </span>eased = t * t * <span class="number">2.0f32</span>.mul_add(-t, <span class="number">3.0</span>);
+<a href=#77 id=77 data-nosnippet>77</a>        (
+<a href=#78 id=78 data-nosnippet>78</a>            from + (<span class="self">self</span>.centre - from) * eased,
+<a href=#79 id=79 data-nosnippet>79</a>            zoom + (<span class="self">self</span>.zoom - zoom) * eased,
+<a href=#80 id=80 data-nosnippet>80</a>        )
+<a href=#81 id=81 data-nosnippet>81</a>    }
+<a href=#82 id=82 data-nosnippet>82</a>
+<a href=#83 id=83 data-nosnippet>83</a>    <span class="doccomment">/// Glide from where the view is now to where it is going.
+<a href=#84 id=84 data-nosnippet>84</a>    </span><span class="kw">fn </span>glide_from(<span class="kw-2">&amp;mut </span><span class="self">self</span>, drawn: (Vec2, f32), now: f64) {
+<a href=#85 id=85 data-nosnippet>85</a>        <span class="self">self</span>.glide = <span class="prelude-val">Some</span>((drawn.<span class="number">0</span>, drawn.<span class="number">1</span>, now));
+<a href=#86 id=86 data-nosnippet>86</a>    }
+<a href=#87 id=87 data-nosnippet>87</a>}
+<a href=#88 id=88 data-nosnippet>88</a>
+<a href=#89 id=89 data-nosnippet>89</a><span class="doccomment">/// Draw `view` into all the space `ui` gives, and what a click on it asked
+<a href=#90 id=90 data-nosnippet>90</a>/// for; `own` is false on another character's minimap, which only shows.
+<a href=#91 id=91 data-nosnippet>91</a></span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>minimap(
+<a href=#92 id=92 data-nosnippet>92</a>    ui: <span class="kw-2">&amp;mut </span>egui::Ui,
+<a href=#93 id=93 data-nosnippet>93</a>    view: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>MinimapView&gt;,
+<a href=#94 id=94 data-nosnippet>94</a>    id: Id,
+<a href=#95 id=95 data-nosnippet>95</a>    own: bool,
+<a href=#96 id=96 data-nosnippet>96</a>    look: MinimapLook,
+<a href=#97 id=97 data-nosnippet>97</a>) -&gt; <span class="prelude-ty">Option</span>&lt;Clicked&gt; {
+<a href=#98 id=98 data-nosnippet>98</a>    <span class="kw">let </span>size = ui.available_size().max(vec2(<span class="number">80.0</span>, <span class="number">60.0</span>));
+<a href=#99 id=99 data-nosnippet>99</a>    <span class="kw">let </span>(rect, response) = ui.allocate_exact_size(size, Sense::click_and_drag());
+<a href=#100 id=100 data-nosnippet>100</a>    <span class="kw">let </span>painter = ui.painter_at(rect);
+<a href=#101 id=101 data-nosnippet>101</a>    <span class="kw">let </span>ground = theme::color(ui.ctx(), T::MapBackground);
+<a href=#102 id=102 data-nosnippet>102</a>    painter.rect_filled(rect, theme::corner(ui.ctx()), ground);
+<a href=#103 id=103 data-nosnippet>103</a>    <span class="kw">if let </span>ocean::Chart::Drawn(asked) = ocean::shown(ui, <span class="kw-2">&amp;</span>response, rect, (id, look), view) {
+<a href=#104 id=104 data-nosnippet>104</a>        <span class="kw">return </span>asked.filter(|<span class="kw">_</span>| own);
+<a href=#105 id=105 data-nosnippet>105</a>    }
+<a href=#106 id=106 data-nosnippet>106</a>    <span class="kw">let </span><span class="prelude-val">Some</span>(MinimapView::Here {
+<a href=#107 id=107 data-nosnippet>107</a>        scene,
+<a href=#108 id=108 data-nosnippet>108</a>        room: you,
+<a href=#109 id=109 data-nosnippet>109</a>        next_door,
+<a href=#110 id=110 data-nosnippet>110</a>        route,
+<a href=#111 id=111 data-nosnippet>111</a>    }) = view
+<a href=#112 id=112 data-nosnippet>112</a>    <span class="kw">else </span>{
+<a href=#113 id=113 data-nosnippet>113</a>        <span class="kw">let </span>why = <span class="kw">match </span>view {
+<a href=#114 id=114 data-nosnippet>114</a>            <span class="prelude-val">Some</span>(MinimapView::Waiting(why)) =&gt; why.as_str(),
+<a href=#115 id=115 data-nosnippet>115</a>            <span class="kw">_ </span>=&gt; <span class="string">"No map."</span>,
+<a href=#116 id=116 data-nosnippet>116</a>        };
+<a href=#117 id=117 data-nosnippet>117</a>        waiting(<span class="kw-2">&amp;</span>painter, rect, why);
+<a href=#118 id=118 data-nosnippet>118</a>        <span class="kw">return </span><span class="prelude-val">None</span>;
+<a href=#119 id=119 data-nosnippet>119</a>    };
+<a href=#120 id=120 data-nosnippet>120</a>    <span class="kw">let </span>(scene, you) = (scene.as_ref(), <span class="kw-2">*</span>you);
+<a href=#121 id=121 data-nosnippet>121</a>    <span class="kw">let </span><span class="prelude-val">Some</span>((here_cell, inside)) = whereabouts(scene, you) <span class="kw">else </span>{
+<a href=#122 id=122 data-nosnippet>122</a>        waiting(<span class="kw-2">&amp;</span>painter, rect, <span class="string">"You are not on this area's map."</span>);
+<a href=#123 id=123 data-nosnippet>123</a>        <span class="kw">return </span><span class="prelude-val">None</span>;
+<a href=#124 id=124 data-nosnippet>124</a>    };
+<a href=#125 id=125 data-nosnippet>125</a>    <span class="comment">// The maps next door as many out as its page says.
+<a href=#126 id=126 data-nosnippet>126</a>    </span><span class="kw">let </span>next_door: Vec&lt;NextDoor&gt; = next_door
+<a href=#127 id=127 data-nosnippet>127</a>        .iter()
+<a href=#128 id=128 data-nosnippet>128</a>        .filter(|n| n.ring &lt;= look.maps_out)
+<a href=#129 id=129 data-nosnippet>129</a>        .cloned()
+<a href=#130 id=130 data-nosnippet>130</a>        .collect();
+<a href=#131 id=131 data-nosnippet>131</a>    <span class="kw">let </span>next_door = next_door.as_slice();
+<a href=#132 id=132 data-nosnippet>132</a>    <span class="kw">let </span>default = <span class="kw">if </span>inside.is_some() {
+<a href=#133 id=133 data-nosnippet>133</a>        look.inside
+<a href=#134 id=134 data-nosnippet>134</a>    } <span class="kw">else </span>{
+<a href=#135 id=135 data-nosnippet>135</a>        look.outside
+<a href=#136 id=136 data-nosnippet>136</a>    };
+<a href=#137 id=137 data-nosnippet>137</a>    <span class="kw">let </span>camera = aimed(
+<a href=#138 id=138 data-nosnippet>138</a>        ui,
+<a href=#139 id=139 data-nosnippet>139</a>        id,
+<a href=#140 id=140 data-nosnippet>140</a>        <span class="kw-2">&amp;</span>response,
+<a href=#141 id=141 data-nosnippet>141</a>        rect,
+<a href=#142 id=142 data-nosnippet>142</a>        (scene, next_door),
+<a href=#143 id=143 data-nosnippet>143</a>        here_cell,
+<a href=#144 id=144 data-nosnippet>144</a>        (inside.is_some(), default, look.centred),
+<a href=#145 id=145 data-nosnippet>145</a>    );
+<a href=#146 id=146 data-nosnippet>146</a>    <span class="kw">let </span>now = ui.input(|i| i.time);
+<a href=#147 id=147 data-nosnippet>147</a>    <span class="kw">let </span>(centre, zoom) = camera.drawn(now);
+<a href=#148 id=148 data-nosnippet>148</a>    <span class="kw">if </span>camera.glide.is_some_and(|(.., start)| now - start &lt; GLIDE) {
+<a href=#149 id=149 data-nosnippet>149</a>        ui.ctx().request_repaint();
+<a href=#150 id=150 data-nosnippet>150</a>    }
+<a href=#151 id=151 data-nosnippet>151</a>
+<a href=#152 id=152 data-nosnippet>152</a>    <span class="kw">let </span>to_screen = |p: Vec2| rect.center() + (p - centre) * zoom;
+<a href=#153 id=153 data-nosnippet>153</a>    <span class="comment">// The maps next door first, dimmed, under this one.
+<a href=#154 id=154 data-nosnippet>154</a>    </span><span class="kw">let </span><span class="kw-2">mut </span>layers: Vec&lt;(<span class="kw-2">&amp;</span>MapScene, Vec2)&gt; = <span class="macro">vec!</span>[(scene, Vec2::ZERO)];
+<a href=#155 id=155 data-nosnippet>155</a>    layers.extend(
+<a href=#156 id=156 data-nosnippet>156</a>        next_door
+<a href=#157 id=157 data-nosnippet>157</a>            .iter()
+<a href=#158 id=158 data-nosnippet>158</a>            .map(|n| (n.scene.as_ref(), vec2(n.offset.<span class="number">0</span>, n.offset.<span class="number">1</span>))),
+<a href=#159 id=159 data-nosnippet>159</a>    );
+<a href=#160 id=160 data-nosnippet>160</a>    <span class="kw">let </span>square = (zoom * <span class="number">0.7</span>).clamp(<span class="number">3.0</span>, <span class="number">10.0</span>);
+<a href=#161 id=161 data-nosnippet>161</a>    <span class="kw">for </span><span class="kw-2">&amp;</span>(next, offset) <span class="kw">in </span><span class="kw-2">&amp;</span>layers[<span class="number">1</span>..] {
+<a href=#162 id=162 data-nosnippet>162</a>        <span class="kw">let </span>moved = |p: Vec2| to_screen(p + offset);
+<a href=#163 id=163 data-nosnippet>163</a>        draw_lines(<span class="kw-2">&amp;</span>painter, next, <span class="kw-2">&amp;</span>moved, zoom, <span class="kw-2">&amp;</span>|<span class="kw">_</span>| FADED);
+<a href=#164 id=164 data-nosnippet>164</a>        draw_rooms(<span class="kw-2">&amp;</span>painter, rect, next, <span class="kw-2">&amp;</span>moved, zoom, <span class="kw-2">&amp;</span>|<span class="kw">_</span>| FADED);
+<a href=#165 id=165 data-nosnippet>165</a>        marks::draw_marks(<span class="kw-2">&amp;</span>painter, next, <span class="kw-2">&amp;</span>moved, zoom, <span class="kw-2">&amp;</span>|<span class="kw">_</span>| FADED);
+<a href=#166 id=166 data-nosnippet>166</a>    }
+<a href=#167 id=167 data-nosnippet>167</a>    <span class="comment">// In a place, the rest of the sheet dimmed; outdoors, everything.
+<a href=#168 id=168 data-nosnippet>168</a>    </span><span class="kw">let </span>fade = |building: <span class="prelude-ty">Option</span>&lt;usize&gt;| {
+<a href=#169 id=169 data-nosnippet>169</a>        <span class="kw">if </span>inside.is_none() || building == inside {
+<a href=#170 id=170 data-nosnippet>170</a>            <span class="number">1.0
+<a href=#171 id=171 data-nosnippet>171</a>        </span>} <span class="kw">else </span>{
+<a href=#172 id=172 data-nosnippet>172</a>            FADED
+<a href=#173 id=173 data-nosnippet>173</a>        }
+<a href=#174 id=174 data-nosnippet>174</a>    };
+<a href=#175 id=175 data-nosnippet>175</a>    draw_lines(<span class="kw-2">&amp;</span>painter, scene, <span class="kw-2">&amp;</span>to_screen, zoom, <span class="kw-2">&amp;</span>fade);
+<a href=#176 id=176 data-nosnippet>176</a>    draw_rooms(<span class="kw-2">&amp;</span>painter, rect, scene, <span class="kw-2">&amp;</span>to_screen, zoom, <span class="kw-2">&amp;</span>fade);
+<a href=#177 id=177 data-nosnippet>177</a>    marks::draw_marks(<span class="kw-2">&amp;</span>painter, scene, <span class="kw-2">&amp;</span>to_screen, zoom, <span class="kw-2">&amp;</span>fade);
+<a href=#178 id=178 data-nosnippet>178</a>    marks::draw_labels(<span class="kw-2">&amp;</span>painter, scene, <span class="kw-2">&amp;</span>to_screen, zoom, <span class="kw-2">&amp;</span>fade);
+<a href=#179 id=179 data-nosnippet>179</a>    <span class="kw">if let </span><span class="prelude-val">Some</span>(route) = route {
+<a href=#180 id=180 data-nosnippet>180</a>        route::draw_route(
+<a href=#181 id=181 data-nosnippet>181</a>            <span class="kw-2">&amp;</span>painter,
+<a href=#182 id=182 data-nosnippet>182</a>            rect,
+<a href=#183 id=183 data-nosnippet>183</a>            <span class="kw-2">&amp;</span>layers,
+<a href=#184 id=184 data-nosnippet>184</a>            route,
+<a href=#185 id=185 data-nosnippet>185</a>            you,
+<a href=#186 id=186 data-nosnippet>186</a>            <span class="kw-2">&amp;</span>to_screen,
+<a href=#187 id=187 data-nosnippet>187</a>            (zoom, look.flow),
+<a href=#188 id=188 data-nosnippet>188</a>        );
+<a href=#189 id=189 data-nosnippet>189</a>    }
+<a href=#190 id=190 data-nosnippet>190</a>    painter.circle_stroke(
+<a href=#191 id=191 data-nosnippet>191</a>        to_screen(here_cell),
+<a href=#192 id=192 data-nosnippet>192</a>        square * <span class="number">0.9 </span>+ <span class="number">3.0</span>,
+<a href=#193 id=193 data-nosnippet>193</a>        Stroke::new(<span class="number">2.5</span>, theme::color(ui.ctx(), T::MapYou)),
+<a href=#194 id=194 data-nosnippet>194</a>    );
+<a href=#195 id=195 data-nosnippet>195</a>    <span class="kw">let </span>from_screen = |p: Pos2| centre + (p - rect.center()) / zoom;
+<a href=#196 id=196 data-nosnippet>196</a>    <span class="kw">let </span>reach = (square * <span class="number">0.9 </span>+ <span class="number">3.0</span>) / zoom;
+<a href=#197 id=197 data-nosnippet>197</a>    <span class="kw">let </span>pointed = |at: Pos2| hit(<span class="kw-2">&amp;</span>layers, from_screen(at), reach);
+<a href=#198 id=198 data-nosnippet>198</a>    <span class="kw">let </span>goal = route::goal(route.as_deref(), you);
+<a href=#199 id=199 data-nosnippet>199</a>    pointer(ui, <span class="kw-2">&amp;</span>response, <span class="kw-2">&amp;</span>layers, <span class="kw-2">&amp;</span>pointed, (own, goal))
+<a href=#200 id=200 data-nosnippet>200</a>}
+<a href=#201 id=201 data-nosnippet>201</a>
+<a href=#202 id=202 data-nosnippet>202</a><span class="doccomment">/// The card for the room under the pointer, on anyone's minimap; and, on
+<a href=#203 id=203 data-nosnippet>203</a>/// the character's `own`, what a click asked, `goal` the room the way shown
+<a href=#204 id=204 data-nosnippet>204</a>/// rings.
+<a href=#205 id=205 data-nosnippet>205</a></span><span class="kw">fn </span>pointer(
+<a href=#206 id=206 data-nosnippet>206</a>    ui: <span class="kw-2">&amp;</span>egui::Ui,
+<a href=#207 id=207 data-nosnippet>207</a>    response: <span class="kw-2">&amp;</span>egui::Response,
+<a href=#208 id=208 data-nosnippet>208</a>    layers: <span class="kw-2">&amp;</span>[(<span class="kw-2">&amp;</span>MapScene, Vec2)],
+<a href=#209 id=209 data-nosnippet>209</a>    pointed: <span class="kw-2">&amp;</span><span class="kw">dyn </span>Fn(Pos2) -&gt; <span class="prelude-ty">Option</span>&lt;u32&gt;,
+<a href=#210 id=210 data-nosnippet>210</a>    (own, goal): (bool, <span class="prelude-ty">Option</span>&lt;u32&gt;),
+<a href=#211 id=211 data-nosnippet>211</a>) -&gt; <span class="prelude-ty">Option</span>&lt;Clicked&gt; {
+<a href=#212 id=212 data-nosnippet>212</a>    marks::hover(ui, response, pointed, layers);
+<a href=#213 id=213 data-nosnippet>213</a>    <span class="kw">if </span>!own {
+<a href=#214 id=214 data-nosnippet>214</a>        <span class="kw">return </span><span class="prelude-val">None</span>;
+<a href=#215 id=215 data-nosnippet>215</a>    }
+<a href=#216 id=216 data-nosnippet>216</a>    <span class="kw">let </span>at = response.interact_pointer_pos().and_then(pointed);
+<a href=#217 id=217 data-nosnippet>217</a>    clicked(ui, response, at, goal)
+<a href=#218 id=218 data-nosnippet>218</a>}
+<a href=#219 id=219 data-nosnippet>219</a>
+<a href=#220 id=220 data-nosnippet>220</a><span class="doccomment">/// One sheet's lines, each as dim as `fade` says for the building it is in.
+<a href=#221 id=221 data-nosnippet>221</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>draw_lines(
+<a href=#222 id=222 data-nosnippet>222</a>    painter: <span class="kw-2">&amp;</span>egui::Painter,
+<a href=#223 id=223 data-nosnippet>223</a>    scene: <span class="kw-2">&amp;</span>MapScene,
+<a href=#224 id=224 data-nosnippet>224</a>    to_screen: <span class="kw-2">&amp;</span><span class="kw">dyn </span>Fn(Vec2) -&gt; Pos2,
+<a href=#225 id=225 data-nosnippet>225</a>    zoom: f32,
+<a href=#226 id=226 data-nosnippet>226</a>    fade: <span class="kw-2">&amp;</span><span class="kw">dyn </span>Fn(<span class="prelude-ty">Option</span>&lt;usize&gt;) -&gt; f32,
+<a href=#227 id=227 data-nosnippet>227</a>) {
+<a href=#228 id=228 data-nosnippet>228</a>    <span class="kw">for </span>edge <span class="kw">in </span><span class="kw-2">&amp;</span>scene.edges {
+<a href=#229 id=229 data-nosnippet>229</a>        draw_edge(painter, edge, to_screen, zoom, fade(edge.building));
+<a href=#230 id=230 data-nosnippet>230</a>    }
+<a href=#231 id=231 data-nosnippet>231</a>}
+<a href=#232 id=232 data-nosnippet>232</a>
+<a href=#233 id=233 data-nosnippet>233</a><span class="doccomment">/// One sheet's rooms and way-in dots, over its lines.
+<a href=#234 id=234 data-nosnippet>234</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>draw_rooms(
+<a href=#235 id=235 data-nosnippet>235</a>    painter: <span class="kw-2">&amp;</span>egui::Painter,
+<a href=#236 id=236 data-nosnippet>236</a>    rect: Rect,
+<a href=#237 id=237 data-nosnippet>237</a>    scene: <span class="kw-2">&amp;</span>MapScene,
+<a href=#238 id=238 data-nosnippet>238</a>    to_screen: <span class="kw-2">&amp;</span><span class="kw">dyn </span>Fn(Vec2) -&gt; Pos2,
+<a href=#239 id=239 data-nosnippet>239</a>    zoom: f32,
+<a href=#240 id=240 data-nosnippet>240</a>    fade: <span class="kw-2">&amp;</span><span class="kw">dyn </span>Fn(<span class="prelude-ty">Option</span>&lt;usize&gt;) -&gt; f32,
+<a href=#241 id=241 data-nosnippet>241</a>) {
+<a href=#242 id=242 data-nosnippet>242</a>    <span class="kw">let </span>square = (zoom * <span class="number">0.7</span>).clamp(<span class="number">3.0</span>, <span class="number">10.0</span>);
+<a href=#243 id=243 data-nosnippet>243</a>    <span class="kw">for </span>room <span class="kw">in </span><span class="kw-2">&amp;</span>scene.rooms {
+<a href=#244 id=244 data-nosnippet>244</a>        <span class="kw">let </span>at = to_screen(cell(room.cell));
+<a href=#245 id=245 data-nosnippet>245</a>        <span class="kw">if </span>rect.expand(square).contains(at) {
+<a href=#246 id=246 data-nosnippet>246</a>            <span class="kw">let </span>f = fade(room.building);
+<a href=#247 id=247 data-nosnippet>247</a>            painter.rect(
+<a href=#248 id=248 data-nosnippet>248</a>                Rect::from_center_size(at, Vec2::splat(square)),
+<a href=#249 id=249 data-nosnippet>249</a>                <span class="number">1.4</span>,
+<a href=#250 id=250 data-nosnippet>250</a>                theme::color(painter.ctx(), T::MapRoom).gamma_multiply(f),
+<a href=#251 id=251 data-nosnippet>251</a>                Stroke::new(
+<a href=#252 id=252 data-nosnippet>252</a>                    <span class="number">1.0</span>,
+<a href=#253 id=253 data-nosnippet>253</a>                    theme::color(painter.ctx(), T::MapRoomEdge).gamma_multiply(f),
+<a href=#254 id=254 data-nosnippet>254</a>                ),
+<a href=#255 id=255 data-nosnippet>255</a>                egui::StrokeKind::Inside,
+<a href=#256 id=256 data-nosnippet>256</a>            );
+<a href=#257 id=257 data-nosnippet>257</a>        }
+<a href=#258 id=258 data-nosnippet>258</a>    }
+<a href=#259 id=259 data-nosnippet>259</a>    draw_doors(painter, scene, to_screen, zoom, fade(<span class="prelude-val">None</span>));
+<a href=#260 id=260 data-nosnippet>260</a>}
+<a href=#261 id=261 data-nosnippet>261</a>
+<a href=#262 id=262 data-nosnippet>262</a><span class="doccomment">/// The camera for this frame, kept for the next: a new area recentres at
+<a href=#263 id=263 data-nosnippet>263</a>/// once; a door crossed, into a place or out, glides to that side's default
+<a href=#264 id=264 data-nosnippet>264</a>/// zoom; following you glides along, keeping you `centred` or within the
+<a href=#265 id=265 data-nosnippet>265</a>/// dead zone; the wheel and a drag steer it.
+<a href=#266 id=266 data-nosnippet>266</a></span><span class="kw">fn </span>aimed(
+<a href=#267 id=267 data-nosnippet>267</a>    ui: <span class="kw-2">&amp;</span>egui::Ui,
+<a href=#268 id=268 data-nosnippet>268</a>    id: Id,
+<a href=#269 id=269 data-nosnippet>269</a>    response: <span class="kw-2">&amp;</span>egui::Response,
+<a href=#270 id=270 data-nosnippet>270</a>    rect: Rect,
+<a href=#271 id=271 data-nosnippet>271</a>    (scene, next_door): (<span class="kw-2">&amp;</span>MapScene, <span class="kw-2">&amp;</span>[NextDoor]),
+<a href=#272 id=272 data-nosnippet>272</a>    here: Vec2,
+<a href=#273 id=273 data-nosnippet>273</a>    (inside, default, centred): (bool, f32, bool),
+<a href=#274 id=274 data-nosnippet>274</a>) -&gt; Camera {
+<a href=#275 id=275 data-nosnippet>275</a>    <span class="kw">let </span>now = ui.input(|i| i.time);
+<a href=#276 id=276 data-nosnippet>276</a>    <span class="comment">// A place is opened on its area's sheet: its sheet is named for the
+<a href=#277 id=277 data-nosnippet>277</a>    // area and the place (`area@room`), and is the same area.
+<a href=#278 id=278 data-nosnippet>278</a>    </span><span class="kw">let </span>area_of =
+<a href=#279 id=279 data-nosnippet>279</a>        |scene: <span class="kw-2">&amp;</span>MapScene| egui::util::hash(scene.area.split(<span class="string">'@'</span>).next().unwrap_or(<span class="kw-2">&amp;</span>scene.area));
+<a href=#280 id=280 data-nosnippet>280</a>    <span class="kw">let </span>area = area_of(scene);
+<a href=#281 id=281 data-nosnippet>281</a>    <span class="kw">let </span>fresh = Camera {
+<a href=#282 id=282 data-nosnippet>282</a>        centre: here,
+<a href=#283 id=283 data-nosnippet>283</a>        zoom: default,
+<a href=#284 id=284 data-nosnippet>284</a>        follow: <span class="bool-val">true</span>,
+<a href=#285 id=285 data-nosnippet>285</a>        area,
+<a href=#286 id=286 data-nosnippet>286</a>        inside,
+<a href=#287 id=287 data-nosnippet>287</a>        glide: <span class="prelude-val">None</span>,
+<a href=#288 id=288 data-nosnippet>288</a>    };
+<a href=#289 id=289 data-nosnippet>289</a>    <span class="kw">let </span><span class="kw-2">mut </span>camera = ui.data(|d| d.get_temp::&lt;Camera&gt;(id)).unwrap_or(fresh);
+<a href=#290 id=290 data-nosnippet>290</a>    <span class="comment">// Into a map that was drawn next door: the view moves by where that
+<a href=#291 id=291 data-nosnippet>291</a>    // map was drawn, so nothing jumps.
+<a href=#292 id=292 data-nosnippet>292</a>    </span><span class="kw">let </span>crossed = next_door
+<a href=#293 id=293 data-nosnippet>293</a>        .iter()
+<a href=#294 id=294 data-nosnippet>294</a>        .find(|n| area_of(<span class="kw-2">&amp;</span>n.scene) == camera.area)
+<a href=#295 id=295 data-nosnippet>295</a>        .map(|n| vec2(n.offset.<span class="number">0</span>, n.offset.<span class="number">1</span>));
+<a href=#296 id=296 data-nosnippet>296</a>    <span class="kw">if </span>camera.area != area {
+<a href=#297 id=297 data-nosnippet>297</a>        <span class="kw">match </span>crossed {
+<a href=#298 id=298 data-nosnippet>298</a>            <span class="prelude-val">Some</span>(shift) =&gt; {
+<a href=#299 id=299 data-nosnippet>299</a>                camera.area = area;
+<a href=#300 id=300 data-nosnippet>300</a>                camera.centre += shift;
+<a href=#301 id=301 data-nosnippet>301</a>                camera.glide = camera
+<a href=#302 id=302 data-nosnippet>302</a>                    .glide
+<a href=#303 id=303 data-nosnippet>303</a>                    .map(|(from, zoom, start)| (from + shift, zoom, start));
+<a href=#304 id=304 data-nosnippet>304</a>            }
+<a href=#305 id=305 data-nosnippet>305</a>            <span class="prelude-val">None </span>=&gt; camera = fresh,
+<a href=#306 id=306 data-nosnippet>306</a>        }
+<a href=#307 id=307 data-nosnippet>307</a>    }
+<a href=#308 id=308 data-nosnippet>308</a>    <span class="kw">if </span>camera.inside != inside {
+<a href=#309 id=309 data-nosnippet>309</a>        <span class="kw">let </span>was = camera.drawn(now);
+<a href=#310 id=310 data-nosnippet>310</a>        camera = Camera {
+<a href=#311 id=311 data-nosnippet>311</a>            glide: <span class="prelude-val">None</span>,
+<a href=#312 id=312 data-nosnippet>312</a>            ..fresh
+<a href=#313 id=313 data-nosnippet>313</a>        };
+<a href=#314 id=314 data-nosnippet>314</a>        camera.glide_from(was, now);
+<a href=#315 id=315 data-nosnippet>315</a>    }
+<a href=#316 id=316 data-nosnippet>316</a>    <span class="kw">let </span>before = (camera.centre, camera.zoom);
+<a href=#317 id=317 data-nosnippet>317</a>    steer(ui, response, rect, <span class="kw-2">&amp;mut </span>camera);
+<a href=#318 id=318 data-nosnippet>318</a>    <span class="kw">if </span>(camera.centre, camera.zoom) != before {
+<a href=#319 id=319 data-nosnippet>319</a>        <span class="comment">// Steered by hand: no glide to fight it.
+<a href=#320 id=320 data-nosnippet>320</a>        </span>camera.glide = <span class="prelude-val">None</span>;
+<a href=#321 id=321 data-nosnippet>321</a>    } <span class="kw">else if </span>camera.follow {
+<a href=#322 id=322 data-nosnippet>322</a>        <span class="kw">let </span>was = camera.drawn(now);
+<a href=#323 id=323 data-nosnippet>323</a>        <span class="kw">let </span>dead_zone = <span class="kw">if </span>centred { <span class="number">0.0 </span>} <span class="kw">else </span>{ DEAD_ZONE };
+<a href=#324 id=324 data-nosnippet>324</a>        keep_in_view(<span class="kw-2">&amp;mut </span>camera, here, rect.size(), dead_zone);
+<a href=#325 id=325 data-nosnippet>325</a>        <span class="kw">if </span>camera.centre != before.<span class="number">0 </span>{
+<a href=#326 id=326 data-nosnippet>326</a>            camera.glide_from(was, now);
+<a href=#327 id=327 data-nosnippet>327</a>        }
+<a href=#328 id=328 data-nosnippet>328</a>    }
+<a href=#329 id=329 data-nosnippet>329</a>    ui.data_mut(|d| d.insert_temp(id, camera));
+<a href=#330 id=330 data-nosnippet>330</a>    camera
+<a href=#331 id=331 data-nosnippet>331</a>}
+<a href=#332 id=332 data-nosnippet>332</a>
+<a href=#333 id=333 data-nosnippet>333</a><span class="doccomment">/// How long a click waits for a second, which would make it the
+<a href=#334 id=334 data-nosnippet>334</a>/// double-click that comes back to you: in seconds.
+<a href=#335 id=335 data-nosnippet>335</a></span><span class="kw">const </span>DOUBLE_CLICK: f64 = <span class="number">0.3</span>;
+<a href=#336 id=336 data-nosnippet>336</a>
+<a href=#337 id=337 data-nosnippet>337</a><span class="doccomment">/// A click held until no second one came: what it asks, and when.
+<a href=#338 id=338 data-nosnippet>338</a></span><span class="attr">#[derive(Clone)]
+<a href=#339 id=339 data-nosnippet>339</a></span><span class="kw">struct </span>Held {
+<a href=#340 id=340 data-nosnippet>340</a>    at: f64,
+<a href=#341 id=341 data-nosnippet>341</a>    asks: <span class="prelude-ty">Option</span>&lt;Clicked&gt;,
+<a href=#342 id=342 data-nosnippet>342</a>}
+<a href=#343 id=343 data-nosnippet>343</a>
+<a href=#344 id=344 data-nosnippet>344</a><span class="doccomment">/// What a click on the room `pointed` at asks, once [`DOUBLE_CLICK`] has
+<a href=#345 id=345 data-nosnippet>345</a>/// passed with no second click: a double-click comes back to you, and
+<a href=#346 id=346 data-nosnippet>346</a>/// neither of its clicks is a click of its own -- or the first, on the
+<a href=#347 id=347 data-nosnippet>347</a>/// room the way shown rings, would walk there.
+<a href=#348 id=348 data-nosnippet>348</a></span><span class="kw">fn </span>clicked(
+<a href=#349 id=349 data-nosnippet>349</a>    ui: <span class="kw-2">&amp;</span>egui::Ui,
+<a href=#350 id=350 data-nosnippet>350</a>    response: <span class="kw-2">&amp;</span>egui::Response,
+<a href=#351 id=351 data-nosnippet>351</a>    pointed: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+<a href=#352 id=352 data-nosnippet>352</a>    goal: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+<a href=#353 id=353 data-nosnippet>353</a>) -&gt; <span class="prelude-ty">Option</span>&lt;Clicked&gt; {
+<a href=#354 id=354 data-nosnippet>354</a>    <span class="kw">let </span>id = response.id.with(<span class="string">"held click"</span>);
+<a href=#355 id=355 data-nosnippet>355</a>    <span class="kw">let </span>now = ui.input(|i| i.time);
+<a href=#356 id=356 data-nosnippet>356</a>    <span class="kw">if </span>response.double_clicked() {
+<a href=#357 id=357 data-nosnippet>357</a>        ui.data_mut(|d| d.remove::&lt;Held&gt;(id));
+<a href=#358 id=358 data-nosnippet>358</a>        <span class="kw">return </span><span class="prelude-val">None</span>;
+<a href=#359 id=359 data-nosnippet>359</a>    }
+<a href=#360 id=360 data-nosnippet>360</a>    <span class="kw">let </span>wait = std::time::Duration::from_secs_f64(DOUBLE_CLICK);
+<a href=#361 id=361 data-nosnippet>361</a>    <span class="kw">if </span>response.clicked() {
+<a href=#362 id=362 data-nosnippet>362</a>        <span class="kw">let </span>asks = click_asks(ui, pointed, goal);
+<a href=#363 id=363 data-nosnippet>363</a>        ui.data_mut(|d| d.insert_temp(id, Held { at: now, asks }));
+<a href=#364 id=364 data-nosnippet>364</a>        ui.ctx().request_repaint_after(wait);
+<a href=#365 id=365 data-nosnippet>365</a>        <span class="kw">return </span><span class="prelude-val">None</span>;
+<a href=#366 id=366 data-nosnippet>366</a>    }
+<a href=#367 id=367 data-nosnippet>367</a>    <span class="kw">let </span>held = ui.data(|d| d.get_temp::&lt;Held&gt;(id))<span class="question-mark">?</span>;
+<a href=#368 id=368 data-nosnippet>368</a>    <span class="kw">if </span>now - held.at &lt; DOUBLE_CLICK {
+<a href=#369 id=369 data-nosnippet>369</a>        ui.ctx().request_repaint_after(wait);
+<a href=#370 id=370 data-nosnippet>370</a>        <span class="kw">return </span><span class="prelude-val">None</span>;
+<a href=#371 id=371 data-nosnippet>371</a>    }
+<a href=#372 id=372 data-nosnippet>372</a>    ui.data_mut(|d| d.remove::&lt;Held&gt;(id));
+<a href=#373 id=373 data-nosnippet>373</a>    held.asks
+<a href=#374 id=374 data-nosnippet>374</a>}
+<a href=#375 id=375 data-nosnippet>375</a>
+<a href=#376 id=376 data-nosnippet>376</a><span class="doccomment">/// What a click on the room `pointed` at asks, as the modifiers held say:
+<a href=#377 id=377 data-nosnippet>377</a>/// Shift, the room in the story; Ctrl, its number and title. A plain one
+<a href=#378 id=378 data-nosnippet>378</a>/// shows the way there, or walks it on the `goal` the way shown rings; on
+<a href=#379 id=379 data-nosnippet>379</a>/// nothing, it takes the way shown off.
+<a href=#380 id=380 data-nosnippet>380</a></span><span class="kw">fn </span>click_asks(ui: <span class="kw-2">&amp;</span>egui::Ui, pointed: <span class="prelude-ty">Option</span>&lt;u32&gt;, goal: <span class="prelude-ty">Option</span>&lt;u32&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;Clicked&gt; {
+<a href=#381 id=381 data-nosnippet>381</a>    <span class="kw">let </span>modifiers = ui.input(|i| i.modifiers);
+<a href=#382 id=382 data-nosnippet>382</a>    <span class="kw">match </span>pointed {
+<a href=#383 id=383 data-nosnippet>383</a>        <span class="prelude-val">Some</span>(id) <span class="kw">if </span>modifiers.shift =&gt; <span class="prelude-val">Some</span>(Clicked::Room { id, brief: <span class="bool-val">false </span>}),
+<a href=#384 id=384 data-nosnippet>384</a>        <span class="prelude-val">Some</span>(id) <span class="kw">if </span>modifiers.command =&gt; <span class="prelude-val">Some</span>(Clicked::Room { id, brief: <span class="bool-val">true </span>}),
+<a href=#385 id=385 data-nosnippet>385</a>        <span class="kw">_ if </span>modifiers.any() =&gt; <span class="prelude-val">None</span>,
+<a href=#386 id=386 data-nosnippet>386</a>        <span class="prelude-val">Some</span>(id) <span class="kw">if </span>goal == <span class="prelude-val">Some</span>(id) =&gt; <span class="prelude-val">Some</span>(Clicked::Command(<span class="macro">format!</span>(<span class="string">"go2 {id}"</span>))),
+<a href=#387 id=387 data-nosnippet>387</a>        <span class="prelude-val">Some</span>(id) =&gt; <span class="prelude-val">Some</span>(Clicked::Command(<span class="macro">format!</span>(<span class="string">"route2 {id} --brief"</span>))),
+<a href=#388 id=388 data-nosnippet>388</a>        <span class="prelude-val">None </span><span class="kw">if </span>goal.is_some() =&gt; <span class="prelude-val">Some</span>(Clicked::Command(<span class="string">"route2 clear"</span>.to_owned())),
+<a href=#389 id=389 data-nosnippet>389</a>        <span class="prelude-val">None </span>=&gt; <span class="prelude-val">None</span>,
+<a href=#390 id=390 data-nosnippet>390</a>    }
+<a href=#391 id=391 data-nosnippet>391</a>}
+<a href=#392 id=392 data-nosnippet>392</a>
+<a href=#393 id=393 data-nosnippet>393</a><span class="doccomment">/// The room drawn nearest `at` within `reach` cells on any of `layers`
+<a href=#394 id=394 data-nosnippet>394</a>/// (each sheet and where it is drawn), or the room behind the way-in dot
+<a href=#395 id=395 data-nosnippet>395</a>/// there.
+<a href=#396 id=396 data-nosnippet>396</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>hit(layers: <span class="kw-2">&amp;</span>[(<span class="kw-2">&amp;</span>MapScene, Vec2)], at: Vec2, reach: f32) -&gt; <span class="prelude-ty">Option</span>&lt;u32&gt; {
+<a href=#397 id=397 data-nosnippet>397</a>    layers
+<a href=#398 id=398 data-nosnippet>398</a>        .iter()
+<a href=#399 id=399 data-nosnippet>399</a>        .flat_map(|<span class="kw-2">&amp;</span>(scene, offset)| {
+<a href=#400 id=400 data-nosnippet>400</a>            <span class="kw">let </span>rooms = scene
+<a href=#401 id=401 data-nosnippet>401</a>                .rooms
+<a href=#402 id=402 data-nosnippet>402</a>                .iter()
+<a href=#403 id=403 data-nosnippet>403</a>                .map(<span class="kw">move </span>|r| (r.id, cell(r.cell) + offset));
+<a href=#404 id=404 data-nosnippet>404</a>            <span class="kw">let </span>doors = scene
+<a href=#405 id=405 data-nosnippet>405</a>                .doors
+<a href=#406 id=406 data-nosnippet>406</a>                .iter()
+<a href=#407 id=407 data-nosnippet>407</a>                .map(<span class="kw">move </span>|d| (d.inside, vec2(d.at.<span class="number">0</span>, d.at.<span class="number">1</span>) + offset));
+<a href=#408 id=408 data-nosnippet>408</a>            rooms.chain(doors)
+<a href=#409 id=409 data-nosnippet>409</a>        })
+<a href=#410 id=410 data-nosnippet>410</a>        .map(|(id, p)| (id, (p - at).length()))
+<a href=#411 id=411 data-nosnippet>411</a>        .filter(|<span class="kw-2">&amp;</span>(<span class="kw">_</span>, d)| d &lt;= reach)
+<a href=#412 id=412 data-nosnippet>412</a>        .min_by(|a, b| a.<span class="number">1</span>.total_cmp(<span class="kw-2">&amp;</span>b.<span class="number">1</span>))
+<a href=#413 id=413 data-nosnippet>413</a>        .map(|(id, <span class="kw">_</span>)| id)
+<a href=#414 id=414 data-nosnippet>414</a>}
+<a href=#415 id=415 data-nosnippet>415</a>
+<a href=#416 id=416 data-nosnippet>416</a><span class="doccomment">/// Where you are drawn, and the building you are in: your room, or, for a
+<a href=#417 id=417 data-nosnippet>417</a>/// room the layout draws only as dots at the rooms it is entered from (the
+<a href=#418 id=418 data-nosnippet>418</a>/// Issenflow's current), the first of those dots.
+<a href=#419 id=419 data-nosnippet>419</a></span><span class="kw">fn </span>whereabouts(scene: <span class="kw-2">&amp;</span>MapScene, you: u32) -&gt; <span class="prelude-ty">Option</span>&lt;(Vec2, <span class="prelude-ty">Option</span>&lt;usize&gt;)&gt; {
+<a href=#420 id=420 data-nosnippet>420</a>    <span class="kw">if let </span><span class="prelude-val">Some</span>(here) = scene.room(you) {
+<a href=#421 id=421 data-nosnippet>421</a>        <span class="kw">return </span><span class="prelude-val">Some</span>((cell(here.cell), here.building));
+<a href=#422 id=422 data-nosnippet>422</a>    }
+<a href=#423 id=423 data-nosnippet>423</a>    <span class="kw">let </span>door = scene.doors.iter().find(|d| d.inside == you)<span class="question-mark">?</span>;
+<a href=#424 id=424 data-nosnippet>424</a>    <span class="prelude-val">Some</span>((vec2(door.at.<span class="number">0</span>, door.at.<span class="number">1</span>), <span class="prelude-val">None</span>))
+<a href=#425 id=425 data-nosnippet>425</a>}
+<a href=#426 id=426 data-nosnippet>426</a>
+<a href=#427 id=427 data-nosnippet>427</a><span class="doccomment">/// Wheel zoom about the pointer, drag to pan, double-click back to you.
+<a href=#428 id=428 data-nosnippet>428</a></span><span class="kw">fn </span>steer(ui: <span class="kw-2">&amp;</span>egui::Ui, response: <span class="kw-2">&amp;</span>egui::Response, rect: Rect, camera: <span class="kw-2">&amp;mut </span>Camera) {
+<a href=#429 id=429 data-nosnippet>429</a>    <span class="kw">if </span>response.dragged() {
+<a href=#430 id=430 data-nosnippet>430</a>        camera.centre -= response.drag_delta() / camera.zoom;
+<a href=#431 id=431 data-nosnippet>431</a>        camera.follow = <span class="bool-val">false</span>;
+<a href=#432 id=432 data-nosnippet>432</a>    }
+<a href=#433 id=433 data-nosnippet>433</a>    <span class="kw">if </span>response.double_clicked() {
+<a href=#434 id=434 data-nosnippet>434</a>        camera.follow = <span class="bool-val">true</span>;
+<a href=#435 id=435 data-nosnippet>435</a>    }
+<a href=#436 id=436 data-nosnippet>436</a>    <span class="kw">if </span>response.hovered() {
+<a href=#437 id=437 data-nosnippet>437</a>        <span class="kw">let </span>scroll = ui.input(|i| i.smooth_scroll_delta.y);
+<a href=#438 id=438 data-nosnippet>438</a>        <span class="kw">if </span>scroll != <span class="number">0.0 </span>{
+<a href=#439 id=439 data-nosnippet>439</a>            <span class="kw">let </span>pointer = ui.input(|i| i.pointer.hover_pos()).unwrap_or(rect.center());
+<a href=#440 id=440 data-nosnippet>440</a>            <span class="kw">let </span>before = camera.centre + (pointer - rect.center()) / camera.zoom;
+<a href=#441 id=441 data-nosnippet>441</a>            camera.zoom = (camera.zoom * (scroll / <span class="number">200.0</span>).exp()).clamp(ZOOM_RANGE.<span class="number">0</span>, ZOOM_RANGE.<span class="number">1</span>);
+<a href=#442 id=442 data-nosnippet>442</a>            camera.centre = before - (pointer - rect.center()) / camera.zoom;
+<a href=#443 id=443 data-nosnippet>443</a>        }
+<a href=#444 id=444 data-nosnippet>444</a>    }
+<a href=#445 id=445 data-nosnippet>445</a>}
+<a href=#446 id=446 data-nosnippet>446</a>
+<a href=#447 id=447 data-nosnippet>447</a><span class="doccomment">/// Move the camera only as far as keeps `you` within the middle of a view
+<a href=#448 id=448 data-nosnippet>448</a>/// of `size`.
+<a href=#449 id=449 data-nosnippet>449</a></span><span class="kw">fn </span>keep_in_view(camera: <span class="kw-2">&amp;mut </span>Camera, you: Vec2, size: Vec2, dead_zone: f32) {
+<a href=#450 id=450 data-nosnippet>450</a>    <span class="kw">let </span>half = size / camera.zoom * dead_zone;
+<a href=#451 id=451 data-nosnippet>451</a>    <span class="kw">let </span>off = you - camera.centre;
+<a href=#452 id=452 data-nosnippet>452</a>    <span class="kw">if </span>off.x.abs() &gt; half.x {
+<a href=#453 id=453 data-nosnippet>453</a>        camera.centre.x += off.x - half.x * off.x.signum();
+<a href=#454 id=454 data-nosnippet>454</a>    }
+<a href=#455 id=455 data-nosnippet>455</a>    <span class="kw">if </span>off.y.abs() &gt; half.y {
+<a href=#456 id=456 data-nosnippet>456</a>        camera.centre.y += off.y - half.y * off.y.signum();
+<a href=#457 id=457 data-nosnippet>457</a>    }
+<a href=#458 id=458 data-nosnippet>458</a>}
+<a href=#459 id=459 data-nosnippet>459</a>
+<a href=#460 id=460 data-nosnippet>460</a><span class="kw">fn </span>draw_edge(
+<a href=#461 id=461 data-nosnippet>461</a>    painter: <span class="kw-2">&amp;</span>egui::Painter,
+<a href=#462 id=462 data-nosnippet>462</a>    edge: <span class="kw-2">&amp;</span>SceneEdge,
+<a href=#463 id=463 data-nosnippet>463</a>    to_screen: <span class="kw-2">&amp;</span><span class="kw">dyn </span>Fn(Vec2) -&gt; Pos2,
+<a href=#464 id=464 data-nosnippet>464</a>    zoom: f32,
+<a href=#465 id=465 data-nosnippet>465</a>    fade: f32,
+<a href=#466 id=466 data-nosnippet>466</a>) {
+<a href=#467 id=467 data-nosnippet>467</a>    <span class="kw">let </span>(line, connector) = (
+<a href=#468 id=468 data-nosnippet>468</a>        theme::color(painter.ctx(), T::MapLine).gamma_multiply(fade),
+<a href=#469 id=469 data-nosnippet>469</a>        theme::color(painter.ctx(), T::MapConnector).gamma_multiply(fade),
+<a href=#470 id=470 data-nosnippet>470</a>    );
+<a href=#471 id=471 data-nosnippet>471</a>    <span class="kw">let </span>points: Vec&lt;Pos2&gt; = edge
+<a href=#472 id=472 data-nosnippet>472</a>        .path
+<a href=#473 id=473 data-nosnippet>473</a>        .iter()
+<a href=#474 id=474 data-nosnippet>474</a>        .map(|<span class="kw-2">&amp;</span>(x, y)| to_screen(vec2(x, y)))
+<a href=#475 id=475 data-nosnippet>475</a>        .collect();
+<a href=#476 id=476 data-nosnippet>476</a>    <span class="kw">match </span>edge.kind {
+<a href=#477 id=477 data-nosnippet>477</a>        EdgeKind::Directional =&gt; {
+<a href=#478 id=478 data-nosnippet>478</a>            painter.add(Shape::line(points, Stroke::new(<span class="number">1.35</span>, line)));
+<a href=#479 id=479 data-nosnippet>479</a>        }
+<a href=#480 id=480 data-nosnippet>480</a>        EdgeKind::Connector =&gt; {
+<a href=#481 id=481 data-nosnippet>481</a>            painter.extend(Shape::dashed_line(
+<a href=#482 id=482 data-nosnippet>482</a>                <span class="kw-2">&amp;</span>points,
+<a href=#483 id=483 data-nosnippet>483</a>                Stroke::new(<span class="number">1.0</span>, line.gamma_multiply(<span class="number">0.7</span>)),
+<a href=#484 id=484 data-nosnippet>484</a>                <span class="number">5.0</span>,
+<a href=#485 id=485 data-nosnippet>485</a>                <span class="number">4.0</span>,
+<a href=#486 id=486 data-nosnippet>486</a>            ));
+<a href=#487 id=487 data-nosnippet>487</a>        }
+<a href=#488 id=488 data-nosnippet>488</a>        EdgeKind::Stub =&gt; {
+<a href=#489 id=489 data-nosnippet>489</a>            <span class="comment">// A short mark out of each end toward the other.
+<a href=#490 id=490 data-nosnippet>490</a>            </span><span class="kw">let </span>(<span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>a), <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>b)) = (points.first(), points.last()) <span class="kw">else </span>{
+<a href=#491 id=491 data-nosnippet>491</a>                <span class="kw">return</span>;
+<a href=#492 id=492 data-nosnippet>492</a>            };
+<a href=#493 id=493 data-nosnippet>493</a>            <span class="kw">let </span>length = (a.distance(b) * <span class="number">0.2</span>).min(<span class="number">15.0</span>).min(zoom * <span class="number">2.0</span>);
+<a href=#494 id=494 data-nosnippet>494</a>            <span class="kw">let </span>toward = (b - a).normalized() * length;
+<a href=#495 id=495 data-nosnippet>495</a>            <span class="kw">let </span>stroke = Stroke::new(<span class="number">1.0</span>, connector.gamma_multiply(<span class="number">1.6</span>));
+<a href=#496 id=496 data-nosnippet>496</a>            painter.extend(Shape::dashed_line(<span class="kw-2">&amp;</span>[a, a + toward], stroke, <span class="number">3.0</span>, <span class="number">2.0</span>));
+<a href=#497 id=497 data-nosnippet>497</a>            painter.extend(Shape::dashed_line(<span class="kw-2">&amp;</span>[b, b - toward], stroke, <span class="number">3.0</span>, <span class="number">2.0</span>));
+<a href=#498 id=498 data-nosnippet>498</a>        }
+<a href=#499 id=499 data-nosnippet>499</a>    }
+<a href=#500 id=500 data-nosnippet>500</a>}
+<a href=#501 id=501 data-nosnippet>501</a>
+<a href=#502 id=502 data-nosnippet>502</a><span class="kw">fn </span>draw_doors(
+<a href=#503 id=503 data-nosnippet>503</a>    painter: <span class="kw-2">&amp;</span>egui::Painter,
+<a href=#504 id=504 data-nosnippet>504</a>    scene: <span class="kw-2">&amp;</span>MapScene,
+<a href=#505 id=505 data-nosnippet>505</a>    to_screen: <span class="kw-2">&amp;</span><span class="kw">dyn </span>Fn(Vec2) -&gt; Pos2,
+<a href=#506 id=506 data-nosnippet>506</a>    zoom: f32,
+<a href=#507 id=507 data-nosnippet>507</a>    fade: f32,
+<a href=#508 id=508 data-nosnippet>508</a>) {
+<a href=#509 id=509 data-nosnippet>509</a>    <span class="kw">let </span>colour = theme::color(painter.ctx(), T::MapDoor).gamma_multiply(fade);
+<a href=#510 id=510 data-nosnippet>510</a>    <span class="kw">for </span>door <span class="kw">in </span><span class="kw-2">&amp;</span>scene.doors {
+<a href=#511 id=511 data-nosnippet>511</a>        <span class="kw">let </span>at = to_screen(vec2(door.at.<span class="number">0</span>, door.at.<span class="number">1</span>));
+<a href=#512 id=512 data-nosnippet>512</a>        <span class="kw">let </span>r = <span class="kw">if </span>door.named { <span class="number">3.5 </span>} <span class="kw">else </span>{ <span class="number">2.2 </span>} * (zoom / ZOOM).clamp(<span class="number">0.6</span>, <span class="number">1.6</span>);
+<a href=#513 id=513 data-nosnippet>513</a>        painter.circle_filled(at, r, colour);
+<a href=#514 id=514 data-nosnippet>514</a>        <span class="kw">if </span>door.named {
+<a href=#515 id=515 data-nosnippet>515</a>            painter.text(
+<a href=#516 id=516 data-nosnippet>516</a>                at + vec2(r + <span class="number">3.0</span>, <span class="number">0.0</span>),
+<a href=#517 id=517 data-nosnippet>517</a>                egui::Align2::LEFT_CENTER,
+<a href=#518 id=518 data-nosnippet>518</a>                <span class="kw-2">&amp;</span>door.place,
+<a href=#519 id=519 data-nosnippet>519</a>                FontId::proportional(<span class="number">11.0</span>),
+<a href=#520 id=520 data-nosnippet>520</a>                colour,
+<a href=#521 id=521 data-nosnippet>521</a>            );
+<a href=#522 id=522 data-nosnippet>522</a>        }
+<a href=#523 id=523 data-nosnippet>523</a>    }
+<a href=#524 id=524 data-nosnippet>524</a>}
+<a href=#525 id=525 data-nosnippet>525</a>
+<a href=#526 id=526 data-nosnippet>526</a><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>waiting(painter: <span class="kw-2">&amp;</span>egui::Painter, rect: Rect, why: <span class="kw-2">&amp;</span>str) {
+<a href=#527 id=527 data-nosnippet>527</a>    painter.text(
+<a href=#528 id=528 data-nosnippet>528</a>        rect.center(),
+<a href=#529 id=529 data-nosnippet>529</a>        egui::Align2::CENTER_CENTER,
+<a href=#530 id=530 data-nosnippet>530</a>        why,
+<a href=#531 id=531 data-nosnippet>531</a>        FontId::proportional(<span class="number">12.0</span>),
+<a href=#532 id=532 data-nosnippet>532</a>        theme::color(painter.ctx(), T::MapMuted),
+<a href=#533 id=533 data-nosnippet>533</a>    );
+<a href=#534 id=534 data-nosnippet>534</a>}
+<a href=#535 id=535 data-nosnippet>535</a>
+<a href=#536 id=536 data-nosnippet>536</a><span class="attr">#[allow(clippy::cast_precision_loss)]
+<a href=#537 id=537 data-nosnippet>537</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>cell((x, y): (i32, i32)) -&gt; Vec2 {
+<a href=#538 id=538 data-nosnippet>538</a>    vec2(x <span class="kw">as </span>f32, y <span class="kw">as </span>f32)
+<a href=#539 id=539 data-nosnippet>539</a>}
+<a href=#540 id=540 data-nosnippet>540</a>
+<a href=#541 id=541 data-nosnippet>541</a><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod </span>look;
+<a href=#542 id=542 data-nosnippet>542</a><span class="kw">mod </span>marks;
+<a href=#543 id=543 data-nosnippet>543</a>
+<a href=#544 id=544 data-nosnippet>544</a><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">use </span>marks::{KINDS <span class="kw">as </span>MARK_KINDS, draw_labels, draw_marks, hover <span class="kw">as </span>draw_hover};
+<a href=#545 id=545 data-nosnippet>545</a><span class="kw">mod </span>ocean;
+<a href=#546 id=546 data-nosnippet>546</a><span class="kw">mod </span>route;
+<a href=#547 id=547 data-nosnippet>547</a><span class="attr">#[cfg(test)]
+<a href=#548 id=548 data-nosnippet>548</a></span><span class="kw">mod </span>tests;
+<a href=#549 id=549 data-nosnippet>549</a>
+<a href=#550 id=550 data-nosnippet>550</a><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">use </span>look::MinimapLook;
+</code></pre></div></section></main></body></html>

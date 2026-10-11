@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["ELEMENTAL_LORE","LORES","MENTAL_LORE","SKILLS","SORCEROUS_LORE","SPELL_RESEARCH","SPIRITUAL_LORE"],"enum":["Refused"],"fn":["lore_field"],"struct":["Row","SkillGoals"]};

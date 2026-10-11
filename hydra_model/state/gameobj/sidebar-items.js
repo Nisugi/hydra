@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Classification"],"fn":["categories","classify"],"struct":["ObjectTypes"]};

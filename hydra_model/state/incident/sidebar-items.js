@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Disarm","HiveTrap","Incident"],"fn":["classify","read"],"struct":["Incidents"]};

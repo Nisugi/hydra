@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Held","Location","Specificity"],"fn":["match_of"],"struct":["Match"]};

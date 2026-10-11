@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["CARRIED","RANKS","STAMINA","TURNED_BACK","WATERS","WAYS_OUT"],"enum":["Place","Sensed"],"fn":["sensed","shore_of","strokes","toward"]};

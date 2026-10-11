@@ -1,0 +1,72 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Creature facts only a line of prose states: a kill that leaves no corpse, a boss that leaves by a portal, a boss’s phase, and the two spell marks a hunt tracks by creature (`SpellMark`)."><title>hydra_model::state::creatures::prose - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="hydra_model" data-themes="" data-resource-suffix="" data-rustdoc-version="1.96.1 (31fca3adb 2026-06-26)" data-channel="1.96.1" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../../../static.files/storage-41dd4d93.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../../../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-044be391.svg"></head><body class="rustdoc mod"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Module prose</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../../../hydra_model/index.html">hydra_<wbr>model</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module prose</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#the-gap-this-closes" title="The gap this closes">The gap this closes</a></li><li><a href="#the-lines" title="The lines">The lines</a></li><li><a href="#which-creature" title="Which creature">Which creature</a></li><li><a href="#read-on-arrival-and-a-room-listing-outranks-it" title="Read on arrival, and a room listing outranks it">Read on arrival, and a room listing outranks it</a></li><li><a href="#what-an-ending-changes" title="What an ending changes">What an ending changes</a></li><li><a href="#unverified" title="UNVERIFIED">UNVERIFIED</a></li></ul><h3><a href="#structs">Module Items</a></h3><ul class="block"><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#enums" title="Enums">Enums</a></li><li><a href="#functions" title="Functions">Functions</a></li></ul></section><div id="rustdoc-modnav"><h2><a href="../index.html">In hydra_<wbr>model::<wbr>state::<wbr>creatures</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../../../index.html">hydra_model</a>::<wbr><a href="../../index.html">state</a>::<wbr><a href="../index.html">creatures</a></div><h1>Module <span>prose</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../../../src/hydra_model/state\creatures/prose.rs.html#1-384">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Creature facts only a line of prose states: a kill that leaves no
+corpse, a boss that leaves by a portal, a boss’s phase, and the two spell
+marks a hunt tracks by creature (<a href="enum.SpellMark.html" title="enum hydra_model::state::creatures::prose::SpellMark"><code>SpellMark</code></a>).</p>
+<h2 id="the-gap-this-closes"><a class="doc-anchor" href="#the-gap-this-closes">§</a>The gap this closes</h2>
+<p>A hunt loots what <a href="../instance/struct.CreatureInstance.html#method.corpse" title="method hydra_model::state::creatures::instance::CreatureInstance::corpse"><code>CreatureInstance::corpse</code></a> calls a corpse and fights
+what <a href="../instance/struct.CreatureInstance.html#method.valid_target" title="method hydra_model::state::creatures::instance::CreatureInstance::valid_target"><code>CreatureInstance::valid_target</code></a> allows, and both read the wire’s
+flags and hit points. Three endings come with no flag to say so:</p>
+<ul>
+<li><strong>Implosion (720) vaporizes</strong> its target: instant death, no body.</li>
+<li><strong>The Empyrean captain leaves by a portal</strong>, a departure with no <code>&lt;d&gt;</code>
+direction, so <code>departure.rs</code> cannot see it and
+<a href="../struct.Creatures.html#method.vanished_unaccounted" title="method hydra_model::state::creatures::Creatures::vanished_unaccounted"><code>Creatures::vanished_unaccounted</code></a> would report it as hiding.</li>
+<li><strong>The captain’s corpse fades</strong>, “leaving nothing behind”, some seconds
+after it collapses.</li>
+</ul>
+<p>And one boss changes by phase: the cold wyrm on the ground, in the air,
+or with its scales disrupting energy attacks.</p>
+<h2 id="the-lines"><a class="doc-anchor" href="#the-lines">§</a>The lines</h2><div><table><thead><tr><th>fact</th><th>the line</th></tr></thead><tbody>
+<tr><td><a href="enum.Ending.html#variant.Vaporized" title="variant hydra_model::state::creatures::prose::Ending::Vaporized"><code>Ending::Vaporized</code></a></td><td><code>Rather abrupt decompression causes X to explode</code>, <code>Blast disperses the X into a fine mist</code>, <code>X inverts as the intense vacuum rips it to shreds</code></td></tr>
+<tr><td><a href="enum.Ending.html#variant.Portal" title="variant hydra_model::state::creatures::prose::Ending::Portal"><code>Ending::Portal</code></a></td><td>the captain, a <code>portal</code>, then <code>disappearing from sight</code>, <code>vanishing</code>, <code>winks away</code> or <code>dives into it</code></td></tr>
+<tr><td><a href="enum.Ending.html#variant.Collapsed" title="variant hydra_model::state::creatures::prose::Ending::Collapsed"><code>Ending::Collapsed</code></a></td><td>the captain <code>collapses</code></td></tr>
+<tr><td><a href="enum.Ending.html#variant.Faded" title="variant hydra_model::state::creatures::prose::Ending::Faded"><code>Ending::Faded</code></a></td><td><code>fading away with a final shimmer</code>, <code>leaving nothing behind</code></td></tr>
+<tr><td><a href="enum.BossPhase.html" title="enum hydra_model::state::creatures::prose::BossPhase"><code>BossPhase</code></a></td><td>the cold wyrm <code>plummets toward the ground</code> … <code>radiating wall of devastation</code>; <code>launches herself into the air</code>; <code>Corruscations of color</code> … <code>disrupting the attack</code></td></tr>
+<tr><td><a href="enum.SpellMark.html" title="enum hydra_model::state::creatures::prose::SpellMark"><code>SpellMark</code></a></td><td><code>is suddenly surrounded by a blood red haze</code> / <code>The blood red haze dissipates from around</code>; <code>visibly struggling against</code> or <code>in awe of</code> <code>your radiant aura!</code> / <code>recovers from being rebuked</code></td></tr>
+</tbody></table>
+</div>
+<p>A mark is laid and lifted by the creature’s own bold link on the line,
+and never by name. It is forgotten when the character leaves the room,
+including by <code>You bolt</code>, which a move follows.</p>
+<p>The captain’s flee wording is randomised per encounter, so the pattern
+keys on the captain, the portal and a vanishing verb; and its death is
+two lines about 35 seconds apart, the collapse and then the fading
+corpse. They are read apart, because only the second leaves nothing.</p>
+<h2 id="which-creature"><a class="doc-anchor" href="#which-creature">§</a>Which creature</h2>
+<p>The line’s first bolded object (<code>text.rs</code>’s <code>creature</code>): bold is
+the wire’s mark for a creature. A mark line that links none is not
+applied, as a vaporization is not. A captain or wyrm line that links none
+falls back to the one creature in the room whose name holds the boss’s;
+none or two, and the line is not applied. A vaporization needs its link.
+Only a creature the registry knows is changed, as with a departure.</p>
+<h2 id="read-on-arrival-and-a-room-listing-outranks-it"><a class="doc-anchor" href="#read-on-arrival-and-a-room-listing-outranks-it">§</a>Read on arrival, and a room listing outranks it</h2>
+<p><code>streams.rs</code> reads each line as it arrives, beside the hiding and group
+readers and for their reason: order. A <code>room objs</code> listing that names the
+creature after the line says it is here, and <a href="../struct.Creatures.html#method.apply_room_objs" title="method hydra_model::state::creatures::Creatures::apply_room_objs"><code>Creatures::apply_room_objs</code></a>
+clears its ending; the wire outranks an inference. A listing before the
+line cannot. The phase is not cleared: the wyrm is listed on every
+refresh and stays in the phase the last line stated.</p>
+<h2 id="what-an-ending-changes"><a class="doc-anchor" href="#what-an-ending-changes">§</a>What an ending changes</h2>
+<ul>
+<li><a href="../instance/struct.CreatureInstance.html#method.valid_target" title="method hydra_model::state::creatures::instance::CreatureInstance::valid_target"><code>CreatureInstance::valid_target</code></a> is false: dead or gone.</li>
+<li><a href="../instance/struct.CreatureInstance.html#method.corpse" title="method hydra_model::state::creatures::instance::CreatureInstance::corpse"><code>CreatureInstance::corpse</code></a> is true only for <a href="enum.Ending.html#variant.Collapsed" title="variant hydra_model::state::creatures::prose::Ending::Collapsed"><code>Ending::Collapsed</code></a>.</li>
+<li>A killed ending puts the creature on the death watch, and the sweep
+emits its <code>Fact::Dead</code> once, so the kill is counted though no <code>dead</code>
+flag may ever come.</li>
+<li><a href="enum.Ending.html#variant.Portal" title="variant hydra_model::state::creatures::prose::Ending::Portal"><code>Ending::Portal</code></a> is also a departure with no direction:
+<a href="../struct.Creatures.html#method.fled" title="method hydra_model::state::creatures::Creatures::fled"><code>Creatures::fled</code></a> answers <code>Some(None)</code>.</li>
+</ul>
+<h2 id="unverified"><a class="doc-anchor" href="#unverified">§</a>UNVERIFIED</h2>
+<ul>
+<li><strong>Every line’s wire shape.</strong> No committed fixture carries one; the
+tests are synthetic lines built from the patterns.</li>
+<li>Whether a vaporized creature is ever listed again with <code>dead="1"</code>. If
+it is, the relisting rule makes it a corpse again.</li>
+<li>Whether the captain’s corpse can be looted before it fades.
+<a href="enum.Ending.html#variant.Collapsed" title="variant hydra_model::state::creatures::prose::Ending::Collapsed"><code>Ending::Collapsed</code></a> says it can.</li>
+<li>The wyrm’s phase is the latest phase line’s. Weighing several recent
+lines would give the same answer whenever one phase line is in view.</li>
+</ul>
+</div></details><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.Told.html" title="struct hydra_model::state::creatures::prose::Told">Told</a></dt><dd>A creature fact one line states, and whom it is about.</dd></dl><h2 id="enums" class="section-header">Enums<a href="#enums" class="anchor">§</a></h2><dl class="item-table"><dt><a class="enum" href="enum.BossPhase.html" title="enum hydra_model::state::creatures::prose::BossPhase">Boss<wbr>Phase</a></dt><dd>A boss’s phase, as the last line about it stated. Only the cold wyrm
+states one.</dd><dt><a class="enum" href="enum.Ending.html" title="enum hydra_model::state::creatures::prose::Ending">Ending</a></dt><dd>How a creature left the fight, when only prose says so.</dd><dt><a class="enum" href="enum.SpellMark.html" title="enum hydra_model::state::creatures::prose::SpellMark">Spell<wbr>Mark</a></dt><dd>A spell’s mark on a creature that only a line of prose states, so a hunt
+can skip a cast the creature already carries.</dd><dt><a class="enum" href="enum.Stated.html" title="enum hydra_model::state::creatures::prose::Stated">Stated</a></dt><dd>What one line states about a creature.</dd></dl><h2 id="functions" class="section-header">Functions<a href="#functions" class="anchor">§</a></h2><dl class="item-table"><dt><a class="fn" href="fn.read.html" title="fn hydra_model::state::creatures::prose::read">read</a></dt><dd>The creature fact a line states, if it states one. <code>text</code> is the line’s
+plain text, rendered once by the caller.</dd></dl></section></div></main></body></html>

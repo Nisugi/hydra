@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["ResolutionKind"],"fn":["crit_rider_line"],"struct":["Resolution"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["BossPhase","Ending","SpellMark","Stated"],"fn":["read"],"struct":["Told"]};

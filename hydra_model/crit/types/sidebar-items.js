@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["DamageType","Location","Position","WoundLocation"],"struct":["SecondaryWound"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["LOOK_EVERY","SAY_AGAIN"],"fn":["doing","memory","playing","until_fresh","watch"],"struct":["Awake","Doing","Fresh"]};

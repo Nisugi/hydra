@@ -1,0 +1,47 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="What the character wears, and what its wandolier holds in reserve: the `inv` and `reserve` streams, typed."><title>hydra_model::state::worn - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="hydra_model" data-themes="" data-resource-suffix="" data-rustdoc-version="1.96.1 (31fca3adb 2026-06-26)" data-channel="1.96.1" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../../static.files/storage-41dd4d93.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-044be391.svg"></head><body class="rustdoc mod"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Module worn</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../../hydra_model/index.html">hydra_<wbr>model</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module worn</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#what-the-wire-sends-for-inv" title="What the wire sends for `inv`">What the wire sends for <code>inv</code></a></li><li><a href="#the-list-usually-has-no-end-tag" title="The list usually has no end tag">The list usually has no end tag</a></li><li><a href="#the-reserve" title="The reserve">The reserve</a></li><li><a href="#never-stated-is-not-empty" title="Never stated is not empty">Never stated is not empty</a></li></ul><h3><a href="#structs">Module Items</a></h3><ul class="block"><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#constants" title="Constants">Constants</a></li></ul></section><div id="rustdoc-modnav"><h2><a href="../index.html">In hydra_<wbr>model::<wbr>state</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../../index.html">hydra_model</a>::<wbr><a href="../index.html">state</a></div><h1>Module <span>worn</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../../src/hydra_model/state/worn.rs.html#1-317">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>What the character wears, and what its wandolier holds in reserve: the
+<code>inv</code> and <code>reserve</code> streams, typed.</p>
+<h2 id="what-the-wire-sends-for-inv"><a class="doc-anchor" href="#what-the-wire-sends-for-inv">§</a>What the wire sends for <code>inv</code></h2>
+<p>A whole list each time, on its own stream. MEASURED in the committed cut
+of a login (<code>crates/hydra-protocol/tests/fixtures/inventory_container.xml:1-8</code>):</p>
+<div class="example-wrap"><pre class="language-text"><code>&lt;clearStream id=&#39;inv&#39; ifClosed=&#39;&#39;/&gt;&lt;pushStream id=&#39;inv&#39;/&gt;Your worn items are:
+  a &lt;a exist=&quot;2376165&quot; noun=&quot;arcarium&quot;&gt;dark sapphire vangaris arcarium&lt;/a&gt;
+  a &lt;a exist=&quot;2376163&quot; noun=&quot;anklet&quot;&gt;spiderweb-patterned nightshade anklet&lt;/a&gt; caught with bloodwood spiders
+&lt;popStream/&gt;</code></pre></div>
+<p>MEASURED over every <code>inv</code> block in the committed fixtures, 13 in five
+files: all begin <code>Your worn items are:</code>; the 347 item lines all start with
+two spaces and a non-space, carry an <code>exist</code> link, and are not bolded; 7
+lines are blank. The first link on a line is the item. What follows
+<code>Placed alongside you:</code> is read as items at your feet; no committed
+fixture carries that header, so that split is UNVERIFIED on this wire.</p>
+<h2 id="the-list-usually-has-no-end-tag"><a class="doc-anchor" href="#the-list-usually-has-no-end-tag">§</a>The list usually has no end tag</h2>
+<p><strong>11 of the 13 blocks are never popped.</strong> The three hunt fixtures
+refresh the list inside a combat round, and every one of their 11 blocks
+runs on into the round’s prose, still on the <code>inv</code> stream, until the
+prompt closes it (<code>Frame::StreamPopForced</code>): <code>arch_kill.xml:28-60</code> lists
+the 31 items and then <code>You nock a faewood &lt;a ...&gt;arrow&lt;/a&gt; ... in your &lt;a ...&gt;glowbark long bow&lt;/a&gt;</code>. Only the login’s block is popped.</p>
+<p>So a list cannot be taken as everything its stream held, nor committed
+only at a <code>&lt;popStream&gt;</code> these blocks never send, nor thrown away when the
+prompt closes it – which would be every list refreshed mid-hunt. This
+reads the list <strong>up to its first line that is not a list line</strong> and keeps
+it at the prompt, popped or not. The login’s block and the 11 hunt blocks
+all end cleanly that way (the census above).</p>
+<p><strong>And what the block runs on into is the main window’s</strong>: from the first
+line after the header that is not indented two spaces, the block’s lines
+are routed as main-window lines (<code>GameState::past_list</code>), so the archer’s
+shot that follows an arrow leaving the quiver reaches combat, loot,
+incidents and the story.</p>
+<h2 id="the-reserve"><a class="doc-anchor" href="#the-reserve">§</a>The reserve</h2>
+<p>Every object on the <code>reserve</code> stream is a reserved item, from <code>None</code>
+until the first list. <strong>No committed fixture carries the stream’s text</strong>,
+so no line shape is known and there is nothing to stop at: a <code>reserve</code>
+list the prompt closed is dropped, and one that was popped is kept whole,
+every object on every line. The census in <code>tests/stream_routing.rs</code>
+counts 91 <code>reserve</code> pushes in 208 logs; how many are popped is
+UNVERIFIED, and if most are not, <a href="struct.Reserve.html#method.items" title="method hydra_model::state::worn::Reserve::items"><code>Reserve::items</code></a> will stay <code>None</code> after
+a <code>reserve list</code>. A capture of <code>reserve list</code> would settle both.</p>
+<h2 id="never-stated-is-not-empty"><a class="doc-anchor" href="#never-stated-is-not-empty">§</a>Never stated is not empty</h2>
+<p><code>None</code> until a list has been read; <code>Some</code> of an empty slice once the game
+has listed nothing. A reconnect keeps both lists: a logged-off character
+wears what it wore (<code>reconnect.rs</code>), and the login burst sends the <code>inv</code>
+list again anyway.</p>
+</div></details><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.Reserve.html" title="struct hydra_model::state::worn::Reserve">Reserve</a></dt><dd>What the wandolier holds in reserve.</dd><dt><a class="struct" href="struct.Worn.html" title="struct hydra_model::state::worn::Worn">Worn</a></dt><dd>What the character wears, as the last whole <code>inv</code> list stated.</dd></dl><h2 id="constants" class="section-header">Constants<a href="#constants" class="anchor">§</a></h2><dl class="item-table"><dt><a class="constant" href="constant.INV.html" title="constant hydra_model::state::worn::INV">INV</a></dt><dd>The worn list’s stream id.</dd><dt><a class="constant" href="constant.RESERVE.html" title="constant hydra_model::state::worn::RESERVE">RESERVE</a></dt><dd>The wandolier reserve’s stream id.</dd></dl></section></div></main></body></html>

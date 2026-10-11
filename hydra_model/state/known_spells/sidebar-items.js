@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["STREAM"],"enum":["Row"],"fn":["classify"],"struct":["KnownSpell","KnownSpells"]};

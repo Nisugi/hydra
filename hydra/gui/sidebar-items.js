@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Rested"],"fn":["claim","run","serve_page","start_next","stop_on_ctrl_c"],"struct":["Told"]};

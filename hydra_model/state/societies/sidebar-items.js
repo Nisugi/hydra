@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["AbilityKind","Cost","CostTiming","Target"],"mod":["col","membership","sunfist","voln"],"struct":["Ability","AlternateCost"]};

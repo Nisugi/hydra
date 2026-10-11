@@ -1,0 +1,46 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="The Lich relay: the player’s own Lich, for one character, with Hydra keeping the game’s connection."><title>hydra_lich::relay - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="hydra_lich" data-themes="" data-resource-suffix="" data-rustdoc-version="1.96.1 (31fca3adb 2026-06-26)" data-channel="1.96.1" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc mod"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Module relay</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../hydra_lich/index.html">hydra_<wbr>lich</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module relay</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#hydra-is-stormfront" title="Hydra is `stormfront`">Hydra is <code>stormfront</code></a></li></ul><h3><a href="#structs">Module Items</a></h3><ul class="block"><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#enums" title="Enums">Enums</a></li><li><a href="#constants" title="Constants">Constants</a></li><li><a href="#functions" title="Functions">Functions</a></li></ul></section><div id="rustdoc-modnav"><h2 class="in-crate"><a href="../index.html">In crate hydra_<wbr>lich</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../index.html">hydra_lich</a></div><h1>Module <span>relay</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/hydra_lich/relay.rs.html#1-689">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>The Lich relay: the player’s own Lich, for one character, with Hydra
+keeping the game’s connection.</p>
+<p><a href="fn.run.html" title="fn hydra_lich::relay::run"><code>run</code></a> starts Lich in pipe mode, pointed at a port it holds:</p>
+<div class="example-wrap"><pre class="language-text"><code>ruby lich.rbw --pipe --stormfront -g 127.0.0.1:&lt;port&gt;</code></pre></div>
+<p>Lich reads a key and a version line from its standard input, as a
+frontend sends them, and writes both to that port before anything else.
+The key is a new token, and only a connection that says it first is
+taken: until Lich connects, anything on
+this machine could reach the port, and what comes through it goes to the
+game. It is not the game’s key, which Hydra has already given. <strong>Lich
+never holds a credential</strong>, nor does its environment (<a href="../child/index.html" title="mod hydra_lich::child"><code>crate::child</code></a>).</p>
+<p>From then on Lich takes the port as its game:</p>
+<ul>
+<li>the game’s bytes, as they came, go to it, after a login built from
+what the session knows as it connects (<a href="../../hydra_session/lich/struct.LichDoor.html#method.claim" title="method hydra_session::lich::LichDoor::claim"><code>LichDoor::claim</code></a>);</li>
+<li>what it writes back goes to the game (<a href="../../hydra_session/lich/struct.LichDoor.html#method.send" title="method hydra_session::lich::LichDoor::send"><code>LichDoor::send</code></a>). A line with
+Lich’s <code>&lt;c&gt;</code> is one of its scripts’; one without is what
+the player typed, passed on after Lich’s own hooks;</li>
+<li>what the player types that Hydra does not take goes to its standard
+input, as a frontend’s typing does, and Hydra’s own lines that start
+with Lich’s <code>;</code> (<code>hydra_session::lich</code>);</li>
+<li>what it would show a frontend comes out of its standard output, always
+read, so Lich never waits to write it, and is shown
+(<a href="../../hydra_session/lich/struct.LichDoor.html#method.show" title="method hydra_session::lich::LichDoor::show"><code>LichDoor::show</code></a>). Lich is asked to mark the lines it forwards from
+the game (<code>--sentinel</code>), so a window can tell them from its own; a Lich
+release without that flag ignores it, as it ignores any flag it does
+not know.</li>
+</ul>
+<p>Closing its standard input stops it.</p>
+<p><strong>A Lich that stops reading is let go, never waited on</strong> (as the
+session’s copy is): one whose script’s hook never returns reads neither
+its game nor its standard input. Each write to it is a task of its own
+(<code>feed</code>), so a stop, its exit, and the <a href="../../hydra_session/lich/constant.WIRE_CHUNKS.html" title="constant hydra_session::lich::WIRE_CHUNKS"><code>WIRE_CHUNKS</code></a> chunks it has
+left unread are always seen, and end it.</p>
+<h2 id="hydra-is-stormfront"><a class="doc-anchor" href="#hydra-is-stormfront">§</a>Hydra is <code>stormfront</code></h2>
+<p>Pipe mode tells Lich its frontend is <code>unknown</code>, so a script’s text would
+come out unescaped and the many scripts that ask for <code>stormfront</code> would
+take another branch. Hydra speaks Wrayth’s protocol, which Lich calls
+<code>stormfront</code>: Lich is started with <code>--stormfront</code>, and, for a Lich release
+that drops that flag in pipe mode, <code>STORMFRONT</code> puts <code>unknown</code> back to
+<code>stormfront</code> whenever Lich sets it.</p>
+</div></details><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.Launch.html" title="struct hydra_lich::relay::Launch">Launch</a></dt><dd>The player’s Lich, and how to start it.</dd></dl><h2 id="enums" class="section-header">Enums<a href="#enums" class="anchor">§</a></h2><dl class="item-table"><dt><a class="enum" href="enum.Ended.html" title="enum hydra_lich::relay::Ended">Ended</a></dt><dd>How a relay ended.</dd></dl><h2 id="constants" class="section-header">Constants<a href="#constants" class="anchor">§</a></h2><dl class="item-table"><dt><a class="constant" href="constant.CONNECT_DEADLINE.html" title="constant hydra_lich::relay::CONNECT_DEADLINE">CONNECT_<wbr>DEADLINE</a></dt><dd>How long Lich has to connect once started. It takes about 3 to 5 s
+without its windows; with them, and on a slower machine, it takes
+longer. Lich allows itself 30 s to reach a game.</dd></dl><h2 id="functions" class="section-header">Functions<a href="#functions" class="anchor">§</a></h2><dl class="item-table"><dt><a class="fn" href="fn.run.html" title="fn hydra_lich::relay::run">run</a></dt><dd>Run the player’s Lich for the character <code>door</code> reaches, until <code>stop</code>, or
+until Lich or the session ends; then tell the player how it ended, and
+say so.</dd></dl></section></div></main></body></html>

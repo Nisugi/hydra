@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["BuildError"],"mod":["entry","load","match_index","types"],"struct":["CritTables"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["LinkKind"],"mod":["crit","movement","spells","state","status","targetid"],"struct":["Link","Menu","MenuItem"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["SETTINGS_SCHEMA_VERSION"],"enum":["SettingsLoadError"],"fn":["load","save","settings_path"],"struct":["SettingsFile"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["MAX_DAYS","MAX_HITS"],"fn":["days","export","export_path","read_day","search","tail","window"],"struct":["Entry","Exported","Found","Moment","Pattern","Streams"]};

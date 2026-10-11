@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["MATCH_WINDOW","MAX_MERGED_HISTORY"],"struct":["MergedHistory","MergedLine","Merger"]};

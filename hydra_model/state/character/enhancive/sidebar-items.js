@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["EnhanciveLine","Resource","Section"],"struct":["Bonus","EnhanciveTotals"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["crit_tables","supervised_with"]};

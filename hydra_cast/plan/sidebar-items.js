@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Verb"],"fn":["live_targets","plan"],"struct":["Cast","Commands"]};

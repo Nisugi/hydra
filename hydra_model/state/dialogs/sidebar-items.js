@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["MAX_DIALOGS","MAX_PARTS"],"enum":["Part"],"struct":["Dialog","Dialogs"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["ASPECT","LEVELS","PARTS"],"enum":["Shape","Shown"],"fn":["level_token","rank_text","said","shown"],"struct":["Part"]};

@@ -1,0 +1,43 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="What the game says you can attack: the `dDBTarget` dropdown."><title>hydra_model::state::targeting - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="hydra_model" data-themes="" data-resource-suffix="" data-rustdoc-version="1.96.1 (31fca3adb 2026-06-26)" data-channel="1.96.1" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../../static.files/storage-41dd4d93.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-044be391.svg"></head><body class="rustdoc mod"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Module targeting</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../../hydra_model/index.html">hydra_<wbr>model</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module targeting</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#why-a-display-widget-is-a-model-fact" title="Why a display widget is a model fact">Why a display widget is a model fact</a></li><li><a href="#content_value-is-a-list" title="`content_value` is a LIST"><code>content_value</code> is a LIST</a></li><li><a href="#this-says-nothing-about-hostility-on-its-own" title="This says nothing about hostility on its own">This says nothing about hostility on its own</a></li></ul><h3><a href="#structs">Module Items</a></h3><ul class="block"><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#functions" title="Functions">Functions</a></li></ul></section><div id="rustdoc-modnav"><h2><a href="../index.html">In hydra_<wbr>model::<wbr>state</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../../index.html">hydra_model</a>::<wbr><a href="../index.html">state</a></div><h1>Module <span>targeting</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../../src/hydra_model/state/targeting.rs.html#1-199">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>What the game says you can attack: the <code>dDBTarget</code> dropdown.</p>
+<h2 id="why-a-display-widget-is-a-model-fact"><a class="doc-anchor" href="#why-a-display-widget-is-a-model-fact">§</a>Why a display widget is a model fact</h2>
+<p>The dropdown is part of how an NPC is judged hostile or not, before the
+hostile flag.</p>
+<p>The <code>combat</code> dialog’s target dropdown is the <strong>noisiest widget on the
+wire</strong> – MEASURED over one live session: 2,031 <code>&lt;dialogData id='combat'&gt;</code>
+and 1,034 <code>dDBTarget</code> rows.</p>
+<p>It is not decoration. The server decides what goes in that list, so an id
+appearing there is the game’s own statement that the thing is a legitimate
+attack target. Three answers are built on top:</p>
+<div><table><thead><tr><th>Answer</th><th>What it means</th></tr></thead><tbody>
+<tr><td>targets</td><td>targeted ids that ARE known NPCs, minus dead and appendages</td></tr>
+<tr><td>hidden targets (<a href="struct.Targeting.html#method.hidden" title="method hydra_model::state::targeting::Targeting::hidden"><code>Targeting::hidden</code></a>)</td><td>targeted ids matching <strong>no known NPC</strong></td></tr>
+<tr><td>the target (<a href="struct.Targeting.html#method.current" title="method hydra_model::state::targeting::Targeting::current"><code>Targeting::current</code></a>)</td><td>the single id the dropdown’s <code>value</code> names</td></tr>
+</tbody></table>
+</div>
+<p>Hidden targets are the answer that earns this module. An id the game will
+let you attack, that appears in no room list, is <strong>something you cannot
+see</strong> – the same inference a reveal from hiding feeds (<code>overwatch.rs</code>).</p>
+<h2 id="content_value-is-a-list"><a class="doc-anchor" href="#content_value-is-a-list">§</a><code>content_value</code> is a LIST</h2>
+<p>MEASURED on the wire:</p>
+<div class="example-wrap"><pre class="language-text"><code>&lt;dropDownBox id=&#39;dDBTarget&#39; value=&quot;giant warg&quot; content_value=&quot;#94076783&quot; .../&gt;
+&lt;dropDownBox id=&#39;dDBTarget&#39; value=&quot;none&quot; content_value=&quot;target help&quot; .../&gt;</code></pre></div>
+<p>It is split on commas and every <code>#&lt;digits&gt;</code> entry kept. A single id is the
+common case, not the shape – and <code>#-12345</code> (a negative id, which the game
+uses for players) is accepted.</p>
+<p><strong>The current target is NOT “the first id in the list”.</strong> There is a
+current target only when the RAW attribute <em>starts</em> with an id: taking
+the first id after filtering would have <code>none,#123</code> report 123 as
+targeted when the dropdown’s own selection was <code>none</code>. The list and the
+selection are two readings of one attribute, and only the first entry is
+the selection.</p>
+<p><strong><code>value="none"</code> and <code>content_value="target help"</code> are the empty state.</strong>
+Neither is an id, so both produce an empty list – and an empty list that
+the game HAS stated is different from never having been told, which is why
+<code>Targeting</code>’s private <code>stated</code> flag exists, and why
+<a href="struct.Targeting.html#method.is_targetable" title="method hydra_model::state::targeting::Targeting::is_targetable"><code>Targeting::is_targetable</code></a> answers <code>Option&lt;bool&gt;</code> rather than <code>bool</code>.</p>
+<h2 id="this-says-nothing-about-hostility-on-its-own"><a class="doc-anchor" href="#this-says-nothing-about-hostility-on-its-own">§</a>This says nothing about hostility on its own</h2>
+<p>Being targetable is evidence, not a verdict: a player is targetable too.
+The <code>hostile</code> flag stays where it is, and <a href="struct.Targeting.html" title="struct hydra_model::state::targeting::Targeting"><code>Targeting</code></a> is one input to it
+rather than a replacement – weighed before the hostile flag, not instead
+of it.</p>
+</div></details><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.Targeting.html" title="struct hydra_model::state::targeting::Targeting">Targeting</a></dt><dd>The ids the game currently lists as attackable, newest statement wins.</dd></dl><h2 id="functions" class="section-header">Functions<a href="#functions" class="anchor">§</a></h2><dl class="item-table"><dt><a class="fn" href="fn.parse_ids.html" title="fn hydra_model::state::targeting::parse_ids">parse_<wbr>ids</a></dt><dd>Every <code>#&lt;id&gt;</code> in a <code>content_value</code>, in order.</dd></dl></section></div></main></body></html>

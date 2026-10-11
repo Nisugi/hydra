@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["classify_header","is_table_end","read_tables"],"mod":["cost"],"struct":["AscensionTable","PsmLine","PsmRanks","PsmSet"]};

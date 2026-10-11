@@ -1,0 +1,55 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="The PSM tables: an open set."><title>hydra_model::state::character::psm - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="hydra_model" data-themes="" data-resource-suffix="" data-rustdoc-version="1.96.1 (31fca3adb 2026-06-26)" data-channel="1.96.1" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../../../static.files/storage-41dd4d93.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../../../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-044be391.svg"></head><body class="rustdoc mod"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Module psm</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../../../hydra_model/index.html">hydra_<wbr>model</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module psm</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#why-this-is-a-btreemap-where-skills-is-an-enum" title="Why this is a `BTreeMap` where `skills` is an enum">Why this is a <code>BTreeMap</code> where <code>skills</code> is an enum</a></li><li><a href="#the-table-measured" title="The table, MEASURED">The table, MEASURED</a><ul><li><a href="#bold-means-known-not-maxed" title="Bold means KNOWN, not maxed">Bold means KNOWN, not maxed</a></li><li><a href="#bold-spans-wrap-across-rows" title="Bold spans WRAP across rows">Bold spans WRAP across rows</a></li><li><a href="#the-mnemonic-is-a-link-not-plain-text" title="The mnemonic is a link, not plain text">The mnemonic is a link, not plain text</a></li></ul></li></ul><h3><a href="#modules">Module Items</a></h3><ul class="block"><li><a href="#modules" title="Modules">Modules</a></li><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#functions" title="Functions">Functions</a></li></ul></section><div id="rustdoc-modnav"><h2><a href="../index.html">In hydra_<wbr>model::<wbr>state::<wbr>character</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../../../index.html">hydra_model</a>::<wbr><a href="../../index.html">state</a>::<wbr><a href="../index.html">character</a></div><h1>Module <span>psm</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../../../src/hydra_model/state\character/psm.rs.html#1-376">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>The PSM tables: an <strong>open set</strong>.</p>
+<p>The five categories – <code>cman</code>, <code>feat</code>, <code>armor</code>, <code>shield</code>, <code>weapon</code> – each
+print a table of mnemonics and ranks. What each costs, and whether one can
+be used now given the ranks, the gauges and the effects, is <a href="cost/index.html" title="mod hydra_model::state::character::psm::cost"><code>cost</code></a>.</p>
+<h2 id="why-this-is-a-btreemap-where-skills-is-an-enum"><a class="doc-anchor" href="#why-this-is-a-btreemap-where-skills-is-an-enum">§</a>Why this is a <code>BTreeMap</code> where <code>skills</code> is an enum</h2>
+<p>Typed named fields are for <strong>closed</strong> vocabularies, and a map with
+<code>is_known</code> for open ones. The 46 skills are closed: the game has printed
+the same 46 for years. The PSMs are not: there are 80 combat maneuvers, 33
+feats, 33 shield, 24 weapon and 11 armor specializations today, and
+Simutronics adds to them.</p>
+<p>So a mnemonic Hydra has never heard of must still be <strong>stored and
+reported</strong>, not dropped. Silently discarding unrecognised names would
+lose a PSM the game added.</p>
+<h2 id="the-table-measured"><a class="doc-anchor" href="#the-table-measured">§</a>The table, MEASURED</h2>
+<p>Cut from a recorded session and committed as <code>psm_list.xml</code>. The command
+was <code>cman list</code>:</p>
+<div class="example-wrap"><pre class="language-text"><code>  Skill                Mnemonic        Ranks Type           Category        Subcategory
+  -------------------------------------------------------------------------------------
+  Acrobat&#39;s Leap       acrobatsleap    0/1   Passive
+  Combat Focus         focus           5/5   Passive
+  Disarm Weapon        disarm          5/5   Setup          Warrior Guild</code></pre></div><h3 id="bold-means-known-not-maxed"><a class="doc-anchor" href="#bold-means-known-not-maxed">§</a>Bold means KNOWN, not maxed</h3>
+<p>The finding that shapes this file. MEASURED across the capture’s 27 rows
+(this said 29; <code>tests/psm_list.rs:104</code> records the recount):</p>
+<div><table><thead><tr><th>Bolded</th><th>Ranks seen</th></tr></thead><tbody>
+<tr><td>yes (9 rows)</td><td><code>1/1</code>, <code>2/2</code>, <code>3/3</code>, <code>3/5</code>, <code>4/5</code>, <code>5/5</code> x4</td></tr>
+<tr><td>no (18 rows)</td><td><code>0/1</code> x2, <code>0/2</code> x2, <code>0/5</code> x14</td></tr>
+</tbody></table>
+</div>
+<p><strong>Every bolded row has ranks &gt; 0; every unbolded row is exactly <code>0/n</code>.</strong>
+<code>Hamstring 4/5</code> is bolded and not maxed, which is what rules out the
+“bold = maxed” reading. The game bolds what the character has actually
+trained.</p>
+<p>The fraction says the same thing. Both are read; bold is the same
+structural signal <a href="../stats/index.html" title="mod hydra_model::state::character::stats"><code>stats</code></a> and <a href="../skills/index.html" title="mod hydra_model::state::character::skills"><code>skills</code></a>
+already read, so this module takes it and checks it against the fraction –
+a disagreement would mean one of the two readings is wrong, and Hydra
+should find out rather than pick.</p>
+<h3 id="bold-spans-wrap-across-rows"><a class="doc-anchor" href="#bold-spans-wrap-across-rows">§</a>Bold spans WRAP across rows</h3>
+<p>Unique to this table among the fixtures. The wire emits
+<code>&lt;popBold/&gt;&lt;pushBold/&gt;</code> mid-line, so one bold span closes and the next opens
+inside a single row’s text:</p>
+<div class="example-wrap"><pre class="language-text"><code>&lt;popBold/&gt;  Combat Movement      &lt;d ...&gt;cmovement&lt;/d&gt;       5/5   ...</code></pre></div>
+<p>A consumer that reset bold state at <code>ends_line</code> would mis-attribute every
+row after the first. The parser tracks <code>bold_depth</code> across frames, so this
+is handled – but it is the reason the fixture exists rather than a
+hand-written table.</p>
+<h3 id="the-mnemonic-is-a-link-not-plain-text"><a class="doc-anchor" href="#the-mnemonic-is-a-link-not-plain-text">§</a>The mnemonic is a link, not plain text</h3>
+<p>Each sits inside <code>&lt;d cmd='cman HELP acrobatsleap'&gt;acrobatsleap&lt;/d&gt;</code>. The
+parser strips the markup, so a classifier here sees the display text, and
+this file has no pattern for markup.</p>
+<p><strong>The mnemonic column is the PSM’s short name</strong>, the same one the cost
+table is keyed by. So the wire’s own column is the key, and no outside
+table is needed to read a table.</p>
+</div></details><h2 id="modules" class="section-header">Modules<a href="#modules" class="anchor">§</a></h2><dl class="item-table"><dt><a class="mod" href="cost/index.html" title="mod hydra_model::state::character::psm::cost">cost</a></dt><dd>What a PSM costs to use, and whether it can be used now.</dd></dl><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.AscensionTable.html" title="struct hydra_model::state::character::psm::AscensionTable">Ascension<wbr>Table</a></dt><dd>Ascension is <strong>not</strong> a PSM, and the wire says so three ways.</dd><dt><a class="struct" href="struct.PsmLine.html" title="struct hydra_model::state::character::psm::PsmLine">PsmLine</a></dt><dd>One row of a PSM table.</dd><dt><a class="struct" href="struct.PsmRanks.html" title="struct hydra_model::state::character::psm::PsmRanks">PsmRanks</a></dt><dd>One PSM’s ranks, as the table printed them.</dd><dt><a class="struct" href="struct.PsmSet.html" title="struct hydra_model::state::character::psm::PsmSet">PsmSet</a></dt><dd>Every PSM the character has been told about, by category.</dd></dl><h2 id="functions" class="section-header">Functions<a href="#functions" class="anchor">§</a></h2><dl class="item-table"><dt><a class="fn" href="fn.classify_header.html" title="fn hydra_model::state::character::psm::classify_header">classify_<wbr>header</a></dt><dd>The header that opens a PSM table, and the two forms it takes.</dd><dt><a class="fn" href="fn.is_table_end.html" title="fn hydra_model::state::character::psm::is_table_end">is_<wbr>table_<wbr>end</a></dt><dd>The line that closes a <code>LIST</code>-form table.</dd><dt><a class="fn" href="fn.read_tables.html" title="fn hydra_model::state::character::psm::read_tables">read_<wbr>tables</a></dt><dd>Every PSM table one chunk holds: its header, then its rows, until the
+<code>Subcategory:</code> footer or the chunk’s end (the <code>INFO</code> form has no footer).</dd></dl></section></div></main></body></html>

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["ARMOR","FORTITUDE","MANA","SHIELD","SWORD","WEAPON"]};

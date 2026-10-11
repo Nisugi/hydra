@@ -1,0 +1,57 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="The `charprofile` stream: what `profile` shows, typed."><title>hydra_model::state::character::profile - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="hydra_model" data-themes="" data-resource-suffix="" data-rustdoc-version="1.96.1 (31fca3adb 2026-06-26)" data-channel="1.96.1" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../../../static.files/storage-41dd4d93.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../../../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-044be391.svg"></head><body class="rustdoc mod"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Module profile</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../../../hydra_model/index.html">hydra_<wbr>model</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module profile</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#what-the-wire-sends" title="What the wire sends">What the wire sends</a></li><li><a href="#what-this-type-holds-and-what-it-deliberately-does-not" title="What this type holds, and what it deliberately does not">What this type holds, and what it deliberately does not</a></li><li><a href="#nothing-here-is-the-level" title="Nothing here is the level">Nothing here is the level</a></li><li><a href="#it-arrives-in-the-main-window-not-in-a-stream" title="It arrives in the MAIN window, not in a stream">It arrives in the MAIN window, not in a stream</a></li><li><a href="#a-classifier-over-a-chunk" title="A classifier over a chunk">A classifier over a chunk</a></li></ul><h3><a href="#structs">Module Items</a></h3><ul class="block"><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#constants" title="Constants">Constants</a></li></ul></section><div id="rustdoc-modnav"><h2><a href="../index.html">In hydra_<wbr>model::<wbr>state::<wbr>character</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../../../index.html">hydra_model</a>::<wbr><a href="../../index.html">state</a>::<wbr><a href="../index.html">character</a></div><h1>Module <span>profile</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../../../src/hydra_model/state\character/profile.rs.html#1-294">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>The <code>charprofile</code> stream: what <code>profile</code> shows, typed.</p>
+<h2 id="what-the-wire-sends"><a class="doc-anchor" href="#what-the-wire-sends">§</a>What the wire sends</h2>
+<p>MEASURED against a live capture (<code>fixtures/character_profile.xml</code>, cut
+from a recorded session). A window declaration, <code>&lt;output class="mono"/&gt;</code>,
+then four <strong>bold section headers</strong>
+with plain lines under each:</p>
+<div class="example-wrap"><pre class="language-text"><code>PERSONAL INFORMATION
+Name: Nisugi
+Profession: Ranger   Level: 100
+Title: Hero
+Race: Half-Elf   Gender: Male
+Age: a tender age (36)
+Date of Birth: 8/28/5090
+He is taller than average.  He appears to be of a tender age.
+AFFILIATIONS
+Full citizen of Kraken&#39;s Fall
+Master of the Guardians of Sunfist
+ACHIEVEMENTS
+Strongest foe vanquished: a leopard ogre (level 140)
+HISTORY
+Formerly known as Ibbo.</code></pre></div><h2 id="what-this-type-holds-and-what-it-deliberately-does-not"><a class="doc-anchor" href="#what-this-type-holds-and-what-it-deliberately-does-not">§</a>What this type holds, and what it deliberately does not</h2>
+<p>Most of <code>PERSONAL INFORMATION</code> and all of <code>AFFILIATIONS</code> are <strong>already
+modelled</strong>, and this reader must not become a second home for them:</p>
+<div><table><thead><tr><th>Profile line</th><th>Already read by</th></tr></thead><tbody>
+<tr><td><code>Race:</code>, <code>Profession:</code>, <code>Gender:</code></td><td><a href="../stats/struct.Identity.html" title="struct hydra_model::state::character::stats::Identity"><code>Identity</code></a>, from <code>info</code></td></tr>
+<tr><td><code>Master of the Guardians of Sunfist</code></td><td><a href="../standing/struct.Standing.html" title="struct hydra_model::state::character::standing::Standing"><code>Standing::apply_society</code></a></td></tr>
+<tr><td><code>Full citizen of Kraken's Fall</code></td><td><code>Standing</code>’s citizenship</td></tr>
+</tbody></table>
+</div>
+<p>Those keep one home. What is here is what nothing else has –
+<strong><code>Title:</code>, the character’s own description, the achievements and the
+history</strong> – plus the two identity fields the profile states better than
+<code>info</code> does (<code>Age:</code> carries a number in brackets; <code>Date of Birth:</code> appears
+nowhere else).</p>
+<h2 id="nothing-here-is-the-level"><a class="doc-anchor" href="#nothing-here-is-the-level">§</a>Nothing here is the level</h2>
+<p><code>Level: 100</code> is on this line and is NOT read, for the reason <code>blocks.rs</code>
+already gives about <code>info</code>: it is a snapshot of something that changes.
+The <code>expr</code> dialog is the level’s home.</p>
+<h2 id="it-arrives-in-the-main-window-not-in-a-stream"><a class="doc-anchor" href="#it-arrives-in-the-main-window-not-in-a-stream">§</a>It arrives in the MAIN window, not in a stream</h2>
+<p>A <code>charprofile</code> stream id is declared, but <strong>the capture says the text is
+not pushed to it</strong>: <code>profile</code> sends <code>streamWindow</code> + <code>clearStream</code> +
+<code>exposeStream</code> and then prints the text into the MAIN window. MEASURED
+over two profile runs: <code>exposeStream id="charprofile"</code> twice,
+<code>pushStream id="charprofile"</code> <strong>zero times</strong>.</p>
+<p>So this is an ordinary chunk reader, beside <code>blocks::InfoReport</code>; a
+stream-buffer reader would read an empty buffer and teach nothing.</p>
+<p><code>exposeStream</code> is a <strong>display</strong> instruction: show that window. The
+<code>ifClosed=''</code> “Copy” behaviour is the same shape – the server sends the
+line to main as well – so a declared-and-exposed window is not evidence
+of a pushed stream.</p>
+<h2 id="a-classifier-over-a-chunk"><a class="doc-anchor" href="#a-classifier-over-a-chunk">§</a>A classifier over a chunk</h2>
+<p>The section headers arrive bold, and the parser already records bold depth,
+so nothing here re-tokenizes markup. Read whole from one chunk because the
+sections are positional: <code>Formerly known as</code> means something different
+under <code>HISTORY</code> than it would anywhere else – and because the prompt is
+the only boundary a command’s output has.</p>
+</div></details><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.Profile.html" title="struct hydra_model::state::character::profile::Profile">Profile</a></dt><dd>What <code>profile</code> says that nothing else does.</dd></dl><h2 id="constants" class="section-header">Constants<a href="#constants" class="anchor">§</a></h2><dl class="item-table"><dt><a class="constant" href="constant.WINDOW.html" title="constant hydra_model::state::character::profile::WINDOW">WINDOW</a></dt><dd>The window <code>profile</code> declares and exposes.</dd></dl></section></div></main></body></html>

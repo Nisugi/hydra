@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["inventory","offered"],"struct":["ActOut","DetailOut","GroupOut","InventoryOut","ItemOut"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["CLEANUP_MAX_AGE","DEATH_ANNOUNCED_MAX","DEATH_WATCH_MAX","HOUSEKEEPING_INTERVAL","MAX_SIZE"],"mod":["ally","apply","body","boons","instance","prose"],"struct":["Creatures"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["SkillKind","SkillLine"],"fn":["is_table_end","is_table_header","read_table","training_footer"],"struct":["Skill","SkillSet"]};

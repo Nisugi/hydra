@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["doomed","first_kept","preview","prune"],"struct":["Doomed","Pruned"]};

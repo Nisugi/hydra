@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["DEFAULT_LICH_SYMBOL","DEFAULT_SYMBOL","SECTION"],"enum":["Claimed"],"fn":["usable"],"struct":["Desk","Settings"],"type":["Runner"]};

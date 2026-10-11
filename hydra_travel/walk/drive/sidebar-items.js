@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["ANSWER_WAIT","BEAT","DEED_DEADLINE","ELEMENT","FOLLOW_WAIT","LAST_INSTABILITY","LOST_WAIT"],"enum":["Ended"],"fn":["is_a_move","seed_for","walk"],"struct":["Setting","Walked"]};

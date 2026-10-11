@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["SHIPS","WINDS"],"enum":["Act","Helm","Sailed"],"fn":["sail","wind_known"],"struct":["MakeReady","Voyage"]};

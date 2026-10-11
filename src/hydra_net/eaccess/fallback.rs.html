@@ -1,0 +1,280 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates\hydra-net\src\eaccess\fallback.rs`."><title>fallback.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="hydra_net" data-themes="" data-resource-suffix="" data-rustdoc-version="1.96.1 (31fca3adb 2026-06-26)" data-channel="1.96.1" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../../static.files/storage-41dd4d93.js"></script><script defer src="../../../static.files/src-script-813739b1.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><h1><div class="sub-heading">hydra_net\eaccess/</div>fallback.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap digits-3"><pre class="rust"><code><a href=#1 id=1 data-nosnippet>1</a><span class="doccomment">//! Two ways in, and the rule for choosing between them.
+<a href=#2 id=2 data-nosnippet>2</a>//!
+<a href=#3 id=3 data-nosnippet>3</a>//! # Why there is a second way in at all
+<a href=#4 id=4 data-nosnippet>4</a>//!
+<a href=#5 id=5 data-nosnippet>5</a>//! `eaccess.play.net:7910` goes down while the website stays up: the SYN is
+<a href=#6 id=6 data-nosnippet>6</a>//! silently dropped, no RST, while website auth and Play-in-Browser keep
+<a href=#7 id=7 data-nosnippet>7</a>//! working throughout.
+<a href=#8 id=8 data-nosnippet>8</a>//!
+<a href=#9 id=9 data-nosnippet>9</a>//! So the fallback is not redundancy for its own sake. It is the path that
+<a href=#10 id=10 data-nosnippet>10</a>//! works on the days the main one does not.
+<a href=#11 id=11 data-nosnippet>11</a>//!
+<a href=#12 id=12 data-nosnippet>12</a>//! # The rule, and why it is the whole design
+<a href=#13 id=13 data-nosnippet>13</a>//!
+<a href=#14 id=14 data-nosnippet>14</a>//! **A credential rejection is never retried through the second system.** Web
+<a href=#15 id=15 data-nosnippet>15</a>//! login would reject the same credentials too, so falling back would only
+<a href=#16 id=16 data-nosnippet>16</a>//! resubmit them to a second system for no benefit. The real problem is
+<a href=#17 id=17 data-nosnippet>17</a>//! surfaced instead.
+<a href=#18 id=18 data-nosnippet>18</a>//!
+<a href=#19 id=19 data-nosnippet>19</a>//! Two failures that both read as "login didn't work" need opposite responses,
+<a href=#20 id=20 data-nosnippet>20</a>//! and both mistakes are expensive:
+<a href=#21 id=21 data-nosnippet>21</a>//!
+<a href=#22 id=22 data-nosnippet>22</a>//! | eaccess said | fall back? | cost of getting it wrong |
+<a href=#23 id=23 data-nosnippet>23</a>//! |---|---|---|
+<a href=#24 id=24 data-nosnippet>24</a>//! | the password is wrong | **no** | a second bad-password strike, and the real error is hidden behind a second failure |
+<a href=#25 id=25 data-nosnippet>25</a>//! | I could not reach the server | **yes** | the session stays down through an outage the fallback would have survived |
+<a href=#26 id=26 data-nosnippet>26</a>//!
+<a href=#27 id=27 data-nosnippet>27</a>//! [`EaccessError::fatal`] already carries this distinction -- it exists
+<a href=#28 id=28 data-nosnippet>28</a>//! because *one stage is both* -- so this module reads a decision that has
+<a href=#29 id=29 data-nosnippet>29</a>//! already been made rather than making a new one. Note its default is
+<a href=#30 id=30 data-nosnippet>30</a>//! `false`: an unclassified failure falls back, which is the direction that
+<a href=#31 id=31 data-nosnippet>31</a>//! fails safe.
+<a href=#32 id=32 data-nosnippet>32</a>//!
+<a href=#33 id=33 data-nosnippet>33</a>//! # What the fallback cannot do
+<a href=#34 id=34 data-nosnippet>34</a>//!
+<a href=#35 id=35 data-nosnippet>35</a>//! Web login resolves **one character on one instance**. It has no equivalent
+<a href=#36 id=36 data-nosnippet>36</a>//! of eaccess's `M` enumeration or the character generator, so those paths have
+<a href=#37 id=37 data-nosnippet>37</a>//! no fallback.
+<a href=#38 id=38 data-nosnippet>38</a>
+<a href=#39 id=39 data-nosnippet>39</a></span><span class="kw">use </span><span class="kw">crate</span>::gemstone::weblogin::{Launch, WebLoginFailure, WebLoginRequest, authenticate_via_web};
+<a href=#40 id=40 data-nosnippet>40</a>
+<a href=#41 id=41 data-nosnippet>41</a><span class="kw">use </span><span class="kw">super</span>::wire::{Credentials, EaccessError, LaunchPayload};
+<a href=#42 id=42 data-nosnippet>42</a>
+<a href=#43 id=43 data-nosnippet>43</a><span class="doccomment">/// Which provider produced a launch.
+<a href=#44 id=44 data-nosnippet>44</a>///
+<a href=#45 id=45 data-nosnippet>45</a>/// Reported rather than hidden, because the two are not equivalent: a web-login
+<a href=#46 id=46 data-nosnippet>46</a>/// launch came through an HTML scrape and a redirect chain rather than the
+<a href=#47 id=47 data-nosnippet>47</a>/// `C`/`L` exchange, and a reader diagnosing an odd session needs to know
+<a href=#48 id=48 data-nosnippet>48</a>/// which path produced it.
+<a href=#49 id=49 data-nosnippet>49</a></span><span class="attr">#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+<a href=#50 id=50 data-nosnippet>50</a></span><span class="kw">pub enum </span>Provider {
+<a href=#51 id=51 data-nosnippet>51</a>    <span class="doccomment">/// The `K A M F G P C L` exchange over TLS.
+<a href=#52 id=52 data-nosnippet>52</a>    </span>Eaccess,
+<a href=#53 id=53 data-nosnippet>53</a>    <span class="doccomment">/// The HTTPS web flow, after eaccess could not be reached.
+<a href=#54 id=54 data-nosnippet>54</a>    </span>WebLogin,
+<a href=#55 id=55 data-nosnippet>55</a>}
+<a href=#56 id=56 data-nosnippet>56</a>
+<a href=#57 id=57 data-nosnippet>57</a><span class="doccomment">/// Which provider to try first, or to use alone.
+<a href=#58 id=58 data-nosnippet>58</a>///
+<a href=#59 id=59 data-nosnippet>59</a>/// # Why a forced web path exists at all
+<a href=#60 id=60 data-nosnippet>60</a>///
+<a href=#61 id=61 data-nosnippet>61</a>/// Because the fallback is otherwise **unreachable while eaccess is up**, and
+<a href=#62 id=62 data-nosnippet>62</a>/// eaccess is up almost always -- which is the whole point of it. Without this,
+<a href=#63 id=63 data-nosnippet>63</a>/// the web path could only ever be exercised during an outage, i.e. at the
+<a href=#64 id=64 data-nosnippet>64</a>/// worst possible moment to discover a bug in it.
+<a href=#65 id=65 data-nosnippet>65</a></span><span class="attr">#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+<a href=#66 id=66 data-nosnippet>66</a></span><span class="kw">pub enum </span>Prefer {
+<a href=#67 id=67 data-nosnippet>67</a>    <span class="doccomment">/// The normal path: eaccess, with web login if it cannot be reached.
+<a href=#68 id=68 data-nosnippet>68</a>    </span>Eaccess,
+<a href=#69 id=69 data-nosnippet>69</a>    <span class="doccomment">/// **Web login only.** eaccess is not tried, so there is nothing to fall
+<a href=#70 id=70 data-nosnippet>70</a>    /// back to and a failure here is final.
+<a href=#71 id=71 data-nosnippet>71</a>    </span>WebOnly,
+<a href=#72 id=72 data-nosnippet>72</a>}
+<a href=#73 id=73 data-nosnippet>73</a>
+<a href=#74 id=74 data-nosnippet>74</a><span class="doccomment">/// Authenticate, choosing the provider -- and falling back to web login if
+<a href=#75 id=75 data-nosnippet>75</a>/// eaccess cannot be **reached**.
+<a href=#76 id=76 data-nosnippet>76</a>///
+<a href=#77 id=77 data-nosnippet>77</a>/// # The order is not arbitrary
+<a href=#78 id=78 data-nosnippet>78</a>///
+<a href=#79 id=79 data-nosnippet>79</a>/// eaccess is tried first because it is the real protocol: it enumerates
+<a href=#80 id=80 data-nosnippet>80</a>/// instances, it supports the character generator, and it returns what the
+<a href=#81 id=81 data-nosnippet>81</a>/// launch needs without a scrape in between. Web login is narrower, so it is
+<a href=#82 id=82 data-nosnippet>82</a>/// the fallback rather than the default even though it is more reliable on a
+<a href=#83 id=83 data-nosnippet>83</a>/// bad day. [`Prefer::WebOnly`] exists so the web path can be exercised on a
+<a href=#84 id=84 data-nosnippet>84</a>/// day when eaccess is healthy -- see [`Prefer`].
+<a href=#85 id=85 data-nosnippet>85</a>///
+<a href=#86 id=86 data-nosnippet>86</a>/// # Errors
+<a href=#87 id=87 data-nosnippet>87</a>///
+<a href=#88 id=88 data-nosnippet>88</a>/// The **eaccess** error, always -- even when the fallback also failed.
+<a href=#89 id=89 data-nosnippet>89</a>/// `L` named the primary path, and its failure is the answer to "why could I
+<a href=#90 id=90 data-nosnippet>90</a>/// not log in"; the fallback's failure is a footnote that would otherwise
+<a href=#91 id=91 data-nosnippet>91</a>/// replace the real cause. The fallback's failure is passed to `progress`
+<a href=#92 id=92 data-nosnippet>92</a>/// instead, so it is visible without being mistaken for the diagnosis.
+<a href=#93 id=93 data-nosnippet>93</a>///
+<a href=#94 id=94 data-nosnippet>94</a>/// Under [`Prefer::WebOnly`] the error is the **web-login** failure, since no
+<a href=#95 id=95 data-nosnippet>95</a>/// eaccess attempt was made to have one.
+<a href=#96 id=96 data-nosnippet>96</a>///
+<a href=#97 id=97 data-nosnippet>97</a>/// A certificate that does not match `pin` is FATAL (see `pin.rs`), so it is
+<a href=#98 id=98 data-nosnippet>98</a>/// returned as the diagnosis and web login is **not** tried: the operator must
+<a href=#99 id=99 data-nosnippet>99</a>/// see that message, and a fallback that succeeded would bury it. `pin` is
+<a href=#100 id=100 data-nosnippet>100</a>/// eaccess's alone -- the web path is verified TLS to www.play.net and does
+<a href=#101 id=101 data-nosnippet>101</a>/// not read it.
+<a href=#102 id=102 data-nosnippet>102</a></span><span class="kw">pub async fn </span>authenticate_via(
+<a href=#103 id=103 data-nosnippet>103</a>    creds: Credentials&lt;<span class="lifetime">'_</span>&gt;,
+<a href=#104 id=104 data-nosnippet>104</a>    prefer: Prefer,
+<a href=#105 id=105 data-nosnippet>105</a>    pin: <span class="kw-2">&amp;</span>std::path::Path,
+<a href=#106 id=106 data-nosnippet>106</a>    <span class="kw-2">mut </span>progress: <span class="kw">impl </span>FnMut(<span class="kw-2">&amp;</span>str),
+<a href=#107 id=107 data-nosnippet>107</a>) -&gt; <span class="prelude-ty">Result</span>&lt;(LaunchPayload, Provider), EaccessError&gt; {
+<a href=#108 id=108 data-nosnippet>108</a>    decide(
+<a href=#109 id=109 data-nosnippet>109</a>        prefer,
+<a href=#110 id=110 data-nosnippet>110</a>        <span class="kw-2">&amp;mut </span>progress,
+<a href=#111 id=111 data-nosnippet>111</a>        <span class="kw">async </span>|progress| <span class="kw">super</span>::authenticate(creds, pin, progress).<span class="kw">await</span>,
+<a href=#112 id=112 data-nosnippet>112</a>        <span class="kw">async </span>|progress| try_web(creds, progress).<span class="kw">await</span>,
+<a href=#113 id=113 data-nosnippet>113</a>    )
+<a href=#114 id=114 data-nosnippet>114</a>    .<span class="kw">await
+<a href=#115 id=115 data-nosnippet>115</a></span>}
+<a href=#116 id=116 data-nosnippet>116</a>
+<a href=#117 id=117 data-nosnippet>117</a><span class="doccomment">/// The choice between the two providers, with the providers passed in.
+<a href=#118 id=118 data-nosnippet>118</a>///
+<a href=#119 id=119 data-nosnippet>119</a>/// # Why the stages are parameters
+<a href=#120 id=120 data-nosnippet>120</a>///
+<a href=#121 id=121 data-nosnippet>121</a>/// So that the RULE can be tested -- the thing this module exists for -- with
+<a href=#122 id=122 data-nosnippet>122</a>/// no network. [`authenticate_via`] passes the real two; `fallback_tests.rs`
+<a href=#123 id=123 data-nosnippet>123</a>/// passes stubs that fail on command and record whether they were called.
+<a href=#124 id=124 data-nosnippet>124</a>///
+<a href=#125 id=125 data-nosnippet>125</a>/// A test that asserts `.fatal` on an error it built itself never calls
+<a href=#126 id=126 data-nosnippet>126</a>/// anything that reads it, so it stays green with the
+<a href=#127 id=127 data-nosnippet>127</a>/// `if primary.fatal { return Err(primary) }` below deleted -- the line that
+<a href=#128 id=128 data-nosnippet>128</a>/// stops a bad password being resubmitted to a second system.
+<a href=#129 id=129 data-nosnippet>129</a></span><span class="kw">async fn </span>decide&lt;P: FnMut(<span class="kw-2">&amp;</span>str)&gt;(
+<a href=#130 id=130 data-nosnippet>130</a>    prefer: Prefer,
+<a href=#131 id=131 data-nosnippet>131</a>    progress: <span class="kw-2">&amp;mut </span>P,
+<a href=#132 id=132 data-nosnippet>132</a>    eaccess: <span class="kw">impl </span>AsyncFnOnce(<span class="kw-2">&amp;mut </span>P) -&gt; <span class="prelude-ty">Result</span>&lt;LaunchPayload, EaccessError&gt;,
+<a href=#133 id=133 data-nosnippet>133</a>    web: <span class="kw">impl </span>AsyncFnOnce(<span class="kw-2">&amp;mut </span>P) -&gt; <span class="prelude-ty">Result</span>&lt;Launch, WebLoginFailure&gt;,
+<a href=#134 id=134 data-nosnippet>134</a>) -&gt; <span class="prelude-ty">Result</span>&lt;(LaunchPayload, Provider), EaccessError&gt; {
+<a href=#135 id=135 data-nosnippet>135</a>    <span class="kw">if </span>prefer == Prefer::WebOnly {
+<a href=#136 id=136 data-nosnippet>136</a>        progress(<span class="string">"[login] web login FORCED; eaccess will not be tried"</span>);
+<a href=#137 id=137 data-nosnippet>137</a>        <span class="kw">let </span>launch = web(progress).<span class="kw">await</span>.map_err(|f| web_only_error(<span class="kw-2">&amp;</span>f))<span class="question-mark">?</span>;
+<a href=#138 id=138 data-nosnippet>138</a>        <span class="kw">return </span><span class="prelude-val">Ok</span>((from_web(<span class="kw-2">&amp;</span>launch), Provider::WebLogin));
+<a href=#139 id=139 data-nosnippet>139</a>    }
+<a href=#140 id=140 data-nosnippet>140</a>
+<a href=#141 id=141 data-nosnippet>141</a>    <span class="kw">let </span>primary = <span class="kw">match </span>eaccess(progress).<span class="kw">await </span>{
+<a href=#142 id=142 data-nosnippet>142</a>        <span class="prelude-val">Ok</span>(launch) =&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>((launch, Provider::Eaccess)),
+<a href=#143 id=143 data-nosnippet>143</a>        <span class="prelude-val">Err</span>(error) =&gt; error,
+<a href=#144 id=144 data-nosnippet>144</a>    };
+<a href=#145 id=145 data-nosnippet>145</a>
+<a href=#146 id=146 data-nosnippet>146</a>    <span class="comment">// **The rule.** A refusal is an answer, and the same credentials will be
+<a href=#147 id=147 data-nosnippet>147</a>    // refused again. Falling back here would spend a second bad-password strike
+<a href=#148 id=148 data-nosnippet>148</a>    // and bury the real cause under a second, less relevant failure.
+<a href=#149 id=149 data-nosnippet>149</a>    </span><span class="kw">if </span>primary.fatal {
+<a href=#150 id=150 data-nosnippet>150</a>        <span class="kw">return </span><span class="prelude-val">Err</span>(primary);
+<a href=#151 id=151 data-nosnippet>151</a>    }
+<a href=#152 id=152 data-nosnippet>152</a>
+<a href=#153 id=153 data-nosnippet>153</a>    progress(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
+<a href=#154 id=154 data-nosnippet>154</a>        <span class="string">"[fallback] eaccess unreachable at stage {}; trying web login"</span>,
+<a href=#155 id=155 data-nosnippet>155</a>        primary.stage
+<a href=#156 id=156 data-nosnippet>156</a>    ));
+<a href=#157 id=157 data-nosnippet>157</a>
+<a href=#158 id=158 data-nosnippet>158</a>    <span class="kw">match </span>web(progress).<span class="kw">await </span>{
+<a href=#159 id=159 data-nosnippet>159</a>        <span class="prelude-val">Ok</span>(launch) =&gt; <span class="prelude-val">Ok</span>((from_web(<span class="kw-2">&amp;</span>launch), Provider::WebLogin)),
+<a href=#160 id=160 data-nosnippet>160</a>        <span class="prelude-val">Err</span>(secondary) =&gt; {
+<a href=#161 id=161 data-nosnippet>161</a>            <span class="comment">// Reported, not returned. See `authenticate_via`'s `# Errors`.
+<a href=#162 id=162 data-nosnippet>162</a>            </span>progress(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"[fallback] web login also failed: {secondary}"</span>));
+<a href=#163 id=163 data-nosnippet>163</a>            <span class="prelude-val">Err</span>(carry_forward(<span class="kw-2">&amp;</span>primary, <span class="kw-2">&amp;</span>secondary))
+<a href=#164 id=164 data-nosnippet>164</a>        }
+<a href=#165 id=165 data-nosnippet>165</a>    }
+<a href=#166 id=166 data-nosnippet>166</a>}
+<a href=#167 id=167 data-nosnippet>167</a>
+<a href=#168 id=168 data-nosnippet>168</a><span class="doccomment">/// A forced web login's failure, as the whole diagnosis.
+<a href=#169 id=169 data-nosnippet>169</a>///
+<a href=#170 id=170 data-nosnippet>170</a>/// No primary error to carry, so this is all there is -- and its fatality is
+<a href=#171 id=171 data-nosnippet>171</a>/// decided differently from [`carry_forward`]'s, for one variant.
+<a href=#172 id=172 data-nosnippet>172</a>///
+<a href=#173 id=173 data-nosnippet>173</a>/// # `UnsupportedGameCode` is fatal HERE, and only here
+<a href=#174 id=174 data-nosnippet>174</a>///
+<a href=#175 id=175 data-nosnippet>175</a>/// In the fallback it is not: web login's table is narrower than eaccess's, so
+<a href=#176 id=176 data-nosnippet>176</a>/// "web cannot route this code" says nothing about whether eaccess will, once
+<a href=#177 id=177 data-nosnippet>177</a>/// it answers. Under [`Prefer::WebOnly`] there is no eaccess to answer. The
+<a href=#178 id=178 data-nosnippet>178</a>/// table is compiled into this binary, so the verdict is identical on every
+<a href=#179 id=179 data-nosnippet>179</a>/// attempt -- and a supervisor told "transient" re-runs it every 30 seconds
+<a href=#180 id=180 data-nosnippet>180</a>/// forever, for a mistyped `GS4`.
+<a href=#181 id=181 data-nosnippet>181</a>///
+<a href=#182 id=182 data-nosnippet>182</a>/// `LoginRejected` is fatal for the reason it is everywhere: the credentials
+<a href=#183 id=183 data-nosnippet>183</a>/// were refused. The rest stay transient for the reasons `carry_forward` gives.
+<a href=#184 id=184 data-nosnippet>184</a></span><span class="kw">fn </span>web_only_error(failure: <span class="kw-2">&amp;</span>WebLoginFailure) -&gt; EaccessError {
+<a href=#185 id=185 data-nosnippet>185</a>    EaccessError {
+<a href=#186 id=186 data-nosnippet>186</a>        stage: <span class="string">"web_login"</span>,
+<a href=#187 id=187 data-nosnippet>187</a>        detail: failure.to_string(),
+<a href=#188 id=188 data-nosnippet>188</a>        fatal: failure.is_credential_refusal()
+<a href=#189 id=189 data-nosnippet>189</a>            || <span class="macro">matches!</span>(failure, WebLoginFailure::UnsupportedGameCode),
+<a href=#190 id=190 data-nosnippet>190</a>    }
+<a href=#191 id=191 data-nosnippet>191</a>}
+<a href=#192 id=192 data-nosnippet>192</a>
+<a href=#193 id=193 data-nosnippet>193</a><span class="doccomment">/// Run the web-login flow, narrating each stage.
+<a href=#194 id=194 data-nosnippet>194</a>///
+<a href=#195 id=195 data-nosnippet>195</a>/// Shared by both paths so the forced run exercises **exactly** the code the
+<a href=#196 id=196 data-nosnippet>196</a>/// fallback would -- a forced path that differs from the real one tests the
+<a href=#197 id=197 data-nosnippet>197</a>/// wrong thing.
+<a href=#198 id=198 data-nosnippet>198</a></span><span class="kw">async fn </span>try_web(
+<a href=#199 id=199 data-nosnippet>199</a>    creds: Credentials&lt;<span class="lifetime">'_</span>&gt;,
+<a href=#200 id=200 data-nosnippet>200</a>    progress: <span class="kw-2">&amp;mut </span><span class="kw">impl </span>FnMut(<span class="kw-2">&amp;</span>str),
+<a href=#201 id=201 data-nosnippet>201</a>) -&gt; <span class="prelude-ty">Result</span>&lt;Launch, WebLoginFailure&gt; {
+<a href=#202 id=202 data-nosnippet>202</a>    <span class="kw">let </span>request = WebLoginRequest {
+<a href=#203 id=203 data-nosnippet>203</a>        account: creds.account,
+<a href=#204 id=204 data-nosnippet>204</a>        password: creds.password,
+<a href=#205 id=205 data-nosnippet>205</a>        character: creds.character,
+<a href=#206 id=206 data-nosnippet>206</a>        game_code: creds.game_code,
+<a href=#207 id=207 data-nosnippet>207</a>    };
+<a href=#208 id=208 data-nosnippet>208</a>    <span class="kw">let </span>launch = authenticate_via_web(request, progress).<span class="kw">await</span><span class="question-mark">?</span>;
+<a href=#209 id=209 data-nosnippet>209</a>    progress(<span class="string">"[web] authenticated via web login"</span>);
+<a href=#210 id=210 data-nosnippet>210</a>    <span class="prelude-val">Ok</span>(launch)
+<a href=#211 id=211 data-nosnippet>211</a>}
+<a href=#212 id=212 data-nosnippet>212</a>
+<a href=#213 id=213 data-nosnippet>213</a><span class="doccomment">/// A web-login [`Launch`] as a [`LaunchPayload`].
+<a href=#214 id=214 data-nosnippet>214</a>///
+<a href=#215 id=215 data-nosnippet>215</a>/// # Nothing is synthesised
+<a href=#216 id=216 data-nosnippet>216</a>///
+<a href=#217 id=217 data-nosnippet>217</a>/// The web flow returns a host, a port and a key, and a [`LaunchPayload`] is
+<a href=#218 id=218 data-nosnippet>218</a>/// exactly those three. It has no game code: the web flow does not return
+<a href=#219 id=219 data-nosnippet>219</a>/// one, and filling it with the REQUESTED code (`GS3`) would put a second
+<a href=#220 id=220 data-nosnippet>220</a>/// vocabulary beside eaccess's `L`, which names the server's family code
+<a href=#221 id=221 data-nosnippet>221</a>/// (`GS`).
+<a href=#222 id=222 data-nosnippet>222</a></span><span class="kw">fn </span>from_web(launch: <span class="kw-2">&amp;</span>Launch) -&gt; LaunchPayload {
+<a href=#223 id=223 data-nosnippet>223</a>    LaunchPayload {
+<a href=#224 id=224 data-nosnippet>224</a>        gamehost: launch.host.clone(),
+<a href=#225 id=225 data-nosnippet>225</a>        gameport: launch.port,
+<a href=#226 id=226 data-nosnippet>226</a>        key: launch.key.clone(),
+<a href=#227 id=227 data-nosnippet>227</a>    }
+<a href=#228 id=228 data-nosnippet>228</a>}
+<a href=#229 id=229 data-nosnippet>229</a>
+<a href=#230 id=230 data-nosnippet>230</a><span class="doccomment">/// The eaccess error, noting that the fallback was tried and also failed.
+<a href=#231 id=231 data-nosnippet>231</a>///
+<a href=#232 id=232 data-nosnippet>232</a>/// The **stage and fatality are the primary's**, unchanged: the supervisor
+<a href=#233 id=233 data-nosnippet>233</a>/// acts on those, and a web-login failure must not change what it does about an
+<a href=#234 id=234 data-nosnippet>234</a>/// eaccess one. Only the human-readable detail gains a clause.
+<a href=#235 id=235 data-nosnippet>235</a>///
+<a href=#236 id=236 data-nosnippet>236</a>/// One exception, and it is the case that matters: if the fallback says the
+<a href=#237 id=237 data-nosnippet>237</a>/// **credentials** are wrong, then both systems have now refused them and
+<a href=#238 id=238 data-nosnippet>238</a>/// retrying is pointless. That is the one piece of information the fallback can
+<a href=#239 id=239 data-nosnippet>239</a>/// contribute which the primary did not have.
+<a href=#240 id=240 data-nosnippet>240</a>///
+<a href=#241 id=241 data-nosnippet>241</a>/// # Why this matches one variant by name rather than asking a predicate
+<a href=#242 id=242 data-nosnippet>242</a>///
+<a href=#243 id=243 data-nosnippet>243</a>/// Because "fatal **for web login**" and "fatal **for this login attempt**" are
+<a href=#244 id=244 data-nosnippet>244</a>/// different questions, and only one variant answers both. Four
+<a href=#245 id=245 data-nosnippet>245</a>/// [`WebLoginFailure`] variants end a web-login attempt; three of them say
+<a href=#246 id=246 data-nosnippet>246</a>/// nothing about whether eaccess would have succeeded:
+<a href=#247 id=247 data-nosnippet>247</a>///
+<a href=#248 id=248 data-nosnippet>248</a>/// | | fatal for web login | evidence against retrying at all |
+<a href=#249 id=249 data-nosnippet>249</a>/// |---|---|---|
+<a href=#250 id=250 data-nosnippet>250</a>/// | `LoginRejected` | yes | **yes** -- the credentials were refused |
+<a href=#251 id=251 data-nosnippet>251</a>/// | `NoSubscription` | yes | no -- this instance, not these credentials |
+<a href=#252 id=252 data-nosnippet>252</a>/// | `CharacterNotFound` | yes | no -- the scrape is the fragile part; eaccess enumerates properly |
+<a href=#253 id=253 data-nosnippet>253</a>/// | `UnsupportedGameCode` | yes | no -- web login's table is narrower than eaccess's |
+<a href=#254 id=254 data-nosnippet>254</a>///
+<a href=#255 id=255 data-nosnippet>255</a>/// `CharacterNotFound` is the sharpest case. Web login finds characters by
+<a href=#256 id=256 data-nosnippet>256</a>/// **scraping HTML**, which fails silently when the markup changes; eaccess
+<a href=#257 id=257 data-nosnippet>257</a>/// asks the `C` command. So "web login could not find the character" is a
+<a href=#258 id=258 data-nosnippet>258</a>/// statement about the scraper at least as often as about the account, and
+<a href=#259 id=259 data-nosnippet>259</a>/// letting it stop the ladder would turn a play.net markup change into a
+<a href=#260 id=260 data-nosnippet>260</a>/// permanently dead session.
+<a href=#261 id=261 data-nosnippet>261</a>///
+<a href=#262 id=262 data-nosnippet>262</a>/// Matching the one variant by name therefore is not a missed abstraction --
+<a href=#263 id=263 data-nosnippet>263</a>/// it IS the distinction. `failure.rs` records why no four-variant predicate
+<a href=#264 id=264 data-nosnippet>264</a>/// exists to be tempted by.
+<a href=#265 id=265 data-nosnippet>265</a></span><span class="kw">fn </span>carry_forward(primary: <span class="kw-2">&amp;</span>EaccessError, secondary: <span class="kw-2">&amp;</span>WebLoginFailure) -&gt; EaccessError {
+<a href=#266 id=266 data-nosnippet>266</a>    <span class="kw">let </span>credentials_refused = secondary.is_credential_refusal();
+<a href=#267 id=267 data-nosnippet>267</a>    EaccessError {
+<a href=#268 id=268 data-nosnippet>268</a>        stage: primary.stage,
+<a href=#269 id=269 data-nosnippet>269</a>        detail: <span class="macro">format!</span>(
+<a href=#270 id=270 data-nosnippet>270</a>            <span class="string">"{} (web-login fallback also failed: {secondary})"</span>,
+<a href=#271 id=271 data-nosnippet>271</a>            primary.detail
+<a href=#272 id=272 data-nosnippet>272</a>        ),
+<a href=#273 id=273 data-nosnippet>273</a>        fatal: primary.fatal || credentials_refused,
+<a href=#274 id=274 data-nosnippet>274</a>    }
+<a href=#275 id=275 data-nosnippet>275</a>}
+<a href=#276 id=276 data-nosnippet>276</a>
+<a href=#277 id=277 data-nosnippet>277</a><span class="attr">#[cfg(test)]
+<a href=#278 id=278 data-nosnippet>278</a>#[path = <span class="string">"fallback_tests.rs"</span>]
+<a href=#279 id=279 data-nosnippet>279</a></span><span class="kw">mod </span>fallback_tests;
+</code></pre></div></section></main></body></html>

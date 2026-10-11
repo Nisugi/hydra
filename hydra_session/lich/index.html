@@ -1,0 +1,64 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="The player’s own Lich, through the relay: what it may do to the character it runs for, through `LichDoor`, which `hydra-lich` holds."><title>hydra_session::lich - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="hydra_session" data-themes="" data-resource-suffix="" data-rustdoc-version="1.96.1 (31fca3adb 2026-06-26)" data-channel="1.96.1" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc mod"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Module lich</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../hydra_session/index.html">hydra_<wbr>session</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module lich</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#the-bytes-not-the-lines" title="The bytes, not the lines">The bytes, not the lines</a></li><li><a href="#the-players-typing" title="The player’s typing">The player’s typing</a></li><li><a href="#kept-up-and-let-go" title="Kept up, and let go">Kept up, and let go</a></li><li><a href="#what-it-shows" title="What it shows">What it shows</a></li><li><a href="#started-late" title="Started late">Started late</a></li><li><a href="#claimed-while-it-starts" title="Claimed while it starts">Claimed while it starts</a></li></ul><h3><a href="#structs">Module Items</a></h3><ul class="block"><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#enums" title="Enums">Enums</a></li><li><a href="#constants" title="Constants">Constants</a></li></ul></section><div id="rustdoc-modnav"><h2 class="in-crate"><a href="../index.html">In crate hydra_<wbr>session</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../index.html">hydra_session</a></div><h1>Module <span>lich</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/hydra_session/lich.rs.html#1-508">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>The player’s own Lich, through the relay: what it may do to the character
+it runs for, through <a href="struct.LichDoor.html" title="struct hydra_session::lich::LichDoor"><code>LichDoor</code></a>, which <code>hydra-lich</code> holds.</p>
+<p>Hydra keeps the game’s connection. Lich, started in pipe mode and pointed
+at a port the relay holds, takes the relay as its game. Once
+<a href="struct.LichDoor.html#method.attach" title="method hydra_session::lich::LichDoor::attach">attached</a> it is handed the game’s bytes as they came,
+and what the player types that Hydra does not take; what it writes to
+that port comes here as lines to send (<a href="struct.LichDoor.html#method.send" title="method hydra_session::lich::LichDoor::send"><code>LichDoor::send</code></a>).</p>
+<h2 id="the-bytes-not-the-lines"><a class="doc-anchor" href="#the-bytes-not-the-lines">§</a>The bytes, not the lines</h2>
+<p>Lich parses the stream itself, markup and all, so it is handed exactly
+what the game sent, as the recorder is: copied where a chunk arrives,
+before the parser, and read by nothing here.</p>
+<h2 id="the-players-typing"><a class="doc-anchor" href="#the-players-typing">§</a>The player’s typing</h2>
+<p>The symbol a line starts with says whose it is: a line starting with
+Lich’s command symbol goes to Lich, one starting with Hydra’s goes to
+Hydra. The rest of what the player types goes to Lich too, for its
+aliases and hooks.</p>
+<p>So a line is Hydra’s first, by its symbol (<code>claimant</code>). Then:</p>
+<ul>
+<li>a line with Lich’s symbol (<a href="../command/struct.SessionHandle.html#method.lich_symbol" title="method hydra_session::command::SessionHandle::lich_symbol"><code>SessionHandle::lich_symbol</code></a>, <code>;</code> unless
+the player chose another) is Lich’s, handed to its standard input, and
+never Hydra’s or the game’s: with no Lich running, the player is told;</li>
+<li>what the player typed at a window (<a href="../command/struct.SessionHandle.html#method.send_typed" title="method hydra_session::command::SessionHandle::send_typed"><code>SessionHandle::send_typed</code></a>) is
+Lich’s while one runs, and Lich sends what it makes of it;</li>
+<li>Hydra’s own lines (a relayed <code>.to</code>’s) go to the game, past Lich’s
+hooks, as a Lich script’s <code>put</code> never meets them.</li>
+</ul>
+<h2 id="kept-up-and-let-go"><a class="doc-anchor" href="#kept-up-and-let-go">§</a>Kept up, and let go</h2>
+<p>The Lich attached is the session’s, not a connection’s, so it stays up
+through a reconnect and sees the new login as more of the stream. Its
+scripts cannot work with no game connection, so while there is none its
+lines are not sent, and the relay says so.</p>
+<p>A Lich that stops reading is let go rather than waited on, or fed a
+stream with a hole in it: the copy holds <a href="constant.WIRE_CHUNKS.html" title="constant hydra_session::lich::WIRE_CHUNKS"><code>WIRE_CHUNKS</code></a> chunks, and the
+first that finds it full ends it (<a href="struct.Wire.html#method.fell_behind" title="method hydra_session::lich::Wire::fell_behind"><code>Wire::fell_behind</code></a>). Dropping
+chunks would leave a hole Lich cannot recover from, and blocking would
+stall the game’s own reader, so neither is done.</p>
+<h2 id="what-it-shows"><a class="doc-anchor" href="#what-it-shows">§</a>What it shows</h2>
+<p>What Lich would show a frontend, its standard output, is handed back
+(<a href="struct.LichDoor.html#method.show" title="method hydra_session::lich::LichDoor::show"><code>LichDoor::show</code></a>), parsed by a parser of its own (<code>text.rs</code>), and
+published as <a href="../event/enum.Event.html#variant.LichShown" title="variant hydra_session::event::Event::LichShown"><code>Event::LichShown</code></a>, each frame marked with whose line it
+was. A window shows it in place of the game’s text while Lich runs
+(<a href="enum.View.html#variant.Lich" title="variant hydra_session::lich::View::Lich"><code>View::Lich</code></a>: Lich’s squelches hold and its scripts’ messages show),
+or the game’s own text and Lich’s own lines beside it (<a href="enum.View.html#variant.Game" title="variant hydra_session::lich::View::Game"><code>View::Game</code></a>);
+the player toggles between the two. The
+session’s own parse of the game is everything else, as it was: the model,
+the panels, the log.</p>
+<h2 id="started-late"><a class="doc-anchor" href="#started-late">§</a>Started late</h2>
+<p>A Lich attached after the login is handed a login first, built from what
+the session knows as it attaches (<code>GameState::login</code>), then the live
+stream. The session’s actor builds it, from its model, between one chunk
+and the next, so the Lich misses nothing and is told nothing twice.</p>
+<h2 id="claimed-while-it-starts"><a class="doc-anchor" href="#claimed-while-it-starts">§</a>Claimed while it starts</h2>
+<p>Ruby and Lich take from seconds to half a minute to start. The relay
+<a href="struct.LichDoor.html#method.claim" title="method hydra_session::lich::LichDoor::claim">claims</a> the character’s Lich as it starts one: what
+the player types for it waits for it from then on, and no second starts
+beside it. Nothing else changes while it starts: it is handed none of the
+game, and the windows show the game’s own text. Once it has connected,
+the relay says so (<a href="struct.Wire.html#method.begin" title="method hydra_session::lich::Wire::begin"><code>Wire::begin</code></a>), and at the actor’s next turn, half a
+second at most, it is handed its login and the game, and the windows
+turn to its text (<a href="../event/enum.Event.html#variant.LichBegun" title="variant hydra_session::event::Event::LichBegun"><code>Event::LichBegun</code></a>).</p>
+</div></details><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.Attached.html" title="struct hydra_session::lich::Attached">Attached</a></dt><dd>A Lich attached to a character: what it is handed.</dd><dt><a class="struct" href="struct.LichDoor.html" title="struct hydra_session::lich::LichDoor">Lich<wbr>Door</a></dt><dd>The only way the player’s Lich acts on a session.</dd><dt><a class="struct" href="struct.Typing.html" title="struct hydra_session::lich::Typing">Typing</a></dt><dd>The lines for a Lich’s standard input, one at a time.</dd><dt><a class="struct" href="struct.Wire.html" title="struct hydra_session::lich::Wire">Wire</a></dt><dd>The game’s bytes, copied for a Lich as they arrive. Dropped, the Lich
+is gone, and the windows are told.</dd></dl><h2 id="enums" class="section-header">Enums<a href="#enums" class="anchor">§</a></h2><dl class="item-table"><dt><a class="enum" href="enum.LineFrom.html" title="enum hydra_session::lich::LineFrom">Line<wbr>From</a></dt><dd>Who began a line Lich sends.</dd><dt><a class="enum" href="enum.Mark.html" title="enum hydra_session::lich::Mark">Mark</a></dt><dd>Whose line a frame of Lich’s output came from.</dd><dt><a class="enum" href="enum.Sending.html" title="enum hydra_session::lich::Sending">Sending</a></dt><dd>What came of a line Lich sent.</dd><dt><a class="enum" href="enum.View.html" title="enum hydra_session::lich::View">View</a></dt><dd>Which text a window shows of a character whose Lich runs.</dd></dl><h2 id="constants" class="section-header">Constants<a href="#constants" class="anchor">§</a></h2><dl class="item-table"><dt><a class="constant" href="constant.TYPED_LINES.html" title="constant hydra_session::lich::TYPED_LINES">TYPED_<wbr>LINES</a></dt><dd>How many typed lines wait for a Lich: those typed while it starts. Past
+them the player’s line is not handed, and the player is told.</dd><dt><a class="constant" href="constant.WIRE_CHUNKS.html" title="constant hydra_session::lich::WIRE_CHUNKS">WIRE_<wbr>CHUNKS</a></dt><dd>How many chunks of the game’s bytes wait for a Lich that has not read
+them, as many records as Lich’s own queue holds.</dd></dl></section></div></main></body></html>

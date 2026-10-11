@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Act","Kind"],"fn":["placed"],"struct":["Interact","Thing"]};

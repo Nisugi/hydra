@@ -1,0 +1,37 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="What a cast asked for does: the checks it passes or is refused by, the stance it is cast from, its verb, and the commands it sends."><title>hydra_cast::plan - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="hydra_cast" data-themes="" data-resource-suffix="" data-rustdoc-version="1.96.1 (31fca3adb 2026-06-26)" data-channel="1.96.1" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc mod"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Module plan</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../hydra_cast/index.html">hydra_<wbr>cast</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module plan</a></h2><h3><a href="#structs">Module Items</a></h3><ul class="block"><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#enums" title="Enums">Enums</a></li><li><a href="#functions" title="Functions">Functions</a></li></ul></section><div id="rustdoc-modnav"><h2 class="in-crate"><a href="../index.html">In crate hydra_<wbr>cast</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../index.html">hydra_cast</a></div><h1>Module <span>plan</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/hydra_cast/plan.rs.html#1-567">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>What a cast asked for does: the checks it passes or is refused by, the
+stance it is cast from, its verb, and the commands it sends.</p>
+<p><strong>The checks</strong>, in order; a refusal is said and nothing is sent:</p>
+<ul>
+<li>the spell is known: refused only when the game’s own list of the
+character’s spells says it is not (a society power is not on that list,
+and is never refused here);</li>
+<li>with <strong>conserve</strong>: mana enough for every cast asked for (Mana Leech,
+516, needs only 1), and an attack spell’s target a live one here;</li>
+<li>with <strong>safety</strong>: an attack spell with a live target in the room.</li>
+</ul>
+<p>An attack spell is any whose roles include attack: <code>attack/area</code> (410)
+and <code>attack/utility</code> (516) as well.</p>
+<p><strong>A live target</strong> is one the game lists as a target that is in the room
+and not dead, leaving out an animated one (but for animated slush) and a
+creature’s limb (but for a kraken’s named tentacle). A target typed is
+found among them as the game would: <code>kobold</code> the last that fits,
+<code>second kobold</code> (or <code>other kobold</code>) the second, and two words the first,
+then anything, then the second (<code>great kobold</code>).</p>
+<p><strong>The stance</strong>: the spell’s own, or its alias’s; else offensive for an
+aimed spell while the stance option is on; else none.</p>
+<p><strong>The verb</strong>: the spell’s own, or its alias’s; else cast. While the
+channel option is on, a spell that can be channeled is channeled, and
+evoked with <code>channel evoke</code>.</p>
+<p><strong>The commands</strong>:</p>
+<div><table><thead><tr><th>target</th><th>verb</th><th>sent</th></tr></thead><tbody>
+<tr><td>none</td><td>cast</td><td><code>incant N [count]</code></td></tr>
+<tr><td>none</td><td>another</td><td><code>incant N &lt;verb&gt; [count]</code></td></tr>
+<tr><td>one</td><td>cast</td><td><code>prepare N</code>, then <code>cast &lt;target&gt; [count]</code></td></tr>
+<tr><td>one</td><td>another</td><td><code>target &lt;target&gt;</code>, then <code>incant N &lt;verb&gt; [count]</code></td></tr>
+</tbody></table>
+</div>
+<p>A spell that is never incanted (410, <code>incant='no'</code>) is prepared and cast
+instead. A society power sends the line the game knows it by, the target
+after it when it takes one.</p>
+</div></details><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.Cast.html" title="struct hydra_cast::plan::Cast">Cast</a></dt><dd>A cast, worked out.</dd><dt><a class="struct" href="struct.Commands.html" title="struct hydra_cast::plan::Commands">Commands</a></dt><dd>The commands a cast sends, in order.</dd></dl><h2 id="enums" class="section-header">Enums<a href="#enums" class="anchor">§</a></h2><dl class="item-table"><dt><a class="enum" href="enum.Verb.html" title="enum hydra_cast::plan::Verb">Verb</a></dt><dd>How a spell is cast.</dd></dl><h2 id="functions" class="section-header">Functions<a href="#functions" class="anchor">§</a></h2><dl class="item-table"><dt><a class="fn" href="fn.live_targets.html" title="fn hydra_cast::plan::live_targets">live_<wbr>targets</a></dt><dd>The live targets’ names, lower case, in the game’s order.</dd><dt><a class="fn" href="fn.plan.html" title="fn hydra_cast::plan::plan">plan</a></dt><dd>What <code>request</code> does, by <code>settings</code>, for the character <code>state</code> has; or
+why it is refused, in words for the player.</dd></dl></section></div></main></body></html>

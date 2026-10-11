@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["FILE"],"enum":["Whose"],"fn":["change","character"],"struct":["AliasFile","Aliases","Expanded"]};

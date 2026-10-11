@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["classify","match_template"],"struct":["Match"]};

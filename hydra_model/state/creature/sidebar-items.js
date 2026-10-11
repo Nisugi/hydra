@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["AttackCategory","MessageKind","Stat"],"fn":["by_name","by_noun","creature","creatures","in_room","load_problems","unparsed_attack_strengths"],"mod":["status"],"struct":["Ability","Area","Attack","Creature","Entry","Message","Treasure"]};

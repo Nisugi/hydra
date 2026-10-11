@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["account","commands","connector","lich_command","pages","relay","roster","session","table","teams"]};

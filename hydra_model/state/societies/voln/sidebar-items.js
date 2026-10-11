@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["BASE_FAVOR_COST_BY_LEVEL","MASTER_RANK","MIN_LEVEL","SYMBOLS"],"fn":["alternate_favor_cost","favor_cost","symbol"]};

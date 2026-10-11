@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["MAX_CHUNK_LINES"],"struct":["Chunk","ChunkLine"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["AssaultName","SequenceName"],"fn":["assault_end","assault_start","sequence_end","sequence_start"],"struct":["BracketStart"]};

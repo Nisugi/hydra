@@ -1,0 +1,40 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Redaction for wire-log excerpts cut into committed fixtures."><title>hydra_protocol::scrub - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="hydra_protocol" data-themes="" data-resource-suffix="" data-rustdoc-version="1.96.1 (31fca3adb 2026-06-26)" data-channel="1.96.1" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc mod"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Module scrub</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../hydra_protocol/index.html">hydra_<wbr>protocol</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module scrub</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#why-this-is-code-and-not-a-checklist" title="Why this is code and not a checklist">Why this is code and not a checklist</a></li><li><a href="#what-it-does-and-the-three-things-it-does-not" title="What it does, and the three things it does not">What it does, and the three things it does not</a></li><li><a href="#limits-stated-rather-than-implied" title="Limits, stated rather than implied">Limits, stated rather than implied</a></li></ul><h3><a href="#structs">Module Items</a></h3><ul class="block"><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#functions" title="Functions">Functions</a></li></ul></section><div id="rustdoc-modnav"><h2 class="in-crate"><a href="../index.html">In crate hydra_<wbr>protocol</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../index.html">hydra_protocol</a></div><h1>Module <span>scrub</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/hydra_protocol/scrub.rs.html#1-630">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Redaction for wire-log excerpts cut into committed fixtures.</p>
+<h2 id="why-this-is-code-and-not-a-checklist"><a class="doc-anchor" href="#why-this-is-code-and-not-a-checklist">§</a>Why this is code and not a checklist</h2>
+<p><code>druby://</code> host URIs appear in about a fifth of recorded session logs.
+Lich broadcasts its <code>DRb</code> endpoint through in-game group whispers, so
+those lines carry the player’s real link-local IPv6 addresses, interface
+indices and ephemeral ports. The real shape is
+<code>druby://&lt;link-local v6&gt;%&lt;iface&gt;:&lt;port&gt;</code>, NOT reproduced here – this
+file is the thing that removes such
+addresses, so hardcoding a live one would publish in the fixer the very
+datum the fixer exists to delete. Examples below use the RFC 3849
+documentation prefix <code>2001:db8::/32</code>. At that prevalence a
+manual redaction pass will eventually miss one, and fixtures get re-cut.</p>
+<p>So the rule is a function, and <code>tests/fixtures_are_scrubbed.rs</code> runs it
+over every committed fixture. That test can go RED: an unscrubbed excerpt
+written into the fixture directory fails it, naming the file and the
+pattern.</p>
+<h2 id="what-it-does-and-the-three-things-it-does-not"><a class="doc-anchor" href="#what-it-does-and-the-three-things-it-does-not">§</a>What it does, and the three things it does not</h2>
+<ol>
+<li><strong>Host URIs</strong> are replaced wholesale. Nothing about a <code>DRb</code> endpoint is
+game data, so no structure is preserved.</li>
+<li><strong>Player names</strong> are pseudonymised <strong>consistently</strong> – the same input
+name always yields the same output name, so <code>exist=</code>-to-name
+correlation still tests correctly, which is the whole point of keeping
+a <code>&lt;component id='room players'&gt;</code> fixture at all.</li>
+<li><strong>Third-party speech lines are dropped, not rewritten.</strong> Whispers,
+group OOC and private channels carry other people’s words; consent for
+those is not obtainable, and a pseudonym does not make a stranger’s
+sentence publishable.</li>
+</ol>
+<p>Deliberately <strong>not</strong> scrubbed, because they are game data and the parser
+is tested on them: <code>exist=</code> ids, <code>nav rm=</code> room ids, item nouns,
+<code>&lt;settingsInfo client= crc=&gt;</code>.</p>
+<h2 id="limits-stated-rather-than-implied"><a class="doc-anchor" href="#limits-stated-rather-than-implied">§</a>Limits, stated rather than implied</h2>
+<p><code>scrub</code> pseudonymises only names it is <strong>told</strong> about, via
+<a href="struct.Scrubber.html#method.pseudonymise" title="method hydra_protocol::scrub::Scrubber::pseudonymise"><code>Scrubber::pseudonymise</code></a>. It does not guess which capitalised word is a
+person: <code>Inochi</code> and <code>Rawknuckle's</code> are the same shape, one is a player and
+one is a tavern. Deciding that automatically would either mangle room names
+or miss players, and both failures are silent. The cutter names the players
+it saw; the test then proves those names are absent.</p>
+</div></details><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.Scrubber.html" title="struct hydra_protocol::scrub::Scrubber">Scrubber</a></dt><dd>Consistent pseudonyms, and the redaction rules that need no configuration.</dd></dl><h2 id="functions" class="section-header">Functions<a href="#functions" class="anchor">§</a></h2><dl class="item-table"><dt><a class="fn" href="fn.redact_host_uris.html" title="fn hydra_protocol::scrub::redact_host_uris">redact_<wbr>host_<wbr>uris</a></dt><dd>Replace every <code>druby://...</code> URI with <code>REDACTED_HOST</code>.</dd><dt><a class="fn" href="fn.strip_lich_timestamp.html" title="fn hydra_protocol::scrub::strip_lich_timestamp">strip_<wbr>lich_<wbr>timestamp</a></dt><dd>Strip Lich’s <code>HH:MM:SS: </code> line prefix.</dd><dt><a class="fn" href="fn.strip_vellum_images.html" title="fn hydra_protocol::scrub::strip_vellum_images">strip_<wbr>vellum_<wbr>images</a></dt><dd>Remove <code>&lt;vellumImg .../&gt;</code> elements.</dd></dl></section></div></main></body></html>

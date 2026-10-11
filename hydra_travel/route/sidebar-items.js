@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["PLACES"],"enum":["Meant","ShutWhy"],"fn":["described","destination","here","itinerary","places","pricing","table"],"struct":["Leg","Shut"]};

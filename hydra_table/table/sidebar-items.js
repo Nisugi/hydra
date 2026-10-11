@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["give_typing"],"struct":["Joined","Table"]};

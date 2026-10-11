@@ -1,0 +1,62 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="The line transducer: bytes in, `Frame`s out."><title>hydra_protocol::parser - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="hydra_protocol" data-themes="" data-resource-suffix="" data-rustdoc-version="1.96.1 (31fca3adb 2026-06-26)" data-channel="1.96.1" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc mod"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Module parser</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../hydra_protocol/index.html">hydra_<wbr>protocol</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module parser</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#why-hand-rolled-and-not-an-xml-library" title="Why hand-rolled and not an XML library">Why hand-rolled and not an XML library</a></li><li><a href="#the-read-boundary" title="The read boundary">The read boundary</a></li><li><a href="#multi-line-captures-measured-and-deliberately-not-built" title="MULTI-LINE CAPTURES: measured, and deliberately not built">MULTI-LINE CAPTURES: measured, and deliberately not built</a></li><li><a href="#the-prompt-as-a-resync-barrier" title="The prompt as a resync barrier">The prompt as a resync barrier</a></li><li><a href="#what-this-parser-does-not-do" title="What this parser does NOT do">What this parser does NOT do</a></li></ul><h3><a href="#structs">Module Items</a></h3><ul class="block"><li><a href="#structs" title="Structs">Structs</a></li></ul></section><div id="rustdoc-modnav"><h2 class="in-crate"><a href="../index.html">In crate hydra_<wbr>protocol</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../index.html">hydra_protocol</a></div><h1>Module <span>parser</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/hydra_protocol/parser.rs.html#1-455">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>The line transducer: bytes in, <a href="../frame/enum.Frame.html" title="enum hydra_protocol::frame::Frame"><code>Frame</code></a>s out.</p>
+<h2 id="why-hand-rolled-and-not-an-xml-library"><a class="doc-anchor" href="#why-hand-rolled-and-not-an-xml-library">§</a>Why hand-rolled and not an XML library</h2>
+<p>The wire has <strong>no root element</strong>. It is an unbounded sequence of fragments,
+and several tags are mode switches with no close: a corpus sample of
+5,079,826 tags measured 23,328 <code>&lt;style ...&gt;</code> opens and <strong>zero</strong> <code>&lt;/style&gt;</code>
+closes, plus <code>&lt;output class="mono"/&gt;</code> / <code>&lt;output class=""/&gt;</code> as an
+open/close pair that is self-closing at both ends. A tree-building parser
+must either error or invent structure, and this parser never errors on
+unknown input.</p>
+<p>The malformations that would justify a tolerant library are <strong>absent</strong>. In
+that same sample: 0 tags split across a newline, 0 unquoted attribute
+values, 0 tags opened without a <code>&gt;</code> on the line. The wire is well-lexed
+even though it is not well-formed. A substring scanner is sufficient, and
+sufficient is the simplest answer.</p>
+<h2 id="the-read-boundary"><a class="doc-anchor" href="#the-read-boundary">§</a>The read boundary</h2>
+<p><strong>A <a href="struct.Parser.html" title="struct hydra_protocol::parser::Parser"><code>Parser</code></a> consumes whole lines and never sees a TCP fragment.</strong> The
+socket reassembles with <code>read_until(b'\n')</code> before decoding, which is
+correct: the measurement above says the line is a safe frame boundary on
+this wire. <code>read_until</code> on bytes rather than <code>read_line</code> on a <code>String</code> is
+also load bearing – the stream is CP1252, and <code>read_line</code> returns
+<code>InvalidData</code> on any non-UTF-8 byte, which would hard-disconnect a client.</p>
+<p><a href="struct.Parser.html#method.push_bytes" title="method hydra_protocol::parser::Parser::push_bytes"><code>Parser::push_bytes</code></a> implements that reassembly here, so the rule is
+enforced by this crate rather than assumed of its caller, and so a test can
+drive a split at every byte offset.</p>
+<p><strong>A tag with no <code>&gt;</code> before the line ends is not prose.</strong> Appended to the
+text buffer, it would silently desync parser state. Here it is
+<a href="../frame/enum.Frame.html#variant.MalformedTag" title="variant hydra_protocol::frame::Frame::MalformedTag"><code>Frame::MalformedTag</code></a>: typed, logged, rendered.</p>
+<h2 id="multi-line-captures-measured-and-deliberately-not-built"><a class="doc-anchor" href="#multi-line-captures-measured-and-deliberately-not-built">§</a>MULTI-LINE CAPTURES: measured, and deliberately not built</h2>
+<p>Buffering a <code>&lt;compDef&gt;</code>/<code>&lt;component&gt;</code>/<code>&lt;inv&gt;</code> whose close tag is on a later
+line, accumulating until the close arrives, is <strong>not built</strong>, on evidence:</p>
+<div class="example-wrap"><pre class="language-text"><code>$ grep -h -cE &#39;&lt;(compDef|component|inv)[^&gt;]*&gt;[^&lt;]*$&#39; &lt;272 stratified files&gt;
+0                       # opens with no close on the same line
+$ grep -h -o &#39;&lt;compDef&#39; &lt;same files&gt; | wc -l
+447095                  # opens in total</code></pre></div>
+<p>and, driving the parser over 60 of those files, <strong>1,230,355 wire lines
+with no such open.</strong> Two years of traffic does not contain the case.</p>
+<p>Such a buffer would also be a black hole. Bounded by <code>MAX_LINE_BYTES</code> of
+<em>accumulated body</em>, which is not a bound on frames lost, at a realistic
+60-character line it would swallow <strong>4,297 consecutive lines of game
+text</strong> before the cap fired – 3,236 at 80 characters, 1,019 at 256. Only
+a <code>&lt;prompt&gt;</code> would break it sooner. That is a multi-thousand-line
+silent-loss risk for a case the wire has never produced.</p>
+<p>An unclosed paired tag is <a href="../frame/enum.Frame.html#variant.MalformedTag" title="variant hydra_protocol::frame::Frame::MalformedTag"><code>Frame::MalformedTag</code></a>, same as any other
+tag with no terminator: typed, surfaced, and bounded to its own line.
+<strong>Upgrade trigger:</strong> if the corpus replay ever reports a <code>MalformedTag</code>
+whose <code>raw</code> begins <code>&lt;compDef</code>, <code>&lt;component</code> or <code>&lt;inv</code>, the wire has started
+sending this and a buffering path is needed – bounded by <em>lines</em>, two
+or three, not by bytes.</p>
+<h2 id="the-prompt-as-a-resync-barrier"><a class="doc-anchor" href="#the-prompt-as-a-resync-barrier">§</a>The prompt as a resync barrier</h2>
+<p>At every <code>&lt;prompt&gt;</code>, force-close open streams and drop orphaned markup.
+It is what makes the push/pop imbalance harmless – the
+corpus has 19,142 <code>pushStream</code> against 14,714 <code>popStream</code>, because
+<code>pushStream</code> is not a stack discipline. Prompts are frequent (207,626 in
+the sample), so this <strong>bounds all state corruption to one round</strong>.</p>
+<h2 id="what-this-parser-does-not-do"><a class="doc-anchor" href="#what-this-parser-does-not-do">§</a>What this parser does NOT do</h2>
+<p>It does not drop lines that look like GSL framing by their first letters.
+A rule that drops any line beginning <code>GS</code> + a lowercase letter also
+swallows <code>"GSrule violations are handled by the GameMasters."</code> and
+<code>"GShaldi the merchant nods at you."</code> – ordinary game prose, silently
+discarded. Hydra talks to the game directly, so the case is live. GSL
+framing, when needed, must key on the <code>\x1C</code> prefix that actually marks it.</p>
+</div></details><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.Parser.html" title="struct hydra_protocol::parser::Parser">Parser</a></dt><dd>Stateful, per-session line transducer.</dd></dl></section></div></main></body></html>

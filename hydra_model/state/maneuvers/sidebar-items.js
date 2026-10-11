@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["cooldown_refusal","ready_line"],"struct":["Maneuvers"]};

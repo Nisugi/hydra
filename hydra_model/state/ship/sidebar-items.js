@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["ENEMY","HULLS","MAX_KEPT","WATCH_STREAM"],"enum":["Pace","ShipEvent"],"fn":["aboard"],"mod":["gear","reports"],"struct":["Aboard","Berth","Boarded","Launch","Leg","Peer","Ship","Waters"]};

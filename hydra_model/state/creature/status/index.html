@@ -1,0 +1,66 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="`&#60;crtrStatus&#62;`: what the wire says a creature is doing right now."><title>hydra_model::state::creature::status - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="hydra_model" data-themes="" data-resource-suffix="" data-rustdoc-version="1.96.1 (31fca3adb 2026-06-26)" data-channel="1.96.1" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../../../static.files/storage-41dd4d93.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../../../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-044be391.svg"></head><body class="rustdoc mod"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Module status</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../../../hydra_model/index.html">hydra_<wbr>model</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module status</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#two-vocabularies-because-they-answer-different-questions" title="Two vocabularies, because they answer different questions">Two vocabularies, because they answer different questions</a></li><li><a href="#one-flag-is-renamed-on-the-way-in" title="One flag is renamed on the way in">One flag is renamed on the way in</a></li><li><a href="#the-frame-hands-up-raw-attributes-deliberately" title="The frame hands up raw attributes deliberately">The frame hands up raw attributes deliberately</a></li><li><a href="#real-hit-points-and-when-they-started-arriving" title="Real hit points, and when they started arriving">Real hit points, and when they started arriving</a><ul><li><a href="#hostile-creatures-always-carry-it" title="Hostile creatures always carry it">Hostile creatures always carry it</a></li><li><a href="#health-goes-negative-so-it-is-signed" title="Health goes NEGATIVE, so it is signed">Health goes NEGATIVE, so it is signed</a></li><li><a href="#maxhealth0-means-no-hp-model-not-not-hostile" title="`maxhealth=&#34;0&#34;` means no HP model, NOT “not hostile”"><code>maxhealth="0"</code> means no HP model, NOT “not hostile”</a></li></ul></li><li><a href="#a-flag-that-is-present-but-0-is-off" title="A flag that is present but `0` is OFF">A flag that is present but <code>0</code> is OFF</a></li></ul><h3><a href="#structs">Module Items</a></h3><ul class="block"><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#enums" title="Enums">Enums</a></li></ul></section><div id="rustdoc-modnav"><h2><a href="../index.html">In hydra_<wbr>model::<wbr>state::<wbr>creature</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../../../index.html">hydra_model</a>::<wbr><a href="../../index.html">state</a>::<wbr><a href="../index.html">creature</a></div><h1>Module <span>status</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../../../src/hydra_model/state\creature/status.rs.html#1-430">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p><code>&lt;crtrStatus&gt;</code>: what the wire says a creature is doing right now.</p>
+<p>A stateless classifier over one frame, reading two flag tables.</p>
+<h2 id="two-vocabularies-because-they-answer-different-questions"><a class="doc-anchor" href="#two-vocabularies-because-they-answer-different-questions">§</a>Two vocabularies, because they answer different questions</h2>
+<p>They are kept apart and read through different predicates, because the
+distinction is real:</p>
+<ul>
+<li><strong><a href="enum.Status.html" title="enum hydra_model::state::creature::status::Status"><code>Status</code></a></strong> is transient – <code>stunned</code>, <code>webbed</code>, <code>prone</code>. It changes
+several times per fight and is the answer to <em>what is it doing</em>.</li>
+<li><strong><a href="enum.Classification.html" title="enum hydra_model::state::creature::status::Classification"><code>Classification</code></a></strong> is a standing fact – <code>hostile</code>, <code>dead</code>,
+<code>MiniBoss</code>. It is the answer to <em>what is it</em>.</li>
+</ul>
+<p>A caller picking a target wants both and wants them apart: a <code>stunned</code>
+creature is worth attacking, a <code>dead</code> one is not, and no single flag set
+makes that distinction legible.</p>
+<h2 id="one-flag-is-renamed-on-the-way-in"><a class="doc-anchor" href="#one-flag-is-renamed-on-the-way-in">§</a>One flag is renamed on the way in</h2>
+<p>The wire says <code>immobile</code> and the canonical name is <code>immobilized</code>, because
+the combat messages use the longer word and the two detections have to
+reconcile. The wire spelling is what <a href="enum.Status.html#method.parse" title="associated function hydra_model::state::creature::status::Status::parse"><code>Status::parse</code></a> accepts and the
+canonical spelling is what <a href="enum.Status.html#method.as_str" title="method hydra_model::state::creature::status::Status::as_str"><code>Status::as_str</code></a> prints, so both ends stay
+readable.</p>
+<p>MEASURED in <code>crates/hydra-protocol/tests/fixtures/creature_status.xml</code>:
+<code>immobile</code> appears on the wire, <code>immobilized</code> never does.</p>
+<h2 id="the-frame-hands-up-raw-attributes-deliberately"><a class="doc-anchor" href="#the-frame-hands-up-raw-attributes-deliberately">§</a>The frame hands up raw attributes deliberately</h2>
+<p><code>Frame::CreatureStatus</code> keeps <code>attrs</code> unparsed <em>“so the layer above owns
+the flag-name mapping”</em> (<code>frame.rs</code>). This is that layer.</p>
+<h2 id="real-hit-points-and-when-they-started-arriving"><a class="doc-anchor" href="#real-hit-points-and-when-they-started-arriving">§</a>Real hit points, and when they started arriving</h2>
+<p><code>health=</code> and <code>maxhealth=</code> are <strong>absolute hit points</strong>, not a percentage
+and not a flag: <code>health="30" maxhealth="600"</code> is a creature nearly dead.
+This is the game’s own answer to a question that used to require
+inference – a combat tracker accumulating damage against a bestiary
+estimate, which is what <a href="../../creatures/instance/struct.CreatureInstance.html" title="struct hydra_model::state::creatures::instance::CreatureInstance"><code>CreatureInstance</code></a>
+still does when the wire says nothing.</p>
+<p><strong>The feature is recent.</strong> MEASURED over a month of logs: health appears
+in <strong>2 files of 127</strong>, both from the most recent days, and in <strong>zero</strong>
+older ones – including one session carrying 11,414 <code>&lt;crtrStatus&gt;</code> tags
+and no health at all. The same creature proves it is not a per-creature
+property: the jeweler Etaenia (<code>exist="-285052"</code>) appears <strong>236 times
+without health and 7 times with</strong>.</p>
+<p>An attribute nobody has typed yet lands in <a href="struct.CreatureStatus.html#structfield.unknown" title="field hydra_model::state::creature::status::CreatureStatus::unknown"><code>CreatureStatus::unknown</code></a>
+rather than being dropped, which is how a protocol change like this one
+surfaces.</p>
+<h3 id="hostile-creatures-always-carry-it"><a class="doc-anchor" href="#hostile-creatures-always-carry-it">§</a>Hostile creatures always carry it</h3>
+<p>The server is taken to send hit points for every hostile creature.
+VERIFIED in the two health-era files: <strong>331 of 331</strong> rows carrying
+<code>hostile=</code> also carry <code>health=</code>, with none missing it.</p>
+<h3 id="health-goes-negative-so-it-is-signed"><a class="doc-anchor" href="#health-goes-negative-so-it-is-signed">§</a>Health goes NEGATIVE, so it is signed</h3>
+<p>A dead creature reads <code>health="-10" maxhealth="360" dead="1"</code>. An unsigned
+field cannot parse that: it fails, and <a href="struct.CreatureStatus.html#structfield.health" title="field hydra_model::state::creature::status::CreatureStatus::health"><code>CreatureStatus::health</code></a> silently
+becomes <code>None</code> – so a creature with a <code>dead</code> flag would report <em>no health
+information at all</em>, which is the opposite of what the row says.</p>
+<p>MEASURED on a real log: read unsigned, 327 of 331 hostile rows carry
+health where raw <code>grep</code> counts 331. The four lost are the dead ones.</p>
+<h3 id="maxhealth0-means-no-hp-model-not-not-hostile"><a class="doc-anchor" href="#maxhealth0-means-no-hp-model-not-not-hostile">§</a><code>maxhealth="0"</code> means no HP model, NOT “not hostile”</h3>
+<p>All 42 <code>maxhealth="0"</code> rows are non-hostile, so reading a zero as a
+non-combatant holds in that direction. It does <strong>not</strong>
+invert: the jeweler carries <code>health="240" maxhealth="240"</code> and is not
+hostile. So a zero max is “this NPC has no hit points to speak of”, and
+<a href="struct.CreatureStatus.html#method.health_percent" title="method hydra_model::state::creature::status::CreatureStatus::health_percent"><code>CreatureStatus::health_percent</code></a> returns <code>None</code> for it rather than
+dividing by zero.</p>
+<h2 id="a-flag-that-is-present-but-0-is-off"><a class="doc-anchor" href="#a-flag-that-is-present-but-0-is-off">§</a>A flag that is present but <code>0</code> is OFF</h2>
+<p>The wire writes <code>stunned="1"</code> to set and may write <code>stunned="0"</code> to clear.
+Both are a statement, which is why <a href="struct.CreatureStatus.html#method.from_attrs" title="associated function hydra_model::state::creature::status::CreatureStatus::from_attrs"><code>CreatureStatus::from_attrs</code></a> records
+<code>false</code> rather than absence for the second – and why
+<a href="struct.CreatureStatus.html#method.stated" title="method hydra_model::state::creature::status::CreatureStatus::stated"><code>CreatureStatus::stated</code></a> exists: a caller can tell “the game said it is
+not stunned” from “the game did not mention stunned”.</p>
+</div></details><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.CreatureStatus.html" title="struct hydra_model::state::creature::status::CreatureStatus">Creature<wbr>Status</a></dt><dd>One creature’s status, as a single <code>&lt;crtrStatus&gt;</code> stated it.</dd></dl><h2 id="enums" class="section-header">Enums<a href="#enums" class="anchor">§</a></h2><dl class="item-table"><dt><a class="enum" href="enum.Classification.html" title="enum hydra_model::state::creature::status::Classification">Classification</a></dt><dd>A standing fact about a creature, rather than a transient state.</dd><dt><a class="enum" href="enum.Status.html" title="enum hydra_model::state::creature::status::Status">Status</a></dt><dd>A transient combat state.</dd></dl></section></div></main></body></html>

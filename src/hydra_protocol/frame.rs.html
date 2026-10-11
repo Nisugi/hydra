@@ -1,0 +1,65 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates\hydra-protocol\src\frame.rs`."><title>frame.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="hydra_protocol" data-themes="" data-resource-suffix="" data-rustdoc-version="1.96.1 (31fca3adb 2026-06-26)" data-channel="1.96.1" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="../../static.files/src-script-813739b1.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><h1><div class="sub-heading">hydra_protocol/</div>frame.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap digits-2"><pre class="rust"><code><a href=#1 id=1 data-nosnippet>1</a><span class="doccomment">//! The frame vocabulary: what the wire can say.
+<a href=#2 id=2 data-nosnippet>2</a>//!
+<a href=#3 id=3 data-nosnippet>3</a>//! A [`Frame`] is one thing the game said, typed. The list of variants is
+<a href=#4 id=4 data-nosnippet>4</a>//! the protocol's vocabulary as Hydra understands it; [`crate::tags`] lists
+<a href=#5 id=5 data-nosnippet>5</a>//! the tag names behind it.
+<a href=#6 id=6 data-nosnippet>6</a>//!
+<a href=#7 id=7 data-nosnippet>7</a>//! # What is deliberately not a frame
+<a href=#8 id=8 data-nosnippet>8</a>//!
+<a href=#9 id=9 data-nosnippet>9</a>//! - **Client-side inventions.** Tags a client injects into its own log, and
+<a href=#10 id=10 data-nosnippet>10</a>//!   events a client raises from user-configured patterns over text, are not
+<a href=#11 id=11 data-nosnippet>11</a>//!   wire vocabulary. A protocol parser whose output depends on a user's
+<a href=#12 id=12 data-nosnippet>12</a>//!   config file is not a protocol parser; game meaning belongs above this
+<a href=#13 id=13 data-nosnippet>13</a>//!   layer, consuming frames. A client tag that does reach the wire falls to
+<a href=#14 id=14 data-nosnippet>14</a>//!   [`Frame::UnknownTag`].
+<a href=#15 id=15 data-nosnippet>15</a>//! - **One variant per widget.** The dialog widget tags (buttons, controls,
+<a href=#16 id=16 data-nosnippet>16</a>//!   drop-downs, fields, label lists, progress bars) are one shape -- "the
+<a href=#17 id=17 data-nosnippet>17</a>//!   game sent a widget tag with these attributes" -- so they are one
+<a href=#18 id=18 data-nosnippet>18</a>//!   [`payload::DialogWidgets`] keyed by the tag name. [`Frame::DialogOpen`]
+<a href=#19 id=19 data-nosnippet>19</a>//!   and [`Frame::DialogPanelOpen`] are separate; they carry a dialog, not a
+<a href=#20 id=20 data-nosnippet>20</a>//!   widget.
+<a href=#21 id=21 data-nosnippet>21</a>//! - **A variant nothing constructs.** Every variant here is produced by the
+<a href=#22 id=22 data-nosnippet>22</a>//!   parser. Dialogs not yet modelled (injuries as a popup, the quickbar's
+<a href=#23 id=23 data-nosnippet>23</a>//!   entries, the target drop-down) come back with their handlers, in one
+<a href=#24 id=24 data-nosnippet>24</a>//!   change, when they are needed.
+<a href=#25 id=25 data-nosnippet>25</a>//!
+<a href=#26 id=26 data-nosnippet>26</a>//! [`Frame::UnknownTag`], [`Frame::MalformedTag`] and [`Frame::Structural`]
+<a href=#27 id=27 data-nosnippet>27</a>//! are Hydra's own: the first two so a protocol change or a broken tag is
+<a href=#28 id=28 data-nosnippet>28</a>//! visible rather than dropped or mistaken for prose, the third so the tags
+<a href=#29 id=29 data-nosnippet>29</a>//! that carry no payload of their own are seen too. [`Frame::ClientCommand`]
+<a href=#30 id=30 data-nosnippet>30</a>//! and [`Frame::ClientSettings`] type the regions a log carries around the
+<a href=#31 id=31 data-nosnippet>31</a>//! player's own commands and the login's settings blob, and
+<a href=#32 id=32 data-nosnippet>32</a>//! [`Frame::CmdListUpdate`] and [`Frame::CmdTimestamp`] the dictionary rows
+<a href=#33 id=33 data-nosnippet>33</a>//! that keep the game's command labels current.
+<a href=#34 id=34 data-nosnippet>34</a>//!
+<a href=#35 id=35 data-nosnippet>35</a>//! # Presentation is not here
+<a href=#36 id=36 data-nosnippet>36</a>//!
+<a href=#37 id=37 data-nosnippet>37</a>//! The `Frame` is the vocabulary boundary; this crate carries wire shape,
+<a href=#38 id=38 data-nosnippet>38</a>//! not render intent:
+<a href=#39 id=39 data-nosnippet>39</a>//!
+<a href=#40 id=40 data-nosnippet>40</a>//! - There is no render class (normal, link, monsterbold, spell, speech).
+<a href=#41 id=41 data-nosnippet>41</a>//!   The preset id travels as data in [`Style::preset`] instead, so a preset
+<a href=#42 id=42 data-nosnippet>42</a>//!   the game invents tomorrow needs no change in this crate.
+<a href=#43 id=43 data-nosnippet>43</a>//! - Colours are not resolved here. A palette is user configuration, and
+<a href=#44 id=44 data-nosnippet>44</a>//!   resolving it would make the same bytes give different frames under a
+<a href=#45 id=45 data-nosnippet>45</a>//!   different theme, which is disqualifying for a replay test. This crate
+<a href=#46 id=46 data-nosnippet>46</a>//!   emits the markup structure and the layer that draws resolves colour.
+<a href=#47 id=47 data-nosnippet>47</a>//! - A link's kind is a real enum, [`LinkKind`], not a marker stuffed into a
+<a href=#48 id=48 data-nosnippet>48</a>//!   string. Which URL schemes may be opened is click-safety policy and
+<a href=#49 id=49 data-nosnippet>49</a>//!   belongs with the layer that opens browsers.
+<a href=#50 id=50 data-nosnippet>50</a>
+<a href=#51 id=51 data-nosnippet>51</a></span><span class="kw">mod </span>methods;
+<a href=#52 id=52 data-nosnippet>52</a><span class="kw">mod </span>payload;
+<a href=#53 id=53 data-nosnippet>53</a><span class="kw">mod </span>vocabulary;
+<a href=#54 id=54 data-nosnippet>54</a>
+<a href=#55 id=55 data-nosnippet>55</a><span class="kw">pub use </span>payload::{
+<a href=#56 id=56 data-nosnippet>56</a>    ActiveEffect, Amount, Capacity, CmdListEntry, CmdListUpdate, Continuation, DialogWidgets,
+<a href=#57 id=57 data-nosnippet>57</a>    InventoryItem, InventoryResponse, ItemDetail, ItemView, Link, LinkKind, Menu, MenuItem,
+<a href=#58 id=58 data-nosnippet>58</a>    Objective, ObjectiveAction, ObjectiveReward, ObjectivesAction, ProgressBar, RoomMeta, Style,
+<a href=#59 id=59 data-nosnippet>59</a>    TextFrame,
+<a href=#60 id=60 data-nosnippet>60</a>};
+<a href=#61 id=61 data-nosnippet>61</a><span class="kw">pub use </span>vocabulary::Frame;
+<a href=#62 id=62 data-nosnippet>62</a>
+<a href=#63 id=63 data-nosnippet>63</a><span class="doccomment">/// Attribute bag: name/value pairs exactly as the wire spelled them.
+<a href=#64 id=64 data-nosnippet>64</a></span><span class="kw">pub type </span>Attrs = Vec&lt;(String, String)&gt;;
+</code></pre></div></section></main></body></html>

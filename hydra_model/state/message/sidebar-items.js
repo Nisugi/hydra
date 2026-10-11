@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["MAX_MESSAGES"],"enum":["Channel"],"fn":["classify"],"struct":["Message","Messages"]};

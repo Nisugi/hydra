@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["MAIN"],"enum":["Closed","Destination"],"struct":["Windows"]};

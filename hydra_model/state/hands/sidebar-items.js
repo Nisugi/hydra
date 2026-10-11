@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Hand"],"fn":["object_id"]};

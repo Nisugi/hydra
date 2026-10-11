@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["CastType","CooldownKind","CooldownLanding","Duration","Role"],"fn":["all","circle_name","cooldown_landing","cooldown_messages_compiled","spell","spell_named","with_cooldowns"],"mod":["expr","extras"],"struct":["Spell"]};

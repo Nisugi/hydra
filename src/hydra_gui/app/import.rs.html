@@ -1,0 +1,413 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates\hydra-gui\src\app\import.rs`."><title>import.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="hydra_gui" data-themes="" data-resource-suffix="" data-rustdoc-version="1.96.1 (31fca3adb 2026-06-26)" data-channel="1.96.1" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../../static.files/storage-41dd4d93.js"></script><script defer src="../../../static.files/src-script-813739b1.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><h1><div class="sub-heading">hydra_gui\app/</div>import.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap digits-3"><pre class="rust"><code><a href=#1 id=1 data-nosnippet>1</a><span class="doccomment">//! The commands a play window does itself, since what they change is the
+<a href=#2 id=2 data-nosnippet>2</a>//! window's: `.keys import`, a Wrayth key set into this character's keys or
+<a href=#3 id=3 data-nosnippet>3</a>//! every character's; and `.doll`, its Injuries widgets turned, or a
+<a href=#4 id=4 data-nosnippet>4</a>//! folder's doll pictures brought into Hydra's `dolls` folder; and
+<a href=#5 id=5 data-nosnippet>5</a>//! `.controller`, the settings menu opened at its page; `.hotbars`, the
+<a href=#6 id=6 data-nosnippet>6</a>//! hotbar editor opened, or the hotbars files read again. Answered in
+<a href=#7 id=7 data-nosnippet>7</a>//! the story, as a command is. And `.hotbar`, a hotbar's button pressed,
+<a href=#8 id=8 data-nosnippet>8</a>//! which the command line claims, typed or put by a script, and the window
+<a href=#9 id=9 data-nosnippet>9</a>//! presses on its character's hotbars.
+<a href=#10 id=10 data-nosnippet>10</a>
+<a href=#11 id=11 data-nosnippet>11</a></span><span class="kw">use </span>std::fmt::Write <span class="kw">as _</span>;
+<a href=#12 id=12 data-nosnippet>12</a><span class="kw">use </span>std::path::Path;
+<a href=#13 id=13 data-nosnippet>13</a><span class="kw">use </span>std::sync::Arc;
+<a href=#14 id=14 data-nosnippet>14</a>
+<a href=#15 id=15 data-nosnippet>15</a><span class="kw">use </span>hydra_session::claimant;
+<a href=#16 id=16 data-nosnippet>16</a><span class="kw">use </span>hydra_session::{Event, Notice, NoticeKind};
+<a href=#17 id=17 data-nosnippet>17</a>
+<a href=#18 id=18 data-nosnippet>18</a><span class="kw">use </span><span class="kw">super</span>::App;
+<a href=#19 id=19 data-nosnippet>19</a><span class="kw">use </span><span class="kw">crate</span>::keys::page::{KeyChange, Place};
+<a href=#20 id=20 data-nosnippet>20</a><span class="kw">use </span><span class="kw">crate</span>::keys::{Whose, wrayth, write};
+<a href=#21 id=21 data-nosnippet>21</a><span class="kw">use </span><span class="kw">crate</span>::play::Asked;
+<a href=#22 id=22 data-nosnippet>22</a><span class="kw">use </span><span class="kw">crate</span>::seat::Seat;
+<a href=#23 id=23 data-nosnippet>23</a>
+<a href=#24 id=24 data-nosnippet>24</a><span class="doccomment">/// What `.hotbar` says when it is not given a bar and a button.
+<a href=#25 id=25 data-nosnippet>25</a></span><span class="kw">const </span>HOTBAR_HELP: <span class="kw-2">&amp;</span>str = <span class="string">"hotbar &lt;bar&gt; &lt;button&gt;: press a hotbar's button, by its id or its                            nickname: it sends what a click would."</span>;
+<a href=#26 id=26 data-nosnippet>26</a>
+<a href=#27 id=27 data-nosnippet>27</a><span class="doccomment">/// Whether `rest`, a line's words after its command symbol, is `.hotbar`.
+<a href=#28 id=28 data-nosnippet>28</a></span><span class="kw">fn </span>is_hotbar_word(rest: <span class="kw-2">&amp;</span>str) -&gt; bool {
+<a href=#29 id=29 data-nosnippet>29</a>    rest.split_whitespace()
+<a href=#30 id=30 data-nosnippet>30</a>        .next()
+<a href=#31 id=31 data-nosnippet>31</a>        .is_some_and(|word| word.eq_ignore_ascii_case(<span class="string">"hotbar"</span>))
+<a href=#32 id=32 data-nosnippet>32</a>}
+<a href=#33 id=33 data-nosnippet>33</a>
+<a href=#34 id=34 data-nosnippet>34</a><span class="doccomment">/// What `.doll` says when it is not given a word it knows.
+<a href=#35 id=35 data-nosnippet>35</a></span><span class="kw">const </span>DOLL_HELP: <span class="kw-2">&amp;</span>str = <span class="string">"doll face &lt;degrees&gt;: turn this window's Infinite doll (0 faces you, 90 \
+<a href=#36 id=36 data-nosnippet>36</a>                         turns its front to the right, -90 to the left, 180 away); doll import \
+<a href=#37 id=37 data-nosnippet>37</a>                         &lt;folder&gt;: the doll pictures in &lt;folder&gt; into Hydra's dolls folder, the \
+<a href=#38 id=38 data-nosnippet>38</a>                         calibration in a &lt;picture&gt;.toml beside each written into it. A pack's \
+<a href=#39 id=39 data-nosnippet>39</a>                         dolls need no import. Pick a picture on the Injuries widget's page."</span>;
+<a href=#40 id=40 data-nosnippet>40</a>
+<a href=#41 id=41 data-nosnippet>41</a><span class="doccomment">/// What `.keys` says when it is not given `import` and a file.
+<a href=#42 id=42 data-nosnippet>42</a></span><span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="string">"keys import &lt;Wrayth settings file&gt;: its key sets into this character's \
+<a href=#43 id=43 data-nosnippet>43</a>                     keys; keys import global &lt;file&gt;: into every character's."</span>;
+<a href=#44 id=44 data-nosnippet>44</a>
+<a href=#45 id=45 data-nosnippet>45</a><span class="kw">impl </span>App {
+<a href=#46 id=46 data-nosnippet>46</a>    <span class="doccomment">/// `line`, typed on `seat`'s window, done here when it is `.keys` or
+<a href=#47 id=47 data-nosnippet>47</a>    /// `.doll` with the character's own command symbol: whether it was.
+<a href=#48 id=48 data-nosnippet>48</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>window_command(<span class="kw-2">&amp;mut </span><span class="self">self</span>, seat: <span class="kw-2">&amp;</span>Seat, line: <span class="kw-2">&amp;</span>str) -&gt; bool {
+<a href=#49 id=49 data-nosnippet>49</a>        <span class="kw">let </span>line = line.trim();
+<a href=#50 id=50 data-nosnippet>50</a>        <span class="kw">let </span><span class="prelude-val">Some</span>(rest) = line.strip_prefix(<span class="self">self</span>.symbol_of(seat)) <span class="kw">else </span>{
+<a href=#51 id=51 data-nosnippet>51</a>            <span class="kw">return </span><span class="bool-val">false</span>;
+<a href=#52 id=52 data-nosnippet>52</a>        };
+<a href=#53 id=53 data-nosnippet>53</a>        <span class="kw">let </span>(word, rest) = rest
+<a href=#54 id=54 data-nosnippet>54</a>            .trim_start()
+<a href=#55 id=55 data-nosnippet>55</a>            .split_once(char::is_whitespace)
+<a href=#56 id=56 data-nosnippet>56</a>            .unwrap_or((rest.trim_start(), <span class="string">""</span>));
+<a href=#57 id=57 data-nosnippet>57</a>        <span class="kw">let </span>rest = rest.trim();
+<a href=#58 id=58 data-nosnippet>58</a>        <span class="kw">let </span>said = <span class="kw">if </span>word.eq_ignore_ascii_case(<span class="string">"keys"</span>) {
+<a href=#59 id=59 data-nosnippet>59</a>            <span class="self">self</span>.keys_command(seat, rest)
+<a href=#60 id=60 data-nosnippet>60</a>        } <span class="kw">else if </span>word.eq_ignore_ascii_case(<span class="string">"doll"</span>) {
+<a href=#61 id=61 data-nosnippet>61</a>            <span class="self">self</span>.doll_command(seat, rest)
+<a href=#62 id=62 data-nosnippet>62</a>        } <span class="kw">else if </span>word.eq_ignore_ascii_case(<span class="string">"controller"</span>) {
+<a href=#63 id=63 data-nosnippet>63</a>            <span class="self">self</span>.controller_command(seat, rest)
+<a href=#64 id=64 data-nosnippet>64</a>        } <span class="kw">else if </span>word.eq_ignore_ascii_case(<span class="string">"hotbars"</span>) {
+<a href=#65 id=65 data-nosnippet>65</a>            <span class="self">self</span>.hotbars_command(rest)
+<a href=#66 id=66 data-nosnippet>66</a>        } <span class="kw">else if </span>word.eq_ignore_ascii_case(<span class="string">"savelayout"</span>) {
+<a href=#67 id=67 data-nosnippet>67</a>            <span class="self">self</span>.layout_command(seat, rest, <span class="bool-val">true</span>)
+<a href=#68 id=68 data-nosnippet>68</a>        } <span class="kw">else if </span>word.eq_ignore_ascii_case(<span class="string">"loadlayout"</span>) {
+<a href=#69 id=69 data-nosnippet>69</a>            <span class="self">self</span>.layout_command(seat, rest, <span class="bool-val">false</span>)
+<a href=#70 id=70 data-nosnippet>70</a>        } <span class="kw">else if </span>word.eq_ignore_ascii_case(<span class="string">"map"</span>) {
+<a href=#71 id=71 data-nosnippet>71</a>            <span class="self">self</span>.map_command(rest)
+<a href=#72 id=72 data-nosnippet>72</a>        } <span class="kw">else </span>{
+<a href=#73 id=73 data-nosnippet>73</a>            <span class="kw">return </span><span class="bool-val">false</span>;
+<a href=#74 id=74 data-nosnippet>74</a>        };
+<a href=#75 id=75 data-nosnippet>75</a>        <span class="kw">let </span>kind = <span class="kw">if </span>said.len() &gt; <span class="number">1 </span>{
+<a href=#76 id=76 data-nosnippet>76</a>            NoticeKind::Warn
+<a href=#77 id=77 data-nosnippet>77</a>        } <span class="kw">else </span>{
+<a href=#78 id=78 data-nosnippet>78</a>            NoticeKind::Info
+<a href=#79 id=79 data-nosnippet>79</a>        };
+<a href=#80 id=80 data-nosnippet>80</a>        <span class="kw">let </span><span class="kw-2">mut </span>story = seat.story();
+<a href=#81 id=81 data-nosnippet>81</a>        story.hear(<span class="kw-2">&amp;</span>Event::Claimed(line.to_owned()));
+<a href=#82 id=82 data-nosnippet>82</a>        story.push(hydra_ui::Shown::Said(Notice::prose(kind, said).answering()));
+<a href=#83 id=83 data-nosnippet>83</a>        <span class="bool-val">true
+<a href=#84 id=84 data-nosnippet>84</a>    </span>}
+<a href=#85 id=85 data-nosnippet>85</a>
+<a href=#86 id=86 data-nosnippet>86</a>    <span class="doccomment">/// Each `.hotbar` line the characters' command lines claimed, pressed
+<a href=#87 id=87 data-nosnippet>87</a>    /// on its character's hotbars: what each sends, as a click would; why
+<a href=#88 id=88 data-nosnippet>88</a>    /// not, said in its story.
+<a href=#89 id=89 data-nosnippet>89</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>hotbar_pressed(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Vec&lt;(Arc&lt;Seat&gt;, Asked)&gt; {
+<a href=#90 id=90 data-nosnippet>90</a>        <span class="kw">let </span>seats: Vec&lt;Arc&lt;Seat&gt;&gt; = <span class="self">self
+<a href=#91 id=91 data-nosnippet>91</a>            </span>.characters
+<a href=#92 id=92 data-nosnippet>92</a>            .values()
+<a href=#93 id=93 data-nosnippet>93</a>            .map(|character| Arc::clone(<span class="kw-2">&amp;</span>character.seat))
+<a href=#94 id=94 data-nosnippet>94</a>            .collect();
+<a href=#95 id=95 data-nosnippet>95</a>        <span class="kw">let </span><span class="kw-2">mut </span>asks = Vec::new();
+<a href=#96 id=96 data-nosnippet>96</a>        <span class="kw">for </span>seat <span class="kw">in </span>seats {
+<a href=#97 id=97 data-nosnippet>97</a>            <span class="kw">let </span>lines = seat.hotbar_presses();
+<a href=#98 id=98 data-nosnippet>98</a>            <span class="kw">if </span>lines.is_empty() {
+<a href=#99 id=99 data-nosnippet>99</a>                <span class="kw">continue</span>;
+<a href=#100 id=100 data-nosnippet>100</a>            }
+<a href=#101 id=101 data-nosnippet>101</a>            <span class="kw">let </span>symbol = <span class="self">self</span>.symbol_of(<span class="kw-2">&amp;</span>seat);
+<a href=#102 id=102 data-nosnippet>102</a>            <span class="kw">let </span><span class="prelude-val">Some</span>(character) = <span class="self">self</span>.characters.get_mut(<span class="kw-2">&amp;</span>seat.id) <span class="kw">else </span>{
+<a href=#103 id=103 data-nosnippet>103</a>                <span class="kw">continue</span>;
+<a href=#104 id=104 data-nosnippet>104</a>            };
+<a href=#105 id=105 data-nosnippet>105</a>            <span class="kw">for </span>line <span class="kw">in </span>lines {
+<a href=#106 id=106 data-nosnippet>106</a>                <span class="kw">let </span>rest = line
+<a href=#107 id=107 data-nosnippet>107</a>                    .trim()
+<a href=#108 id=108 data-nosnippet>108</a>                    .strip_prefix(symbol)
+<a href=#109 id=109 data-nosnippet>109</a>                    .map(str::trim_start)
+<a href=#110 id=110 data-nosnippet>110</a>                    .and_then(|rest| rest.get(<span class="string">"hotbar"</span>.len()..))
+<a href=#111 id=111 data-nosnippet>111</a>                    .unwrap_or_default();
+<a href=#112 id=112 data-nosnippet>112</a>                <span class="kw">let </span>pressed = {
+<a href=#113 id=113 data-nosnippet>113</a>                    <span class="kw">let </span>story = seat.story();
+<a href=#114 id=114 data-nosnippet>114</a>                    <span class="kw">match </span>(<span class="kw">crate</span>::hotbars::named(rest), story.world()) {
+<a href=#115 id=115 data-nosnippet>115</a>                        (<span class="prelude-val">None</span>, <span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(HOTBAR_HELP.to_owned()),
+<a href=#116 id=116 data-nosnippet>116</a>                        (<span class="prelude-val">Some</span>(<span class="kw">_</span>), <span class="prelude-val">None</span>) =&gt; {
+<a href=#117 id=117 data-nosnippet>117</a>                            <span class="prelude-val">Err</span>(<span class="string">"Not yet: the character is not known yet."</span>.to_owned())
+<a href=#118 id=118 data-nosnippet>118</a>                        }
+<a href=#119 id=119 data-nosnippet>119</a>                        (<span class="prelude-val">Some</span>(named), <span class="prelude-val">Some</span>(world)) =&gt; character.play.hotbar_press(named, <span class="kw-2">&amp;</span>world),
+<a href=#120 id=120 data-nosnippet>120</a>                    }
+<a href=#121 id=121 data-nosnippet>121</a>                };
+<a href=#122 id=122 data-nosnippet>122</a>                <span class="comment">// A button that presses buttons would press for ever.
+<a href=#123 id=123 data-nosnippet>123</a>                </span><span class="kw">let </span>pressed = pressed.and_then(|command| {
+<a href=#124 id=124 data-nosnippet>124</a>                    <span class="kw">let </span>own = command
+<a href=#125 id=125 data-nosnippet>125</a>                        .trim()
+<a href=#126 id=126 data-nosnippet>126</a>                        .strip_prefix(symbol)
+<a href=#127 id=127 data-nosnippet>127</a>                        .is_some_and(is_hotbar_word);
+<a href=#128 id=128 data-nosnippet>128</a>                    <span class="kw">if </span>own {
+<a href=#129 id=129 data-nosnippet>129</a>                        <span class="prelude-val">Err</span>(<span class="string">"Not sent: a hotbar button never presses another."</span>.to_owned())
+<a href=#130 id=130 data-nosnippet>130</a>                    } <span class="kw">else </span>{
+<a href=#131 id=131 data-nosnippet>131</a>                        <span class="prelude-val">Ok</span>(command)
+<a href=#132 id=132 data-nosnippet>132</a>                    }
+<a href=#133 id=133 data-nosnippet>133</a>                });
+<a href=#134 id=134 data-nosnippet>134</a>                <span class="kw">match </span>pressed {
+<a href=#135 id=135 data-nosnippet>135</a>                    <span class="prelude-val">Ok</span>(command) =&gt; asks.push((Arc::clone(<span class="kw-2">&amp;</span>seat), Asked::Send(command))),
+<a href=#136 id=136 data-nosnippet>136</a>                    <span class="prelude-val">Err</span>(why) =&gt; {
+<a href=#137 id=137 data-nosnippet>137</a>                        <span class="kw">let </span>said = Notice::line(NoticeKind::Warn, why).answering();
+<a href=#138 id=138 data-nosnippet>138</a>                        seat.story().push(hydra_ui::Shown::Said(said));
+<a href=#139 id=139 data-nosnippet>139</a>                    }
+<a href=#140 id=140 data-nosnippet>140</a>                }
+<a href=#141 id=141 data-nosnippet>141</a>            }
+<a href=#142 id=142 data-nosnippet>142</a>        }
+<a href=#143 id=143 data-nosnippet>143</a>        asks
+<a href=#144 id=144 data-nosnippet>144</a>    }
+<a href=#145 id=145 data-nosnippet>145</a>
+<a href=#146 id=146 data-nosnippet>146</a>    <span class="doccomment">/// `.controller`: the settings menu opened at the Controller page, the
+<a href=#147 id=147 data-nosnippet>147</a>    /// character's own, or with `global` every character's; `.controller
+<a href=#148 id=148 data-nosnippet>148</a>    /// reload` reads the controller files again.
+<a href=#149 id=149 data-nosnippet>149</a>    </span><span class="kw">fn </span>controller_command(<span class="kw-2">&amp;mut </span><span class="self">self</span>, seat: <span class="kw-2">&amp;</span>Seat, rest: <span class="kw-2">&amp;</span>str) -&gt; Vec&lt;String&gt; {
+<a href=#150 id=150 data-nosnippet>150</a>        <span class="kw">if </span>rest.eq_ignore_ascii_case(<span class="string">"reload"</span>) {
+<a href=#151 id=151 data-nosnippet>151</a>            <span class="self">self</span>.pad.read(<span class="kw-2">&amp;</span><span class="self">self</span>.data);
+<a href=#152 id=152 data-nosnippet>152</a>            <span class="kw">let </span><span class="kw-2">mut </span>said = <span class="macro">vec!</span>[<span class="string">"The controller files are read again."</span>.to_owned()];
+<a href=#153 id=153 data-nosnippet>153</a>            said.extend(<span class="self">self</span>.pad.said.iter().cloned());
+<a href=#154 id=154 data-nosnippet>154</a>            <span class="kw">return </span>said;
+<a href=#155 id=155 data-nosnippet>155</a>        }
+<a href=#156 id=156 data-nosnippet>156</a>        <span class="kw">let </span>whose =
+<a href=#157 id=157 data-nosnippet>157</a>            (!rest.eq_ignore_ascii_case(<span class="string">"global"</span>)).then(|| <span class="macro">format!</span>(<span class="string">"{}:{}"</span>, seat.game, seat.name));
+<a href=#158 id=158 data-nosnippet>158</a>        <span class="kw">let </span>said = <span class="kw">if </span>whose.is_some() {
+<a href=#159 id=159 data-nosnippet>159</a>            <span class="string">"The Controller page is open, on this character's own."
+<a href=#160 id=160 data-nosnippet>160</a>        </span>} <span class="kw">else </span>{
+<a href=#161 id=161 data-nosnippet>161</a>            <span class="string">"The Controller page is open, on every character's."
+<a href=#162 id=162 data-nosnippet>162</a>        </span>};
+<a href=#163 id=163 data-nosnippet>163</a>        <span class="self">self</span>.settings
+<a href=#164 id=164 data-nosnippet>164</a>            .open_at(whose, <span class="prelude-val">Some</span>(<span class="kw">crate</span>::settings_menu::CONTROLLER));
+<a href=#165 id=165 data-nosnippet>165</a>        <span class="macro">vec!</span>[said.to_owned()]
+<a href=#166 id=166 data-nosnippet>166</a>    }
+<a href=#167 id=167 data-nosnippet>167</a>
+<a href=#168 id=168 data-nosnippet>168</a>    <span class="doccomment">/// `.keys`, its words after it `rest`: what was done.
+<a href=#169 id=169 data-nosnippet>169</a>    </span><span class="kw">fn </span>keys_command(<span class="kw-2">&amp;mut </span><span class="self">self</span>, seat: <span class="kw-2">&amp;</span>Seat, rest: <span class="kw-2">&amp;</span>str) -&gt; Vec&lt;String&gt; {
+<a href=#170 id=170 data-nosnippet>170</a>        <span class="kw">match </span>rest.strip_prefix(<span class="string">"import"</span>) {
+<a href=#171 id=171 data-nosnippet>171</a>            <span class="prelude-val">Some</span>(file) <span class="kw">if </span>!file.trim().is_empty() =&gt; {
+<a href=#172 id=172 data-nosnippet>172</a>                <span class="kw">let </span>file = file.trim();
+<a href=#173 id=173 data-nosnippet>173</a>                <span class="kw">let </span>(every, file) = <span class="kw">match </span>file.strip_prefix(<span class="string">"global"</span>) {
+<a href=#174 id=174 data-nosnippet>174</a>                    <span class="prelude-val">Some</span>(after) <span class="kw">if </span>after.starts_with(char::is_whitespace) =&gt; (<span class="bool-val">true</span>, after.trim()),
+<a href=#175 id=175 data-nosnippet>175</a>                    <span class="kw">_ </span>=&gt; (<span class="bool-val">false</span>, file),
+<a href=#176 id=176 data-nosnippet>176</a>                };
+<a href=#177 id=177 data-nosnippet>177</a>                <span class="self">self</span>.import(seat, Path::new(file.trim_matches(<span class="string">'"'</span>)), every)
+<a href=#178 id=178 data-nosnippet>178</a>            }
+<a href=#179 id=179 data-nosnippet>179</a>            <span class="kw">_ </span>=&gt; <span class="macro">vec!</span>[USAGE.to_owned()],
+<a href=#180 id=180 data-nosnippet>180</a>        }
+<a href=#181 id=181 data-nosnippet>181</a>    }
+<a href=#182 id=182 data-nosnippet>182</a>
+<a href=#183 id=183 data-nosnippet>183</a>    <span class="doccomment">/// `.doll`, its words after it `rest`: what was done.
+<a href=#184 id=184 data-nosnippet>184</a>    </span><span class="kw">fn </span>doll_command(<span class="kw-2">&amp;mut </span><span class="self">self</span>, seat: <span class="kw-2">&amp;</span>Seat, rest: <span class="kw-2">&amp;</span>str) -&gt; Vec&lt;String&gt; {
+<a href=#185 id=185 data-nosnippet>185</a>        <span class="kw">let </span>(verb, after) = rest.split_once(char::is_whitespace).unwrap_or((rest, <span class="string">""</span>));
+<a href=#186 id=186 data-nosnippet>186</a>        <span class="kw">let </span>after = after.trim();
+<a href=#187 id=187 data-nosnippet>187</a>        <span class="kw">match </span>verb.to_ascii_lowercase().as_str() {
+<a href=#188 id=188 data-nosnippet>188</a>            <span class="string">"face" </span>=&gt; {
+<a href=#189 id=189 data-nosnippet>189</a>                <span class="kw">let </span><span class="prelude-val">Some</span>(deg) = after
+<a href=#190 id=190 data-nosnippet>190</a>                    .trim_end_matches(<span class="string">'\u{b0}'</span>)
+<a href=#191 id=191 data-nosnippet>191</a>                    .parse::&lt;f32&gt;()
+<a href=#192 id=192 data-nosnippet>192</a>                    .ok()
+<a href=#193 id=193 data-nosnippet>193</a>                    .filter(|deg| deg.is_finite())
+<a href=#194 id=194 data-nosnippet>194</a>                <span class="kw">else </span>{
+<a href=#195 id=195 data-nosnippet>195</a>                    <span class="kw">return </span><span class="macro">vec!</span>[<span class="macro">format!</span>(
+<a href=#196 id=196 data-nosnippet>196</a>                        <span class="string">"Doll: `{after}` is not a facing in degrees. {DOLL_HELP}"
+<a href=#197 id=197 data-nosnippet>197</a>                    </span>)];
+<a href=#198 id=198 data-nosnippet>198</a>                };
+<a href=#199 id=199 data-nosnippet>199</a>                <span class="attr">#[expect(
+<a href=#200 id=200 data-nosnippet>200</a>                    clippy::cast_possible_truncation,
+<a href=#201 id=201 data-nosnippet>201</a>                    reason = <span class="string">"wrapped to -180..180 first"
+<a href=#202 id=202 data-nosnippet>202</a>                </span>)]
+<a href=#203 id=203 data-nosnippet>203</a>                </span><span class="kw">let </span>deg = ((deg + <span class="number">180.0</span>).rem_euclid(<span class="number">360.0</span>) - <span class="number">180.0</span>).round() <span class="kw">as </span>i16;
+<a href=#204 id=204 data-nosnippet>204</a>                <span class="kw">let </span>turned = <span class="self">self
+<a href=#205 id=205 data-nosnippet>205</a>                    </span>.characters
+<a href=#206 id=206 data-nosnippet>206</a>                    .get_mut(<span class="kw-2">&amp;</span>seat.id)
+<a href=#207 id=207 data-nosnippet>207</a>                    .map_or(<span class="number">0</span>, |character| character.play.turn_dolls(deg));
+<a href=#208 id=208 data-nosnippet>208</a>                <span class="macro">vec!</span>[<span class="kw">match </span>turned {
+<a href=#209 id=209 data-nosnippet>209</a>                    <span class="number">0 </span>=&gt; <span class="string">"Doll: this window has no Injuries widget to turn."</span>.to_owned(),
+<a href=#210 id=210 data-nosnippet>210</a>                    <span class="kw">_ </span>=&gt; <span class="macro">format!</span>(<span class="string">"Doll: turned to {deg}\u{b0}."</span>),
+<a href=#211 id=211 data-nosnippet>211</a>                }]
+<a href=#212 id=212 data-nosnippet>212</a>            }
+<a href=#213 id=213 data-nosnippet>213</a>            <span class="string">"import" </span><span class="kw">if </span>!after.is_empty() =&gt; {
+<a href=#214 id=214 data-nosnippet>214</a>                <span class="kw">let </span>folder = Path::new(after.trim_matches(<span class="string">'"'</span>));
+<a href=#215 id=215 data-nosnippet>215</a>                <span class="kw">match </span><span class="kw">crate</span>::doll_import::import_dolls(folder, <span class="kw-2">&amp;</span><span class="self">self</span>.data.join(<span class="string">"dolls"</span>)) {
+<a href=#216 id=216 data-nosnippet>216</a>                    <span class="prelude-val">Ok</span>(brought) =&gt; <span class="macro">vec!</span>[doll_said(<span class="kw-2">&amp;</span>brought)],
+<a href=#217 id=217 data-nosnippet>217</a>                    <span class="prelude-val">Err</span>(why) =&gt; <span class="macro">vec!</span>[<span class="macro">format!</span>(<span class="string">"Doll: {why}"</span>)],
+<a href=#218 id=218 data-nosnippet>218</a>                }
+<a href=#219 id=219 data-nosnippet>219</a>            }
+<a href=#220 id=220 data-nosnippet>220</a>            <span class="kw">_ </span>=&gt; <span class="macro">vec!</span>[DOLL_HELP.to_owned()],
+<a href=#221 id=221 data-nosnippet>221</a>        }
+<a href=#222 id=222 data-nosnippet>222</a>    }
+<a href=#223 id=223 data-nosnippet>223</a>
+<a href=#224 id=224 data-nosnippet>224</a>    <span class="doccomment">/// `.savelayout &lt;name&gt;` (`saving`) and `.loadlayout [&lt;name&gt;]`: this
+<a href=#225 id=225 data-nosnippet>225</a>    /// window's whole layout kept under a name for any character, and one
+<a href=#226 id=226 data-nosnippet>226</a>    /// so kept taken as this window's; `.loadlayout` alone lists them.
+<a href=#227 id=227 data-nosnippet>227</a>    </span><span class="kw">fn </span>layout_command(<span class="kw-2">&amp;mut </span><span class="self">self</span>, seat: <span class="kw-2">&amp;</span>Seat, name: <span class="kw-2">&amp;</span>str, saving: bool) -&gt; Vec&lt;String&gt; {
+<a href=#228 id=228 data-nosnippet>228</a>        <span class="kw">let </span>name = name.trim().trim_matches(<span class="string">'"'</span>);
+<a href=#229 id=229 data-nosnippet>229</a>        <span class="kw">let </span><span class="prelude-val">Some</span>(character) = <span class="self">self</span>.characters.get_mut(<span class="kw-2">&amp;</span>seat.id) <span class="kw">else </span>{
+<a href=#230 id=230 data-nosnippet>230</a>            <span class="kw">return </span><span class="macro">vec!</span>[<span class="string">"This character has no window."</span>.to_owned()];
+<a href=#231 id=231 data-nosnippet>231</a>        };
+<a href=#232 id=232 data-nosnippet>232</a>        <span class="kw">let </span>play = <span class="kw-2">&amp;mut </span>character.play;
+<a href=#233 id=233 data-nosnippet>233</a>        <span class="kw">if </span>saving {
+<a href=#234 id=234 data-nosnippet>234</a>            <span class="kw">if </span>name.is_empty() {
+<a href=#235 id=235 data-nosnippet>235</a>                <span class="kw">return </span><span class="macro">vec!</span>[
+<a href=#236 id=236 data-nosnippet>236</a>                    <span class="string">"savelayout &lt;name&gt;: save this window's layout, every window \
+<a href=#237 id=237 data-nosnippet>237</a>                             sized and placed as it is, for any character to load."
+<a href=#238 id=238 data-nosnippet>238</a>                        </span>.to_owned(),
+<a href=#239 id=239 data-nosnippet>239</a>                ];
+<a href=#240 id=240 data-nosnippet>240</a>            }
+<a href=#241 id=241 data-nosnippet>241</a>            <span class="kw">return </span><span class="macro">vec!</span>[play.save_layout_as(name).unwrap_or_else(|why| why)];
+<a href=#242 id=242 data-nosnippet>242</a>        }
+<a href=#243 id=243 data-nosnippet>243</a>        <span class="kw">if </span>name.is_empty() {
+<a href=#244 id=244 data-nosnippet>244</a>            <span class="kw">let </span>names = play.named_layouts();
+<a href=#245 id=245 data-nosnippet>245</a>            <span class="kw">return </span><span class="macro">vec!</span>[<span class="kw">if </span>names.is_empty() {
+<a href=#246 id=246 data-nosnippet>246</a>                <span class="string">"No layouts are saved by name; savelayout &lt;name&gt; saves this one."</span>.to_owned()
+<a href=#247 id=247 data-nosnippet>247</a>            } <span class="kw">else </span>{
+<a href=#248 id=248 data-nosnippet>248</a>                <span class="macro">format!</span>(
+<a href=#249 id=249 data-nosnippet>249</a>                    <span class="string">"loadlayout &lt;name&gt; takes one of these as this window's: {}."</span>,
+<a href=#250 id=250 data-nosnippet>250</a>                    names.join(<span class="string">", "</span>)
+<a href=#251 id=251 data-nosnippet>251</a>                )
+<a href=#252 id=252 data-nosnippet>252</a>            }];
+<a href=#253 id=253 data-nosnippet>253</a>        }
+<a href=#254 id=254 data-nosnippet>254</a>        <span class="macro">vec!</span>[play.load_layout_named(name).unwrap_or_else(|why| why)]
+<a href=#255 id=255 data-nosnippet>255</a>    }
+<a href=#256 id=256 data-nosnippet>256</a>
+<a href=#257 id=257 data-nosnippet>257</a>    <span class="doccomment">/// `.map [&lt;room&gt;|&lt;creature&gt;]`: the Map Explorer opened; with a room,
+<a href=#258 id=258 data-nosnippet>258</a>    /// shown there; with a creature, its grounds tinted there.
+<a href=#259 id=259 data-nosnippet>259</a>    </span><span class="kw">fn </span>map_command(<span class="kw-2">&amp;mut </span><span class="self">self</span>, words: <span class="kw-2">&amp;</span>str) -&gt; Vec&lt;String&gt; {
+<a href=#260 id=260 data-nosnippet>260</a>        <span class="self">self</span>.explorer.open = <span class="bool-val">true</span>;
+<a href=#261 id=261 data-nosnippet>261</a>        <span class="self">self</span>.mapped.wanted(<span class="kw-2">&amp;</span><span class="self">self</span>.data);
+<a href=#262 id=262 data-nosnippet>262</a>        <span class="kw">if </span>words.trim().is_empty() {
+<a href=#263 id=263 data-nosnippet>263</a>            <span class="kw">return </span><span class="macro">vec!</span>[<span class="string">"The map is open."</span>.to_owned()];
+<a href=#264 id=264 data-nosnippet>264</a>        }
+<a href=#265 id=265 data-nosnippet>265</a>        <span class="kw">let </span><span class="prelude-val">Some</span>((map, atlas)) = <span class="self">self</span>.mapped.loaded() <span class="kw">else </span>{
+<a href=#266 id=266 data-nosnippet>266</a>            <span class="kw">return </span><span class="macro">vec!</span>[<span class="string">"The map is still loading: ask again in a moment."</span>.to_owned()];
+<a href=#267 id=267 data-nosnippet>267</a>        };
+<a href=#268 id=268 data-nosnippet>268</a>        <span class="macro">vec!</span>[
+<a href=#269 id=269 data-nosnippet>269</a>            <span class="self">self</span>.explorer
+<a href=#270 id=270 data-nosnippet>270</a>                .asked(map, atlas, words)
+<a href=#271 id=271 data-nosnippet>271</a>                .unwrap_or_else(|why| why),
+<a href=#272 id=272 data-nosnippet>272</a>        ]
+<a href=#273 id=273 data-nosnippet>273</a>    }
+<a href=#274 id=274 data-nosnippet>274</a>
+<a href=#275 id=275 data-nosnippet>275</a>    <span class="doccomment">/// `seat`'s character's Lich symbol: as its session holds it, kept up
+<a href=#276 id=276 data-nosnippet>276</a>    /// to date by the settings menu; else as its settings file says.
+<a href=#277 id=277 data-nosnippet>277</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>lich_symbol_of(<span class="kw-2">&amp;</span><span class="self">self</span>, seat: <span class="kw-2">&amp;</span>Seat) -&gt; char {
+<a href=#278 id=278 data-nosnippet>278</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(symbol) = seat.lich_symbol() {
+<a href=#279 id=279 data-nosnippet>279</a>            <span class="kw">return </span>symbol;
+<a href=#280 id=280 data-nosnippet>280</a>        }
+<a href=#281 id=281 data-nosnippet>281</a>        seat.instance
+<a href=#282 id=282 data-nosnippet>282</a>            .as_deref()
+<a href=#283 id=283 data-nosnippet>283</a>            .and_then(|instance| {
+<a href=#284 id=284 data-nosnippet>284</a>                hydra_session::settings_store::load(<span class="kw-2">&amp;</span><span class="self">self</span>.data, instance, <span class="kw-2">&amp;</span>seat.name).ok()
+<a href=#285 id=285 data-nosnippet>285</a>            })
+<a href=#286 id=286 data-nosnippet>286</a>            .and_then(|file| file.section::&lt;claimant::Settings&gt;(claimant::SECTION).ok())
+<a href=#287 id=287 data-nosnippet>287</a>            .map_or(claimant::DEFAULT_LICH_SYMBOL, |settings| {
+<a href=#288 id=288 data-nosnippet>288</a>                settings.lich_symbol()
+<a href=#289 id=289 data-nosnippet>289</a>            })
+<a href=#290 id=290 data-nosnippet>290</a>    }
+<a href=#291 id=291 data-nosnippet>291</a>
+<a href=#292 id=292 data-nosnippet>292</a>    <span class="doccomment">/// `seat`'s character's command symbol: as its session holds it, kept
+<a href=#293 id=293 data-nosnippet>293</a>    /// up to date by the settings menu; else as its settings file says.
+<a href=#294 id=294 data-nosnippet>294</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>symbol_of(<span class="kw-2">&amp;</span><span class="self">self</span>, seat: <span class="kw-2">&amp;</span>Seat) -&gt; char {
+<a href=#295 id=295 data-nosnippet>295</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(symbol) = seat.symbol() {
+<a href=#296 id=296 data-nosnippet>296</a>            <span class="kw">return </span>symbol;
+<a href=#297 id=297 data-nosnippet>297</a>        }
+<a href=#298 id=298 data-nosnippet>298</a>        seat.instance
+<a href=#299 id=299 data-nosnippet>299</a>            .as_deref()
+<a href=#300 id=300 data-nosnippet>300</a>            .and_then(|instance| {
+<a href=#301 id=301 data-nosnippet>301</a>                hydra_session::settings_store::load(<span class="kw-2">&amp;</span><span class="self">self</span>.data, instance, <span class="kw-2">&amp;</span>seat.name).ok()
+<a href=#302 id=302 data-nosnippet>302</a>            })
+<a href=#303 id=303 data-nosnippet>303</a>            .and_then(|file| file.section::&lt;claimant::Settings&gt;(claimant::SECTION).ok())
+<a href=#304 id=304 data-nosnippet>304</a>            .map_or(claimant::DEFAULT_SYMBOL, |settings| settings.symbol())
+<a href=#305 id=305 data-nosnippet>305</a>    }
+<a href=#306 id=306 data-nosnippet>306</a>
+<a href=#307 id=307 data-nosnippet>307</a>    <span class="doccomment">/// The Wrayth key sets in `file` into `seat`'s character's keys, or
+<a href=#308 id=308 data-nosnippet>308</a>    /// every character's (`every`); what was done, a line at a time.
+<a href=#309 id=309 data-nosnippet>309</a>    </span><span class="kw">fn </span>import(<span class="kw-2">&amp;mut </span><span class="self">self</span>, seat: <span class="kw-2">&amp;</span>Seat, file: <span class="kw-2">&amp;</span>Path, every: bool) -&gt; Vec&lt;String&gt; {
+<a href=#310 id=310 data-nosnippet>310</a>        <span class="kw">let </span>text = <span class="kw">match </span>std::fs::read_to_string(file) {
+<a href=#311 id=311 data-nosnippet>311</a>            <span class="prelude-val">Ok</span>(text) =&gt; text,
+<a href=#312 id=312 data-nosnippet>312</a>            <span class="prelude-val">Err</span>(why) =&gt; <span class="kw">return </span><span class="macro">vec!</span>[<span class="macro">format!</span>(<span class="string">"Keys: {} could not be read: {why}"</span>, file.display())],
+<a href=#313 id=313 data-nosnippet>313</a>        };
+<a href=#314 id=314 data-nosnippet>314</a>        <span class="kw">let </span>(imported, <span class="kw-2">mut </span>said) = wrayth::read(<span class="kw-2">&amp;</span>text);
+<a href=#315 id=315 data-nosnippet>315</a>        <span class="kw">let </span>(path, whose, whom) = <span class="kw">if </span>every {
+<a href=#316 id=316 data-nosnippet>316</a>            (
+<a href=#317 id=317 data-nosnippet>317</a>                <span class="self">self</span>.keys_file.clone(),
+<a href=#318 id=318 data-nosnippet>318</a>                Whose::Every,
+<a href=#319 id=319 data-nosnippet>319</a>                <span class="string">"every character's keys"</span>.to_owned(),
+<a href=#320 id=320 data-nosnippet>320</a>            )
+<a href=#321 id=321 data-nosnippet>321</a>        } <span class="kw">else </span>{
+<a href=#322 id=322 data-nosnippet>322</a>            (
+<a href=#323 id=323 data-nosnippet>323</a>                <span class="self">self</span>.mine_path(seat),
+<a href=#324 id=324 data-nosnippet>324</a>                Whose::Character,
+<a href=#325 id=325 data-nosnippet>325</a>                <span class="macro">format!</span>(<span class="string">"{}'s keys"</span>, seat.name),
+<a href=#326 id=326 data-nosnippet>326</a>            )
+<a href=#327 id=327 data-nosnippet>327</a>        };
+<a href=#328 id=328 data-nosnippet>328</a>        <span class="comment">// A key already doing what it would -- in that file as it is now,
+<a href=#329 id=329 data-nosnippet>329</a>        // its own line counted -- is left as it is.
+<a href=#330 id=330 data-nosnippet>330</a>        </span><span class="kw">let </span>mine = (!every)
+<a href=#331 id=331 data-nosnippet>331</a>            .then(|| <span class="self">self</span>.mine.get(<span class="kw-2">&amp;</span>path).map(|(mine, <span class="kw">_</span>)| mine))
+<a href=#332 id=332 data-nosnippet>332</a>            .flatten();
+<a href=#333 id=333 data-nosnippet>333</a>        <span class="kw">let </span>(<span class="kw-2">mut </span>changes, <span class="kw-2">mut </span>already, <span class="kw-2">mut </span>moved) = (Vec::new(), <span class="number">0</span>, Vec::new());
+<a href=#334 id=334 data-nosnippet>334</a>        <span class="kw">for </span>key <span class="kw">in </span><span class="kw-2">&amp;</span>imported {
+<a href=#335 id=335 data-nosnippet>335</a>            <span class="kw">let </span>beneath = <span class="self">self</span>.keys.beneath(whose, <span class="kw-2">&amp;</span>key.chord);
+<a href=#336 id=336 data-nosnippet>336</a>            <span class="kw">if </span>key.set == <span class="number">0 </span>&amp;&amp; <span class="self">self</span>.keys.in_file(whose, mine, <span class="kw-2">&amp;</span>key.chord) == <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>key.does) {
+<a href=#337 id=337 data-nosnippet>337</a>                already += <span class="number">1</span>;
+<a href=#338 id=338 data-nosnippet>338</a>                <span class="kw">continue</span>;
+<a href=#339 id=339 data-nosnippet>339</a>            }
+<a href=#340 id=340 data-nosnippet>340</a>            <span class="kw">if </span>key.set == <span class="number">0 </span>&amp;&amp; beneath.is_some_and(|beneath| <span class="kw-2">*</span>beneath != key.does) {
+<a href=#341 id=341 data-nosnippet>341</a>                moved.push(key.chord.written());
+<a href=#342 id=342 data-nosnippet>342</a>            }
+<a href=#343 id=343 data-nosnippet>343</a>            changes.push(KeyChange::Bind {
+<a href=#344 id=344 data-nosnippet>344</a>                key: key.chord.written(),
+<a href=#345 id=345 data-nosnippet>345</a>                does: key.does.clone(),
+<a href=#346 id=346 data-nosnippet>346</a>                was: <span class="prelude-val">None</span>,
+<a href=#347 id=347 data-nosnippet>347</a>                place: Place {
+<a href=#348 id=348 data-nosnippet>348</a>                    set: key.set,
+<a href=#349 id=349 data-nosnippet>349</a>                    every,
+<a href=#350 id=350 data-nosnippet>350</a>                },
+<a href=#351 id=351 data-nosnippet>351</a>            });
+<a href=#352 id=352 data-nosnippet>352</a>        }
+<a href=#353 id=353 data-nosnippet>353</a>        <span class="kw">let </span>name = <span class="kw">super</span>::keyed::name_of(<span class="kw-2">&amp;</span>path);
+<a href=#354 id=354 data-nosnippet>354</a>        <span class="kw">let </span>old = <span class="kw">match </span><span class="self">self</span>.keys_text(<span class="kw-2">&amp;</span>path) {
+<a href=#355 id=355 data-nosnippet>355</a>            <span class="prelude-val">Ok</span>(old) =&gt; old,
+<a href=#356 id=356 data-nosnippet>356</a>            <span class="prelude-val">Err</span>(why) =&gt; <span class="kw">return </span><span class="macro">vec!</span>[why],
+<a href=#357 id=357 data-nosnippet>357</a>        };
+<a href=#358 id=358 data-nosnippet>358</a>        <span class="kw">let </span>(text, made, <span class="kw-2">mut </span>refused) =
+<a href=#359 id=359 data-nosnippet>359</a>            <span class="kw">match </span>write::made_all(<span class="kw-2">&amp;</span>old, (<span class="kw-2">&amp;</span>name, whose), <span class="kw-2">&amp;</span>changes, (<span class="kw-2">&amp;</span><span class="self">self</span>.keys, <span class="string">"Keys"</span>)) {
+<a href=#360 id=360 data-nosnippet>360</a>                <span class="prelude-val">Ok</span>(done) =&gt; done,
+<a href=#361 id=361 data-nosnippet>361</a>                <span class="prelude-val">Err</span>(why) =&gt; <span class="kw">return </span><span class="macro">vec!</span>[why],
+<a href=#362 id=362 data-nosnippet>362</a>            };
+<a href=#363 id=363 data-nosnippet>363</a>        <span class="comment">// The same keys made to the file with the next batch of saves.
+<a href=#364 id=364 data-nosnippet>364</a>        </span><span class="kw">let </span>keys = <span class="self">self</span>.keys.clone();
+<a href=#365 id=365 data-nosnippet>365</a>        <span class="self">self</span>.keys_written(
+<a href=#366 id=366 data-nosnippet>366</a>            <span class="kw-2">&amp;</span>path,
+<a href=#367 id=367 data-nosnippet>367</a>            text,
+<a href=#368 id=368 data-nosnippet>368</a>            Box::new(<span class="kw">move </span>|now: <span class="kw-2">&amp;</span>str| {
+<a href=#369 id=369 data-nosnippet>369</a>                write::made_all(now, (<span class="kw-2">&amp;</span>name, whose), <span class="kw-2">&amp;</span>changes, (<span class="kw-2">&amp;</span>keys, <span class="string">"Keys"</span>))
+<a href=#370 id=370 data-nosnippet>370</a>                    .map(|(text, <span class="kw">_</span>, <span class="kw">_</span>)| text)
+<a href=#371 id=371 data-nosnippet>371</a>            }),
+<a href=#372 id=372 data-nosnippet>372</a>        );
+<a href=#373 id=373 data-nosnippet>373</a>        <span class="kw">let </span>name = file
+<a href=#374 id=374 data-nosnippet>374</a>            .file_name()
+<a href=#375 id=375 data-nosnippet>375</a>            .map_or_else(String::new, |name| name.to_string_lossy().into_owned());
+<a href=#376 id=376 data-nosnippet>376</a>        <span class="kw">let </span><span class="kw-2">mut </span>lines = <span class="macro">vec!</span>[<span class="macro">format!</span>(
+<a href=#377 id=377 data-nosnippet>377</a>            <span class="string">"Keys: {made} imported from {name} into {whom}; {already} already so."
+<a href=#378 id=378 data-nosnippet>378</a>        </span>)];
+<a href=#379 id=379 data-nosnippet>379</a>        <span class="kw">if </span>!moved.is_empty() {
+<a href=#380 id=380 data-nosnippet>380</a>            lines.push(<span class="macro">format!</span>(
+<a href=#381 id=381 data-nosnippet>381</a>                <span class="string">"These now do what Wrayth had them do, not Hydra's: {}. Restore one on the Keys page for Hydra's."</span>,
+<a href=#382 id=382 data-nosnippet>382</a>                moved.join(<span class="string">", "</span>)
+<a href=#383 id=383 data-nosnippet>383</a>            ));
+<a href=#384 id=384 data-nosnippet>384</a>        }
+<a href=#385 id=385 data-nosnippet>385</a>        said.append(<span class="kw-2">&amp;mut </span>refused);
+<a href=#386 id=386 data-nosnippet>386</a>        <span class="kw">if </span>!said.is_empty() {
+<a href=#387 id=387 data-nosnippet>387</a>            lines.push(<span class="string">"Not imported:"</span>.to_owned());
+<a href=#388 id=388 data-nosnippet>388</a>            lines.append(<span class="kw-2">&amp;mut </span>said);
+<a href=#389 id=389 data-nosnippet>389</a>        }
+<a href=#390 id=390 data-nosnippet>390</a>        lines
+<a href=#391 id=391 data-nosnippet>391</a>    }
+<a href=#392 id=392 data-nosnippet>392</a>}
+<a href=#393 id=393 data-nosnippet>393</a>
+<a href=#394 id=394 data-nosnippet>394</a><span class="doccomment">/// What a doll import says it brought.
+<a href=#395 id=395 data-nosnippet>395</a></span><span class="kw">fn </span>doll_said(brought: <span class="kw-2">&amp;</span><span class="kw">crate</span>::doll_import::DollsImported) -&gt; String {
+<a href=#396 id=396 data-nosnippet>396</a>    <span class="kw">let </span><span class="kw-2">mut </span>said = <span class="macro">format!</span>(
+<a href=#397 id=397 data-nosnippet>397</a>        <span class="string">"Doll: from {}, {} picture(s) and {} overlay(s) into Hydra's dolls folder; {} \
+<a href=#398 id=398 data-nosnippet>398</a>         calibrated from the file beside it. Pick one on the Injuries widget's page."</span>,
+<a href=#399 id=399 data-nosnippet>399</a>        brought.from.display(),
+<a href=#400 id=400 data-nosnippet>400</a>        brought.pictures,
+<a href=#401 id=401 data-nosnippet>401</a>        brought.overlays,
+<a href=#402 id=402 data-nosnippet>402</a>        brought.calibrated
+<a href=#403 id=403 data-nosnippet>403</a>    );
+<a href=#404 id=404 data-nosnippet>404</a>    <span class="kw">if </span>!brought.kept.is_empty() {
+<a href=#405 id=405 data-nosnippet>405</a>        <span class="kw">let _ </span>= <span class="macro">write!</span>(
+<a href=#406 id=406 data-nosnippet>406</a>            said,
+<a href=#407 id=407 data-nosnippet>407</a>            <span class="string">" Already there, so left as they are: {}."</span>,
+<a href=#408 id=408 data-nosnippet>408</a>            brought.kept.join(<span class="string">", "</span>)
+<a href=#409 id=409 data-nosnippet>409</a>        );
+<a href=#410 id=410 data-nosnippet>410</a>    }
+<a href=#411 id=411 data-nosnippet>411</a>    said
+<a href=#412 id=412 data-nosnippet>412</a>}
+</code></pre></div></section></main></body></html>

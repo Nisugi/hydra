@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["FOLDER"],"fn":["answer","path"]};

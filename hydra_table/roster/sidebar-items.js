@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["FILENAME"],"fn":["all","available","favourite","find","forget","nickname","record"],"struct":["Entry"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["BATCH"],"fn":["copy","edit","edit_bytes","edit_locked","failed","flush","pending","save_bytes","saves","untold","whole","whole_keeping_unread"],"struct":["Later","Saves"],"type":["Edit","Reads"]};

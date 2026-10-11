@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["SCHEMA_VERSION"],"enum":["Group"],"struct":["CharacterSnapshot"]};

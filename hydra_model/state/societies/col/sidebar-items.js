@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["MASTER_RANK","SIGNS"],"fn":["affordable","sign"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Pick"],"fn":["any_link","bolded_link","is_self","link_in","link_name","pattern_addresses_self"],"struct":["Actor"]};

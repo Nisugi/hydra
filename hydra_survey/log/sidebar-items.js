@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Body","EdgeResult","Happening"],"fn":["file_name","newest","read","stamp_now","time_now"],"struct":["EdgeRecord","EventRecord","Log","Record","RoomRecord","VerbRecord","Via"],"type":["Sid"]};

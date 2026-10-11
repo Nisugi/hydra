@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["appraised_frail","is_appraise_size","measured_percent"]};

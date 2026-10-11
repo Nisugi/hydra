@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["EXPORT","FILE"],"fn":["filed_area","pocket"],"struct":["Overrides"]};

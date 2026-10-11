@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["CREATURES","OBJECTS"],"fn":["is_creature","is_object"]};

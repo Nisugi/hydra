@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["DAY","HOUR"],"fn":["civil_from_days","date","days_from_civil","format","midnight","now","offset","parse","starts_period","stretch_start","week_start","weekday"],"type":["Date"]};

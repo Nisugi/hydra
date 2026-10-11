@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Sighting"],"fn":["classify"],"struct":["Overwatch"]};

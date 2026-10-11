@@ -1,0 +1,57 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Context menus: turning a `&#60;menu&#62;` of bare coordinates into labelled commands."><title>hydra_model::state::menu - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="hydra_model" data-themes="" data-resource-suffix="" data-rustdoc-version="1.96.1 (31fca3adb 2026-06-26)" data-channel="1.96.1" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../../static.files/storage-41dd4d93.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-044be391.svg"></head><body class="rustdoc mod"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Module menu</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../../hydra_model/index.html">hydra_<wbr>model</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module menu</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#a-menu-carries-no-labels" title="A menu carries no labels">A menu carries no labels</a></li><li><a href="#the-dictionary-does-not-arrive-on-the-wire" title="The dictionary does NOT arrive on the wire">The dictionary does NOT arrive on the wire</a></li><li><a href="#which-copy-of-the-dictionary" title="Which copy of the dictionary">Which copy of the dictionary</a></li><li><a href="#menu-depth-three-levels-and-only-one-branch-reaches-it" title="Menu depth: three levels, and only one branch reaches it">Menu depth: three levels, and only one branch reaches it</a></li><li><a href="#one-malformed-row-left-as-the-source-has-it" title="One malformed row, left as the source has it">One malformed row, left as the source has it</a></li><li><a href="#why-this-lives-in-the-model" title="Why this lives in the model">Why this lives in the model</a></li></ul><h3><a href="#structs">Module Items</a></h3><ul class="block"><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#functions" title="Functions">Functions</a></li></ul></section><div id="rustdoc-modnav"><h2><a href="../index.html">In hydra_<wbr>model::<wbr>state</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../../index.html">hydra_model</a>::<wbr><a href="../index.html">state</a></div><h1>Module <span>menu</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../../src/hydra_model/state/menu.rs.html#1-544">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Context menus: turning a <code>&lt;menu&gt;</code> of bare coordinates into labelled
+commands.</p>
+<h2 id="a-menu-carries-no-labels"><a class="doc-anchor" href="#a-menu-carries-no-labels">§</a>A menu carries no labels</h2>
+<p>Right-click menus are <strong>coordinate lookups</strong>. The client asks with
+<code>_menu #&lt;exist id&gt;</code>; the game answers with <code>&lt;menu&gt;</code> holding <code>&lt;mi coord=&gt;</code>
+items and no text whatsoever:</p>
+<div class="example-wrap"><pre class="language-text"><code>&lt;menu id=&quot;1&quot; &gt;&lt;mi coord=&quot;2524,1543&quot;/&gt;&lt;mi coord=&quot;2524,1546&quot;/&gt;&lt;/menu&gt;</code></pre></div>
+<p>Each coordinate is a key into a command dictionary that maps it to a
+label and a command template. Without the dictionary a menu is a list of
+numbers, which is why this table is data in the crate rather than
+something a frontend is expected to find.</p>
+<h2 id="the-dictionary-does-not-arrive-on-the-wire"><a class="doc-anchor" href="#the-dictionary-does-not-arrive-on-the-wire">§</a>The dictionary does NOT arrive on the wire</h2>
+<p>MEASURED over six recent logins: <code>cmdlist=0</code>, <code>cli=0</code>, while <code>menu=2</code> and
+<code>mi=60</code>. It is <strong>static data a client ships</strong>, whatever documentation
+says to the contrary: the corpus overrules it.</p>
+<h2 id="which-copy-of-the-dictionary"><a class="doc-anchor" href="#which-copy-of-the-dictionary">§</a>Which copy of the dictionary</h2>
+<p>From <strong>the live Wrayth client’s own settings</strong>,
+<code>%APPDATA%/Wrayth/GS4/cmdlist1.xml</code>: <strong>1,106</strong> entries across 43
+categories, each coordinate unique, <code>timestamp="1788300900.1.1.1"</code>
+(2026-09-05).</p>
+<p><strong>Not</strong> an older copy: one stamped <code>timestamp="1069343154.1.1.1"</code> –
+<strong>2003</strong>, 592 entries – is missing 8 of the 60 coordinates in a real
+menu, every one above <code>2524,2500</code>. They are UCS attacks (<code>jab</code>,
+<code>grapple</code>), focused multistrike, and <code>symbol of sleep</code> – a decade and a
+half of commands the old file predates.</p>
+<p>The wire offers no fallback: MEASURED over all <strong>425</strong> <code>&lt;mi&gt;</code> in a month
+of logs, the only attributes are <code>coord</code> (425), <code>noun</code>
+(10) and <code>menu_cat</code> (8). <strong>Zero</strong> carry a label or a command. So a
+coordinate the dictionary lacks cannot be resolved at all, which is why
+the freshest available copy is the one to ship.</p>
+<h2 id="menu-depth-three-levels-and-only-one-branch-reaches-it"><a class="doc-anchor" href="#menu-depth-three-levels-and-only-one-branch-reaches-it">§</a>Menu depth: three levels, and only one branch reaches it</h2>
+<p>The category string encodes the path, with two separators:</p>
+<div><table><thead><tr><th>Depth</th><th>Shape</th><th>Example</th><th>Entries</th></tr></thead><tbody>
+<tr><td>1</td><td>bare</td><td><code>6</code></td><td>634</td></tr>
+<tr><td>2</td><td><code>_</code></td><td><code>6_focused multistrike</code></td><td>453</td></tr>
+<tr><td>3</td><td><code>-</code></td><td><code>5_roleplay-swear</code></td><td><strong>19</strong></td></tr>
+</tbody></table>
+</div>
+<p><code>5_roleplay-swear</code> is the <strong>only</strong> three-level category in all 1,106
+entries – <code>menu -&gt; 5 -&gt; roleplay -&gt; swear</code>. See
+<a href="struct.MenuCommand.html#method.category_path" title="method hydra_model::state::menu::MenuCommand::category_path"><code>MenuCommand::category_path</code></a>.</p>
+<h2 id="one-malformed-row-left-as-the-source-has-it"><a class="doc-anchor" href="#one-malformed-row-left-as-the-source-has-it">§</a>One malformed row, left as the source has it</h2>
+<p><code>2524,2014</code> reads <code>menu="7" command="7" menu_cat="drag"</code>: the label and
+command are both <code>"7"</code> and the category is <code>"drag"</code>, which is plainly the
+label. The fields are scrambled in Simutronics’ own file, and it is
+<strong>unchanged in the 2026 copy</strong>, so this is not staleness.</p>
+<p>It is kept verbatim. Correcting source data on inference is how a silent
+divergence from the game starts, and the cost is one menu entry that
+displays as <code>7</code>.</p>
+<h2 id="why-this-lives-in-the-model"><a class="doc-anchor" href="#why-this-lives-in-the-model">§</a>Why this lives in the model</h2>
+<p>Menus are frontend-facing, but Hydra supports more than one frontend and
+keeps the layers separate, so the menu building that feeds any frontend
+belongs in the core. So the resolution – coordinate to label to command – happens once, here,
+and every frontend renders the same answer. What a frontend still owns is
+presentation: ordering within a category, icons, and how a radial or a
+list is drawn.</p>
+</div></details><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.LearnedCommands.html" title="struct hydra_model::state::menu::LearnedCommands">Learned<wbr>Commands</a></dt><dd>Dictionary rows the SERVER taught us, layered over the shipped table.</dd><dt><a class="struct" href="struct.MenuCommand.html" title="struct hydra_model::state::menu::MenuCommand">Menu<wbr>Command</a></dt><dd>One dictionary entry: what a coordinate means.</dd><dt><a class="struct" href="struct.MenuCommands.html" title="struct hydra_model::state::menu::MenuCommands">Menu<wbr>Commands</a></dt><dd>The command dictionary, keyed by coordinate.</dd><dt><a class="struct" href="struct.ResolvedItem.html" title="struct hydra_model::state::menu::ResolvedItem">Resolved<wbr>Item</a></dt><dd>One menu item, resolved against the dictionary.</dd></dl><h2 id="functions" class="section-header">Functions<a href="#functions" class="anchor">§</a></h2><dl class="item-table"><dt><a class="fn" href="fn.category_path.html" title="fn hydra_model::state::menu::category_path">category_<wbr>path</a></dt><dd>Split a category into its menu path.</dd></dl></section></div></main></body></html>

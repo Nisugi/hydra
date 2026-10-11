@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["LOGIN_BURST"],"struct":["AnsweringSource","Transcript","TranscriptHandle"]};

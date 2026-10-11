@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["NEAR_SECONDS","PLANE","RECENT_SECONDS","TOWNS"],"enum":["Into","Sensed"],"fn":["asked","element_given_off","element_in","half_tag","instability_table","narrow","senses"],"struct":["Seen"]};

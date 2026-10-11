@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["category_path"],"struct":["LearnedCommands","MenuCommand","MenuCommands","ResolvedItem"]};

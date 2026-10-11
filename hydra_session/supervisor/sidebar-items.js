@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["LONG_LIVED","MAX_UNATTENDED_LOSSES","STABLE_CONNECTION"],"enum":["Retryability","StoppedBecause"],"fn":["backoff"],"struct":["ConnectError","SupervisedEnd","SupervisedSession"],"trait":["Connector"]};

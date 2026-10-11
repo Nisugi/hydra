@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["FALLBACK_MAX_HP","STUN_ROUND_SECONDS","UCS_SMITE_TTL","UCS_TTL"],"struct":["CreatureInstance"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Farewell","Origin","Outcome"],"struct":["SessionHandle","Snapshot"],"type":["Taker"]};
