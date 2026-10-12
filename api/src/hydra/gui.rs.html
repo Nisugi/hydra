@@ -132,7 +132,7 @@
 <a href=#132 id=132 data-nosnippet>132</a>            used = <span class="bool-val">true</span>;
 <a href=#133 id=133 data-nosnippet>133</a>            windows.store(<span class="bool-val">true</span>, Ordering::Relaxed);
 <a href=#134 id=134 data-nosnippet>134</a>            <span class="kw">crate</span>::started::stage(<span class="string">"the windows are opening"</span>);
-<a href=#135 id=135 data-nosnippet>135</a>            hydra_gui::first_frame(|| <span class="kw">crate</span>::started::stage(<span class="string">"the first frame is drawn"</span>));
+<a href=#135 id=135 data-nosnippet>135</a>            hydra_gui::opening(<span class="kw">crate</span>::started::stage);
 <a href=#136 id=136 data-nosnippet>136</a>            <span class="kw">let </span>shown = hydra_mem::part(hydra_mem::Part::Windows, || {
 <a href=#137 id=137 data-nosnippet>137</a>                hydra_gui::run(sessions.clone(), runtime.handle().clone(), <span class="kw-2">&amp;</span>data, how)
 <a href=#138 id=138 data-nosnippet>138</a>            });

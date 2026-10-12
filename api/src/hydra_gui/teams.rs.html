@@ -258,7 +258,7 @@
 <a href=#258 id=258 data-nosnippet>258</a>}
 <a href=#259 id=259 data-nosnippet>259</a>
 <a href=#260 id=260 data-nosnippet>260</a><span class="attr">#[cfg(test)]
-<a href=#261 id=261 data-nosnippet>261</a></span><span class="kw">mod </span>tests {
+<a href=#261 id=261 data-nosnippet>261</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod </span>tests {
 <a href=#262 id=262 data-nosnippet>262</a>    <span class="kw">use </span>egui_kittest::Harness;
 <a href=#263 id=263 data-nosnippet>263</a>    <span class="kw">use </span>egui_kittest::kittest::Queryable <span class="kw">as _</span>;
 <a href=#264 id=264 data-nosnippet>264</a>    <span class="kw">use </span>hydra_ui::{HubRequest, RosterCard, TeamCard, TeamMode};
@@ -277,14 +277,14 @@
 <a href=#277 id=277 data-nosnippet>277</a>        }
 <a href=#278 id=278 data-nosnippet>278</a>    }
 <a href=#279 id=279 data-nosnippet>279</a>
-<a href=#280 id=280 data-nosnippet>280</a>    <span class="kw">struct </span>Scene {
+<a href=#280 id=280 data-nosnippet>280</a>    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>Scene {
 <a href=#281 id=281 data-nosnippet>281</a>        teams: Teams,
 <a href=#282 id=282 data-nosnippet>282</a>        roster: Vec&lt;RosterCard&gt;,
 <a href=#283 id=283 data-nosnippet>283</a>        kept: Vec&lt;TeamCard&gt;,
 <a href=#284 id=284 data-nosnippet>284</a>        asked: Vec&lt;HubAction&gt;,
 <a href=#285 id=285 data-nosnippet>285</a>    }
 <a href=#286 id=286 data-nosnippet>286</a>
-<a href=#287 id=287 data-nosnippet>287</a>    <span class="kw">fn </span>harness&lt;<span class="lifetime">'a</span>&gt;(kept: Vec&lt;TeamCard&gt;) -&gt; Harness&lt;<span class="lifetime">'a</span>, Scene&gt; {
+<a href=#287 id=287 data-nosnippet>287</a>    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>harness&lt;<span class="lifetime">'a</span>&gt;(kept: Vec&lt;TeamCard&gt;) -&gt; Harness&lt;<span class="lifetime">'a</span>, Scene&gt; {
 <a href=#288 id=288 data-nosnippet>288</a>        <span class="kw">let </span>scene = Scene {
 <a href=#289 id=289 data-nosnippet>289</a>            teams: Teams::default(),
 <a href=#290 id=290 data-nosnippet>290</a>            <span class="comment">// Nisugi and Nerten share an account; Ashryn has her own.

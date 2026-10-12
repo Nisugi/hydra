@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 440" width="760" height="440" font-family="Inter, 'Segoe UI', system-ui, sans-serif">
+  <title>How Hydra works: one Hydra holds every character's connection to the game; the hub, play windows, tray, web page and phone all show the same characters; Lich runs behind a character when it is turned on.</title>
+  <rect width="760" height="440" rx="8" fill="#0d1115"/>
+  <g stroke="#35404a" stroke-width="2" fill="none">
+    <path d="M170 205 H230 M200 205 V113 H250 M200 205 V173 H250 M200 205 V233 H250"/>
+    <path d="M510 112 H540 M540 112 V62 H590 M540 112 V122 H590 M540 112 V182 H590 M540 290 V252 H590 M540 290 V322 H590 M510 290 H540"/>
+    <path d="M380 340 V368" stroke-dasharray="5 5"/>
+  </g>
+  <g fill="#181e24" stroke="#35404a" stroke-width="1.5">
+    <rect x="20" y="165" width="150" height="80" rx="6"/>
+    <rect x="230" y="40" width="280" height="300" rx="8" stroke="#765f39" stroke-width="2"/>
+    <rect x="590" y="40" width="150" height="44" rx="6"/>
+    <rect x="590" y="100" width="150" height="44" rx="6"/>
+    <rect x="590" y="160" width="150" height="44" rx="6"/>
+    <rect x="590" y="230" width="150" height="44" rx="6"/>
+    <rect x="590" y="300" width="150" height="44" rx="6"/>
+    <rect x="230" y="368" width="280" height="52" rx="6" stroke-dasharray="5 4"/>
+  </g>
+  <g fill="#20272e" stroke="#35404a">
+    <rect x="250" y="90" width="240" height="46" rx="5"/>
+    <rect x="250" y="150" width="240" height="46" rx="5"/>
+    <rect x="250" y="210" width="240" height="46" rx="5"/>
+  </g>
+  <g fill="#dddcd7" font-size="15">
+    <text x="95" y="200" text-anchor="middle" font-weight="600">GemStone IV</text>
+    <text x="370" y="68" text-anchor="middle" font-weight="600" fill="#d7ad63">Hydra, one program</text>
+    <text x="264" y="111" font-weight="600">Ashryn</text>
+    <text x="264" y="171" font-weight="600">Nisugi</text>
+    <text x="264" y="231" font-weight="600">Nerten</text>
+    <text x="665" y="67" text-anchor="middle" font-weight="600">The hub</text>
+    <text x="665" y="121" text-anchor="middle" font-weight="600">Play windows</text>
+    <text x="665" y="181" text-anchor="middle" font-weight="600">Tray icon</text>
+    <text x="665" y="251" text-anchor="middle" font-weight="600">Web page</text>
+    <text x="665" y="321" text-anchor="middle" font-weight="600">HydraFE</text>
+    <text x="370" y="390" text-anchor="middle" font-weight="600">Lich, your own</text>
+  </g>
+  <g fill="#a4aeb7" font-size="12">
+    <text x="95" y="220" text-anchor="middle">the game's servers</text>
+    <text x="264" y="127">connection · state · commands</text>
+    <text x="264" y="187">connection · state · commands</text>
+    <text x="264" y="247">connection · state · commands</text>
+    <text x="370" y="290" text-anchor="middle">plays on with every window closed,</text>
+    <text x="370" y="306" text-anchor="middle">resting in the background</text>
+    <text x="665" y="136" text-anchor="middle">one per character</text>
+    <text x="665" y="196" text-anchor="middle">on Windows</text>
+    <text x="665" y="266" text-anchor="middle">phone, tablet, browser</text>
+    <text x="665" y="336" text-anchor="middle">iPhone and iPad</text>
+    <text x="370" y="408" text-anchor="middle">behind a character when you turn it on</text>
+  </g>
+</svg>

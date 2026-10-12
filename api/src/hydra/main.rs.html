@@ -51,88 +51,92 @@
 <a href=#51 id=51 data-nosnippet>51</a><span class="kw">fn </span>main() -&gt; ExitCode {
 <a href=#52 id=52 data-nosnippet>52</a>    started::begin();
 <a href=#53 id=53 data-nosnippet>53</a>    attach_console();
-<a href=#54 id=54 data-nosnippet>54</a>    <span class="comment">// Counting what each part of Hydra holds, in a build with `measure`:
-<a href=#55 id=55 data-nosnippet>55</a>    // what the main thread and the runtime's threads make outside every
-<a href=#56 id=56 data-nosnippet>56</a>    // other part is counted as theirs.
-<a href=#57 id=57 data-nosnippet>57</a>    </span>hydra_mem::start();
-<a href=#58 id=58 data-nosnippet>58</a>    hydra_mem::thread(hydra_mem::Part::MainThread);
-<a href=#59 id=59 data-nosnippet>59</a>    <span class="kw">let </span>args: Vec&lt;String&gt; = std::env::args().skip(<span class="number">1</span>).collect();
-<a href=#60 id=60 data-nosnippet>60</a>    <span class="kw">let </span>runtime = <span class="kw">match </span>tokio::runtime::Builder::new_multi_thread()
-<a href=#61 id=61 data-nosnippet>61</a>        .enable_all()
-<a href=#62 id=62 data-nosnippet>62</a>        .on_thread_start(|| hydra_mem::thread(hydra_mem::Part::Background))
-<a href=#63 id=63 data-nosnippet>63</a>        .build()
-<a href=#64 id=64 data-nosnippet>64</a>    {
-<a href=#65 id=65 data-nosnippet>65</a>        <span class="prelude-val">Ok</span>(rt) =&gt; rt,
-<a href=#66 id=66 data-nosnippet>66</a>        <span class="prelude-val">Err</span>(e) =&gt; {
-<a href=#67 id=67 data-nosnippet>67</a>            <span class="macro">eprintln!</span>(<span class="string">"cannot start the async runtime: {e}"</span>);
-<a href=#68 id=68 data-nosnippet>68</a>            <span class="kw">return </span>ExitCode::FAILURE;
-<a href=#69 id=69 data-nosnippet>69</a>        }
-<a href=#70 id=70 data-nosnippet>70</a>    };
-<a href=#71 id=71 data-nosnippet>71</a>    <span class="kw">let </span>result = <span class="kw">match </span>args.first().map(String::as_str) {
-<a href=#72 id=72 data-nosnippet>72</a>        <span class="prelude-val">Some</span>(<span class="string">"login"</span>) =&gt; <span class="kw">match </span>connect::Target::from_args(<span class="kw-2">&amp;</span>args[<span class="number">1</span>..]) {
-<a href=#73 id=73 data-nosnippet>73</a>            <span class="prelude-val">Ok</span>(target) =&gt; runtime.block_on(connect::run(target)),
-<a href=#74 id=74 data-nosnippet>74</a>            <span class="prelude-val">Err</span>(e) =&gt; <span class="prelude-val">Err</span>(e),
-<a href=#75 id=75 data-nosnippet>75</a>        },
-<a href=#76 id=76 data-nosnippet>76</a>        <span class="prelude-val">Some</span>(<span class="string">"play"</span>) =&gt; <span class="kw">match </span>connect::Target::from_args(<span class="kw-2">&amp;</span>args[<span class="number">1</span>..]) {
-<a href=#77 id=77 data-nosnippet>77</a>            <span class="prelude-val">Ok</span>(target) =&gt; runtime.block_on(play::run(target)),
+<a href=#54 id=54 data-nosnippet>54</a>    <span class="kw">if let </span><span class="prelude-val">Err</span>(why) = startup::in_the_apps_home() {
+<a href=#55 id=55 data-nosnippet>55</a>        <span class="macro">eprintln!</span>(<span class="string">"{why}"</span>);
+<a href=#56 id=56 data-nosnippet>56</a>        <span class="kw">return </span>ExitCode::FAILURE;
+<a href=#57 id=57 data-nosnippet>57</a>    }
+<a href=#58 id=58 data-nosnippet>58</a>    <span class="comment">// Counting what each part of Hydra holds, in a build with `measure`:
+<a href=#59 id=59 data-nosnippet>59</a>    // what the main thread and the runtime's threads make outside every
+<a href=#60 id=60 data-nosnippet>60</a>    // other part is counted as theirs.
+<a href=#61 id=61 data-nosnippet>61</a>    </span>hydra_mem::start();
+<a href=#62 id=62 data-nosnippet>62</a>    hydra_mem::thread(hydra_mem::Part::MainThread);
+<a href=#63 id=63 data-nosnippet>63</a>    <span class="kw">let </span>args: Vec&lt;String&gt; = std::env::args().skip(<span class="number">1</span>).collect();
+<a href=#64 id=64 data-nosnippet>64</a>    <span class="kw">let </span>runtime = <span class="kw">match </span>tokio::runtime::Builder::new_multi_thread()
+<a href=#65 id=65 data-nosnippet>65</a>        .enable_all()
+<a href=#66 id=66 data-nosnippet>66</a>        .on_thread_start(|| hydra_mem::thread(hydra_mem::Part::Background))
+<a href=#67 id=67 data-nosnippet>67</a>        .build()
+<a href=#68 id=68 data-nosnippet>68</a>    {
+<a href=#69 id=69 data-nosnippet>69</a>        <span class="prelude-val">Ok</span>(rt) =&gt; rt,
+<a href=#70 id=70 data-nosnippet>70</a>        <span class="prelude-val">Err</span>(e) =&gt; {
+<a href=#71 id=71 data-nosnippet>71</a>            <span class="macro">eprintln!</span>(<span class="string">"cannot start the async runtime: {e}"</span>);
+<a href=#72 id=72 data-nosnippet>72</a>            <span class="kw">return </span>ExitCode::FAILURE;
+<a href=#73 id=73 data-nosnippet>73</a>        }
+<a href=#74 id=74 data-nosnippet>74</a>    };
+<a href=#75 id=75 data-nosnippet>75</a>    <span class="kw">let </span>result = <span class="kw">match </span>args.first().map(String::as_str) {
+<a href=#76 id=76 data-nosnippet>76</a>        <span class="prelude-val">Some</span>(<span class="string">"login"</span>) =&gt; <span class="kw">match </span>connect::Target::from_args(<span class="kw-2">&amp;</span>args[<span class="number">1</span>..]) {
+<a href=#77 id=77 data-nosnippet>77</a>            <span class="prelude-val">Ok</span>(target) =&gt; runtime.block_on(connect::run(target)),
 <a href=#78 id=78 data-nosnippet>78</a>            <span class="prelude-val">Err</span>(e) =&gt; <span class="prelude-val">Err</span>(e),
 <a href=#79 id=79 data-nosnippet>79</a>        },
-<a href=#80 id=80 data-nosnippet>80</a>        <span class="prelude-val">None </span>=&gt; gui::run(<span class="kw-2">&amp;</span>runtime, Vec::new(), <span class="bool-val">true</span>, gui::Told::default()),
-<a href=#81 id=81 data-nosnippet>81</a>        <span class="prelude-val">Some</span>(<span class="string">"gui"</span>) =&gt; <span class="kw">match </span>connect::Target::many(<span class="kw-2">&amp;</span>args[<span class="number">1</span>..]) {
-<a href=#82 id=82 data-nosnippet>82</a>            <span class="prelude-val">Ok</span>(targets) =&gt; gui::run(<span class="kw-2">&amp;</span>runtime, targets, <span class="bool-val">true</span>, gui::Told::default()),
-<a href=#83 id=83 data-nosnippet>83</a>            <span class="prelude-val">Err</span>(e) =&gt; <span class="prelude-val">Err</span>(e),
-<a href=#84 id=84 data-nosnippet>84</a>        },
-<a href=#85 id=85 data-nosnippet>85</a>        <span class="prelude-val">Some</span>(<span class="string">"serve"</span>) =&gt; serve(<span class="kw-2">&amp;</span>runtime, <span class="kw-2">&amp;</span>args[<span class="number">1</span>..]),
-<a href=#86 id=86 data-nosnippet>86</a>        <span class="prelude-val">Some</span>(<span class="string">"replay"</span>) =&gt; <span class="kw">match </span>args.get(<span class="number">1</span>) {
-<a href=#87 id=87 data-nosnippet>87</a>            <span class="prelude-val">Some</span>(file) =&gt; {
-<a href=#88 id=88 data-nosnippet>88</a>                replay::replay(std::path::Path::new(file), replay::Show::from_args(<span class="kw-2">&amp;</span>args))
-<a href=#89 id=89 data-nosnippet>89</a>            }
-<a href=#90 id=90 data-nosnippet>90</a>            <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Err</span>(USAGE.to_string()),
-<a href=#91 id=91 data-nosnippet>91</a>        },
-<a href=#92 id=92 data-nosnippet>92</a>        <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(USAGE.to_string()),
-<a href=#93 id=93 data-nosnippet>93</a>    };
-<a href=#94 id=94 data-nosnippet>94</a>    <span class="kw">match </span>result {
-<a href=#95 id=95 data-nosnippet>95</a>        <span class="prelude-val">Ok</span>(()) =&gt; ExitCode::SUCCESS,
-<a href=#96 id=96 data-nosnippet>96</a>        <span class="prelude-val">Err</span>(e) =&gt; {
-<a href=#97 id=97 data-nosnippet>97</a>            <span class="macro">eprintln!</span>(<span class="string">"{e}"</span>);
-<a href=#98 id=98 data-nosnippet>98</a>            ExitCode::FAILURE
-<a href=#99 id=99 data-nosnippet>99</a>        }
-<a href=#100 id=100 data-nosnippet>100</a>    }
-<a href=#101 id=101 data-nosnippet>101</a>}
-<a href=#102 id=102 data-nosnippet>102</a>
-<a href=#103 id=103 data-nosnippet>103</a><span class="doccomment">/// `hydra serve`: from the directory `--in` says, resting here, or started
-<a href=#104 id=104 data-nosnippet>104</a>/// again in the background with `--detach`.
-<a href=#105 id=105 data-nosnippet>105</a></span><span class="kw">fn </span>serve(runtime: <span class="kw-2">&amp;</span>tokio::runtime::Runtime, args: <span class="kw-2">&amp;</span>[String]) -&gt; <span class="prelude-ty">Result</span>&lt;(), String&gt; {
-<a href=#106 id=106 data-nosnippet>106</a>    <span class="kw">let </span>serve = startup::Serve::read(args);
-<a href=#107 id=107 data-nosnippet>107</a>    <span class="kw">if let </span><span class="prelude-val">Some</span>(dir) = <span class="kw-2">&amp;</span>serve.dir {
-<a href=#108 id=108 data-nosnippet>108</a>        std::env::set_current_dir(dir)
-<a href=#109 id=109 data-nosnippet>109</a>            .map_err(|why| <span class="macro">format!</span>(<span class="string">"Hydra cannot run in {}: {why}"</span>, dir.display()))<span class="question-mark">?</span>;
-<a href=#110 id=110 data-nosnippet>110</a>    }
-<a href=#111 id=111 data-nosnippet>111</a>    <span class="kw">if </span>serve.detach {
-<a href=#112 id=112 data-nosnippet>112</a>        <span class="kw">return </span>startup::detach(<span class="kw-2">&amp;</span>serve.args());
-<a href=#113 id=113 data-nosnippet>113</a>    }
-<a href=#114 id=114 data-nosnippet>114</a>    <span class="kw">let </span>targets = connect::Target::many(<span class="kw-2">&amp;</span>serve.rest)<span class="question-mark">?</span>;
-<a href=#115 id=115 data-nosnippet>115</a>    <span class="kw">let </span>told = gui::Told {
-<a href=#116 id=116 data-nosnippet>116</a>        again: serve.again,
-<a href=#117 id=117 data-nosnippet>117</a>        web: serve.web,
-<a href=#118 id=118 data-nosnippet>118</a>    };
-<a href=#119 id=119 data-nosnippet>119</a>    gui::run(runtime, targets, <span class="bool-val">false</span>, told)
-<a href=#120 id=120 data-nosnippet>120</a>}
-<a href=#121 id=121 data-nosnippet>121</a>
-<a href=#122 id=122 data-nosnippet>122</a><span class="doccomment">/// The terminal Hydra was started from, if any, taken as its own: without
-<a href=#123 id=123 data-nosnippet>123</a>/// a console of its own, `login`, `play` and `replay` would say nothing.
-<a href=#124 id=124 data-nosnippet>124</a>/// Started by a double click there is none, and nothing is opened.
-<a href=#125 id=125 data-nosnippet>125</a></span><span class="attr">#[cfg(windows)]
-<a href=#126 id=126 data-nosnippet>126</a>#[allow(unsafe_code)]
-<a href=#127 id=127 data-nosnippet>127</a></span><span class="kw">fn </span>attach_console() {
-<a href=#128 id=128 data-nosnippet>128</a>    <span class="kw">use </span>windows_sys::Win32::System::Console::{ATTACH_PARENT_PROCESS, AttachConsole};
-<a href=#129 id=129 data-nosnippet>129</a>    <span class="comment">// SAFETY: a plain call with no pointers; failure only means no parent
-<a href=#130 id=130 data-nosnippet>130</a>    // console, which is the double-click case.
-<a href=#131 id=131 data-nosnippet>131</a>    </span><span class="kw">unsafe </span>{
-<a href=#132 id=132 data-nosnippet>132</a>        AttachConsole(ATTACH_PARENT_PROCESS);
-<a href=#133 id=133 data-nosnippet>133</a>    }
-<a href=#134 id=134 data-nosnippet>134</a>}
-<a href=#135 id=135 data-nosnippet>135</a>
-<a href=#136 id=136 data-nosnippet>136</a><span class="attr">#[cfg(not(windows))]
-<a href=#137 id=137 data-nosnippet>137</a></span><span class="kw">fn </span>attach_console() {}
+<a href=#80 id=80 data-nosnippet>80</a>        <span class="prelude-val">Some</span>(<span class="string">"play"</span>) =&gt; <span class="kw">match </span>connect::Target::from_args(<span class="kw-2">&amp;</span>args[<span class="number">1</span>..]) {
+<a href=#81 id=81 data-nosnippet>81</a>            <span class="prelude-val">Ok</span>(target) =&gt; runtime.block_on(play::run(target)),
+<a href=#82 id=82 data-nosnippet>82</a>            <span class="prelude-val">Err</span>(e) =&gt; <span class="prelude-val">Err</span>(e),
+<a href=#83 id=83 data-nosnippet>83</a>        },
+<a href=#84 id=84 data-nosnippet>84</a>        <span class="prelude-val">None </span>=&gt; gui::run(<span class="kw-2">&amp;</span>runtime, Vec::new(), <span class="bool-val">true</span>, gui::Told::default()),
+<a href=#85 id=85 data-nosnippet>85</a>        <span class="prelude-val">Some</span>(<span class="string">"gui"</span>) =&gt; <span class="kw">match </span>connect::Target::many(<span class="kw-2">&amp;</span>args[<span class="number">1</span>..]) {
+<a href=#86 id=86 data-nosnippet>86</a>            <span class="prelude-val">Ok</span>(targets) =&gt; gui::run(<span class="kw-2">&amp;</span>runtime, targets, <span class="bool-val">true</span>, gui::Told::default()),
+<a href=#87 id=87 data-nosnippet>87</a>            <span class="prelude-val">Err</span>(e) =&gt; <span class="prelude-val">Err</span>(e),
+<a href=#88 id=88 data-nosnippet>88</a>        },
+<a href=#89 id=89 data-nosnippet>89</a>        <span class="prelude-val">Some</span>(<span class="string">"serve"</span>) =&gt; serve(<span class="kw-2">&amp;</span>runtime, <span class="kw-2">&amp;</span>args[<span class="number">1</span>..]),
+<a href=#90 id=90 data-nosnippet>90</a>        <span class="prelude-val">Some</span>(<span class="string">"replay"</span>) =&gt; <span class="kw">match </span>args.get(<span class="number">1</span>) {
+<a href=#91 id=91 data-nosnippet>91</a>            <span class="prelude-val">Some</span>(file) =&gt; {
+<a href=#92 id=92 data-nosnippet>92</a>                replay::replay(std::path::Path::new(file), replay::Show::from_args(<span class="kw-2">&amp;</span>args))
+<a href=#93 id=93 data-nosnippet>93</a>            }
+<a href=#94 id=94 data-nosnippet>94</a>            <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Err</span>(USAGE.to_string()),
+<a href=#95 id=95 data-nosnippet>95</a>        },
+<a href=#96 id=96 data-nosnippet>96</a>        <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(USAGE.to_string()),
+<a href=#97 id=97 data-nosnippet>97</a>    };
+<a href=#98 id=98 data-nosnippet>98</a>    <span class="kw">match </span>result {
+<a href=#99 id=99 data-nosnippet>99</a>        <span class="prelude-val">Ok</span>(()) =&gt; ExitCode::SUCCESS,
+<a href=#100 id=100 data-nosnippet>100</a>        <span class="prelude-val">Err</span>(e) =&gt; {
+<a href=#101 id=101 data-nosnippet>101</a>            <span class="macro">eprintln!</span>(<span class="string">"{e}"</span>);
+<a href=#102 id=102 data-nosnippet>102</a>            ExitCode::FAILURE
+<a href=#103 id=103 data-nosnippet>103</a>        }
+<a href=#104 id=104 data-nosnippet>104</a>    }
+<a href=#105 id=105 data-nosnippet>105</a>}
+<a href=#106 id=106 data-nosnippet>106</a>
+<a href=#107 id=107 data-nosnippet>107</a><span class="doccomment">/// `hydra serve`: from the directory `--in` says, resting here, or started
+<a href=#108 id=108 data-nosnippet>108</a>/// again in the background with `--detach`.
+<a href=#109 id=109 data-nosnippet>109</a></span><span class="kw">fn </span>serve(runtime: <span class="kw-2">&amp;</span>tokio::runtime::Runtime, args: <span class="kw-2">&amp;</span>[String]) -&gt; <span class="prelude-ty">Result</span>&lt;(), String&gt; {
+<a href=#110 id=110 data-nosnippet>110</a>    <span class="kw">let </span>serve = startup::Serve::read(args);
+<a href=#111 id=111 data-nosnippet>111</a>    <span class="kw">if let </span><span class="prelude-val">Some</span>(dir) = <span class="kw-2">&amp;</span>serve.dir {
+<a href=#112 id=112 data-nosnippet>112</a>        std::env::set_current_dir(dir)
+<a href=#113 id=113 data-nosnippet>113</a>            .map_err(|why| <span class="macro">format!</span>(<span class="string">"Hydra cannot run in {}: {why}"</span>, dir.display()))<span class="question-mark">?</span>;
+<a href=#114 id=114 data-nosnippet>114</a>    }
+<a href=#115 id=115 data-nosnippet>115</a>    <span class="kw">if </span>serve.detach {
+<a href=#116 id=116 data-nosnippet>116</a>        <span class="kw">return </span>startup::detach(<span class="kw-2">&amp;</span>serve.args());
+<a href=#117 id=117 data-nosnippet>117</a>    }
+<a href=#118 id=118 data-nosnippet>118</a>    <span class="kw">let </span>targets = connect::Target::many(<span class="kw-2">&amp;</span>serve.rest)<span class="question-mark">?</span>;
+<a href=#119 id=119 data-nosnippet>119</a>    <span class="kw">let </span>told = gui::Told {
+<a href=#120 id=120 data-nosnippet>120</a>        again: serve.again,
+<a href=#121 id=121 data-nosnippet>121</a>        web: serve.web,
+<a href=#122 id=122 data-nosnippet>122</a>    };
+<a href=#123 id=123 data-nosnippet>123</a>    gui::run(runtime, targets, <span class="bool-val">false</span>, told)
+<a href=#124 id=124 data-nosnippet>124</a>}
+<a href=#125 id=125 data-nosnippet>125</a>
+<a href=#126 id=126 data-nosnippet>126</a><span class="doccomment">/// The terminal Hydra was started from, if any, taken as its own: without
+<a href=#127 id=127 data-nosnippet>127</a>/// a console of its own, `login`, `play` and `replay` would say nothing.
+<a href=#128 id=128 data-nosnippet>128</a>/// Started by a double click there is none, and nothing is opened.
+<a href=#129 id=129 data-nosnippet>129</a></span><span class="attr">#[cfg(windows)]
+<a href=#130 id=130 data-nosnippet>130</a>#[allow(unsafe_code)]
+<a href=#131 id=131 data-nosnippet>131</a></span><span class="kw">fn </span>attach_console() {
+<a href=#132 id=132 data-nosnippet>132</a>    <span class="kw">use </span>windows_sys::Win32::System::Console::{ATTACH_PARENT_PROCESS, AttachConsole};
+<a href=#133 id=133 data-nosnippet>133</a>    <span class="comment">// SAFETY: a plain call with no pointers; failure only means no parent
+<a href=#134 id=134 data-nosnippet>134</a>    // console, which is the double-click case.
+<a href=#135 id=135 data-nosnippet>135</a>    </span><span class="kw">unsafe </span>{
+<a href=#136 id=136 data-nosnippet>136</a>        AttachConsole(ATTACH_PARENT_PROCESS);
+<a href=#137 id=137 data-nosnippet>137</a>    }
+<a href=#138 id=138 data-nosnippet>138</a>}
+<a href=#139 id=139 data-nosnippet>139</a>
+<a href=#140 id=140 data-nosnippet>140</a><span class="attr">#[cfg(not(windows))]
+<a href=#141 id=141 data-nosnippet>141</a></span><span class="kw">fn </span>attach_console() {}
 </code></pre></div></section></main></body></html>

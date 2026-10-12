@@ -71,7 +71,7 @@
 <a href=#71 id=71 data-nosnippet>71</a>    open: bool,
 <a href=#72 id=72 data-nosnippet>72</a>}
 <a href=#73 id=73 data-nosnippet>73</a>
-<a href=#74 id=74 data-nosnippet>74</a><span class="kw">struct </span>App {
+<a href=#74 id=74 data-nosnippet>74</a><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>App {
 <a href=#75 id=75 data-nosnippet>75</a>    sessions: Sessions,
 <a href=#76 id=76 data-nosnippet>76</a>    runtime: tokio::runtime::Handle,
 <a href=#77 id=77 data-nosnippet>77</a>    hub: Hub,
@@ -887,7 +887,7 @@
 <a href=#887 id=887 data-nosnippet>887</a>            <span class="macro">cfg!</span>(target_os = <span class="string">"macos"</span>),
 <a href=#888 id=888 data-nosnippet>888</a>        );
 <a href=#889 id=889 data-nosnippet>889</a>        <span class="self">self</span>.draw(ui);
-<a href=#890 id=890 data-nosnippet>890</a>        <span class="kw">crate</span>::frame_drawn();
+<a href=#890 id=890 data-nosnippet>890</a>        <span class="kw">crate</span>::opened(<span class="kw">crate</span>::FIRST_FRAME);
 <a href=#891 id=891 data-nosnippet>891</a>    }
 <a href=#892 id=892 data-nosnippet>892</a>}
 <a href=#893 id=893 data-nosnippet>893</a>
@@ -982,77 +982,101 @@
 <a href=#982 id=982 data-nosnippet>982</a>}
 <a href=#983 id=983 data-nosnippet>983</a>
 <a href=#984 id=984 data-nosnippet>984</a><span class="attr">#[cfg(test)]
-<a href=#985 id=985 data-nosnippet>985</a></span><span class="kw">mod </span>tests;
+<a href=#985 id=985 data-nosnippet>985</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod </span>tests;
 <a href=#986 id=986 data-nosnippet>986</a>
-<a href=#987 id=987 data-nosnippet>987</a><span class="doccomment">/// How the windows are drawn: on Windows by DirectX 12 alone. wgpu otherwise
-<a href=#988 id=988 data-nosnippet>988</a>/// opens every graphics API it knows to choose among them, and each loads its
-<a href=#989 id=989 data-nosnippet>989</a>/// driver for the life of the process, Vulkan's beside DirectX's, a hundred
-<a href=#990 id=990 data-nosnippet>990</a>/// megabytes and more of driver for nothing. `WGPU_BACKEND` still chooses.
-<a href=#991 id=991 data-nosnippet>991</a></span><span class="kw">fn </span>graphics() -&gt; eframe::egui_wgpu::WgpuConfiguration {
-<a href=#992 id=992 data-nosnippet>992</a>    <span class="kw">let </span><span class="kw-2">mut </span>config = eframe::egui_wgpu::WgpuConfiguration::default();
-<a href=#993 id=993 data-nosnippet>993</a>    <span class="kw">if </span><span class="macro">cfg!</span>(windows)
-<a href=#994 id=994 data-nosnippet>994</a>        &amp;&amp; eframe::wgpu::Backends::from_env().is_none()
-<a href=#995 id=995 data-nosnippet>995</a>        &amp;&amp; <span class="kw">let </span>eframe::egui_wgpu::WgpuSetup::CreateNew(create) = <span class="kw-2">&amp;mut </span>config.wgpu_setup
-<a href=#996 id=996 data-nosnippet>996</a>    {
-<a href=#997 id=997 data-nosnippet>997</a>        create.instance_descriptor.backends = eframe::wgpu::Backends::DX12;
-<a href=#998 id=998 data-nosnippet>998</a>    }
-<a href=#999 id=999 data-nosnippet>999</a>    config
-<a href=#1000 id=1000 data-nosnippet>1000</a>}
-<a href=#1001 id=1001 data-nosnippet>1001</a>
-<a href=#1002 id=1002 data-nosnippet>1002</a><span class="doccomment">/// Open the windows over `sessions` -- the hub shown or hidden as `open`
-<a href=#1003 id=1003 data-nosnippet>1003</a>/// says, and each character's play window it keeps -- and run until the
-<a href=#1004 id=1004 data-nosnippet>1004</a>/// last closes, or
-<a href=#1005 id=1005 data-nosnippet>1005</a>/// the binary closes them once the run is over ([`Sessions::close`]). A
-<a href=#1006 id=1006 data-nosnippet>1006</a>/// character seated after opens its play window unless it was started
-<a href=#1007 id=1007 data-nosnippet>1007</a>/// headless or for the web. The hub's requests run on `runtime`; layouts,
-<a href=#1008 id=1008 data-nosnippet>1008</a>/// presets, keys and pictures are kept in `data`, the data folder. Blocks
-<a href=#1009 id=1009 data-nosnippet>1009</a>/// the calling thread, which must be the main one.
-<a href=#1010 id=1010 data-nosnippet>1010</a>///
-<a href=#1011 id=1011 data-nosnippet>1011</a>/// Closed, the windows can be opened again by another call, on the same
-<a href=#1012 id=1012 data-nosnippet>1012</a>/// thread: eframe keeps its event loop between them. What drew them is let
-<a href=#1013 id=1013 data-nosnippet>1013</a>/// go as they close.
-<a href=#1014 id=1014 data-nosnippet>1014</a>///
-<a href=#1015 id=1015 data-nosnippet>1015</a>/// # Errors
-<a href=#1016 id=1016 data-nosnippet>1016</a>///
-<a href=#1017 id=1017 data-nosnippet>1017</a>/// The window could not be opened: no display, or no graphics adapter.
-<a href=#1018 id=1018 data-nosnippet>1018</a></span><span class="kw">pub fn </span>run(
-<a href=#1019 id=1019 data-nosnippet>1019</a>    sessions: Sessions,
-<a href=#1020 id=1020 data-nosnippet>1020</a>    runtime: tokio::runtime::Handle,
-<a href=#1021 id=1021 data-nosnippet>1021</a>    data: <span class="kw-2">&amp;</span>Path,
-<a href=#1022 id=1022 data-nosnippet>1022</a>    open: Open,
-<a href=#1023 id=1023 data-nosnippet>1023</a>) -&gt; eframe::Result {
-<a href=#1024 id=1024 data-nosnippet>1024</a>    <span class="kw">let </span>hidden = open != Open::Hub;
-<a href=#1025 id=1025 data-nosnippet>1025</a>    <span class="kw">let </span>options = eframe::NativeOptions {
-<a href=#1026 id=1026 data-nosnippet>1026</a>        viewport: Placements::load(data)
-<a href=#1027 id=1027 data-nosnippet>1027</a>            .builder(HUB, [<span class="number">660.0</span>, <span class="number">520.0</span>])
-<a href=#1028 id=1028 data-nosnippet>1028</a>            .with_title(TITLE)
-<a href=#1029 id=1029 data-nosnippet>1029</a>            .with_visible(!hidden),
-<a href=#1030 id=1030 data-nosnippet>1030</a>        wgpu_options: graphics(),
-<a href=#1031 id=1031 data-nosnippet>1031</a>        ..Default::default()
-<a href=#1032 id=1032 data-nosnippet>1032</a>    };
-<a href=#1033 id=1033 data-nosnippet>1033</a>    <span class="kw">let </span>wake = sessions.wake();
-<a href=#1034 id=1034 data-nosnippet>1034</a>    <span class="kw">let </span>data = data.to_path_buf();
-<a href=#1035 id=1035 data-nosnippet>1035</a>    <span class="kw">let </span>shown = eframe::run_native(
-<a href=#1036 id=1036 data-nosnippet>1036</a>        TITLE,
-<a href=#1037 id=1037 data-nosnippet>1037</a>        options,
-<a href=#1038 id=1038 data-nosnippet>1038</a>        Box::new(<span class="kw">move </span>|creation| {
-<a href=#1039 id=1039 data-nosnippet>1039</a>            sessions
-<a href=#1040 id=1040 data-nosnippet>1040</a>                .wake()
-<a href=#1041 id=1041 data-nosnippet>1041</a>                .opened(std::sync::Arc::new(<span class="kw">crate</span>::EguiWindows(
-<a href=#1042 id=1042 data-nosnippet>1042</a>                    creation.egui_ctx.clone(),
-<a href=#1043 id=1043 data-nosnippet>1043</a>                )));
-<a href=#1044 id=1044 data-nosnippet>1044</a>            <span class="attr">#[cfg(feature = <span class="string">"doll-infinite"</span>)]
-<a href=#1045 id=1045 data-nosnippet>1045</a>            </span>hydra_mem::part(hydra_mem::Part::Doll, || {
-<a href=#1046 id=1046 data-nosnippet>1046</a>                <span class="kw">crate</span>::widget::infinite::open(creation, <span class="kw-2">&amp;</span>data);
-<a href=#1047 id=1047 data-nosnippet>1047</a>            });
-<a href=#1048 id=1048 data-nosnippet>1048</a>            <span class="kw">let </span><span class="kw-2">mut </span>app = App::new(sessions, runtime, <span class="kw-2">&amp;</span>data);
-<a href=#1049 id=1049 data-nosnippet>1049</a>            <span class="kw">if </span>hidden {
-<a href=#1050 id=1050 data-nosnippet>1050</a>                app.hub_shown = HubShown::Hiding;
-<a href=#1051 id=1051 data-nosnippet>1051</a>            }
-<a href=#1052 id=1052 data-nosnippet>1052</a>            <span class="prelude-val">Ok</span>(Box::new(app))
-<a href=#1053 id=1053 data-nosnippet>1053</a>        }),
-<a href=#1054 id=1054 data-nosnippet>1054</a>    );
-<a href=#1055 id=1055 data-nosnippet>1055</a>    wake.closed();
-<a href=#1056 id=1056 data-nosnippet>1056</a>    shown
-<a href=#1057 id=1057 data-nosnippet>1057</a>}
+<a href=#987 id=987 data-nosnippet>987</a><span class="doccomment">/// How the windows are drawn: on Windows by one graphics API alone, Vulkan
+<a href=#988 id=988 data-nosnippet>988</a>/// where the computer's graphics card has it and DirectX 12 otherwise.
+<a href=#989 id=989 data-nosnippet>989</a>/// wgpu otherwise opens every API it knows to choose among them, and each
+<a href=#990 id=990 data-nosnippet>990</a>/// loads its driver for the life of the process, Vulkan's beside
+<a href=#991 id=991 data-nosnippet>991</a>/// DirectX's, a hundred megabytes and more of driver for nothing. Vulkan
+<a href=#992 id=992 data-nosnippet>992</a>/// first: DirectX 12's device can take half a minute to open on some
+<a href=#993 id=993 data-nosnippet>993</a>/// computers, with overlays and drivers in its way, where Vulkan's opens at
+<a href=#994 id=994 data-nosnippet>994</a>/// once. `WGPU_BACKEND` still chooses.
+<a href=#995 id=995 data-nosnippet>995</a></span><span class="kw">fn </span>graphics() -&gt; eframe::egui_wgpu::WgpuConfiguration {
+<a href=#996 id=996 data-nosnippet>996</a>    <span class="kw">let </span><span class="kw-2">mut </span>config = eframe::egui_wgpu::WgpuConfiguration::default();
+<a href=#997 id=997 data-nosnippet>997</a>    <span class="kw">if </span><span class="macro">cfg!</span>(windows)
+<a href=#998 id=998 data-nosnippet>998</a>        &amp;&amp; eframe::wgpu::Backends::from_env().is_none()
+<a href=#999 id=999 data-nosnippet>999</a>        &amp;&amp; <span class="kw">let </span>eframe::egui_wgpu::WgpuSetup::CreateNew(create) = <span class="kw-2">&amp;mut </span>config.wgpu_setup
+<a href=#1000 id=1000 data-nosnippet>1000</a>    {
+<a href=#1001 id=1001 data-nosnippet>1001</a>        create.instance_descriptor.backends = windows_backend();
+<a href=#1002 id=1002 data-nosnippet>1002</a>    }
+<a href=#1003 id=1003 data-nosnippet>1003</a>    config
+<a href=#1004 id=1004 data-nosnippet>1004</a>}
+<a href=#1005 id=1005 data-nosnippet>1005</a>
+<a href=#1006 id=1006 data-nosnippet>1006</a><span class="doccomment">/// Vulkan, when a graphics card here answers to it; DirectX 12 otherwise.
+<a href=#1007 id=1007 data-nosnippet>1007</a>/// Asked of a Vulkan instance of its own, before the windows' own is made:
+<a href=#1008 id=1008 data-nosnippet>1008</a>/// the driver it loads is the one the windows then use.
+<a href=#1009 id=1009 data-nosnippet>1009</a></span><span class="kw">fn </span>windows_backend() -&gt; eframe::wgpu::Backends {
+<a href=#1010 id=1010 data-nosnippet>1010</a>    <span class="kw">use </span>eframe::wgpu::{Backends, DeviceType, Instance, InstanceDescriptor};
+<a href=#1011 id=1011 data-nosnippet>1011</a>    <span class="kw">let </span><span class="kw-2">mut </span>asked = InstanceDescriptor::new_without_display_handle();
+<a href=#1012 id=1012 data-nosnippet>1012</a>    asked.backends = Backends::VULKAN;
+<a href=#1013 id=1013 data-nosnippet>1013</a>    <span class="kw">let </span>probe = Instance::new(asked);
+<a href=#1014 id=1014 data-nosnippet>1014</a>    <span class="kw">let </span>card = pollster::block_on(probe.enumerate_adapters(Backends::VULKAN))
+<a href=#1015 id=1015 data-nosnippet>1015</a>        .iter()
+<a href=#1016 id=1016 data-nosnippet>1016</a>        .any(|adapter| adapter.get_info().device_type != DeviceType::Cpu);
+<a href=#1017 id=1017 data-nosnippet>1017</a>    <span class="kw">if </span>card {
+<a href=#1018 id=1018 data-nosnippet>1018</a>        Backends::VULKAN
+<a href=#1019 id=1019 data-nosnippet>1019</a>    } <span class="kw">else </span>{
+<a href=#1020 id=1020 data-nosnippet>1020</a>        Backends::DX12
+<a href=#1021 id=1021 data-nosnippet>1021</a>    }
+<a href=#1022 id=1022 data-nosnippet>1022</a>}
+<a href=#1023 id=1023 data-nosnippet>1023</a>
+<a href=#1024 id=1024 data-nosnippet>1024</a><span class="doccomment">/// Open the windows over `sessions` -- the hub shown or hidden as `open`
+<a href=#1025 id=1025 data-nosnippet>1025</a>/// says, and each character's play window it keeps -- and run until the
+<a href=#1026 id=1026 data-nosnippet>1026</a>/// last closes, or
+<a href=#1027 id=1027 data-nosnippet>1027</a>/// the binary closes them once the run is over ([`Sessions::close`]). A
+<a href=#1028 id=1028 data-nosnippet>1028</a>/// character seated after opens its play window unless it was started
+<a href=#1029 id=1029 data-nosnippet>1029</a>/// headless or for the web. The hub's requests run on `runtime`; layouts,
+<a href=#1030 id=1030 data-nosnippet>1030</a>/// presets, keys and pictures are kept in `data`, the data folder. Blocks
+<a href=#1031 id=1031 data-nosnippet>1031</a>/// the calling thread, which must be the main one.
+<a href=#1032 id=1032 data-nosnippet>1032</a>///
+<a href=#1033 id=1033 data-nosnippet>1033</a>/// Closed, the windows can be opened again by another call, on the same
+<a href=#1034 id=1034 data-nosnippet>1034</a>/// thread: eframe keeps its event loop between them. What drew them is let
+<a href=#1035 id=1035 data-nosnippet>1035</a>/// go as they close.
+<a href=#1036 id=1036 data-nosnippet>1036</a>///
+<a href=#1037 id=1037 data-nosnippet>1037</a>/// # Errors
+<a href=#1038 id=1038 data-nosnippet>1038</a>///
+<a href=#1039 id=1039 data-nosnippet>1039</a>/// The window could not be opened: no display, or no graphics adapter.
+<a href=#1040 id=1040 data-nosnippet>1040</a></span><span class="kw">pub fn </span>run(
+<a href=#1041 id=1041 data-nosnippet>1041</a>    sessions: Sessions,
+<a href=#1042 id=1042 data-nosnippet>1042</a>    runtime: tokio::runtime::Handle,
+<a href=#1043 id=1043 data-nosnippet>1043</a>    data: <span class="kw-2">&amp;</span>Path,
+<a href=#1044 id=1044 data-nosnippet>1044</a>    open: Open,
+<a href=#1045 id=1045 data-nosnippet>1045</a>) -&gt; eframe::Result {
+<a href=#1046 id=1046 data-nosnippet>1046</a>    <span class="kw">let </span>hidden = open != Open::Hub;
+<a href=#1047 id=1047 data-nosnippet>1047</a>    <span class="kw">let </span>options = eframe::NativeOptions {
+<a href=#1048 id=1048 data-nosnippet>1048</a>        viewport: Placements::load(data)
+<a href=#1049 id=1049 data-nosnippet>1049</a>            .builder(HUB, [<span class="number">660.0</span>, <span class="number">520.0</span>])
+<a href=#1050 id=1050 data-nosnippet>1050</a>            .with_title(TITLE)
+<a href=#1051 id=1051 data-nosnippet>1051</a>            .with_visible(!hidden),
+<a href=#1052 id=1052 data-nosnippet>1052</a>        wgpu_options: graphics(),
+<a href=#1053 id=1053 data-nosnippet>1053</a>        ..Default::default()
+<a href=#1054 id=1054 data-nosnippet>1054</a>    };
+<a href=#1055 id=1055 data-nosnippet>1055</a>    <span class="kw">let </span>wake = sessions.wake();
+<a href=#1056 id=1056 data-nosnippet>1056</a>    <span class="kw">let </span>data = data.to_path_buf();
+<a href=#1057 id=1057 data-nosnippet>1057</a>    <span class="kw">let </span>shown = eframe::run_native(
+<a href=#1058 id=1058 data-nosnippet>1058</a>        TITLE,
+<a href=#1059 id=1059 data-nosnippet>1059</a>        options,
+<a href=#1060 id=1060 data-nosnippet>1060</a>        Box::new(<span class="kw">move </span>|creation| {
+<a href=#1061 id=1061 data-nosnippet>1061</a>            <span class="kw">crate</span>::opened(<span class="string">"the window and its graphics are ready"</span>);
+<a href=#1062 id=1062 data-nosnippet>1062</a>            sessions
+<a href=#1063 id=1063 data-nosnippet>1063</a>                .wake()
+<a href=#1064 id=1064 data-nosnippet>1064</a>                .opened(std::sync::Arc::new(<span class="kw">crate</span>::EguiWindows(
+<a href=#1065 id=1065 data-nosnippet>1065</a>                    creation.egui_ctx.clone(),
+<a href=#1066 id=1066 data-nosnippet>1066</a>                )));
+<a href=#1067 id=1067 data-nosnippet>1067</a>            <span class="attr">#[cfg(feature = <span class="string">"doll-infinite"</span>)]
+<a href=#1068 id=1068 data-nosnippet>1068</a>            </span>hydra_mem::part(hydra_mem::Part::Doll, || {
+<a href=#1069 id=1069 data-nosnippet>1069</a>                <span class="kw">crate</span>::widget::infinite::open(creation, <span class="kw-2">&amp;</span>data);
+<a href=#1070 id=1070 data-nosnippet>1070</a>            });
+<a href=#1071 id=1071 data-nosnippet>1071</a>            <span class="kw">let </span><span class="kw-2">mut </span>app = App::new(sessions, runtime, <span class="kw-2">&amp;</span>data);
+<a href=#1072 id=1072 data-nosnippet>1072</a>            <span class="kw">crate</span>::opened(<span class="string">"the app is built"</span>);
+<a href=#1073 id=1073 data-nosnippet>1073</a>            <span class="kw">if </span>hidden {
+<a href=#1074 id=1074 data-nosnippet>1074</a>                app.hub_shown = HubShown::Hiding;
+<a href=#1075 id=1075 data-nosnippet>1075</a>            }
+<a href=#1076 id=1076 data-nosnippet>1076</a>            <span class="prelude-val">Ok</span>(Box::new(app))
+<a href=#1077 id=1077 data-nosnippet>1077</a>        }),
+<a href=#1078 id=1078 data-nosnippet>1078</a>    );
+<a href=#1079 id=1079 data-nosnippet>1079</a>    wake.closed();
+<a href=#1080 id=1080 data-nosnippet>1080</a>    shown
+<a href=#1081 id=1081 data-nosnippet>1081</a>}
 </code></pre></div></section></main></body></html>

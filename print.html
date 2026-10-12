@@ -37,10 +37,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-7d8da2a1.js";
+            window.path_to_searchindex_js = "searchindex-09be7163.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-17f3e595.js"></script>
+        <script src="toc-58c69ee2.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -182,6 +182,7 @@ character you play at once: each has its own window, or none, and all of
 them keep playing while Hydra rests in the background. A phone or another
 computer on your home network shows the same characters on Hydra’s web
 page, and the HydraFE app plays on an iPhone or iPad by itself.</p>
+<p><img src="images/play.png" alt="A play window: the story on the left; vitals, hands, the room and the minimap down the right"></p>
 <h2 id="downloads"><a class="header" href="#downloads">Downloads</a></h2>
 <p>Every release is on the <a href="https://github.com/Nisugi/hydra/releases">releases page</a>:</p>
 <ul>
@@ -193,6 +194,321 @@ page, and the HydraFE app plays on an iPhone or iPad by itself.</p>
 <p>The guide’s pages are coming, group by group: getting started, the play
 window, playing, and the phone and web page. The <a href="api/index.html">API reference</a>
 is the whole of Hydra’s code, documented, for anyone writing against it.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="how-hydra-works"><a class="header" href="#how-hydra-works">How Hydra works</a></h1>
+<p>Hydra is one program that plays every character you have at once. Its
+windows are only views onto those characters: close them all and every
+character keeps playing.</p>
+<p><img src="images/how-it-works.svg" alt="One Hydra holds every character’s connection to the game. The hub, the play windows, the tray icon, the web page and the HydraFE app all show those same characters, and your own Lich can run behind any of them."></p>
+<h2 id="one-hydra-every-character"><a class="header" href="#one-hydra-every-character">One Hydra, every character</a></h2>
+<p>A single Hydra holds every character’s connection to the game. Each
+character has a session of its own: the connection, everything the game
+has told it (its vitals, the room, its hands, its effects, its inventory),
+and the commands waiting to be sent. When a connection drops, Hydra logs
+that character back in by itself. A character nobody is using is let go
+once its connection has dropped twice with no command sent between, so an
+idle character is not logged back in forever.</p>
+<p>You start, watch and stop characters from <a href="#the-hub">the hub</a>. Each
+character can have a play window of its own, and several can play side by
+side.</p>
+<p><img src="images/hub_live.png" alt="The hub with four characters playing at once, and the Chat card gathering what they all hear"></p>
+<h2 id="windows-come-and-go-the-characters-stay"><a class="header" href="#windows-come-and-go-the-characters-stay">Windows come and go; the characters stay</a></h2>
+<p>Closing a play window does not stop its character. Closing the hub hides
+it while any play window is open. Once every window is closed, Hydra
+<strong>rests</strong>: it keeps running in the background, and every character keeps
+playing.</p>
+<p>To bring the windows back, start Hydra again (on a Mac, see
+<a href="#macos">Install Hydra</a>). Only one Hydra runs at a time on a
+set of files, so a second start does not begin another one: it opens the
+windows of the Hydra already running and leaves. On Windows, Hydra’s
+<a href="#hydra-in-the-tray">icon in the tray</a> opens the hub as well, and Hydra can start
+by itself, resting, when you sign in.</p>
+<p><strong>Shut down</strong>, on the hub or the tray, is what ends Hydra: every character
+quits the game in turn, and then Hydra closes.</p>
+<p>While a character plays, Hydra keeps Windows from going to sleep.</p>
+<h2 id="starting-fresh"><a class="header" href="#starting-fresh">Starting fresh</a></h2>
+<p>Once the last character has stopped and no window is open, Hydra waits a
+minute and then starts itself again in the background. That gives back the
+memory that playing and the windows took, which a program can only hand
+back by ending. You do not see it happen. The wait is <strong>Start fresh after</strong>,
+on the Window page of the settings; 0 turns it off.</p>
+<h2 id="hydras-commands-and-the-games"><a class="header" href="#hydras-commands-and-the-games">Hydra’s commands and the game’s</a></h2>
+<p>Anything you type goes to the game, except lines that start with Hydra’s
+command symbol, <code>.</code>, which are Hydra’s own and never reach the game. <code>.help</code>
+lists them. If you run Lich, lines that start with <code>;</code> are Lich’s.</p>
+<h2 id="lich"><a class="header" href="#lich">Lich</a></h2>
+<p>If you play with Lich, Hydra runs <a href="#run-your-own-lich">your own Lich</a> behind any
+character you turn it on for. Hydra keeps the game connection and hands
+Lich the game’s text, so Lich’s scripts run as they always have, and what
+you type passes through Lich on its way to the game. Lich never sees your
+password.</p>
+<h2 id="the-web-page-and-the-phone"><a class="header" href="#the-web-page-and-the-phone">The web page and the phone</a></h2>
+<p>Hydra can serve a web page to your home network. A phone, a tablet or
+another computer opens it in a browser and plays the same characters, from
+the same sessions, as the play windows show them.</p>
+<p>HydraFE, the app for iPhone and iPad, does that too: it finds Hydra on your
+home network by itself. It can also run Hydra on the phone alone, with no
+computer, for when you are away from home. Lich does not run on a phone.</p>
+<h2 id="where-hydra-keeps-its-files"><a class="header" href="#where-hydra-keeps-its-files">Where Hydra keeps its files</a></h2>
+<p>Hydra keeps two folders beside where it starts (on a Mac, in Application
+Support): <code>data</code>, which holds your settings, layouts, highlights and the
+characters it knows; and <code>logs</code>, which holds what each character read, a
+file a day. <a href="#install-hydra">Install Hydra</a>
+says where to put them. Passwords are never in either: Hydra keeps one only
+when you ask, in your computer’s own keyring.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="install-hydra"><a class="header" href="#install-hydra">Install Hydra</a></h1>
+<p>Every release is on the <a href="https://github.com/Nisugi/hydra/releases">releases page</a>,
+a file for each system. The phone app, HydraFE, comes through TestFlight
+instead.</p>
+<p>These beta builds are not signed yet, so the first time you start Hydra
+your system warns that it does not know who made it. Each section below
+says how to let it run.</p>
+<h2 id="where-hydra-keeps-its-files-1"><a class="header" href="#where-hydra-keeps-its-files-1">Where Hydra keeps its files</a></h2>
+<p>Hydra makes two folders <strong>beside where it starts</strong>: <code>data</code>, for your
+settings, layouts, highlights and the characters it knows, and <code>logs</code>, for
+what each character read. Give Hydra a folder of its own and start it from
+there. To move Hydra, move the folder: everything goes with it.</p>
+<p>On a Mac, the app keeps them in <code>~/Library/Application Support/Hydra</code>.</p>
+<p>Passwords are not in either folder. Hydra keeps one only when you ask, in
+your computer’s own keyring.</p>
+<h2 id="windows"><a class="header" href="#windows">Windows</a></h2>
+<ol>
+<li>Download <code>hydra-windows-x86_64.zip</code>.</li>
+<li>Extract it into a folder of your own, such as <code>Documents\Hydra</code>. Not into
+<code>Program Files</code>: Hydra writes its folders beside <code>hydra.exe</code>, and cannot
+write there.</li>
+<li>Double-click <code>hydra.exe</code>. If Windows says <em>Windows protected your PC</em>,
+choose <strong>More info</strong>, then <strong>Run anyway</strong>.</li>
+</ol>
+<p>The hub opens, and Hydra’s icon appears in the tray.</p>
+<p>A shortcut to <code>hydra.exe</code> works as well: it starts Hydra in the folder
+<code>hydra.exe</code> is in, unless you change its <em>Start in</em>.</p>
+<h2 id="macos"><a class="header" href="#macos">macOS</a></h2>
+<p>Hydra for macOS runs on Macs with Apple silicon (M1 and later).</p>
+<ol>
+<li>
+<p>Download <code>hydra-macos.dmg</code>, open it, and drag Hydra into Applications.</p>
+</li>
+<li>
+<p>Open Terminal and let it run, since it is not signed:</p>
+<pre><code class="language-sh">xattr -dr com.apple.quarantine /Applications/Hydra.app
+</code></pre>
+</li>
+<li>
+<p>Open Hydra from Applications. The hub opens.</p>
+</li>
+</ol>
+<p>Hydra keeps its files in <code>~/Library/Application Support/Hydra</code>.</p>
+<p>Hydra has no menu bar icon on a Mac. With every window closed it rests in
+the background and every character plays on. To open its windows again,
+run this in Terminal:</p>
+<pre><code class="language-sh">open -n /Applications/Hydra.app
+</code></pre>
+<h2 id="linux"><a class="header" href="#linux">Linux</a></h2>
+<p>Hydra for Linux runs on x86-64 with glibc 2.39 or newer: Ubuntu 24.04 and
+later, Debian 13, Fedora 40 and later, or another distribution as recent.</p>
+<ol>
+<li>
+<p>Download <code>hydra-linux-x86_64.tar.gz</code>.</p>
+</li>
+<li>
+<p>Make Hydra a folder, unpack it there, and start it from there:</p>
+<pre><code class="language-sh">mkdir -p ~/Hydra
+cd ~/Hydra
+tar -xzf ~/Downloads/hydra-linux-x86_64.tar.gz
+./hydra
+</code></pre>
+</li>
+</ol>
+<p>Hydra needs ALSA for sound (<code>libasound.so.2</code>), speech-dispatcher for spoken
+highlights (<code>libspeechd.so.2</code>) and udev for game controllers (<code>libudev.so.1</code>).
+Most desktops have them; on Ubuntu or Debian, any missing are installed
+with:</p>
+<pre><code class="language-sh">sudo apt install libasound2t64 libspeechd2
+</code></pre>
+<p>Kept passwords go into your desktop’s keyring, GNOME Keyring or KDE Wallet.
+Like on a Mac, Hydra has no tray icon: start it again to open its windows.</p>
+<h2 id="updating"><a class="header" href="#updating">Updating</a></h2>
+<p>Shut Hydra down first, from the hub’s <strong>Shut down</strong> or the tray. Then
+replace <code>hydra.exe</code>, the app, or <code>hydra</code> with the new release’s. Your
+<code>data</code> and <code>logs</code> folders stay as they are.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="log-a-character-in"><a class="header" href="#log-a-character-in">Log a character in</a></h1>
+<p>The first time, you log in with your account, and Hydra lists its
+characters for you to play. After that, a character starts with a click.</p>
+<p><img src="images/hub_login.png" alt="The hub’s New login tab: account, password and game, Keep the password, and Log in"></p>
+<ol>
+<li>Start Hydra. The hub opens.</li>
+<li>Choose the <strong>New login</strong> tab.</li>
+<li>Type your <strong>Account</strong> and <strong>Password</strong>, and choose the <strong>Game</strong>: Prime,
+Shattered or Prime Test.</li>
+<li>Tick <strong>Keep the password</strong> if you want Hydra to start this account’s
+characters without asking for it again. It is kept in your computer’s
+keyring (Credential Manager on Windows, the Keychain on a Mac, GNOME
+Keyring or KDE Wallet on Linux), and only once the game has accepted it.</li>
+<li>Choose <strong>Log in</strong>. Hydra asks the game for the account’s characters and
+lists them under the form.</li>
+<li>Choose <strong>Play</strong> beside a character. Hydra logs it in and opens its play
+window.</li>
+</ol>
+<p>Once the game has let a character in, it is on your <strong>roster</strong>: the
+characters Hydra knows, listed on the hub’s Offline tab whenever they are
+not playing. <strong>Add</strong> puts a character on the roster without playing it, and
+the star marks a favourite, which is listed first.</p>
+<h2 id="the-next-time"><a class="header" href="#the-next-time">The next time</a></h2>
+<p>Open the hub’s <strong>Offline</strong> tab. A character whose password is kept has
+<strong>Start</strong>. One without has a password box, its own <strong>Keep</strong> box, and
+<strong>Log <em>name</em> in</strong>. On Windows, the tray’s <strong>Start a character</strong> starts any
+character whose password is kept.</p>
+<h2 id="forgetting"><a class="header" href="#forgetting">Forgetting</a></h2>
+<p><strong>Forget</strong> on a character’s card takes it off the roster. Under <strong>Kept
+passwords</strong> on the New login tab, the <strong>Forget</strong> button beside an account
+takes its password out of the keyring.</p>
+<p><strong>Log out</strong> on the New login tab clears the account the form logged in,
+and its list. Characters already playing go on playing.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="the-hub"><a class="header" href="#the-hub">The hub</a></h1>
+<p>The hub is where characters are started, watched and stopped. It opens when
+Hydra starts, and closing it never stops a character.</p>
+<p><img src="images/hub_live.png" alt="The hub’s Live tab with four characters playing: each card has the character’s room, roundtime and vitals, and Window, Log and Quit; the Chat card below gathers what they all hear"></p>
+<h2 id="its-tabs"><a class="header" href="#its-tabs">Its tabs</a></h2>
+<ul>
+<li><strong>Live</strong>: a card for each character playing, or reconnecting. A card
+shows the character and its connection, its health, mana, stamina and
+spirit, its roundtime, room and group, and <strong>Window</strong>, <strong>Log</strong> and
+<strong>Quit</strong>. The <strong>Chat</strong> card beside them gathers what every character
+hears on the shared channels (thoughts, speech, arrivals, deaths and
+announcements), each line marked with who heard it. Its ⚙ chooses the
+channels and the characters.</li>
+<li><strong>Offline</strong>: first the characters that stopped this run, with why, and
+<strong>Reconnect</strong>, <strong>Remove</strong> or <strong>Log</strong>. Then the rest of your roster,
+favourites first, each with <strong>Start</strong> or a password box.</li>
+<li><strong>Teams</strong>: characters started together with one click. See
+<a href="#start-a-team">Start a team</a>.</li>
+<li><strong>New login</strong>: an account’s characters, and the kept passwords. See
+<a href="#log-a-character-in">Log a character in</a>.</li>
+</ul>
+<p>A card’s <strong>Window</strong> opens that character’s play window, or brings it to
+the front. <strong>Log</strong> opens what the character has read. <strong>Quit</strong> quits the
+game.</p>
+<p><img src="images/hub_offline.png" alt="The hub’s Offline tab: Nisugi, starred, with Start; Nerten, with a password box"></p>
+<h2 id="the-menu"><a class="header" href="#the-menu">The Menu</a></h2>
+<p><img src="images/hub_menu.png" alt="The hub’s Menu open: Cards, Highlights, Hotbars, Map, Performance, Settings, Survey, Theme and Web page"></p>
+<ul>
+<li><strong>Cards</strong>: the design every character’s card is drawn from, which parts
+it shows and where.</li>
+<li><strong>Highlights</strong>, <strong>Hotbars</strong> and <strong>Theme</strong>: their editors, shared by every
+character.</li>
+<li><strong>Map</strong>: the Map Explorer, the whole map and where every character
+stands.</li>
+<li><strong>Performance</strong>: each live card’s timings, for when something feels slow.</li>
+<li><strong>Settings</strong>: Hydra’s own settings, and every character’s.</li>
+<li><strong>Survey</strong>: the room survey’s map, while one runs.</li>
+<li><strong>Web page</strong>: the web page’s address and a code to scan, once the web
+page is switched on in the settings.</li>
+</ul>
+<h2 id="shutting-down"><a class="header" href="#shutting-down">Shutting down</a></h2>
+<p><strong>Shut down</strong> quits every character in turn and closes Hydra. With any
+character playing, it asks first: <em>Shut Hydra down? Every character will
+quit.</em></p>
+<p>Closing the hub’s window is not shutting down. It only hides the hub while
+a play window is open. With none open, Hydra rests in the background and
+every character plays on. Start Hydra again, or use the tray on Windows,
+to bring the hub back.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="start-a-team"><a class="header" href="#start-a-team">Start a team</a></h1>
+<p>A team is a set of characters started together with one click: a hunting
+party, or everyone you log in each evening.</p>
+<p><img src="images/teams.png" alt="The Teams tab: the team Hunt, Nisugi and Ashryn with play windows, open in its editor"></p>
+<ol>
+<li>On the hub’s <strong>Teams</strong> tab, choose <strong>New team</strong>.</li>
+<li>Give it a <strong>Name</strong>.</li>
+<li>Choose what it <strong>Starts with</strong>:
+<ul>
+<li><strong>play windows</strong>: each character’s play window opens. If Hydra was
+resting, only those open, and the hub stays hidden.</li>
+<li><strong>headless</strong>: no play window. A character’s card opens one when you
+want it.</li>
+<li><strong>web page</strong>: no play window on this computer, and the web page is
+served for them, for playing from a phone or another computer.</li>
+</ul>
+</li>
+<li>Tick its characters. An account plays one character at a time, so a team
+takes one character per account.</li>
+<li>Choose <strong>Save team</strong>.</li>
+</ol>
+<p><strong>Launch</strong> starts every character in the team. <strong>Edit</strong> changes the team,
+and <strong>Forget</strong> removes it.</p>
+<p>A team’s characters start with their kept passwords, so keep each one’s
+password first (see <a href="#log-a-character-in">Log a character in</a>). A character whose
+password is not kept is left out, and the hub says so. On Windows, the
+tray’s <strong>Start a team</strong> starts a team too.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="hydra-in-the-tray"><a class="header" href="#hydra-in-the-tray">Hydra in the tray</a></h1>
+<p>On Windows, Hydra’s icon sits in the tray for as long as Hydra runs, its
+windows open or not. Hovering it says how many characters are playing.</p>
+<p>A click on the icon opens the hub. Its menu:</p>
+<p><img src="images/tray.png" alt="The tray menu: Open hub, Start a character, Start a team, Start Hydra at sign-in, and Shut down Hydra"></p>
+<ul>
+<li><strong>Open hub</strong>.</li>
+<li><strong>Start a character</strong>: every roster character whose password is kept.
+One already playing is marked <code>*</code>, and choosing it brings its window
+forward.</li>
+<li><strong>Start a team</strong>: your teams.</li>
+<li><strong>Start Hydra at sign-in</strong>: Hydra starts by itself, resting, when you
+sign in to Windows, with its files in the folder it is running from now.
+Untick it to stop that.</li>
+<li><strong>Shut down Hydra</strong>: every character quits the game, and Hydra closes.</li>
+</ul>
+<p>A character or team started from the tray opens its play windows and
+leaves the hub as it is.</p>
+<p>On a Mac or on Linux there is no tray icon. Hydra rests in the background
+in the same way, and starting it again opens its hub; on a Mac, see
+<a href="#macos">Install Hydra</a> for how.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="run-your-own-lich"><a class="header" href="#run-your-own-lich">Run your own Lich</a></h1>
+<p>If you play with Lich, Hydra runs your own Lich behind each character you
+turn it on for. Hydra keeps the game connection and hands Lich the game’s
+text, so your scripts, settings and aliases work as they always have.
+Lich never sees your password.</p>
+<h2 id="what-you-need"><a class="header" href="#what-you-need">What you need</a></h2>
+<ul>
+<li><strong>Lich</strong>, installed: a folder with <code>lich.rbw</code> in it.</li>
+<li><strong>Ruby</strong>, which Lich runs on. On Windows, Lich’s installer puts it in
+<code>C:\Ruby4Lich5</code>, where Hydra finds it. Otherwise Hydra uses the <code>ruby</code>
+on your PATH.</li>
+</ul>
+<h2 id="turn-it-on"><a class="header" href="#turn-it-on">Turn it on</a></h2>
+<p>Type these in a character’s play window:</p>
+<ol>
+<li><code>.lich folder &lt;folder&gt;</code>, once: where your Lich is, for example
+<code>.lich folder C:\Lich5</code>. It holds for every character.</li>
+<li><code>.lich on</code>: Lich starts for this character now, and again every time the
+character starts. It starts once the game has let the character in, so
+logging in is no slower.</li>
+</ol>
+<p><code>.lich off</code> stops it and leaves it off. <code>.lich</code> alone says whether it runs
+and where Lich is.</p>
+<h2 id="typing-with-lich"><a class="header" href="#typing-with-lich">Typing with Lich</a></h2>
+<ul>
+<li>A line starting with <code>;</code> is Lich’s own command: <code>;repository</code>,
+<code>;kill bigshot</code>.</li>
+<li>A line starting with <code>.</code> is Hydra’s.</li>
+<li>Anything else goes to Lich first, so its aliases and hooks see it, and
+Lich sends it on to the game.</li>
+</ul>
+<p>Lich’s symbol is <code>;</code> unless you choose another: <strong>Lich command symbol</strong>, on
+a character’s General page in the settings.</p>
+<h2 id="what-the-window-shows"><a class="header" href="#what-the-window-shows">What the window shows</a></h2>
+<ul>
+<li><code>.lich view lich</code>, as it starts: what Lich shows. Its squelches hold, and
+its scripts’ messages appear in the story.</li>
+<li><code>.lich view game</code>: the game’s own text, with Lich’s lines beside it.</li>
+</ul>
+<p><code>.stop</code> stops everything on the character at once, Lich’s scripts
+included.</p>
+<p>Lich does not run in HydraFE’s own Hydra on a phone.</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="for-developers"><a class="header" href="#for-developers">For developers</a></h1>
 <p>Hydra is written in Rust, as a workspace of crates from the game connection
