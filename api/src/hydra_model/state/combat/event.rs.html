@@ -487,14 +487,18 @@
 <a href=#487 id=487 data-nosnippet>487</a>    /// time of their own, and a chunk of facts alone -- a confirmed death --
 <a href=#488 id=488 data-nosnippet>488</a>    /// still has to be recorded at one. `None`: no clock was known.
 <a href=#489 id=489 data-nosnippet>489</a>    </span><span class="kw">pub </span>at: <span class="prelude-ty">Option</span>&lt;u32&gt;,
-<a href=#490 id=490 data-nosnippet>490</a>}
-<a href=#491 id=491 data-nosnippet>491</a>
-<a href=#492 id=492 data-nosnippet>492</a><span class="kw">impl </span>ChunkFacts {
-<a href=#493 id=493 data-nosnippet>493</a>    <span class="doccomment">/// Nothing at all.
-<a href=#494 id=494 data-nosnippet>494</a>    </span><span class="attr">#[must_use]
-<a href=#495 id=495 data-nosnippet>495</a>    </span><span class="kw">pub fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-<a href=#496 id=496 data-nosnippet>496</a>        <span class="comment">// `at` is when, not what: a stamped chunk with nothing in it is empty
-<a href=#497 id=497 data-nosnippet>497</a>        </span><span class="self">self</span>.events.is_empty() &amp;&amp; <span class="self">self</span>.facts.is_empty()
-<a href=#498 id=498 data-nosnippet>498</a>    }
-<a href=#499 id=499 data-nosnippet>499</a>}
+<a href=#490 id=490 data-nosnippet>490</a>    <span class="doccomment">/// The chunk's lines the reader found to be a flare, a status landing on
+<a href=#491 id=491 data-nosnippet>491</a>    /// the character or a killing blow, for a frontend to colour
+<a href=#492 id=492 data-nosnippet>492</a>    /// ([`super::marks`]).
+<a href=#493 id=493 data-nosnippet>493</a>    </span><span class="kw">pub </span>marks: Vec&lt;<span class="kw">super</span>::marks::LineMark&gt;,
+<a href=#494 id=494 data-nosnippet>494</a>}
+<a href=#495 id=495 data-nosnippet>495</a>
+<a href=#496 id=496 data-nosnippet>496</a><span class="kw">impl </span>ChunkFacts {
+<a href=#497 id=497 data-nosnippet>497</a>    <span class="doccomment">/// Nothing at all.
+<a href=#498 id=498 data-nosnippet>498</a>    </span><span class="attr">#[must_use]
+<a href=#499 id=499 data-nosnippet>499</a>    </span><span class="kw">pub fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+<a href=#500 id=500 data-nosnippet>500</a>        <span class="comment">// `at` is when, not what: a stamped chunk with nothing in it is empty
+<a href=#501 id=501 data-nosnippet>501</a>        </span><span class="self">self</span>.events.is_empty() &amp;&amp; <span class="self">self</span>.facts.is_empty()
+<a href=#502 id=502 data-nosnippet>502</a>    }
+<a href=#503 id=503 data-nosnippet>503</a>}
 </code></pre></div></section></main></body></html>

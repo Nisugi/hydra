@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["HAND_PORTED"],"enum":["Role"],"fn":["defs"],"struct":["Def","Defs","HandPort"]};
+window.SIDEBAR_ITEMS = {"constant":["HAND_PORTED"],"enum":["Role"],"fn":["defs","flare_names"],"struct":["Def","Defs","HandPort"]};

@@ -8,12 +8,12 @@
 <a href=#8 id=8 data-nosnippet>8</a></span><span class="kw">use </span>egui::text::{LayoutJob, TextFormat};
 <a href=#9 id=9 data-nosnippet>9</a><span class="kw">use </span>egui::{Color32, Pos2, TextStyle};
 <a href=#10 id=10 data-nosnippet>10</a><span class="kw">use </span>hydra_ui::theme::{Palette, Token};
-<a href=#11 id=11 data-nosnippet>11</a><span class="kw">use </span>hydra_ui::{RunLink, StyledRun, run_token};
+<a href=#11 id=11 data-nosnippet>11</a><span class="kw">use </span>hydra_ui::{RunLink, StyledRun, run_rgb};
 <a href=#12 id=12 data-nosnippet>12</a>
 <a href=#13 id=13 data-nosnippet>13</a><span class="kw">use </span><span class="kw">crate</span>::theme::rgb;
 <a href=#14 id=14 data-nosnippet>14</a>
 <a href=#15 id=15 data-nosnippet>15</a><span class="doccomment">/// `runs` as one job, in `style`'s fonts and `palette`'s colours: a run's
-<a href=#16 id=16 data-nosnippet>16</a>/// own colour (a highlight's), else its theme colour ([`run_token`]), else
+<a href=#16 id=16 data-nosnippet>16</a>/// own colour (a highlight's), else its theme colour ([`run_rgb`]), else
 <a href=#17 id=17 data-nosnippet>17</a>/// the text colour; monospace runs in the monospace font.
 <a href=#18 id=18 data-nosnippet>18</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>job(runs: <span class="kw-2">&amp;</span>[StyledRun], style: <span class="kw-2">&amp;</span>egui::Style, palette: <span class="kw-2">&amp;</span>Palette) -&gt; LayoutJob {
 <a href=#19 id=19 data-nosnippet>19</a>    <span class="kw">let </span>body = <span class="kw">crate</span>::theme::story_font(style);
@@ -33,7 +33,7 @@
 <a href=#33 id=33 data-nosnippet>33</a>                    .color
 <a href=#34 id=34 data-nosnippet>34</a>                    .as_deref()
 <a href=#35 id=35 data-nosnippet>35</a>                    .and_then(|hex| Color32::from_hex(hex).ok())
-<a href=#36 id=36 data-nosnippet>36</a>                    .or_else(|| run_token(run).map(|token| rgb(palette.get(token))))
+<a href=#36 id=36 data-nosnippet>36</a>                    .or_else(|| run_rgb(run, palette).map(rgb))
 <a href=#37 id=37 data-nosnippet>37</a>                    .unwrap_or_else(|| style.visuals.text_color()),
 <a href=#38 id=38 data-nosnippet>38</a>                background: run
 <a href=#39 id=39 data-nosnippet>39</a>                    .background

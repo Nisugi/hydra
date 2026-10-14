@@ -24,7 +24,7 @@
 <a href=#24 id=24 data-nosnippet>24</a><span class="doccomment">/// What `.timer help` says.
 <a href=#25 id=25 data-nosnippet>25</a></span><span class="kw">const </span>HELP: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>str] = <span class="kw-2">&amp;</span>[
 <a href=#26 id=26 data-nosnippet>26</a>    <span class="string">"timer &lt;name&gt; &lt;time&gt;   a countdown of your own: 90, 90s, 5m or 1m30s; again, it starts over"</span>,
-<a href=#27 id=27 data-nosnippet>27</a>    <span class="string">"timer &lt;name&gt;          for its default duration, as its highlight gives it"</span>,
+<a href=#27 id=27 data-nosnippet>27</a>    <span class="string">"timer &lt;name&gt;          for its default duration, as its trigger gives it"</span>,
 <a href=#28 id=28 data-nosnippet>28</a>    <span class="string">"timer &lt;name&gt; 5m buff  shown with the buffs: active spell, buff, debuff, cooldown or custom"</span>,
 <a href=#29 id=29 data-nosnippet>29</a>    <span class="string">"timer &lt;name&gt; off      clears it"</span>,
 <a href=#30 id=30 data-nosnippet>30</a>    <span class="string">"timer                 the timers running, and what is left of each"</span>,
@@ -216,7 +216,7 @@
 <a href=#216 id=216 data-nosnippet>216</a>                    <span class="prelude-val">None </span>=&gt; say(
 <a href=#217 id=217 data-nosnippet>217</a>                        NoticeKind::Warn,
 <a href=#218 id=218 data-nosnippet>218</a>                        <span class="macro">vec!</span>[<span class="macro">format!</span>(
-<a href=#219 id=219 data-nosnippet>219</a>                            <span class="string">"Timer {name} has no default duration: .timer {name} &lt;time&gt;, as 90, 5m or 1m30s; or give a highlight the timer {name} and its duration."
+<a href=#219 id=219 data-nosnippet>219</a>                            <span class="string">"Timer {name} has no default duration: .timer {name} &lt;time&gt;, as 90, 5m or 1m30s; or give a trigger the timer {name} and its duration."
 <a href=#220 id=220 data-nosnippet>220</a>                        </span>)],
 <a href=#221 id=221 data-nosnippet>221</a>                    ),
 <a href=#222 id=222 data-nosnippet>222</a>                },

@@ -403,7 +403,7 @@
 <a href=#403 id=403 data-nosnippet>403</a>                    // does not compile is left out, and
 <a href=#404 id=404 data-nosnippet>404</a>                    // `every_cooldown_message_compiles` counts them so that
 <a href=#405 id=405 data-nosnippet>405</a>                    // is loud rather than silent.
-<a href=#406 id=406 data-nosnippet>406</a>                    </span><span class="kw">let </span>pattern = regex::Regex::new(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"^(?:{source})$"</span>)).ok()<span class="question-mark">?</span>;
+<a href=#406 id=406 data-nosnippet>406</a>                    </span><span class="kw">let </span>pattern = <span class="kw">crate</span>::pattern::compile(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"^(?:{source})$"</span>)).ok()<span class="question-mark">?</span>;
 <a href=#407 id=407 data-nosnippet>407</a>                    <span class="prelude-val">Some</span>(Landing {
 <a href=#408 id=408 data-nosnippet>408</a>                        spell: spell.number,
 <a href=#409 id=409 data-nosnippet>409</a>                        kind: <span class="kw-2">*</span>kind,

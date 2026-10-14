@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["attack","bracket","damage","defs","event","flare","outcome","parse","resolution","spell_loss","status","target","tracker","ucs"]};
+window.SIDEBAR_ITEMS = {"mod":["attack","bracket","damage","defs","event","flare","marks","outcome","parse","resolution","spell_loss","status","target","tracker","ucs"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["LOOK_EVERY"],"enum":["Does","Woken"],"fn":["act","entry","menu","picture","run","shown"],"struct":["Offer","Tray"]};
+window.SIDEBAR_ITEMS = {"constant":["LOOK_EVERY"],"enum":["Does","Updating","Woken"],"fn":["act","entry","menu","picture","run","shown"],"struct":["Offer","Tray"]};

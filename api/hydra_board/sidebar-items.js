@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["connection"],"mod":["binding","disk","highlights","hotbars","kept","own","pad","seat","sessions","store","trainer"]};
+window.SIDEBAR_ITEMS = {"fn":["connection"],"mod":["binding","disk","highlights","hotbars","kept","merchants","own","pad","seat","sessions","store","trainer"]};

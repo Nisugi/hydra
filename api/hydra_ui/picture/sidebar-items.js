@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["KINDS"],"enum":["Source"],"fn":["kind_of","source","within"]};

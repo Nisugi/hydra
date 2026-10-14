@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["Pulse","World","WorldEvent"]};
+window.SIDEBAR_ITEMS = {"mod":["merchants"],"struct":["Pulse","World","WorldEvent"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["Rested"],"fn":["claim","run","seat","serve_page","start_next","stop_on_ctrl_c"],"struct":["Told"]};
+window.SIDEBAR_ITEMS = {"constant":["GAME_STOPS","GAME_THREADS"],"enum":["Rested"],"fn":["claim","game_runtime","run","seat","serve_page","start_next","stop_on_ctrl_c"],"struct":["Told"]};

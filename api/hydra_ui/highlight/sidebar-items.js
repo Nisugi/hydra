@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FILE"],"enum":["Mark","Say"],"fn":["change","import_vellum","import_wrayth"],"mod":["sound"],"struct":["Fired","FromVellum","HighlightFile","Imported","Matcher","Response","Rule","Timing","VellumFile"]};
+window.SIDEBAR_ITEMS = {"constant":["FILE"],"enum":["Mark","Say"],"fn":["caught","change","import_vellum","import_wrayth"],"mod":["sound"],"struct":["Compiled","Fired","FromVellum","HighlightFile","Imported","Matcher","Response","Rule","Timing","VellumFile"]};

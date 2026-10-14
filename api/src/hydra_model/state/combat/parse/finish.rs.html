@@ -110,7 +110,7 @@
 <a href=#110 id=110 data-nosnippet>110</a>                e
 <a href=#111 id=111 data-nosnippet>111</a>            })
 <a href=#112 id=112 data-nosnippet>112</a>            .collect();
-<a href=#113 id=113 data-nosnippet>113</a>        <span class="kw">let </span>facts = <span class="self">self
+<a href=#113 id=113 data-nosnippet>113</a>        <span class="kw">let </span>facts: Vec&lt;Fact&gt; = <span class="self">self
 <a href=#114 id=114 data-nosnippet>114</a>            </span>.facts
 <a href=#115 id=115 data-nosnippet>115</a>            .into_iter()
 <a href=#116 id=116 data-nosnippet>116</a>            .map(|f| <span class="kw">match </span>f {
@@ -132,11 +132,14 @@
 <a href=#132 id=132 data-nosnippet>132</a>                other =&gt; other,
 <a href=#133 id=133 data-nosnippet>133</a>            })
 <a href=#134 id=134 data-nosnippet>134</a>            .collect();
-<a href=#135 id=135 data-nosnippet>135</a>        ChunkFacts {
-<a href=#136 id=136 data-nosnippet>136</a>            events,
-<a href=#137 id=137 data-nosnippet>137</a>            facts,
-<a href=#138 id=138 data-nosnippet>138</a>            at: <span class="self">self</span>.at,
-<a href=#139 id=139 data-nosnippet>139</a>        }
-<a href=#140 id=140 data-nosnippet>140</a>    }
-<a href=#141 id=141 data-nosnippet>141</a>}
+<a href=#135 id=135 data-nosnippet>135</a>        <span class="kw">let </span>marks =
+<a href=#136 id=136 data-nosnippet>136</a>            <span class="kw">crate</span>::state::combat::marks::line_marks(<span class="kw-2">&amp;</span>events, <span class="kw-2">&amp;</span>facts, <span class="kw-2">&amp;</span><span class="self">self</span>.announced, <span class="self">self</span>.lines);
+<a href=#137 id=137 data-nosnippet>137</a>        ChunkFacts {
+<a href=#138 id=138 data-nosnippet>138</a>            events,
+<a href=#139 id=139 data-nosnippet>139</a>            facts,
+<a href=#140 id=140 data-nosnippet>140</a>            at: <span class="self">self</span>.at,
+<a href=#141 id=141 data-nosnippet>141</a>            marks,
+<a href=#142 id=142 data-nosnippet>142</a>        }
+<a href=#143 id=143 data-nosnippet>143</a>    }
+<a href=#144 id=144 data-nosnippet>144</a>}
 </code></pre></div></section></main></body></html>

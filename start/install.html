@@ -12,8 +12,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
-        <link rel="icon" href="../favicon-8ee1f735.svg">
-        <link rel="shortcut icon" href="../favicon-2f11884e.png">
+        <link rel="shortcut icon" href="../favicon-b89a83bc.png">
         <link rel="stylesheet" href="../css/variables-8adf115d.css">
         <link rel="stylesheet" href="../css/general-2459343d.css">
         <link rel="stylesheet" href="../css/chrome-ae938929.css">
@@ -36,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-09be7163.js";
+            window.path_to_searchindex_js = "../searchindex-1161a6b9.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-58c69ee2.js"></script>
+        <script src="../toc-893df2d8.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -184,7 +183,7 @@ your system warns that it does not know who made it. Each section below
 says how to let it run.</p>
 <h2 id="where-hydra-keeps-its-files"><a class="header" href="#where-hydra-keeps-its-files">Where Hydra keeps its files</a></h2>
 <p>Hydra makes two folders <strong>beside where it starts</strong>: <code>data</code>, for your
-settings, layouts, highlights and the characters it knows, and <code>logs</code>, for
+settings, layouts, triggers and the characters it knows, and <code>logs</code>, for
 what each character read. Give Hydra a folder of its own and start it from
 there. To move Hydra, move the folder: everything goes with it.</p>
 <p>On a Mac, the app keeps them in <code>~/Library/Application Support/Hydra</code>.</p>
@@ -240,7 +239,7 @@ tar -xzf ~/Downloads/hydra-linux-x86_64.tar.gz
 </li>
 </ol>
 <p>Hydra needs ALSA for sound (<code>libasound.so.2</code>), speech-dispatcher for spoken
-highlights (<code>libspeechd.so.2</code>) and udev for game controllers (<code>libudev.so.1</code>).
+triggers (<code>libspeechd.so.2</code>) and udev for game controllers (<code>libudev.so.1</code>).
 Most desktops have them; on Ubuntu or Debian, any missing are installed
 with:</p>
 <pre><code class="language-sh">sudo apt install libasound2t64 libspeechd2
@@ -248,6 +247,35 @@ with:</p>
 <p>Kept passwords go into your desktop’s keyring, GNOME Keyring or KDE Wallet.
 Like on a Mac, Hydra has no tray icon: start it again to open its windows.</p>
 <h2 id="updating"><a class="header" href="#updating">Updating</a></h2>
+<p>On Windows, Hydra updates itself. It looks for a newer release when it
+starts and every six hours after. When one is out, the hub says so under
+its header, with <strong>What’s new</strong>, which opens the release’s notes, and
+<strong>Update</strong>. The tray menu offers the same.</p>
+<p><strong>Update</strong> downloads the release and checks it before using it: every
+release is signed, and Hydra refuses a file whose signature or checksum
+does not match. Once it is ready, the hub says it runs from Hydra’s next
+start, and offers <strong>Restart now</strong>.</p>
+<ul>
+<li><strong>Restart now</strong> quits every character, the same way <strong>Shut down</strong> does,
+and starts Hydra again on the new release, with the hub open. If
+characters are playing, it names them first and asks. Leave <strong>Start them
+again afterwards</strong> ticked and they log back in, each with its team; untick
+it if you are stepping away. A character whose password is not kept is
+not logged back in: start it from the hub.</li>
+<li>Or carry on playing. The new release runs the next time Hydra starts:
+when you start it yourself, or when it starts fresh after a minute with
+nothing playing (see <a href="../how-it-works.html">How Hydra works</a>).</li>
+</ul>
+<p>Two switches on the <strong>Window</strong> page of the settings control this. <strong>Check
+for updates</strong> is on unless you turn it off. <strong>Update on its own</strong> is off
+unless you turn it on; with it on, Hydra downloads a new release as soon as
+it is out, without asking, and it runs from the next start.</p>
+<p>Hydra writes the new program beside the old one, so its folder must be one
+you can write to; that is another reason not to keep it in
+<code>Program Files</code>.</p>
+<p>The first beta, 0.1.0-beta.1, cannot update itself. Replace it by hand once,
+as below, and later releases arrive on their own.</p>
+<h3 id="by-hand-and-on-a-mac-or-linux"><a class="header" href="#by-hand-and-on-a-mac-or-linux">By hand, and on a Mac or Linux</a></h3>
 <p>Shut Hydra down first, from the hub’s <strong>Shut down</strong> or the tray. Then
 replace <code>hydra.exe</code>, the app, or <code>hydra</code> with the new release’s. Your
 <code>data</code> and <code>logs</code> folders stay as they are.</p>

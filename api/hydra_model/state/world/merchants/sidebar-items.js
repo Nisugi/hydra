@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["STAY_MINUTES"],"struct":["Merchant","Merchants"]};

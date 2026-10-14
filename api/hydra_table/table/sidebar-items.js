@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["give_typing"],"struct":["Joined","Table"]};
+window.SIDEBAR_ITEMS = {"fn":["give_typing"],"struct":["Joined","Resume","Table"]};

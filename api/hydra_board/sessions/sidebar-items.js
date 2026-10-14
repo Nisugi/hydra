@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["Open","WebAt"],"struct":["Glance","Sessions"],"type":["Merged","Opener"]};
+window.SIDEBAR_ITEMS = {"enum":["Fetch","Open","WebAt"],"struct":["Glance","Sessions","Update"],"type":["Merged","Opener"]};

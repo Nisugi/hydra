@@ -241,12 +241,12 @@
 <a href=#241 id=241 data-nosnippet>241</a>        // declaration order and must not change.
 <a href=#242 id=242 data-nosnippet>242</a>        </span><span class="kw">let </span><span class="kw-2">mut </span>out: Vec&lt;(TaskKind, Regex)&gt; = Vec::new();
 <a href=#243 id=243 data-nosnippet>243</a>        <span class="kw">for </span>(kind, pattern) <span class="kw">in </span>specs {
-<a href=#244 id=244 data-nosnippet>244</a>            <span class="kw">if let </span><span class="prelude-val">Ok</span>(re) = Regex::new(pattern) {
+<a href=#244 id=244 data-nosnippet>244</a>            <span class="kw">if let </span><span class="prelude-val">Ok</span>(re) = <span class="kw">crate</span>::pattern::compile(pattern) {
 <a href=#245 id=245 data-nosnippet>245</a>                out.push((kind, re));
 <a href=#246 id=246 data-nosnippet>246</a>            }
 <a href=#247 id=247 data-nosnippet>247</a>        }
 <a href=#248 id=248 data-nosnippet>248</a>        <span class="kw">for </span>(kind, pattern) <span class="kw">in </span>remaining_specs() {
-<a href=#249 id=249 data-nosnippet>249</a>            <span class="kw">if let </span><span class="prelude-val">Ok</span>(re) = Regex::new(<span class="kw-2">&amp;</span>pattern) {
+<a href=#249 id=249 data-nosnippet>249</a>            <span class="kw">if let </span><span class="prelude-val">Ok</span>(re) = <span class="kw">crate</span>::pattern::compile(<span class="kw-2">&amp;</span>pattern) {
 <a href=#250 id=250 data-nosnippet>250</a>                out.push((kind, re));
 <a href=#251 id=251 data-nosnippet>251</a>            }
 <a href=#252 id=252 data-nosnippet>252</a>        }

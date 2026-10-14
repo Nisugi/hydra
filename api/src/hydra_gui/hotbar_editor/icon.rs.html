@@ -56,7 +56,7 @@
 <a href=#56 id=56 data-nosnippet>56</a>
 <a href=#57 id=57 data-nosnippet>57</a><span class="doccomment">/// `icon` edited in `ui`: none, a sheet's cell, or an image; grey; its
 <a href=#58 id=58 data-nosnippet>58</a>/// border. `salt` keeps two apart.
-<a href=#59 id=59 data-nosnippet>59</a></span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>icon_ui(ui: <span class="kw-2">&amp;mut </span>egui::Ui, icon: <span class="kw-2">&amp;mut </span><span class="prelude-ty">Option</span>&lt;Icon&gt;, folder: <span class="kw-2">&amp;</span>Folder, salt: <span class="kw-2">&amp;</span>str) {
+<a href=#59 id=59 data-nosnippet>59</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>icon_ui(ui: <span class="kw-2">&amp;mut </span>egui::Ui, icon: <span class="kw-2">&amp;mut </span><span class="prelude-ty">Option</span>&lt;Icon&gt;, folder: <span class="kw-2">&amp;</span>Folder, salt: <span class="kw-2">&amp;</span>str) {
 <a href=#60 id=60 data-nosnippet>60</a>    ui.push_id((<span class="string">"hotbar-icon"</span>, salt), |ui| {
 <a href=#61 id=61 data-nosnippet>61</a>        <span class="kw">let </span>kind = <span class="kw">match </span>icon.as_ref().map(|icon| <span class="kw-2">&amp;</span>icon.art) {
 <a href=#62 id=62 data-nosnippet>62</a>            <span class="prelude-val">None </span>| <span class="prelude-val">Some</span>(Art::None) =&gt; Kind::None,

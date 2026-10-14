@@ -26,7 +26,7 @@
 <a href=#26 id=26 data-nosnippet>26</a>    <span class="string">"version                which Hydra this is: its version and the commit it was built from; ver too"</span>,
 <a href=#27 id=27 data-nosnippet>27</a>    <span class="string">"history help           read back what you saw: history tail, history last 15m, history search &lt;text&gt;"</span>,
 <a href=#28 id=28 data-nosnippet>28</a>    <span class="string">"theme help             this window's theme and accent, and importing Wrayth's colours"</span>,
-<a href=#29 id=29 data-nosnippet>29</a>    <span class="string">"highlight help         highlights: importing Wrayth's or Vellum's, listing and switching them; trigger too"</span>,
+<a href=#29 id=29 data-nosnippet>29</a>    <span class="string">"trigger help           triggers: importing Wrayth's or Vellum's highlights, listing and switching them; highlight too"</span>,
 <a href=#30 id=30 data-nosnippet>30</a>    <span class="string">"to &lt;name&gt; &lt;line&gt;       send a line on another character, as if typed there"</span>,
 <a href=#31 id=31 data-nosnippet>31</a>    <span class="string">"all &lt;line&gt;             on every character; all -A,B &lt;line&gt; on all but A and B; all +A,B &lt;line&gt; on A and B"</span>,
 <a href=#32 id=32 data-nosnippet>32</a>    <span class="string">"targetid [on|off]      a short tag after each creature's name in the room, to tell them apart"</span>,
@@ -34,14 +34,14 @@
 <a href=#34 id=34 data-nosnippet>34</a>    <span class="string">"alias help             aliases: alias add &lt;trigger&gt; = &lt;target&gt; (--global for everyone's), alias remove, alias list"</span>,
 <a href=#35 id=35 data-nosnippet>35</a>    <span class="string">"ec help                typed spells cast: ec on, then 901 or 901 kobold; aliases, verbs, stances and hiding per spell; ecaster too"</span>,
 <a href=#36 id=36 data-nosnippet>36</a>    <span class="string">"doll face &lt;deg&gt;        turn this window's doll; doll import &lt;folder&gt;, a folder of doll pictures into Hydra's"</span>,
-<a href=#37 id=37 data-nosnippet>37</a>    <span class="string">"keys import &lt;file&gt;     a Wrayth settings file's macros into this character's keys; keys import global &lt;file&gt;, into everyone's"</span>,
+<a href=#37 id=37 data-nosnippet>37</a>    <span class="string">"keys import &lt;file&gt;     Wrayth's macros or Vellum's keybinds into this character's keys; keys import global &lt;file&gt;, into everyone's; a .vellum-fe folder, every character's"</span>,
 <a href=#38 id=38 data-nosnippet>38</a>    <span class="string">"controller [global]    the Controller settings page, this character's or everyone's; controller reload reads its files again"</span>,
 <a href=#39 id=39 data-nosnippet>39</a>    <span class="string">"lich help              your own Lich for this character: lich on, lich off, lich folder &lt;folder&gt;, lich view"</span>,
 <a href=#40 id=40 data-nosnippet>40</a>    <span class="string">"go2 help               travel: route2 &lt;place&gt; shows the way; go2 targets, go2 save &lt;name&gt;, go2 coverage"</span>,
 <a href=#41 id=41 data-nosnippet>41</a>    <span class="string">"portal [&lt;n&gt;|&lt;word&gt;]    a way out that is no compass direction: alone, the only one, or a list; a number or word takes one"</span>,
 <a href=#42 id=42 data-nosnippet>42</a>    <span class="string">"quick &lt;page&gt;           the quick bar shows that page: the game's main, combat or information, a script's bar, or your own"</span>,
 <a href=#43 id=43 data-nosnippet>43</a>    <span class="string">"hotbar &lt;bar&gt; &lt;button&gt;  press a hotbar's button by its id or nickname, as a click would"</span>,
-<a href=#44 id=44 data-nosnippet>44</a>    <span class="string">"hotbars [reload]       the hotbar editor; reload reads the hotbars files again"</span>,
+<a href=#44 id=44 data-nosnippet>44</a>    <span class="string">"hotbars [reload]       Settings at this character's hotbars; reload reads the hotbars files again"</span>,
 <a href=#45 id=45 data-nosnippet>45</a>    <span class="string">"savelayout &lt;name&gt;      this window's whole layout, every window sized and placed as it is, saved for any character"</span>,
 <a href=#46 id=46 data-nosnippet>46</a>    <span class="string">"loadlayout [&lt;name&gt;]    a layout so saved becomes this window's; alone, lists the layouts saved"</span>,
 <a href=#47 id=47 data-nosnippet>47</a>    <span class="string">"timer help             countdowns of your own: timer &lt;name&gt; 90, 5m or 1m30s; timer &lt;name&gt; off; timer lists them"</span>,
@@ -122,7 +122,7 @@
 <a href=#122 id=122 data-nosnippet>122</a>        .map(str::to_owned)
 <a href=#123 id=123 data-nosnippet>123</a>        .collect();
 <a href=#124 id=124 data-nosnippet>124</a>    words.extend(
-<a href=#125 id=125 data-nosnippet>125</a>        [<span class="string">"route2"</span>, <span class="string">"sail"</span>, <span class="string">"trigger"</span>, <span class="string">"ver"</span>, <span class="string">"inv"</span>, <span class="string">"ecaster"</span>]
+<a href=#125 id=125 data-nosnippet>125</a>        [<span class="string">"route2"</span>, <span class="string">"sail"</span>, <span class="string">"highlight"</span>, <span class="string">"ver"</span>, <span class="string">"inv"</span>, <span class="string">"ecaster"</span>]
 <a href=#126 id=126 data-nosnippet>126</a>            .iter()
 <a href=#127 id=127 data-nosnippet>127</a>            .map(|<span class="kw-2">&amp;</span>word| word.to_owned()),
 <a href=#128 id=128 data-nosnippet>128</a>    );
@@ -148,7 +148,7 @@
 <a href=#148 id=148 data-nosnippet>148</a>/// git could say, `+` after it when the build had changes not committed.
 <a href=#149 id=149 data-nosnippet>149</a></span><span class="attr">#[must_use]
 <a href=#150 id=150 data-nosnippet>150</a></span><span class="kw">pub fn </span>version_said() -&gt; String {
-<a href=#151 id=151 data-nosnippet>151</a>    <span class="kw">let </span>version = <span class="macro">env!</span>(<span class="string">"CARGO_PKG_VERSION"</span>);
+<a href=#151 id=151 data-nosnippet>151</a>    <span class="kw">let </span>version = <span class="kw">crate</span>::VERSION;
 <a href=#152 id=152 data-nosnippet>152</a>    <span class="kw">match </span><span class="macro">env!</span>(<span class="string">"HYDRA_COMMIT"</span>) {
 <a href=#153 id=153 data-nosnippet>153</a>        <span class="string">"" </span>=&gt; <span class="macro">format!</span>(<span class="string">"Hydra {version}"</span>),
 <a href=#154 id=154 data-nosnippet>154</a>        commit =&gt; <span class="macro">format!</span>(<span class="string">"Hydra {version} ({commit})"</span>),
@@ -424,7 +424,7 @@
 <a href=#424 id=424 data-nosnippet>424</a>    </span><span class="kw">fn </span>the_version_names_the_build() {
 <a href=#425 id=425 data-nosnippet>425</a>        <span class="kw">let </span>said = <span class="kw">super</span>::version_said();
 <a href=#426 id=426 data-nosnippet>426</a>        <span class="kw">let </span>rest = said
-<a href=#427 id=427 data-nosnippet>427</a>            .strip_prefix(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"Hydra {}"</span>, <span class="macro">env!</span>(<span class="string">"CARGO_PKG_VERSION"</span>)))
+<a href=#427 id=427 data-nosnippet>427</a>            .strip_prefix(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"Hydra {}"</span>, <span class="kw">crate</span>::VERSION))
 <a href=#428 id=428 data-nosnippet>428</a>            .expect(<span class="string">"the version first"</span>);
 <a href=#429 id=429 data-nosnippet>429</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(commit) = rest.strip_prefix(<span class="string">" ("</span>).and_then(|r| r.strip_suffix(<span class="string">')'</span>)) {
 <a href=#430 id=430 data-nosnippet>430</a>            <span class="kw">let </span>hash = commit.strip_suffix(<span class="string">'+'</span>).unwrap_or(commit);

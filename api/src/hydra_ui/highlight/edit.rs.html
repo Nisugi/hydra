@@ -66,14 +66,14 @@
 <a href=#66 id=66 data-nosnippet>66</a>    </span><span class="kw">pub fn </span>put(<span class="kw-2">&amp;mut </span><span class="self">self</span>, was: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;, name: <span class="kw-2">&amp;</span>str, rule: Rule) -&gt; <span class="prelude-ty">Result</span>&lt;(), String&gt; {
 <a href=#67 id=67 data-nosnippet>67</a>        <span class="kw">let </span>name = name.trim();
 <a href=#68 id=68 data-nosnippet>68</a>        <span class="kw">if </span>name.is_empty() {
-<a href=#69 id=69 data-nosnippet>69</a>            <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="string">"Give the highlight a name."</span>.to_owned());
+<a href=#69 id=69 data-nosnippet>69</a>            <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="string">"Give the trigger a name."</span>.to_owned());
 <a href=#70 id=70 data-nosnippet>70</a>        }
 <a href=#71 id=71 data-nosnippet>71</a>        <span class="comment">// The highlight being changed, as the file names it.
 <a href=#72 id=72 data-nosnippet>72</a>        </span><span class="kw">let </span>was = was.and_then(|was| <span class="self">self</span>.named(was)).map(str::to_owned);
 <a href=#73 id=73 data-nosnippet>73</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(have) = <span class="self">self</span>.named(name)
 <a href=#74 id=74 data-nosnippet>74</a>            &amp;&amp; was.as_deref() != <span class="prelude-val">Some</span>(have)
 <a href=#75 id=75 data-nosnippet>75</a>        {
-<a href=#76 id=76 data-nosnippet>76</a>            <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">"There is already a highlight called {have}."</span>));
+<a href=#76 id=76 data-nosnippet>76</a>            <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">"There is already a trigger called {have}."</span>));
 <a href=#77 id=77 data-nosnippet>77</a>        }
 <a href=#78 id=78 data-nosnippet>78</a>        <span class="kw">super</span>::Matcher::check_rule(name, <span class="kw-2">&amp;</span>rule)<span class="question-mark">?</span>;
 <a href=#79 id=79 data-nosnippet>79</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(was) = was {
@@ -95,13 +95,13 @@
 <a href=#95 id=95 data-nosnippet>95</a>            <span class="kw">if let </span><span class="prelude-val">Some</span>(rule) = <span class="self">self</span>.rules.get_mut(<span class="kw-2">&amp;</span>name) {
 <a href=#96 id=96 data-nosnippet>96</a>                rule.off = !on;
 <a href=#97 id=97 data-nosnippet>97</a>            }
-<a href=#98 id=98 data-nosnippet>98</a>            <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">"The highlight {name} is {word}."</span>));
+<a href=#98 id=98 data-nosnippet>98</a>            <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">"The trigger {name} is {word}."</span>));
 <a href=#99 id=99 data-nosnippet>99</a>        }
 <a href=#100 id=100 data-nosnippet>100</a>        <span class="kw">let </span>category = <span class="self">self
 <a href=#101 id=101 data-nosnippet>101</a>            </span>.category_names()
 <a href=#102 id=102 data-nosnippet>102</a>            .into_iter()
 <a href=#103 id=103 data-nosnippet>103</a>            .find(|category| category.eq_ignore_ascii_case(named.trim()))
-<a href=#104 id=104 data-nosnippet>104</a>            .ok_or_else(|| <span class="macro">format!</span>(<span class="string">"No highlight or category is called {}."</span>, named.trim()))<span class="question-mark">?</span>;
+<a href=#104 id=104 data-nosnippet>104</a>            .ok_or_else(|| <span class="macro">format!</span>(<span class="string">"No trigger or category is called {}."</span>, named.trim()))<span class="question-mark">?</span>;
 <a href=#105 id=105 data-nosnippet>105</a>        <span class="kw">if </span>on {
 <a href=#106 id=106 data-nosnippet>106</a>            <span class="self">self</span>.categories.remove(<span class="kw-2">&amp;</span>category);
 <a href=#107 id=107 data-nosnippet>107</a>        } <span class="kw">else </span>{
@@ -119,7 +119,7 @@
 <a href=#119 id=119 data-nosnippet>119</a>        <span class="kw">let </span>name = <span class="self">self
 <a href=#120 id=120 data-nosnippet>120</a>            </span>.named(named)
 <a href=#121 id=121 data-nosnippet>121</a>            .map(str::to_owned)
-<a href=#122 id=122 data-nosnippet>122</a>            .ok_or_else(|| <span class="macro">format!</span>(<span class="string">"No highlight is called {}."</span>, named.trim()))<span class="question-mark">?</span>;
+<a href=#122 id=122 data-nosnippet>122</a>            .ok_or_else(|| <span class="macro">format!</span>(<span class="string">"No trigger is called {}."</span>, named.trim()))<span class="question-mark">?</span>;
 <a href=#123 id=123 data-nosnippet>123</a>        <span class="self">self</span>.rules.remove(<span class="kw-2">&amp;</span>name);
 <a href=#124 id=124 data-nosnippet>124</a>        <span class="prelude-val">Ok</span>(name)
 <a href=#125 id=125 data-nosnippet>125</a>    }
@@ -165,7 +165,7 @@
 <a href=#165 id=165 data-nosnippet>165</a>
 <a href=#166 id=166 data-nosnippet>166</a>        <span class="macro">assert_eq!</span>(
 <a href=#167 id=167 data-nosnippet>167</a>            file.switch(<span class="string">"robert"</span>, <span class="bool-val">false</span>).unwrap(),
-<a href=#168 id=168 data-nosnippet>168</a>            <span class="string">"The highlight Robert is off."
+<a href=#168 id=168 data-nosnippet>168</a>            <span class="string">"The trigger Robert is off."
 <a href=#169 id=169 data-nosnippet>169</a>        </span>);
 <a href=#170 id=170 data-nosnippet>170</a>        <span class="macro">assert!</span>(file.rules[<span class="string">"Robert"</span>].off);
 <a href=#171 id=171 data-nosnippet>171</a>        <span class="macro">assert_eq!</span>(

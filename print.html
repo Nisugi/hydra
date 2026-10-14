@@ -13,8 +13,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
-        <link rel="icon" href="favicon-8ee1f735.svg">
-        <link rel="shortcut icon" href="favicon-2f11884e.png">
+        <link rel="shortcut icon" href="favicon-b89a83bc.png">
         <link rel="stylesheet" href="css/variables-8adf115d.css">
         <link rel="stylesheet" href="css/general-2459343d.css">
         <link rel="stylesheet" href="css/chrome-ae938929.css">
@@ -37,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-09be7163.js";
+            window.path_to_searchindex_js = "searchindex-1161a6b9.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-58c69ee2.js"></script>
+        <script src="toc-893df2d8.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -231,7 +230,8 @@ quits the game in turn, and then Hydra closes.</p>
 minute and then starts itself again in the background. That gives back the
 memory that playing and the windows took, which a program can only hand
 back by ending. You do not see it happen. The wait is <strong>Start fresh after</strong>,
-on the Window page of the settings; 0 turns it off.</p>
+on the Window page of the settings; 0 turns it off. An update Hydra has
+downloaded takes over at this point too.</p>
 <h2 id="hydras-commands-and-the-games"><a class="header" href="#hydras-commands-and-the-games">Hydra’s commands and the game’s</a></h2>
 <p>Anything you type goes to the game, except lines that start with Hydra’s
 command symbol, <code>.</code>, which are Hydra’s own and never reach the game. <code>.help</code>
@@ -251,7 +251,7 @@ home network by itself. It can also run Hydra on the phone alone, with no
 computer, for when you are away from home. Lich does not run on a phone.</p>
 <h2 id="where-hydra-keeps-its-files"><a class="header" href="#where-hydra-keeps-its-files">Where Hydra keeps its files</a></h2>
 <p>Hydra keeps two folders beside where it starts (on a Mac, in Application
-Support): <code>data</code>, which holds your settings, layouts, highlights and the
+Support): <code>data</code>, which holds your settings, layouts, triggers and the
 characters it knows; and <code>logs</code>, which holds what each character read, a
 file a day. <a href="#install-hydra">Install Hydra</a>
 says where to put them. Passwords are never in either: Hydra keeps one only
@@ -266,7 +266,7 @@ your system warns that it does not know who made it. Each section below
 says how to let it run.</p>
 <h2 id="where-hydra-keeps-its-files-1"><a class="header" href="#where-hydra-keeps-its-files-1">Where Hydra keeps its files</a></h2>
 <p>Hydra makes two folders <strong>beside where it starts</strong>: <code>data</code>, for your
-settings, layouts, highlights and the characters it knows, and <code>logs</code>, for
+settings, layouts, triggers and the characters it knows, and <code>logs</code>, for
 what each character read. Give Hydra a folder of its own and start it from
 there. To move Hydra, move the folder: everything goes with it.</p>
 <p>On a Mac, the app keeps them in <code>~/Library/Application Support/Hydra</code>.</p>
@@ -322,7 +322,7 @@ tar -xzf ~/Downloads/hydra-linux-x86_64.tar.gz
 </li>
 </ol>
 <p>Hydra needs ALSA for sound (<code>libasound.so.2</code>), speech-dispatcher for spoken
-highlights (<code>libspeechd.so.2</code>) and udev for game controllers (<code>libudev.so.1</code>).
+triggers (<code>libspeechd.so.2</code>) and udev for game controllers (<code>libudev.so.1</code>).
 Most desktops have them; on Ubuntu or Debian, any missing are installed
 with:</p>
 <pre><code class="language-sh">sudo apt install libasound2t64 libspeechd2
@@ -330,6 +330,35 @@ with:</p>
 <p>Kept passwords go into your desktop’s keyring, GNOME Keyring or KDE Wallet.
 Like on a Mac, Hydra has no tray icon: start it again to open its windows.</p>
 <h2 id="updating"><a class="header" href="#updating">Updating</a></h2>
+<p>On Windows, Hydra updates itself. It looks for a newer release when it
+starts and every six hours after. When one is out, the hub says so under
+its header, with <strong>What’s new</strong>, which opens the release’s notes, and
+<strong>Update</strong>. The tray menu offers the same.</p>
+<p><strong>Update</strong> downloads the release and checks it before using it: every
+release is signed, and Hydra refuses a file whose signature or checksum
+does not match. Once it is ready, the hub says it runs from Hydra’s next
+start, and offers <strong>Restart now</strong>.</p>
+<ul>
+<li><strong>Restart now</strong> quits every character, the same way <strong>Shut down</strong> does,
+and starts Hydra again on the new release, with the hub open. If
+characters are playing, it names them first and asks. Leave <strong>Start them
+again afterwards</strong> ticked and they log back in, each with its team; untick
+it if you are stepping away. A character whose password is not kept is
+not logged back in: start it from the hub.</li>
+<li>Or carry on playing. The new release runs the next time Hydra starts:
+when you start it yourself, or when it starts fresh after a minute with
+nothing playing (see <a href="#how-hydra-works">How Hydra works</a>).</li>
+</ul>
+<p>Two switches on the <strong>Window</strong> page of the settings control this. <strong>Check
+for updates</strong> is on unless you turn it off. <strong>Update on its own</strong> is off
+unless you turn it on; with it on, Hydra downloads a new release as soon as
+it is out, without asking, and it runs from the next start.</p>
+<p>Hydra writes the new program beside the old one, so its folder must be one
+you can write to; that is another reason not to keep it in
+<code>Program Files</code>.</p>
+<p>The first beta, 0.1.0-beta.1, cannot update itself. Replace it by hand once,
+as below, and later releases arrive on their own.</p>
+<h3 id="by-hand-and-on-a-mac-or-linux"><a class="header" href="#by-hand-and-on-a-mac-or-linux">By hand, and on a Mac or Linux</a></h3>
 <p>Shut Hydra down first, from the hub’s <strong>Shut down</strong> or the tray. Then
 replace <code>hydra.exe</code>, the app, or <code>hydra</code> with the new release’s. Your
 <code>data</code> and <code>logs</code> folders stay as they are.</p>
@@ -394,20 +423,30 @@ the front. <strong>Log</strong> opens what the character has read. <strong>Quit<
 game.</p>
 <p><img src="images/hub_offline.png" alt="The hub’s Offline tab: Nisugi, starred, with Start; Nerten, with a password box"></p>
 <h2 id="the-menu"><a class="header" href="#the-menu">The Menu</a></h2>
-<p><img src="images/hub_menu.png" alt="The hub’s Menu open: Cards, Highlights, Hotbars, Map, Performance, Settings, Survey, Theme and Web page"></p>
+<p><img src="images/hub_menu.png" alt="The hub’s Menu open: Cards, Hotbars, Map, Packs, Performance, Settings, Survey, Themes, Triggers and Web page"></p>
+<p>Every play window has the same Menu on its title bar, so either one
+reaches everything with the other closed.</p>
 <ul>
-<li><strong>Cards</strong>: the design every character’s card is drawn from, which parts
-it shows and where.</li>
-<li><strong>Highlights</strong>, <strong>Hotbars</strong> and <strong>Theme</strong>: their editors, shared by every
-character.</li>
+<li><strong>Cards</strong>, <strong>Hotbars</strong>, <strong>Packs</strong>, <strong>Themes</strong> and <strong>Triggers</strong>: the
+editors, each a page of Settings. <strong>Cards</strong> is the design every
+character’s card is drawn from, which parts it shows and where. A
+trigger answers what the game says: it colours or hides a line, plays a
+sound, shows a banner, starts a timer or sends a command. <strong>Packs</strong> are
+pictures to fetch: frames, the Injuries doll, compasses.</li>
 <li><strong>Map</strong>: the Map Explorer, the whole map and where every character
 stands.</li>
 <li><strong>Performance</strong>: each live card’s timings, for when something feels slow.</li>
-<li><strong>Settings</strong>: Hydra’s own settings, and every character’s.</li>
+<li><strong>Settings</strong>: Hydra’s own settings, and every character’s. From a play
+window, Settings opens on that character, and so does an editor.</li>
 <li><strong>Survey</strong>: the room survey’s map, while one runs.</li>
 <li><strong>Web page</strong>: the web page’s address and a code to scan, once the web
-page is switched on in the settings.</li>
+page is switched on in the settings. From a play window, it is a page of
+Settings.</li>
 </ul>
+<p>Settings lists them all as well: Triggers, Themes, Cards and Packs under
+<em>Editors</em>, Hotbars among the pages of whoever’s settings are shown, and
+under <em>Tools</em> the web page’s address, the Map, the Survey, the character’s
+Log and the Performance switch.</p>
 <h2 id="shutting-down"><a class="header" href="#shutting-down">Shutting down</a></h2>
 <p><strong>Shut down</strong> quits every character in turn and closes Hydra. With any
 character playing, it asks first: <em>Shut Hydra down? Every character will
@@ -509,6 +548,405 @@ its scripts’ messages appear in the story.</li>
 <p><code>.stop</code> stops everything on the character at once, Lich’s scripts
 included.</p>
 <p>Lich does not run in HydraFE’s own Hydra on a phone.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="bring-your-setup-from-wrayth-or-vellum"><a class="header" href="#bring-your-setup-from-wrayth-or-vellum">Bring your setup from Wrayth or Vellum</a></h1>
+<p>Hydra reads what Wrayth and Vellum keep, so your keys, highlights and bars
+come with you. Some of it comes over with a command typed in a play window,
+some by copying a file into Hydra’s <code>data</code> folder.</p>
+<p>Each command answers in the play window: how many came over, and every one
+that did not, with why.</p>
+<h2 id="keys"><a class="header" href="#keys">Keys</a></h2>
+<p><code>.keys import &lt;file&gt;</code> brings another front end’s keys into this
+character’s keys. Add <code>global</code> to bring them into every character’s:
+<code>.keys import global &lt;file&gt;</code>.</p>
+<ul>
+<li>
+<p><strong>Wrayth</strong>: a Wrayth settings file. Its ten macro sets come into Hydra’s
+sets 0 to 9.</p>
+</li>
+<li>
+<p><strong>Vellum</strong>: a <code>keybinds.toml</code>, or a set you saved with Vellum’s
+<code>.savekeybinds</code>. Or give it your whole Vellum folder, <code>.vellum-fe</code> in
+your home folder:</p>
+<pre><code class="language-text">.keys import C:\Users\you\.vellum-fe
+</code></pre>
+<p>Its global keys come into every character’s, and each character’s own
+into that character’s, for every character Hydra knows by that name.</p>
+</li>
+</ul>
+<p>Vellum writes its own default keys into your file, so the import leaves
+those to Hydra: only the keys you made yourself come over. Tab, for one,
+keeps targeting the next creature, as it does in Hydra.</p>
+<p>What a key does comes over too: commands sent, the history, scrolling,
+Find, the tabs, targeting. A key that does something Hydra’s keys have no
+action for is named in the answer, and so is a key that would type a
+letter: a key bound in Hydra holds Ctrl, Alt or Cmd, or is one that types
+nothing, like F5.</p>
+<p>Keys you bring in show on the Keys page of Settings, where you change them
+like any other.</p>
+<h2 id="triggers"><a class="header" href="#triggers">Triggers</a></h2>
+<p><code>.trigger import &lt;file&gt;</code> brings highlights in as triggers.</p>
+<ul>
+<li><strong>Wrayth</strong>: a Wrayth settings file’s highlights, names and ignores.</li>
+<li><strong>Vellum</strong>: a <code>highlights.toml</code>, or the whole <code>.vellum-fe</code> folder, every
+character’s at once.</li>
+</ul>
+<p>Importing the same again replaces what it brought rather than adding a
+second copy. Triggers you bring in show on the Triggers page of Settings:
+Wrayth’s in the categories <em>Wrayth strings</em>, <em>Wrayth names</em> and <em>Wrayth
+ignores</em>; Vellum’s in their own category, or <em>Vellum</em> when they had none.</p>
+<h2 id="hotbars-and-the-controller"><a class="header" href="#hotbars-and-the-controller">Hotbars and the controller</a></h2>
+<p>Hydra reads Vellum’s <code>hotbars.toml</code> and <code>controller.toml</code> as they are:
+copy them, no command needed.</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Vellum keeps</th><th>Copy it to</th></tr>
+</thead>
+<tbody>
+<tr><td><code>.vellum-fe\global\hotbars.toml</code></td><td><code>data\hotbars.toml</code>, every character’s</td></tr>
+<tr><td><code>.vellum-fe\global\controller.toml</code></td><td><code>data\controller.toml</code>, every character’s</td></tr>
+<tr><td><code>.vellum-fe\profiles\Ashryn\hotbars.toml</code></td><td><code>data\layouts\prime_ashryn.hotbars.toml</code>, Ashryn’s own</td></tr>
+<tr><td><code>.vellum-fe\profiles\Ashryn\controller.toml</code></td><td><code>data\layouts\prime_ashryn.controller.toml</code>, Ashryn’s own</td></tr>
+</tbody>
+</table>
+</div>
+<p>A character’s own files are named for the game and the character:
+<code>prime_</code> on Prime, <code>shattered_</code> on Shattered. Hydra reads the hotbars
+files again within a second of one changing, so a bar copied in shows at
+once; <code>.controller reload</code> reads the controller files again.</p>
+<h2 id="the-injuries-doll"><a class="header" href="#the-injuries-doll">The Injuries doll</a></h2>
+<p><code>.doll import &lt;folder&gt;</code> brings a folder of doll pictures into Hydra’s
+<code>dolls</code> folder, each with the calibration Vellum keeps beside it. Pick one
+on the Injuries widget’s page.</p>
+<h2 id="your-scripts"><a class="header" href="#your-scripts">Your scripts</a></h2>
+<p>Lich comes with you whole: Hydra runs your own Lich behind each character
+you ask it to, with your scripts and their settings. See
+<a href="#run-your-own-lich">Run your own Lich</a>.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="triggers-1"><a class="header" href="#triggers-1">Triggers</a></h1>
+<p>A trigger watches what the game says. When a line holds the words you
+gave it, it acts: it colours the words, hides the line, writes it another
+way or moves it to a window of its own; it plays a sound, shows a banner
+or a notification, speaks, rumbles the controller or places a picture;
+it starts a timer, sets a flag or a status, or sends commands to the game.
+A trigger can watch your character instead of the text, and act when its
+health falls under half.</p>
+<p>This chapter goes through the editor, then
+<a href="#finding-the-line">how a trigger finds its line</a>,
+<a href="#what-a-trigger-does">everything it can do</a>, and
+<a href="#examples">examples of each kind</a>, each with a line from the game to
+try it on.</p>
+<h2 id="where-they-are"><a class="header" href="#where-they-are">Where they are</a></h2>
+<p>Open <strong>Settings</strong> and choose <strong>Triggers</strong>, under <em>Editors</em>. The <strong>Menu</strong>,
+on the hub and on every play window’s title bar, has <strong>Triggers</strong> too.</p>
+<p><img src="images/triggers_editor.png" alt="The trigger editor: the list by category on the left, a trigger open in the form on the right"></p>
+<p>On the left, every trigger, by category:</p>
+<ul>
+<li>The tick beside a trigger switches it on or off. The tick beside a
+category switches every trigger in it.</li>
+<li><strong>Find</strong> narrows the list to triggers whose name, category or words hold
+what you type.</li>
+<li><strong>Aa</strong> shows a trigger’s colours.</li>
+<li>Click a trigger to open it in the form.</li>
+</ul>
+<h2 id="a-new-trigger"><a class="header" href="#a-new-trigger">A new trigger</a></h2>
+<p><strong>New</strong> asks what the trigger should do, and starts one ready for it.</p>
+<p><img src="images/triggers_new.png" alt="New, open on the kinds of trigger"></p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Kind</th><th>Starts with</th></tr>
+</thead>
+<tbody>
+<tr><td>Colour words</td><td>a colour, to change</td></tr>
+<tr><td>Hide lines</td><td>the line hidden</td></tr>
+<tr><td>Alert me</td><td>a banner of the line</td></tr>
+<tr><td>Send a command</td><td><em>Do something</em> open</td></tr>
+<tr><td>Start a timer</td><td><em>Do something</em> open</td></tr>
+<tr><td>Mark a flag or status</td><td><em>Do something</em> open</td></tr>
+<tr><td>Watch my character</td><td>no words; health under half, shown in a banner</td></tr>
+<tr><td>Anything</td><td>nothing at all</td></tr>
+</tbody>
+</table>
+</div>
+<p>Whichever you start from, every part of a trigger is there to use.</p>
+<h2 id="the-form"><a class="header" href="#the-form">The form</a></h2>
+<p>At the top, a sentence says what the trigger does as it stands, and
+follows every change you make:</p>
+<blockquote>
+<p>When the game says “Speaking to Nisugi”: plays ding.wav, shows the line
+in a banner and sends the line as a notification. Its sound, banner and
+notification come at most once every 10 s.</p>
+</blockquote>
+<p>Read it before you save: it is the quickest way to see a trigger does what
+you meant.</p>
+<p>Then its <strong>Name</strong>, and its <strong>Category</strong>: type a new one, or pick one from
+the list beside it. Under them, the trigger’s parts in four sections:</p>
+<ul>
+<li><strong>Find it</strong>: what it looks for, a line to try it on, whose it is, and
+when it may act. See <a href="#finding-the-line">Finding the line</a>.</li>
+<li><strong>Show it</strong>, <strong>Tell me</strong> and <strong>Do something</strong>: what it does. See
+<a href="#what-a-trigger-does">What a trigger does</a>.</li>
+</ul>
+<p>A folded section says what is in it, or <em>nothing</em>. A trigger opens with
+the sections it uses open.</p>
+<p><strong>Save</strong> keeps it, and it works at once on every character it is for.
+<strong>Remove</strong> takes it away.</p>
+<h2 id="from-the-command-line"><a class="header" href="#from-the-command-line">From the command line</a></h2>
+<p><code>.trigger help</code> in a play window lists what the command does:</p>
+<ul>
+<li><code>.trigger list</code>: the categories; <code>.trigger list &lt;words&gt;</code>, the triggers
+whose name, category or words hold them.</li>
+<li><code>.trigger on &lt;name&gt;</code> and <code>.trigger off &lt;name&gt;</code>: a trigger, or a whole
+category.</li>
+<li><code>.trigger remove &lt;name&gt;</code>: take a trigger away.</li>
+<li><code>.trigger import &lt;file&gt;</code>: bring in Wrayth’s or Vellum’s highlights; see
+<a href="#bring-your-setup-from-wrayth-or-vellum">Bring your setup</a>.</li>
+</ul>
+<p><code>.highlight</code> is another name for <code>.trigger</code>. Triggers are kept in
+<code>highlights.toml</code>, in Hydra’s <code>data</code> folder.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="finding-the-line"><a class="header" href="#finding-the-line">Finding the line</a></h1>
+<p><em>Find it</em> says what a trigger looks for in each line the game sends, and
+when it may act.</p>
+<h2 id="words"><a class="header" href="#words">Words</a></h2>
+<p>Choose <strong>Words</strong> and type what to look for, as the game writes it:
+<code>Speaking to Nisugi</code>. It is found anywhere in a line.</p>
+<ul>
+<li>Several, with <code>|</code> between them: <code>Tevye | Zelas</code> finds either.</li>
+<li><strong>Capitals count</strong>: off, <code>nisugi</code> finds <code>Nisugi</code> too; on, only as
+written.</li>
+<li><strong>Whole words only</strong>: on, <code>Bob</code> finds <code>Bob waves</code> but not <code>Bobby waves</code>.</li>
+</ul>
+<p>To look for a <code>|</code> itself, use a pattern: <code>\|</code>.</p>
+<h2 id="a-pattern"><a class="header" href="#a-pattern">A pattern</a></h2>
+<p>Choose <strong>A pattern</strong> to look for a shape rather than words: any number,
+any name. A pattern is a regular expression. The few marks most triggers
+need:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Write</th><th>It finds</th></tr>
+</thead>
+<tbody>
+<tr><td><code>\d+</code></td><td>a number: <code>2</code>, <code>150</code></td></tr>
+<tr><td><code>\w+</code></td><td>a word: <code>Tevye</code></td></tr>
+<tr><td><code>.*</code></td><td>anything, or nothing: <code>says, "(.*)"</code> keeps all that was said</td></tr>
+<tr><td><code>s?</code></td><td>an <code>s</code>, or none: <code>rounds?</code> finds <code>round</code> and <code>rounds</code></td></tr>
+<tr><td><code>^</code> and <code>$</code></td><td>the start and the end of the line</td></tr>
+<tr><td><code>( )</code></td><td>a group: what it finds is kept, as <code>$1</code>, the next as <code>$2</code></td></tr>
+<tr><td><code>\.</code> <code>\(</code> <code>\[</code> <code>\?</code></td><td>the mark itself, where a pattern would read it as one of its own</td></tr>
+</tbody>
+</table>
+</div>
+<p><code>You are stunned for (\d+) rounds?!</code> finds <code>You are stunned for 2 rounds!</code>, and keeps <code>2</code> as <code>$1</code>.</p>
+<p>What a group keeps fills in <strong>Write instead</strong>, <strong>Send</strong>, and a timer’s
+<strong>Up message says</strong>: <code>$1</code> is the first group, <code>$2</code> the second.</p>
+<h2 id="try-it"><a class="header" href="#try-it">Try it</a></h2>
+<p>Paste a line from the game into <strong>Try it</strong>, and see at once what the
+trigger makes of it: the line as it would show, what the pattern caught,
+and everything it would do.</p>
+<p><img src="images/trigger_shorten.png" alt="Try it on a pattern: the line rewritten, and the three groups it caught"></p>
+<p>When it says <em>It does not match this line</em>, change the words or the
+pattern until it does. A trigger with a condition under <strong>When</strong> is tried
+as if the condition held.</p>
+<h2 id="characters"><a class="header" href="#characters">Characters</a></h2>
+<p>Empty, a trigger is every character’s. To keep it to some, name them,
+with commas: <code>Ashryn, Nisugi</code>. A name alone is that character on any game;
+<code>GS3:Ashryn</code> is Ashryn on Prime alone, <code>GSF:Ashryn</code> on Shattered.</p>
+<h2 id="when"><a class="header" href="#when">When</a></h2>
+<p><strong>When</strong> keeps a trigger to times your character is so: a line found at
+any other time is left as it is. Open it and add a condition:</p>
+<ul>
+<li><strong>vital</strong>: health, mana, stamina or spirit, above or below a number or
+a percent.</li>
+<li><strong>roundtime</strong> or <strong>casttime</strong>: under way.</li>
+<li><strong>stance</strong>: offensive, defensive, and those between.</li>
+<li><strong>indicator</strong>: standing, kneeling, stunned, hidden, webbed, and the
+rest the game shows; a status a trigger lights reads here too.</li>
+<li><strong>effect up</strong>, <strong>effect not up</strong>, <strong>effect time left</strong>: a spell or an
+effect on you.</li>
+<li><strong>injury</strong>, <strong>hand empty</strong>, <strong>hand holds</strong>, <strong>spell prepared</strong>, <strong>spell
+affordable</strong>, <strong>time of day</strong>, <strong>room</strong>, <strong>creature status</strong>.</li>
+<li><strong>flag</strong>: a flag a trigger set (see <a href="#flag">Flag</a>).</li>
+</ul>
+<p><strong>not</strong> turns a condition over. <strong>+ group</strong> gathers conditions: <em>Every
+one of</em> holds when they all do, <em>Any one of</em> when one does.</p>
+<h3 id="a-condition-alone"><a class="header" href="#a-condition-alone">A condition alone</a></h3>
+<p>Leave the words empty and the trigger watches your character alone: it
+acts each time its condition comes to hold. Health falling under half is
+one; see <a href="#watch-your-health">Watch your health</a>.</p>
+<p><strong>Again only once it has not held for</strong> keeps a condition that flickers
+from acting over and over: it acts again only once the condition has been
+gone that long. 3 seconds unless you change it.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="what-a-trigger-does"><a class="header" href="#what-a-trigger-does">What a trigger does</a></h1>
+<p>A trigger does whatever its sections hold, all at once, each time it finds
+its line. Leave a part empty and it does not do that.</p>
+<h2 id="show-it"><a class="header" href="#show-it">Show it</a></h2>
+<p>What happens to the line itself.</p>
+<ul>
+<li><strong>Colour</strong> and <strong>Background</strong>: tick to colour what the trigger found,
+then click the swatch to choose the colour.</li>
+<li><strong>Colour the whole line, not only the words</strong>: the colours go on every
+word of the line.</li>
+<li><strong>Hide the line</strong>: the line is not shown. Its sound, banner and
+notification still come.</li>
+<li><strong>Write instead</strong>: what the trigger found is written as these words.
+The rest of the line stays. <code>$1</code>, <code>$2</code> put in what a pattern’s groups
+caught: <code>$2 to $1: "$3"</code> turns a long line of speech into a short one.</li>
+<li><strong>Move to</strong>: the line goes to a stream of that name instead of the
+story. Once a line has gone there, the play window’s <strong>Layout</strong> menu,
+<strong>Add a widget</strong>, offers a window for that stream, under <em>Other game
+windows</em>. Tick <strong>and keep it here</strong> to copy the line rather than move
+it.</li>
+</ul>
+<h2 id="tell-me"><a class="header" href="#tell-me">Tell me</a></h2>
+<p>How the trigger gets your attention.</p>
+<ul>
+<li><strong>Sound</strong>: a sound file’s name, a <code>.wav</code>, <code>.mp3</code>, <code>.ogg</code> or <code>.flac</code> in
+the <code>sounds</code> folder in Hydra’s <code>data</code> folder. The file name alone:
+<code>ding.wav</code>.</li>
+<li><strong>Volume</strong>: how loud, a percent of the window’s volume. It shows once a
+sound is named.</li>
+<li><strong>Banner</strong>: a banner under the play window’s top bar for a few
+seconds: <em>The line</em>, or <em>These words</em> of your own.</li>
+<li><strong>Notification</strong>: a notification from your computer, as other programs
+send: the line, or your own words.</li>
+<li><strong>Speech</strong>: your computer’s voice reads the line, or your own words.</li>
+<li><strong>Rumble</strong>: the game controller rumbles: <code>short</code>, <code>long</code>, <code>double</code>, or
+a pattern of your own from the controller’s file.</li>
+<li><strong>Picture</strong>: a picture placed in the story after the line: an
+<code>https://</code> address, or a file in the pictures folder set on the
+<strong>Window</strong> page of Settings.</li>
+</ul>
+<p>Several characters hearing the same line within a second, a shout in a
+room they share, make one sound, one notification and one voice, not one
+each.</p>
+<h2 id="do-something"><a class="header" href="#do-something">Do something</a></h2>
+<p>What the trigger does beyond the line.</p>
+<h3 id="send"><a class="header" href="#send">Send</a></h3>
+<p>Game commands, one a line, sent as if you typed them. A pattern’s <code>$1</code>
+can fill a command’s words: <code>target $1</code>. Some care is built in:</p>
+<ul>
+<li><code>$1</code> fills a command’s words, never the command itself.</li>
+<li>Only game commands: never Hydra’s own or Lich’s.</li>
+<li>At most five commands in ten seconds, and only while the character is
+in the game and ready.</li>
+<li>A send that an import brought waits until you read it and press
+<strong>Approve this send</strong>.</li>
+</ul>
+<h3 id="timer"><a class="header" href="#timer">Timer</a></h3>
+<p>A countdown of your own, which the <strong>Timers</strong> widget shows.</p>
+<ul>
+<li><strong>Timer</strong>: its name. The words the trigger finds start it. <code>.timer &lt;name&gt;</code> starts it too.</li>
+<li><strong>Default duration</strong>: how long it runs.</li>
+<li><strong>Up message says</strong>: when the line says how long, <code>$1</code> with a
+pattern’s first group, times a number: <code>$1</code> times <code>5</code> for a line that
+counts rounds of five seconds. The default duration is used when the
+line says none.</li>
+<li><strong>Down message</strong>: words that end it early, such as a spell’s message
+that it has worn off.</li>
+<li><strong>Shows in</strong>: which list it counts down in, <em>Active spells</em>,
+<em>Buffs</em>, <em>Debuffs</em>, <em>Cooldowns</em>, or <em>Custom</em>. The <strong>Timers</strong> widget
+gathers every list.</li>
+</ul>
+<h3 id="flag"><a class="header" href="#flag">Flag</a></h3>
+<p>A flag is a name a trigger sets and other triggers read: it shows
+nowhere. Under <strong>When</strong>, the condition <strong>flag</strong> holds while it is set.</p>
+<p>Name it, and choose how long it lasts: set <strong>for</strong> some seconds, or <code>0</code>
+until something clears it. Tick <strong>clears it</strong> to make a trigger that puts
+the flag down instead.</p>
+<h3 id="status"><a class="header" href="#status">Status</a></h3>
+<p>A status is like a flag, but it shows: the <strong>Custom statuses</strong> widget
+lights it while it is set, and under <strong>When</strong> the condition <strong>indicator</strong>
+reads it as it reads the game’s own. Set and clear it as you would a flag.</p>
+<h2 id="cooldown"><a class="header" href="#cooldown">Cooldown</a></h2>
+<p>Under the sections, when the trigger has something to hold back:
+<strong>Cooldown</strong> is how long before its sound, banner, notification, speech,
+rumble, picture, timer and commands come again. 3 seconds unless you
+change it. A line the trigger finds while it cools down is still
+coloured, hidden, rewritten and moved, and its flag and status are still
+set.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="examples"><a class="header" href="#examples">Examples</a></h1>
+<p>Each example is a trigger made from <strong>New</strong>, shown with a line from the
+game pasted into <strong>Try it</strong>, so you can see what it does before it ever
+meets the game. Change the names and words to your own.</p>
+<h2 id="colour-your-friends-names"><a class="header" href="#colour-your-friends-names">Colour your friends’ names</a></h2>
+<p><strong>New</strong> → <em>Colour words</em>. Look for the names, with <code>|</code> between them, and
+tick <strong>Whole words only</strong>, so <code>Tevye</code> does not light up inside another
+word. Choose the colour under <em>Show it</em>.</p>
+<p><img src="images/trigger_colour.png" alt="Tevye and Zelas in gold; Try it shows Tevye coloured in a line of speech"></p>
+<h2 id="hide-lines-you-never-want-to-see"><a class="header" href="#hide-lines-you-never-want-to-see">Hide lines you never want to see</a></h2>
+<p><strong>New</strong> → <em>Hide lines</em>. Look for words every such line holds. Lich’s LNet
+chat starts each of its lines with <code>[LNet]</code>.</p>
+<p><img src="images/trigger_hide.png" alt="LNet chatter hidden: Try it says the line is hidden"></p>
+<p>To keep the chat, but out of the story, move it instead: see
+<a href="#give-a-chat-its-own-window">Give a chat its own window</a>.</p>
+<h2 id="know-when-someone-speaks-to-you"><a class="header" href="#know-when-someone-speaks-to-you">Know when someone speaks to you</a></h2>
+<p><strong>New</strong> → <em>Alert me</em>. The game writes speech meant for you as <code>Speaking to &lt;you&gt;, &lt;them&gt; says</code>, so look for <code>Speaking to</code> and your name. Under
+<em>Tell me</em>: a sound, a banner of the line, and a notification, so it
+reaches you with Hydra behind other windows. A cooldown of 10 seconds
+keeps a long talk from ringing on every line.</p>
+<p><img src="images/trigger_alert.png" alt="Spoken to: a sound, a banner and a notification, at most every 10 seconds"></p>
+<h2 id="count-down-a-stun"><a class="header" href="#count-down-a-stun">Count down a stun</a></h2>
+<p><strong>New</strong> → <em>Start a timer</em>. The game says how many rounds: <code>You are stunned for 2 rounds!</code>. A pattern keeps the number, <code>(\d+)</code>, and the
+timer runs <code>$1</code> times <code>5</code> seconds. Under <em>Tell me</em>, speech says
+<em>Stunned</em>, for when you are looking elsewhere.</p>
+<p><img src="images/trigger_stun.png" alt="Stunned: the pattern caught 2, and the timer runs 10 seconds"></p>
+<p>It counts down in the <strong>Debuffs</strong> list, and in the <strong>Timers</strong> widget,
+which gathers every list.</p>
+<h2 id="time-a-spell"><a class="header" href="#time-a-spell">Time a spell</a></h2>
+<p><strong>New</strong> → <em>Start a timer</em>. Look for the spell’s message as it comes up,
+<code>A light blue glow surrounds you.</code>, and give the timer as long as your
+casting lasts. <strong>Down message</strong> ends it when the spell wears off early:
+<code>The light blue glow leaves you.</code></p>
+<p><img src="images/trigger_spell.png" alt="Spirit Warding I: a timer of 20 minutes, ended by its down message"></p>
+<h2 id="shorten-a-long-line"><a class="header" href="#shorten-a-long-line">Shorten a long line</a></h2>
+<p><strong>New</strong> → <em>Anything</em>. A pattern takes the line apart into groups, and
+<strong>Write instead</strong> puts it back together, shorter:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>The game</th><th>The story</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Speaking to Tevye, Nexushealbot says, "I'm running low on mana."</code></td><td><code>Nexushealbot to Tevye: "I'm running low on mana."</code></td></tr>
+</tbody>
+</table>
+</div>
+<p><img src="images/trigger_shorten.png" alt="Short speech: Try it shows the three groups caught and the line rewritten"></p>
+<h2 id="give-a-chat-its-own-window"><a class="header" href="#give-a-chat-its-own-window">Give a chat its own window</a></h2>
+<p><strong>New</strong> → <em>Anything</em>. Look for <code>[LNet]</code>, and under <em>Show it</em>, <strong>Move to</strong>
+a stream named <code>lnet</code>. Once a line has gone there, the play window’s
+<strong>Layout</strong> menu, <strong>Add a widget</strong>, offers an <em>Lnet</em> window, under <em>Other
+game windows</em>. Place it where you like.</p>
+<p><img src="images/trigger_move.png" alt="LNet window: Try it says the line goes to the lnet stream"></p>
+<h2 id="answer-the-game"><a class="header" href="#answer-the-game">Answer the game</a></h2>
+<p><strong>New</strong> → <em>Send a command</em>. When your spell is ready, cast it:</p>
+<p><img src="images/trigger_send.png" alt="Cast when ready: Try it shows it would send cast"></p>
+<p>A trigger sends at most five commands in ten seconds, and only while the
+character is in the game. Keep sends to what you would type yourself at
+that moment.</p>
+<h2 id="watch-your-health"><a class="header" href="#watch-your-health">Watch your health</a></h2>
+<p><strong>New</strong> → <em>Watch my character</em>. There are no words to look for: under
+<strong>When</strong>, the condition <em>vital health &lt; 50 %</em> is the whole trigger. It
+plays a sound and shows <em>Health is low</em> each time your health falls under
+half. Try it has no line to try: the sentence at the top says what it
+does.</p>
+<p><img src="images/trigger_watch.png" alt="Health low: a condition alone, a sound and a banner"></p>
+<h2 id="light-a-status-while-a-spell-lasts"><a class="header" href="#light-a-status-while-a-spell-lasts">Light a status while a spell lasts</a></h2>
+<p>Two triggers: one lights a status, one puts it out. <strong>New</strong> → <em>Mark a
+flag or status</em>, look for the spell coming up, and name the <strong>Status</strong>:
+<code>Warded</code>.</p>
+<p><img src="images/trigger_status.png" alt="Ward up: the spell’s up message lights the status Warded"></p>
+<p>Then a second, looking for <code>The light blue glow leaves you.</code>, with the
+same status and <strong>clears it</strong> ticked. The <strong>Custom statuses</strong> widget
+shows <em>Warded</em> while the spell lasts, and any trigger can ask for it
+under <strong>When</strong>: <em>indicator Warded</em>. A flag works the same way, but shows
+nowhere: it is for other triggers alone.</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="for-developers"><a class="header" href="#for-developers">For developers</a></h1>
 <p>Hydra is written in Rust, as a workspace of crates from the game connection
