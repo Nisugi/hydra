@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["trainer"],"struct":["SheetOut","SkillOut","TrainerOut"]};

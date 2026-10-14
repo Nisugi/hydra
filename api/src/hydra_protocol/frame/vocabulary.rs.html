@@ -503,48 +503,49 @@
 <a href=#503 id=503 data-nosnippet>503</a>    <span class="comment">// --- the escape hatches, both mandatory -------------------------------
 <a href=#504 id=504 data-nosnippet>504</a>    </span><span class="doccomment">/// A tag this parser does not model, carried whole.
 <a href=#505 id=505 data-nosnippet>505</a>    ///
-<a href=#506 id=506 data-nosnippet>506</a>    /// `raw` is the original bytes, so the tag reaches the user as text and a
-<a href=#507 id=507 data-nosnippet>507</a>    /// diagnosing reader sees exactly what the game sent. It is the one place
-<a href=#508 id=508 data-nosnippet>508</a>    /// raw markup crosses the vocabulary boundary.
-<a href=#509 id=509 data-nosnippet>509</a>    ///
-<a href=#510 id=510 data-nosnippet>510</a>    /// It is a type of its own, not `Text`, so a consumer can tell "the game
-<a href=#511 id=511 data-nosnippet>511</a>    /// said something new" from "the game said hello".
-<a href=#512 id=512 data-nosnippet>512</a>    </span>UnknownTag {
-<a href=#513 id=513 data-nosnippet>513</a>        <span class="doccomment">/// The tag name, as spelled on the wire.
-<a href=#514 id=514 data-nosnippet>514</a>        </span>name: String,
-<a href=#515 id=515 data-nosnippet>515</a>        <span class="doccomment">/// The tag as received; a close tag is rebuilt as `&lt;/name&gt;`.
-<a href=#516 id=516 data-nosnippet>516</a>        </span>raw: String,
-<a href=#517 id=517 data-nosnippet>517</a>    },
-<a href=#518 id=518 data-nosnippet>518</a>    <span class="doccomment">/// A tag that arrived and whose effect is not carried by any
-<a href=#519 id=519 data-nosnippet>519</a>    /// neighbouring frame's fields.
-<a href=#520 id=520 data-nosnippet>520</a>    ///
-<a href=#521 id=521 data-nosnippet>521</a>    /// Nothing that comes in is dropped: a known close form or self-closing
-<a href=#522 id=522 data-nosnippet>522</a>    /// form with nothing to model emits this, so every consumer can see it.
-<a href=#523 id=523 data-nosnippet>523</a>    ///
-<a href=#524 id=524 data-nosnippet>524</a>    /// Distinct from [`Frame::UnknownTag`] on purpose: an `UnknownTag` means
-<a href=#525 id=525 data-nosnippet>525</a>    /// the protocol changed and someone should look, a `Structural` means the
-<a href=#526 id=526 data-nosnippet>526</a>    /// protocol did exactly what it always does and there is nothing to model.
-<a href=#527 id=527 data-nosnippet>527</a>    /// Collapsing them would cry wolf on every `&lt;/a&gt;`.
-<a href=#528 id=528 data-nosnippet>528</a>    ///
-<a href=#529 id=529 data-nosnippet>529</a>    /// `raw` is the original bytes, so nothing is unrecoverable. Use
-<a href=#530 id=530 data-nosnippet>530</a>    /// [`Frame::is_structural`] to filter these out; most consumers want to.
-<a href=#531 id=531 data-nosnippet>531</a>    </span>Structural {
-<a href=#532 id=532 data-nosnippet>532</a>        <span class="doccomment">/// The tag name, e.g. `a` for a `&lt;/a&gt;`.
-<a href=#533 id=533 data-nosnippet>533</a>        </span>name: String,
-<a href=#534 id=534 data-nosnippet>534</a>        <span class="doccomment">/// The tag as received; a close tag is rebuilt as `&lt;/name&gt;`.
-<a href=#535 id=535 data-nosnippet>535</a>        </span>raw: String,
-<a href=#536 id=536 data-nosnippet>536</a>    },
-<a href=#537 id=537 data-nosnippet>537</a>    <span class="doccomment">/// A tag that cannot be read: one that never closed before the line
-<a href=#538 id=538 data-nosnippet>538</a>    /// ended, or a timer whose value is not a number.
-<a href=#539 id=539 data-nosnippet>539</a>    ///
-<a href=#540 id=540 data-nosnippet>540</a>    /// Treating the unclosed fragment as text would silently desync the
-<a href=#541 id=541 data-nosnippet>541</a>    /// stream. Typed here so the case is visible, testable, and cannot be
-<a href=#542 id=542 data-nosnippet>542</a>    /// mistaken for prose. A timer read as zero instead would end a roundtime
-<a href=#543 id=543 data-nosnippet>543</a>    /// the game never ended.
-<a href=#544 id=544 data-nosnippet>544</a>    </span>MalformedTag {
-<a href=#545 id=545 data-nosnippet>545</a>        <span class="doccomment">/// The tag as received: the unterminated text through the end of the
-<a href=#546 id=546 data-nosnippet>546</a>        /// line, or the whole timer tag.
-<a href=#547 id=547 data-nosnippet>547</a>        </span>raw: String,
-<a href=#548 id=548 data-nosnippet>548</a>    },
-<a href=#549 id=549 data-nosnippet>549</a>}
+<a href=#506 id=506 data-nosnippet>506</a>    /// `raw` is the original bytes, so a diagnosing reader sees exactly what
+<a href=#507 id=507 data-nosnippet>507</a>    /// the game sent. It is the one place raw markup crosses the vocabulary
+<a href=#508 id=508 data-nosnippet>508</a>    /// boundary. Words in angle brackets that cannot be an element are not
+<a href=#509 id=509 data-nosnippet>509</a>    /// this: the text scanner keeps them as prose (`text::is_prose`).
+<a href=#510 id=510 data-nosnippet>510</a>    ///
+<a href=#511 id=511 data-nosnippet>511</a>    /// It is a type of its own, not `Text`, so a consumer can tell "the game
+<a href=#512 id=512 data-nosnippet>512</a>    /// said something new" from "the game said hello".
+<a href=#513 id=513 data-nosnippet>513</a>    </span>UnknownTag {
+<a href=#514 id=514 data-nosnippet>514</a>        <span class="doccomment">/// The tag name, as spelled on the wire.
+<a href=#515 id=515 data-nosnippet>515</a>        </span>name: String,
+<a href=#516 id=516 data-nosnippet>516</a>        <span class="doccomment">/// The tag as received; a close tag is rebuilt as `&lt;/name&gt;`.
+<a href=#517 id=517 data-nosnippet>517</a>        </span>raw: String,
+<a href=#518 id=518 data-nosnippet>518</a>    },
+<a href=#519 id=519 data-nosnippet>519</a>    <span class="doccomment">/// A tag that arrived and whose effect is not carried by any
+<a href=#520 id=520 data-nosnippet>520</a>    /// neighbouring frame's fields.
+<a href=#521 id=521 data-nosnippet>521</a>    ///
+<a href=#522 id=522 data-nosnippet>522</a>    /// Nothing that comes in is dropped: a known close form or self-closing
+<a href=#523 id=523 data-nosnippet>523</a>    /// form with nothing to model emits this, so every consumer can see it.
+<a href=#524 id=524 data-nosnippet>524</a>    ///
+<a href=#525 id=525 data-nosnippet>525</a>    /// Distinct from [`Frame::UnknownTag`] on purpose: an `UnknownTag` means
+<a href=#526 id=526 data-nosnippet>526</a>    /// the protocol changed and someone should look, a `Structural` means the
+<a href=#527 id=527 data-nosnippet>527</a>    /// protocol did exactly what it always does and there is nothing to model.
+<a href=#528 id=528 data-nosnippet>528</a>    /// Collapsing them would cry wolf on every `&lt;/a&gt;`.
+<a href=#529 id=529 data-nosnippet>529</a>    ///
+<a href=#530 id=530 data-nosnippet>530</a>    /// `raw` is the original bytes, so nothing is unrecoverable. Use
+<a href=#531 id=531 data-nosnippet>531</a>    /// [`Frame::is_structural`] to filter these out; most consumers want to.
+<a href=#532 id=532 data-nosnippet>532</a>    </span>Structural {
+<a href=#533 id=533 data-nosnippet>533</a>        <span class="doccomment">/// The tag name, e.g. `a` for a `&lt;/a&gt;`.
+<a href=#534 id=534 data-nosnippet>534</a>        </span>name: String,
+<a href=#535 id=535 data-nosnippet>535</a>        <span class="doccomment">/// The tag as received; a close tag is rebuilt as `&lt;/name&gt;`.
+<a href=#536 id=536 data-nosnippet>536</a>        </span>raw: String,
+<a href=#537 id=537 data-nosnippet>537</a>    },
+<a href=#538 id=538 data-nosnippet>538</a>    <span class="doccomment">/// A tag that cannot be read: one that never closed before the line
+<a href=#539 id=539 data-nosnippet>539</a>    /// ended, or a timer whose value is not a number.
+<a href=#540 id=540 data-nosnippet>540</a>    ///
+<a href=#541 id=541 data-nosnippet>541</a>    /// Treating the unclosed fragment as text would silently desync the
+<a href=#542 id=542 data-nosnippet>542</a>    /// stream. Typed here so the case is visible, testable, and cannot be
+<a href=#543 id=543 data-nosnippet>543</a>    /// mistaken for prose. A timer read as zero instead would end a roundtime
+<a href=#544 id=544 data-nosnippet>544</a>    /// the game never ended.
+<a href=#545 id=545 data-nosnippet>545</a>    </span>MalformedTag {
+<a href=#546 id=546 data-nosnippet>546</a>        <span class="doccomment">/// The tag as received: the unterminated text through the end of the
+<a href=#547 id=547 data-nosnippet>547</a>        /// line, or the whole timer tag.
+<a href=#548 id=548 data-nosnippet>548</a>        </span>raw: String,
+<a href=#549 id=549 data-nosnippet>549</a>    },
+<a href=#550 id=550 data-nosnippet>550</a>}
 </code></pre></div></section></main></body></html>

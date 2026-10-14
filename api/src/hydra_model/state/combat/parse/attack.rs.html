@@ -430,46 +430,51 @@
 <a href=#430 id=430 data-nosnippet>430</a>        <span class="kw">let </span>pending = std::mem::take(<span class="kw-2">&amp;mut </span><span class="self">self</span>.pending_flares);
 <a href=#431 id=431 data-nosnippet>431</a>        <span class="kw">let </span><span class="kw-2">mut </span>still = Vec::new();
 <a href=#432 id=432 data-nosnippet>432</a>        <span class="kw">for </span><span class="kw-2">mut </span>f <span class="kw">in </span>pending {
-<a href=#433 id=433 data-nosnippet>433</a>            <span class="kw">let </span>releasing = <span class="self">Self</span>::releasing(<span class="kw-2">&amp;</span>f.name);
-<a href=#434 id=434 data-nosnippet>434</a>            <span class="kw">let </span>e = <span class="self">self</span>.ev(id);
-<a href=#435 id=435 data-nosnippet>435</a>            <span class="kw">let </span>claim = <span class="kw">if </span>releasing {
-<a href=#436 id=436 data-nosnippet>436</a>                e.weapon.is_some() &amp;&amp; !<span class="self">Self</span>::flare_contradicts_weapon(<span class="kw-2">&amp;</span>f, e)
-<a href=#437 id=437 data-nosnippet>437</a>            } <span class="kw">else </span>{
-<a href=#438 id=438 data-nosnippet>438</a>                <span class="self">Self</span>::flare_matches_weapon(<span class="kw-2">&amp;</span>f, e.weapon.as_deref())
-<a href=#439 id=439 data-nosnippet>439</a>                    || !<span class="self">Self</span>::flare_contradicts_weapon(<span class="kw-2">&amp;</span>f, e)
-<a href=#440 id=440 data-nosnippet>440</a>            };
-<a href=#441 id=441 data-nosnippet>441</a>            <span class="kw">if </span>!claim {
-<a href=#442 id=442 data-nosnippet>442</a>                still.push(f);
-<a href=#443 id=443 data-nosnippet>443</a>                <span class="kw">continue</span>;
-<a href=#444 id=444 data-nosnippet>444</a>            }
-<a href=#445 id=445 data-nosnippet>445</a>            <span class="comment">// fired BEFORE the swing line: never the cause of a status the
-<a href=#446 id=446 data-nosnippet>446</a>            // swing's own crit inflicts afterwards
-<a href=#447 id=447 data-nosnippet>447</a>            </span>f.pre = <span class="bool-val">true</span>;
-<a href=#448 id=448 data-nosnippet>448</a>            <span class="kw">let </span>cast = <span class="kw">if </span>releasing {
-<a href=#449 id=449 data-nosnippet>449</a>                <span class="self">self</span>.pending_release_cast.take()
-<a href=#450 id=450 data-nosnippet>450</a>            } <span class="kw">else </span>{
-<a href=#451 id=451 data-nosnippet>451</a>                <span class="prelude-val">None
-<a href=#452 id=452 data-nosnippet>452</a>            </span>};
-<a href=#453 id=453 data-nosnippet>453</a>            <span class="kw">if </span>cast.is_some() {
-<a href=#454 id=454 data-nosnippet>454</a>                f.release_claimed = <span class="bool-val">true</span>;
-<a href=#455 id=455 data-nosnippet>455</a>            }
-<a href=#456 id=456 data-nosnippet>456</a>            <span class="kw">let </span>(flare, weapon) = (f.name.clone(), f.weapon.clone());
-<a href=#457 id=457 data-nosnippet>457</a>            <span class="self">self</span>.ev_mut(id).flares.push(f);
-<a href=#458 id=458 data-nosnippet>458</a>            <span class="comment">// ...and the cast that flare released, which printed before this
-<a href=#459 id=459 data-nosnippet>459</a>            // swing, is this swing's child: re-emitted after the swing.
-<a href=#460 id=460 data-nosnippet>460</a>            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(cast) = cast {
-<a href=#461 id=461 data-nosnippet>461</a>                <span class="kw">let </span>root = <span class="self">self</span>.ev(id).root.unwrap_or(id);
-<a href=#462 id=462 data-nosnippet>462</a>                <span class="kw">let </span>c = <span class="self">self</span>.ev_mut(cast);
-<a href=#463 id=463 data-nosnippet>463</a>                c.root = <span class="prelude-val">Some</span>(root);
-<a href=#464 id=464 data-nosnippet>464</a>                c.parent = <span class="prelude-val">Some</span>(id);
-<a href=#465 id=465 data-nosnippet>465</a>                c.parent_confidence = <span class="prelude-val">Some</span>(Confidence::Count);
-<a href=#466 id=466 data-nosnippet>466</a>                c.parent_flare = <span class="prelude-val">Some</span>(ParentFlare { flare, weapon });
-<a href=#467 id=467 data-nosnippet>467</a>                <span class="self">self</span>.events.retain(|<span class="kw-2">&amp;</span>e| e != cast);
-<a href=#468 id=468 data-nosnippet>468</a>                <span class="self">self</span>.released_children.entry(id).or_default().push(cast);
-<a href=#469 id=469 data-nosnippet>469</a>                <span class="self">self</span>.deferred_casts.push(cast);
-<a href=#470 id=470 data-nosnippet>470</a>            }
-<a href=#471 id=471 data-nosnippet>471</a>        }
-<a href=#472 id=472 data-nosnippet>472</a>        <span class="self">self</span>.pending_flares = still;
-<a href=#473 id=473 data-nosnippet>473</a>    }
-<a href=#474 id=474 data-nosnippet>474</a>}
+<a href=#433 id=433 data-nosnippet>433</a>            <span class="comment">// A creature's attack set it off; it is never a swing's of ours.
+<a href=#434 id=434 data-nosnippet>434</a>            </span><span class="kw">if </span>f.reactive {
+<a href=#435 id=435 data-nosnippet>435</a>                still.push(f);
+<a href=#436 id=436 data-nosnippet>436</a>                <span class="kw">continue</span>;
+<a href=#437 id=437 data-nosnippet>437</a>            }
+<a href=#438 id=438 data-nosnippet>438</a>            <span class="kw">let </span>releasing = <span class="self">Self</span>::releasing(<span class="kw-2">&amp;</span>f.name);
+<a href=#439 id=439 data-nosnippet>439</a>            <span class="kw">let </span>e = <span class="self">self</span>.ev(id);
+<a href=#440 id=440 data-nosnippet>440</a>            <span class="kw">let </span>claim = <span class="kw">if </span>releasing {
+<a href=#441 id=441 data-nosnippet>441</a>                e.weapon.is_some() &amp;&amp; !<span class="self">Self</span>::flare_contradicts_weapon(<span class="kw-2">&amp;</span>f, e)
+<a href=#442 id=442 data-nosnippet>442</a>            } <span class="kw">else </span>{
+<a href=#443 id=443 data-nosnippet>443</a>                <span class="self">Self</span>::flare_matches_weapon(<span class="kw-2">&amp;</span>f, e.weapon.as_deref())
+<a href=#444 id=444 data-nosnippet>444</a>                    || !<span class="self">Self</span>::flare_contradicts_weapon(<span class="kw-2">&amp;</span>f, e)
+<a href=#445 id=445 data-nosnippet>445</a>            };
+<a href=#446 id=446 data-nosnippet>446</a>            <span class="kw">if </span>!claim {
+<a href=#447 id=447 data-nosnippet>447</a>                still.push(f);
+<a href=#448 id=448 data-nosnippet>448</a>                <span class="kw">continue</span>;
+<a href=#449 id=449 data-nosnippet>449</a>            }
+<a href=#450 id=450 data-nosnippet>450</a>            <span class="comment">// fired BEFORE the swing line: never the cause of a status the
+<a href=#451 id=451 data-nosnippet>451</a>            // swing's own crit inflicts afterwards
+<a href=#452 id=452 data-nosnippet>452</a>            </span>f.pre = <span class="bool-val">true</span>;
+<a href=#453 id=453 data-nosnippet>453</a>            <span class="kw">let </span>cast = <span class="kw">if </span>releasing {
+<a href=#454 id=454 data-nosnippet>454</a>                <span class="self">self</span>.pending_release_cast.take()
+<a href=#455 id=455 data-nosnippet>455</a>            } <span class="kw">else </span>{
+<a href=#456 id=456 data-nosnippet>456</a>                <span class="prelude-val">None
+<a href=#457 id=457 data-nosnippet>457</a>            </span>};
+<a href=#458 id=458 data-nosnippet>458</a>            <span class="kw">if </span>cast.is_some() {
+<a href=#459 id=459 data-nosnippet>459</a>                f.release_claimed = <span class="bool-val">true</span>;
+<a href=#460 id=460 data-nosnippet>460</a>            }
+<a href=#461 id=461 data-nosnippet>461</a>            <span class="kw">let </span>(flare, weapon) = (f.name.clone(), f.weapon.clone());
+<a href=#462 id=462 data-nosnippet>462</a>            <span class="self">self</span>.ev_mut(id).flares.push(f);
+<a href=#463 id=463 data-nosnippet>463</a>            <span class="comment">// ...and the cast that flare released, which printed before this
+<a href=#464 id=464 data-nosnippet>464</a>            // swing, is this swing's child: re-emitted after the swing.
+<a href=#465 id=465 data-nosnippet>465</a>            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(cast) = cast {
+<a href=#466 id=466 data-nosnippet>466</a>                <span class="kw">let </span>root = <span class="self">self</span>.ev(id).root.unwrap_or(id);
+<a href=#467 id=467 data-nosnippet>467</a>                <span class="kw">let </span>c = <span class="self">self</span>.ev_mut(cast);
+<a href=#468 id=468 data-nosnippet>468</a>                c.root = <span class="prelude-val">Some</span>(root);
+<a href=#469 id=469 data-nosnippet>469</a>                c.parent = <span class="prelude-val">Some</span>(id);
+<a href=#470 id=470 data-nosnippet>470</a>                c.parent_confidence = <span class="prelude-val">Some</span>(Confidence::Count);
+<a href=#471 id=471 data-nosnippet>471</a>                c.parent_flare = <span class="prelude-val">Some</span>(ParentFlare { flare, weapon });
+<a href=#472 id=472 data-nosnippet>472</a>                <span class="self">self</span>.events.retain(|<span class="kw-2">&amp;</span>e| e != cast);
+<a href=#473 id=473 data-nosnippet>473</a>                <span class="self">self</span>.released_children.entry(id).or_default().push(cast);
+<a href=#474 id=474 data-nosnippet>474</a>                <span class="self">self</span>.deferred_casts.push(cast);
+<a href=#475 id=475 data-nosnippet>475</a>            }
+<a href=#476 id=476 data-nosnippet>476</a>        }
+<a href=#477 id=477 data-nosnippet>477</a>        <span class="self">self</span>.pending_flares = still;
+<a href=#478 id=478 data-nosnippet>478</a>    }
+<a href=#479 id=479 data-nosnippet>479</a>}
 </code></pre></div></section></main></body></html>

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["GAP"],"fn":["bonuses","clock","daily","day_start","hour","last","level","range","rate","session","snapshots","stamp","timing","today"],"struct":["Totals"]};

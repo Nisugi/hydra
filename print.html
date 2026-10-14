@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-1161a6b9.js";
+            window.path_to_searchindex_js = "searchindex-b9a4b3c6.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-893df2d8.js"></script>
+        <script src="toc-366a6130.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -423,7 +423,7 @@ the front. <strong>Log</strong> opens what the character has read. <strong>Quit<
 game.</p>
 <p><img src="images/hub_offline.png" alt="The hub’s Offline tab: Nisugi, starred, with Start; Nerten, with a password box"></p>
 <h2 id="the-menu"><a class="header" href="#the-menu">The Menu</a></h2>
-<p><img src="images/hub_menu.png" alt="The hub’s Menu open: Cards, Hotbars, Map, Packs, Performance, Settings, Survey, Themes, Triggers and Web page"></p>
+<p><img src="images/hub_menu.png" alt="The hub’s Menu open: Cards, Hotbars, Map, Packs, Performance, Reports, Settings, Survey, Themes, Triggers and Web page"></p>
 <p>Every play window has the same Menu on its title bar, so either one
 reaches everything with the other closed.</p>
 <ul>
@@ -832,8 +832,10 @@ can fill a command’s words: <code>target $1</code>. Some care is built in:</p>
 <ul>
 <li><code>$1</code> fills a command’s words, never the command itself.</li>
 <li>Only game commands: never Hydra’s own or Lich’s.</li>
-<li>At most five commands in ten seconds, and only while the character is
-in the game and ready.</li>
+<li>Only once the character is in the game and ready: nothing while it
+logs in or reconnects.</li>
+<li>The trigger’s <strong>Cooldown</strong> is the pace of its sends: at <code>0</code> it sends
+for every line it finds.</li>
 <li>A send that an import brought waits until you read it and press
 <strong>Approve this send</strong>.</li>
 </ul>
@@ -927,9 +929,9 @@ game windows</em>. Place it where you like.</p>
 <h2 id="answer-the-game"><a class="header" href="#answer-the-game">Answer the game</a></h2>
 <p><strong>New</strong> → <em>Send a command</em>. When your spell is ready, cast it:</p>
 <p><img src="images/trigger_send.png" alt="Cast when ready: Try it shows it would send cast"></p>
-<p>A trigger sends at most five commands in ten seconds, and only while the
-character is in the game. Keep sends to what you would type yourself at
-that moment.</p>
+<p>A trigger sends only once the character is in the game and ready, never
+while it logs in. Its <strong>Cooldown</strong>, 3 seconds unless you change it, is the
+pace of its sends: at <code>0</code> it sends for every line it finds.</p>
 <h2 id="watch-your-health"><a class="header" href="#watch-your-health">Watch your health</a></h2>
 <p><strong>New</strong> → <em>Watch my character</em>. There are no words to look for: under
 <strong>When</strong>, the condition <em>vital health &lt; 50 %</em> is the whole trigger. It
@@ -947,6 +949,58 @@ same status and <strong>clears it</strong> ticked. The <strong>Custom statuses</
 shows <em>Warded</em> while the spell lasts, and any trigger can ask for it
 under <strong>When</strong>: <em>indicator Warded</em>. A flag works the same way, but shows
 nowhere: it is for other triggers alone.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="reports"><a class="header" href="#reports">Reports</a></h1>
+<p>Hydra keeps a ledger of what each character does: every experience pulse
+as the mind-state bar states it, and every hunt the combat reader saw, with
+its attacks, flares, hits and statuses. The ledger is one file for every
+character, <code>hydra.db</code> in the data folder, and nothing is ever sent to the
+game to fill it.</p>
+<p>The reports read that ledger. There are two ways to them.</p>
+<h2 id="the-reports-window"><a class="header" href="#the-reports-window">The Reports window</a></h2>
+<p><strong>Menu → Reports</strong> opens the window, from the hub or from a play window’s
+title bar. From a play window it opens at that character; the picker at the
+top left chooses any character the ledger holds.</p>
+<p>Down the left is the list, by family: <strong>Experience</strong>, <strong>Combat</strong>, and
+<strong>Flares</strong>, which opens to every flare recorded for the character, by
+name. The box above it finds a report by its name or by what it shows:
+type <code>barrier</code> and Intercepts is left, <code>pulses</code> and Timing. Enter runs the
+first that fits. A click on a report runs it.</p>
+<p>The strip along the top sets what a report runs over:</p>
+<ul>
+<li><strong>Latest hunt</strong>, <strong>Every hunt</strong>, <strong>Last n hunts</strong> or <strong>One hunt</strong> by id,
+for the combat reports that take a scope.</li>
+<li><strong>Between</strong>, with a <em>from</em> and a <em>to</em>: two hunt ids for the combat
+reports, or two times for the experience report over a span. A time is
+<code>13:05</code> for today, <code>07-20 13:05</code> for this year, or <code>2026-07-20 13:05:52</code>.</li>
+<li><strong>Name</strong>, for the reports that take one: a creature’s noun.</li>
+</ul>
+<p><strong>Attacks</strong> and <strong>Creatures</strong> list every one over the scope, by damage, a
+page at a time. The row above them turns <strong>Recent</strong> on, newest first, with
+a number for only the last so many; sets the rows a page; and walks the
+pages.</p>
+<p>The pane shows the report with its links live. A link runs that report in
+the pane: Intercepts links each barrier to its flare report, a hunt’s
+report links its creatures and attacks. <strong>Back</strong> and <strong>Forward</strong> walk what
+has been run, <strong>Refresh</strong> runs the report shown again, and <strong>Export</strong>
+writes it to a file under the data folder’s <code>reports</code>.</p>
+<p>A hunt closing runs the report shown again on its own, so a hunt’s numbers
+are current without a click.</p>
+<h2 id="typed"><a class="header" href="#typed">Typed</a></h2>
+<p>The same reports answer on the command line, in a character’s play window:
+<code>.exp</code> for the experience reports and <code>.cstats</code> for combat. <code>.exp help</code> and
+<code>.cstats help</code> list every one. Three words change the ledger and are only
+ever typed: <code>.exp addgain &lt;n&gt;</code> for a gain the bar did not state, <code>.exp clean</code> to drop pulses with no gain, and <code>.exp reset</code> to drop every row of
+that character’s, which asks first.</p>
+<h2 id="filling-the-ledger-from-recordings"><a class="header" href="#filling-the-ledger-from-recordings">Filling the ledger from recordings</a></h2>
+<p>A session Hydra recorded (its <code>.bytes</code> files, when recording is on) can be
+read back into the ledger with Hydra closed:</p>
+<pre><code>hydra import logs
+</code></pre>
+<p>Each session is replayed as it was played, and every hunt and pulse it
+holds is recorded. A file is never read twice, a session that overlaps
+hunts or pulses already on file is refused, and a pulse already on file is
+skipped.</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="for-developers"><a class="header" href="#for-developers">For developers</a></h1>
 <p>Hydra is written in Rust, as a workspace of crates from the game connection

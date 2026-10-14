@@ -97,7 +97,7 @@
 <a href=#97 id=97 data-nosnippet>97</a>        MoveFeedback::NoSuchWay,
 <a href=#98 id=98 data-nosnippet>98</a>    ),
 <a href=#99 id=99 data-nosnippet>99</a>    (
-<a href=#100 id=100 data-nosnippet>100</a>        <span class="string">r#"^[A-z\s-] is unable to follow you\.$|^An unseen force prevents you\.$|^Sorry, you aren't allowed to enter here\.|^That looks like someplace only performers should go\.|^As you climb, your grip gives way and you fall down|^The clerk stops you from entering the partition and says, "I'll need to see your ticket!"$|^The guard stops you, saying, "Only members of registered groups may enter the Meeting Hall\.  If you'd like to visit, ask a group officer for a guest pass\."$|^An? .*? reaches over and grasps [A-Z][a-z]+ by the neck preventing (?:him|her) from being dragged anywhere\.$|^You'll have to wait, [A-Z][a-z]+ .* locker|^As you move toward the gate, you carelessly bump into the guard|^You attempt to enter the back of the shop, but a clerk stops you.  "Your reputation precedes you!|you notice that thick beams are placed across the entry with a small sign that reads, "Abandoned\."$|appears to be closed, perhaps you should try again later\?$"#</span>,
+<a href=#100 id=100 data-nosnippet>100</a>        <span class="string">r#"^[A-Za-z\s'-]+ is unable to follow you\.$|^An unseen force prevents you\.$|^Sorry, you aren't allowed to enter here\.|^That looks like someplace only performers should go\.|^As you climb, your grip gives way and you fall down|^The clerk stops you from entering the partition and says, "I'll need to see your ticket!"$|^The guard stops you, saying, "Only members of registered groups may enter the Meeting Hall\.  If you'd like to visit, ask a group officer for a guest pass\."$|^An? .*? reaches over and grasps [A-Z][a-z]+ by the neck preventing (?:him|her) from being dragged anywhere\.$|^You'll have to wait, [A-Z][a-z]+ .* locker|^As you move toward the gate, you carelessly bump into the guard|^You attempt to enter the back of the shop, but a clerk stops you.  "Your reputation precedes you!|you notice that thick beams are placed across the entry with a small sign that reads, "Abandoned\."$|appears to be closed, perhaps you should try again later\?$"#</span>,
 <a href=#101 id=101 data-nosnippet>101</a>        MoveFeedback::Denied,
 <a href=#102 id=102 data-nosnippet>102</a>    ),
 <a href=#103 id=103 data-nosnippet>103</a>    (
@@ -245,77 +245,78 @@
 <a href=#245 id=245 data-nosnippet>245</a>            ),
 <a href=#246 id=246 data-nosnippet>246</a>            (<span class="string">"You may not pass."</span>, MoveFeedback::NoSuchWay),
 <a href=#247 id=247 data-nosnippet>247</a>            (<span class="string">"An unseen force prevents you."</span>, MoveFeedback::Denied),
-<a href=#248 id=248 data-nosnippet>248</a>            (<span class="string">"The gate appears to be closed."</span>, MoveFeedback::Closed),
-<a href=#249 id=249 data-nosnippet>249</a>            (<span class="string">"...wait 3 seconds."</span>, MoveFeedback::Wait(<span class="number">3</span>)),
-<a href=#250 id=250 data-nosnippet>250</a>            (<span class="string">"Wait 1 sec."</span>, MoveFeedback::Wait(<span class="number">1</span>)),
-<a href=#251 id=251 data-nosnippet>251</a>            (<span class="string">"You must be standing first."</span>, MoveFeedback::MustStand),
-<a href=#252 id=252 data-nosnippet>252</a>            (
-<a href=#253 id=253 data-nosnippet>253</a>                <span class="string">"You can't jump when you're sitting down!"</span>,
-<a href=#254 id=254 data-nosnippet>254</a>                MoveFeedback::MustStand,
-<a href=#255 id=255 data-nosnippet>255</a>            ),
-<a href=#256 id=256 data-nosnippet>256</a>            (<span class="string">"You are still stunned."</span>, MoveFeedback::Stunned),
-<a href=#257 id=257 data-nosnippet>257</a>            (
-<a href=#258 id=258 data-nosnippet>258</a>                <span class="string">"You'll need empty hands to climb that."</span>,
-<a href=#259 id=259 data-nosnippet>259</a>                MoveFeedback::HandsFull,
-<a href=#260 id=260 data-nosnippet>260</a>            ),
-<a href=#261 id=261 data-nosnippet>261</a>            (
-<a href=#262 id=262 data-nosnippet>262</a>                <span class="string">"You're going to have to climb that."</span>,
-<a href=#263 id=263 data-nosnippet>263</a>                MoveFeedback::NeedsClimb,
-<a href=#264 id=264 data-nosnippet>264</a>            ),
-<a href=#265 id=265 data-nosnippet>265</a>            (<span class="string">"You can't climb that."</span>, MoveFeedback::NeedsGo),
-<a href=#266 id=266 data-nosnippet>266</a>            (
-<a href=#267 id=267 data-nosnippet>267</a>                <span class="string">"Sorry, you may only type ahead 1 command."</span>,
-<a href=#268 id=268 data-nosnippet>268</a>                MoveFeedback::TypeAhead,
-<a href=#269 id=269 data-nosnippet>269</a>            ),
-<a href=#270 id=270 data-nosnippet>270</a>            (
-<a href=#271 id=271 data-nosnippet>271</a>                <span class="string">"It's pitch dark and you can't see a thing!"</span>,
-<a href=#272 id=272 data-nosnippet>272</a>                MoveFeedback::PitchDark,
-<a href=#273 id=273 data-nosnippet>273</a>            ),
-<a href=#274 id=274 data-nosnippet>274</a>            (
-<a href=#275 id=275 data-nosnippet>275</a>                <span class="string">"You can't enter the bank and remain hidden or invisible."</span>,
-<a href=#276 id=276 data-nosnippet>276</a>                MoveFeedback::MustUnhide,
-<a href=#277 id=277 data-nosnippet>277</a>            ),
-<a href=#278 id=278 data-nosnippet>278</a>            (
-<a href=#279 id=279 data-nosnippet>279</a>                <span class="string">"You slip in the mud and fall flat on your back!"</span>,
-<a href=#280 id=280 data-nosnippet>280</a>                MoveFeedback::FailedRoll { fell: <span class="bool-val">true </span>},
-<a href=#281 id=281 data-nosnippet>281</a>            ),
-<a href=#282 id=282 data-nosnippet>282</a>            (
-<a href=#283 id=283 data-nosnippet>283</a>                <span class="string">"You struggle against the swift current to swim north."</span>,
-<a href=#284 id=284 data-nosnippet>284</a>                MoveFeedback::FailedRoll { fell: <span class="bool-val">false </span>},
-<a href=#285 id=285 data-nosnippet>285</a>            ),
-<a href=#286 id=286 data-nosnippet>286</a>        ] {
-<a href=#287 id=287 data-nosnippet>287</a>            <span class="macro">assert_eq!</span>(classify(line), <span class="prelude-val">Some</span>(expected), <span class="string">"{line}"</span>);
-<a href=#288 id=288 data-nosnippet>288</a>        }
-<a href=#289 id=289 data-nosnippet>289</a>    }
-<a href=#290 id=290 data-nosnippet>290</a>
-<a href=#291 id=291 data-nosnippet>291</a>    <span class="doccomment">/// Order decides. "appears to be closed, perhaps you
-<a href=#292 id=292 data-nosnippet>292</a>    /// should try again later?" is a shop that is shut (keep the exit), not a
-<a href=#293 id=293 data-nosnippet>293</a>    /// door to open -- and only the ladder's order says so.
-<a href=#294 id=294 data-nosnippet>294</a>    </span><span class="attr">#[test]
-<a href=#295 id=295 data-nosnippet>295</a>    </span><span class="kw">fn </span>the_first_pattern_that_matches_wins() {
-<a href=#296 id=296 data-nosnippet>296</a>        <span class="macro">assert_eq!</span>(
-<a href=#297 id=297 data-nosnippet>297</a>            classify(<span class="string">"The shop appears to be closed, perhaps you should try again later?"</span>),
-<a href=#298 id=298 data-nosnippet>298</a>            <span class="prelude-val">Some</span>(MoveFeedback::Denied)
-<a href=#299 id=299 data-nosnippet>299</a>        );
-<a href=#300 id=300 data-nosnippet>300</a>    }
-<a href=#301 id=301 data-nosnippet>301</a>
-<a href=#302 id=302 data-nosnippet>302</a>    <span class="attr">#[test]
-<a href=#303 id=303 data-nosnippet>303</a>    </span><span class="kw">fn </span>the_lookahead_is_kept() {
-<a href=#304 id=304 data-nosnippet>304</a>        <span class="macro">assert_eq!</span>(
-<a href=#305 id=305 data-nosnippet>305</a>            classify(<span class="string">"You are already standing."</span>),
-<a href=#306 id=306 data-nosnippet>306</a>            <span class="prelude-val">Some</span>(MoveFeedback::NoSuchWay)
-<a href=#307 id=307 data-nosnippet>307</a>        );
-<a href=#308 id=308 data-nosnippet>308</a>        <span class="macro">assert_eq!</span>(
-<a href=#309 id=309 data-nosnippet>309</a>            classify(<span class="string">"You are already as far away as you can get!"</span>),
-<a href=#310 id=310 data-nosnippet>310</a>            <span class="prelude-val">None
-<a href=#311 id=311 data-nosnippet>311</a>        </span>);
-<a href=#312 id=312 data-nosnippet>312</a>    }
-<a href=#313 id=313 data-nosnippet>313</a>
-<a href=#314 id=314 data-nosnippet>314</a>    <span class="attr">#[test]
-<a href=#315 id=315 data-nosnippet>315</a>    </span><span class="kw">fn </span>ordinary_text_says_nothing_about_a_move() {
-<a href=#316 id=316 data-nosnippet>316</a>        <span class="kw">for </span>line <span class="kw">in </span>[<span class="string">"[Town Square, Central]"</span>, <span class="string">"Obvious paths: north, south"</span>, <span class="string">""</span>] {
-<a href=#317 id=317 data-nosnippet>317</a>            <span class="macro">assert_eq!</span>(classify(line), <span class="prelude-val">None</span>, <span class="string">"{line}"</span>);
-<a href=#318 id=318 data-nosnippet>318</a>        }
-<a href=#319 id=319 data-nosnippet>319</a>    }
-<a href=#320 id=320 data-nosnippet>320</a>}
+<a href=#248 id=248 data-nosnippet>248</a>            (<span class="string">"Ralf is unable to follow you."</span>, MoveFeedback::Denied),
+<a href=#249 id=249 data-nosnippet>249</a>            (<span class="string">"The gate appears to be closed."</span>, MoveFeedback::Closed),
+<a href=#250 id=250 data-nosnippet>250</a>            (<span class="string">"...wait 3 seconds."</span>, MoveFeedback::Wait(<span class="number">3</span>)),
+<a href=#251 id=251 data-nosnippet>251</a>            (<span class="string">"Wait 1 sec."</span>, MoveFeedback::Wait(<span class="number">1</span>)),
+<a href=#252 id=252 data-nosnippet>252</a>            (<span class="string">"You must be standing first."</span>, MoveFeedback::MustStand),
+<a href=#253 id=253 data-nosnippet>253</a>            (
+<a href=#254 id=254 data-nosnippet>254</a>                <span class="string">"You can't jump when you're sitting down!"</span>,
+<a href=#255 id=255 data-nosnippet>255</a>                MoveFeedback::MustStand,
+<a href=#256 id=256 data-nosnippet>256</a>            ),
+<a href=#257 id=257 data-nosnippet>257</a>            (<span class="string">"You are still stunned."</span>, MoveFeedback::Stunned),
+<a href=#258 id=258 data-nosnippet>258</a>            (
+<a href=#259 id=259 data-nosnippet>259</a>                <span class="string">"You'll need empty hands to climb that."</span>,
+<a href=#260 id=260 data-nosnippet>260</a>                MoveFeedback::HandsFull,
+<a href=#261 id=261 data-nosnippet>261</a>            ),
+<a href=#262 id=262 data-nosnippet>262</a>            (
+<a href=#263 id=263 data-nosnippet>263</a>                <span class="string">"You're going to have to climb that."</span>,
+<a href=#264 id=264 data-nosnippet>264</a>                MoveFeedback::NeedsClimb,
+<a href=#265 id=265 data-nosnippet>265</a>            ),
+<a href=#266 id=266 data-nosnippet>266</a>            (<span class="string">"You can't climb that."</span>, MoveFeedback::NeedsGo),
+<a href=#267 id=267 data-nosnippet>267</a>            (
+<a href=#268 id=268 data-nosnippet>268</a>                <span class="string">"Sorry, you may only type ahead 1 command."</span>,
+<a href=#269 id=269 data-nosnippet>269</a>                MoveFeedback::TypeAhead,
+<a href=#270 id=270 data-nosnippet>270</a>            ),
+<a href=#271 id=271 data-nosnippet>271</a>            (
+<a href=#272 id=272 data-nosnippet>272</a>                <span class="string">"It's pitch dark and you can't see a thing!"</span>,
+<a href=#273 id=273 data-nosnippet>273</a>                MoveFeedback::PitchDark,
+<a href=#274 id=274 data-nosnippet>274</a>            ),
+<a href=#275 id=275 data-nosnippet>275</a>            (
+<a href=#276 id=276 data-nosnippet>276</a>                <span class="string">"You can't enter the bank and remain hidden or invisible."</span>,
+<a href=#277 id=277 data-nosnippet>277</a>                MoveFeedback::MustUnhide,
+<a href=#278 id=278 data-nosnippet>278</a>            ),
+<a href=#279 id=279 data-nosnippet>279</a>            (
+<a href=#280 id=280 data-nosnippet>280</a>                <span class="string">"You slip in the mud and fall flat on your back!"</span>,
+<a href=#281 id=281 data-nosnippet>281</a>                MoveFeedback::FailedRoll { fell: <span class="bool-val">true </span>},
+<a href=#282 id=282 data-nosnippet>282</a>            ),
+<a href=#283 id=283 data-nosnippet>283</a>            (
+<a href=#284 id=284 data-nosnippet>284</a>                <span class="string">"You struggle against the swift current to swim north."</span>,
+<a href=#285 id=285 data-nosnippet>285</a>                MoveFeedback::FailedRoll { fell: <span class="bool-val">false </span>},
+<a href=#286 id=286 data-nosnippet>286</a>            ),
+<a href=#287 id=287 data-nosnippet>287</a>        ] {
+<a href=#288 id=288 data-nosnippet>288</a>            <span class="macro">assert_eq!</span>(classify(line), <span class="prelude-val">Some</span>(expected), <span class="string">"{line}"</span>);
+<a href=#289 id=289 data-nosnippet>289</a>        }
+<a href=#290 id=290 data-nosnippet>290</a>    }
+<a href=#291 id=291 data-nosnippet>291</a>
+<a href=#292 id=292 data-nosnippet>292</a>    <span class="doccomment">/// Order decides. "appears to be closed, perhaps you
+<a href=#293 id=293 data-nosnippet>293</a>    /// should try again later?" is a shop that is shut (keep the exit), not a
+<a href=#294 id=294 data-nosnippet>294</a>    /// door to open -- and only the ladder's order says so.
+<a href=#295 id=295 data-nosnippet>295</a>    </span><span class="attr">#[test]
+<a href=#296 id=296 data-nosnippet>296</a>    </span><span class="kw">fn </span>the_first_pattern_that_matches_wins() {
+<a href=#297 id=297 data-nosnippet>297</a>        <span class="macro">assert_eq!</span>(
+<a href=#298 id=298 data-nosnippet>298</a>            classify(<span class="string">"The shop appears to be closed, perhaps you should try again later?"</span>),
+<a href=#299 id=299 data-nosnippet>299</a>            <span class="prelude-val">Some</span>(MoveFeedback::Denied)
+<a href=#300 id=300 data-nosnippet>300</a>        );
+<a href=#301 id=301 data-nosnippet>301</a>    }
+<a href=#302 id=302 data-nosnippet>302</a>
+<a href=#303 id=303 data-nosnippet>303</a>    <span class="attr">#[test]
+<a href=#304 id=304 data-nosnippet>304</a>    </span><span class="kw">fn </span>the_lookahead_is_kept() {
+<a href=#305 id=305 data-nosnippet>305</a>        <span class="macro">assert_eq!</span>(
+<a href=#306 id=306 data-nosnippet>306</a>            classify(<span class="string">"You are already standing."</span>),
+<a href=#307 id=307 data-nosnippet>307</a>            <span class="prelude-val">Some</span>(MoveFeedback::NoSuchWay)
+<a href=#308 id=308 data-nosnippet>308</a>        );
+<a href=#309 id=309 data-nosnippet>309</a>        <span class="macro">assert_eq!</span>(
+<a href=#310 id=310 data-nosnippet>310</a>            classify(<span class="string">"You are already as far away as you can get!"</span>),
+<a href=#311 id=311 data-nosnippet>311</a>            <span class="prelude-val">None
+<a href=#312 id=312 data-nosnippet>312</a>        </span>);
+<a href=#313 id=313 data-nosnippet>313</a>    }
+<a href=#314 id=314 data-nosnippet>314</a>
+<a href=#315 id=315 data-nosnippet>315</a>    <span class="attr">#[test]
+<a href=#316 id=316 data-nosnippet>316</a>    </span><span class="kw">fn </span>ordinary_text_says_nothing_about_a_move() {
+<a href=#317 id=317 data-nosnippet>317</a>        <span class="kw">for </span>line <span class="kw">in </span>[<span class="string">"[Town Square, Central]"</span>, <span class="string">"Obvious paths: north, south"</span>, <span class="string">""</span>] {
+<a href=#318 id=318 data-nosnippet>318</a>            <span class="macro">assert_eq!</span>(classify(line), <span class="prelude-val">None</span>, <span class="string">"{line}"</span>);
+<a href=#319 id=319 data-nosnippet>319</a>        }
+<a href=#320 id=320 data-nosnippet>320</a>    }
+<a href=#321 id=321 data-nosnippet>321</a>}
 </code></pre></div></section></main></body></html>

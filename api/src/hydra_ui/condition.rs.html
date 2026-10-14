@@ -437,244 +437,253 @@
 <a href=#437 id=437 data-nosnippet>437</a>    ) -&gt; bool {
 <a href=#438 id=438 data-nosnippet>438</a>        <span class="kw">let </span>was = <span class="self">self</span>.last.replace(holds);
 <a href=#439 id=439 data-nosnippet>439</a>        <span class="kw">if </span>holds {
-<a href=#440 id=440 data-nosnippet>440</a>            <span class="self">self</span>.false_since = <span class="prelude-val">None</span>;
-<a href=#441 id=441 data-nosnippet>441</a>            <span class="kw">if </span>was == <span class="prelude-val">Some</span>(<span class="bool-val">false</span>) &amp;&amp; !<span class="self">self</span>.spent {
-<a href=#442 id=442 data-nosnippet>442</a>                <span class="self">self</span>.spent = <span class="bool-val">true</span>;
-<a href=#443 id=443 data-nosnippet>443</a>                <span class="kw">return </span><span class="bool-val">true</span>;
-<a href=#444 id=444 data-nosnippet>444</a>            }
-<a href=#445 id=445 data-nosnippet>445</a>            <span class="kw">return </span><span class="bool-val">false</span>;
-<a href=#446 id=446 data-nosnippet>446</a>        }
-<a href=#447 id=447 data-nosnippet>447</a>        <span class="kw">let </span>since = <span class="kw-2">*</span><span class="self">self</span>.false_since.get_or_insert(now);
-<a href=#448 id=448 data-nosnippet>448</a>        <span class="kw">if </span><span class="self">self</span>.spent &amp;&amp; now.saturating_duration_since(since) &gt;= rearm {
-<a href=#449 id=449 data-nosnippet>449</a>            <span class="self">self</span>.spent = <span class="bool-val">false</span>;
-<a href=#450 id=450 data-nosnippet>450</a>        }
-<a href=#451 id=451 data-nosnippet>451</a>        <span class="bool-val">false
-<a href=#452 id=452 data-nosnippet>452</a>    </span>}
-<a href=#453 id=453 data-nosnippet>453</a>}
-<a href=#454 id=454 data-nosnippet>454</a>
-<a href=#455 id=455 data-nosnippet>455</a><span class="doccomment">/// What a condition is tested against: the character's state, the flags
-<a href=#456 id=456 data-nosnippet>456</a>/// up, and the time.
-<a href=#457 id=457 data-nosnippet>457</a></span><span class="attr">#[derive(Clone, Copy, Debug)]
-<a href=#458 id=458 data-nosnippet>458</a></span><span class="kw">pub struct </span>World&lt;<span class="lifetime">'a</span>&gt; {
-<a href=#459 id=459 data-nosnippet>459</a>    <span class="doccomment">/// The character's state.
-<a href=#460 id=460 data-nosnippet>460</a>    </span><span class="kw">pub </span>state: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>GameState,
-<a href=#461 id=461 data-nosnippet>461</a>    <span class="doccomment">/// The flags triggers set.
-<a href=#462 id=462 data-nosnippet>462</a>    </span><span class="kw">pub </span>flags: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Flags,
-<a href=#463 id=463 data-nosnippet>463</a>    <span class="doccomment">/// The custom statuses lit, which `indicator` reads as the game's.
-<a href=#464 id=464 data-nosnippet>464</a>    </span><span class="kw">pub </span>statuses: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Flags,
-<a href=#465 id=465 data-nosnippet>465</a>    <span class="doccomment">/// The wall clock's seconds, for the time of day.
-<a href=#466 id=466 data-nosnippet>466</a>    </span><span class="kw">pub </span>unix: i64,
-<a href=#467 id=467 data-nosnippet>467</a>}
-<a href=#468 id=468 data-nosnippet>468</a>
-<a href=#469 id=469 data-nosnippet>469</a><span class="kw">impl </span>Condition {
-<a href=#470 id=470 data-nosnippet>470</a>    <span class="doccomment">/// Whether it holds in `world`.
-<a href=#471 id=471 data-nosnippet>471</a>    </span><span class="attr">#[must_use]
-<a href=#472 id=472 data-nosnippet>472</a>    </span><span class="kw">pub fn </span>holds(<span class="kw-2">&amp;</span><span class="self">self</span>, world: <span class="kw-2">&amp;</span>World&lt;<span class="lifetime">'_</span>&gt;) -&gt; bool {
-<a href=#473 id=473 data-nosnippet>473</a>        <span class="kw">let </span>state = world.state;
-<a href=#474 id=474 data-nosnippet>474</a>        <span class="kw">let </span>now = state.game_time_now();
-<a href=#475 id=475 data-nosnippet>475</a>        <span class="kw">match </span><span class="self">self </span>{
-<a href=#476 id=476 data-nosnippet>476</a>            <span class="self">Self</span>::All { conditions } =&gt; conditions.iter().all(|one| one.holds(world)),
-<a href=#477 id=477 data-nosnippet>477</a>            <span class="self">Self</span>::Any { conditions } =&gt; conditions.iter().any(|one| one.holds(world)),
-<a href=#478 id=478 data-nosnippet>478</a>            <span class="self">Self</span>::Not { condition } =&gt; !condition.holds(world),
-<a href=#479 id=479 data-nosnippet>479</a>            <span class="self">Self</span>::EffectActive {
-<a href=#480 id=480 data-nosnippet>480</a>                category,
-<a href=#481 id=481 data-nosnippet>481</a>                name,
-<a href=#482 id=482 data-nosnippet>482</a>                name_match,
-<a href=#483 id=483 data-nosnippet>483</a>            } =&gt; effect_up(state, (<span class="kw-2">*</span>category, name, <span class="kw-2">*</span>name_match), now),
-<a href=#484 id=484 data-nosnippet>484</a>            <span class="self">Self</span>::EffectInactive {
-<a href=#485 id=485 data-nosnippet>485</a>                category,
-<a href=#486 id=486 data-nosnippet>486</a>                name,
-<a href=#487 id=487 data-nosnippet>487</a>                name_match,
-<a href=#488 id=488 data-nosnippet>488</a>            } =&gt; {
-<a href=#489 id=489 data-nosnippet>489</a>                state.effects.saw_category(category.dialog())
-<a href=#490 id=490 data-nosnippet>490</a>                    &amp;&amp; !effect_up(state, (<span class="kw-2">*</span>category, name, <span class="kw-2">*</span>name_match), now)
-<a href=#491 id=491 data-nosnippet>491</a>            }
-<a href=#492 id=492 data-nosnippet>492</a>            <span class="self">Self</span>::EffectTime {
-<a href=#493 id=493 data-nosnippet>493</a>                category,
-<a href=#494 id=494 data-nosnippet>494</a>                name,
-<a href=#495 id=495 data-nosnippet>495</a>                name_match,
-<a href=#496 id=496 data-nosnippet>496</a>                cmp,
-<a href=#497 id=497 data-nosnippet>497</a>                seconds,
-<a href=#498 id=498 data-nosnippet>498</a>            } =&gt; now.is_some_and(|now| {
-<a href=#499 id=499 data-nosnippet>499</a>                state
-<a href=#500 id=500 data-nosnippet>500</a>                    .effects
-<a href=#501 id=501 data-nosnippet>501</a>                    .in_category(category.dialog())
-<a href=#502 id=502 data-nosnippet>502</a>                    .filter(|(<span class="kw">_</span>, effect)| name_match.matches(<span class="kw-2">&amp;</span>effect.text, name))
-<a href=#503 id=503 data-nosnippet>503</a>                    .filter_map(|(id, <span class="kw">_</span>)| state.effects.remaining(id, now))
-<a href=#504 id=504 data-nosnippet>504</a>                    .any(|left| cmp.holds(i64::from(left), <span class="kw-2">*</span>seconds))
-<a href=#505 id=505 data-nosnippet>505</a>            }),
-<a href=#506 id=506 data-nosnippet>506</a>            <span class="self">Self</span>::RtActive =&gt; state.in_roundtime() == <span class="prelude-val">Some</span>(<span class="bool-val">true</span>),
-<a href=#507 id=507 data-nosnippet>507</a>            <span class="self">Self</span>::CtActive =&gt; state.in_casttime() == <span class="prelude-val">Some</span>(<span class="bool-val">true</span>),
-<a href=#508 id=508 data-nosnippet>508</a>            <span class="self">Self</span>::Indicator { id, active } =&gt; {
-<a href=#509 id=509 data-nosnippet>509</a>                <span class="kw">let </span>lit = state.status.get(id) || world.statuses.is_up(id, now);
-<a href=#510 id=510 data-nosnippet>510</a>                lit == <span class="kw-2">*</span>active
-<a href=#511 id=511 data-nosnippet>511</a>            }
-<a href=#512 id=512 data-nosnippet>512</a>            <span class="self">Self</span>::Vital {
-<a href=#513 id=513 data-nosnippet>513</a>                vital,
-<a href=#514 id=514 data-nosnippet>514</a>                cmp,
-<a href=#515 id=515 data-nosnippet>515</a>                value,
-<a href=#516 id=516 data-nosnippet>516</a>                unit,
-<a href=#517 id=517 data-nosnippet>517</a>            } =&gt; {
-<a href=#518 id=518 data-nosnippet>518</a>                <span class="kw">let </span>told = state.vital(vital.id());
-<a href=#519 id=519 data-nosnippet>519</a>                <span class="kw">let </span>amount = <span class="kw">match </span>unit {
-<a href=#520 id=520 data-nosnippet>520</a>                    VitalUnit::Percent =&gt; told.map(|vital| i64::from(vital.percent)),
-<a href=#521 id=521 data-nosnippet>521</a>                    VitalUnit::Absolute =&gt; told.and_then(|vital| vital.current).map(i64::from),
-<a href=#522 id=522 data-nosnippet>522</a>                };
-<a href=#523 id=523 data-nosnippet>523</a>                amount.is_some_and(|amount| cmp.holds(amount, i64::from(<span class="kw-2">*</span>value)))
-<a href=#524 id=524 data-nosnippet>524</a>            }
-<a href=#525 id=525 data-nosnippet>525</a>            <span class="self">Self</span>::Injury { area, cmp, level } =&gt; {
-<a href=#526 id=526 data-nosnippet>526</a>                cmp.holds(i64::from(injury_level(state, area)), i64::from(<span class="kw-2">*</span>level))
-<a href=#527 id=527 data-nosnippet>527</a>            }
-<a href=#528 id=528 data-nosnippet>528</a>            <span class="self">Self</span>::SpellAffordable { number } =&gt; affordable(state, <span class="kw-2">*</span>number),
-<a href=#529 id=529 data-nosnippet>529</a>            <span class="self">Self</span>::TimeOfDay { phase } =&gt; DayPhase::at(world.unix) == <span class="prelude-val">Some</span>(<span class="kw-2">*</span>phase),
-<a href=#530 id=530 data-nosnippet>530</a>            <span class="self">Self</span>::HandEmpty { hand } =&gt; <span class="kw">match </span>hand {
-<a href=#531 id=531 data-nosnippet>531</a>                HandSlot::Right =&gt; state.right_hand == Hand::Empty,
-<a href=#532 id=532 data-nosnippet>532</a>                HandSlot::Left =&gt; state.left_hand == Hand::Empty,
-<a href=#533 id=533 data-nosnippet>533</a>                HandSlot::Either =&gt; {
-<a href=#534 id=534 data-nosnippet>534</a>                    state.right_hand == Hand::Empty || state.left_hand == Hand::Empty
-<a href=#535 id=535 data-nosnippet>535</a>                }
-<a href=#536 id=536 data-nosnippet>536</a>                HandSlot::Spell =&gt; prepared(state).is_none(),
-<a href=#537 id=537 data-nosnippet>537</a>            },
-<a href=#538 id=538 data-nosnippet>538</a>            <span class="self">Self</span>::HandHolds {
-<a href=#539 id=539 data-nosnippet>539</a>                hand,
-<a href=#540 id=540 data-nosnippet>540</a>                item_type,
-<a href=#541 id=541 data-nosnippet>541</a>                name,
-<a href=#542 id=542 data-nosnippet>542</a>                name_match,
-<a href=#543 id=543 data-nosnippet>543</a>            } =&gt; holds_in_hand(
-<a href=#544 id=544 data-nosnippet>544</a>                state,
-<a href=#545 id=545 data-nosnippet>545</a>                <span class="kw-2">*</span>hand,
-<a href=#546 id=546 data-nosnippet>546</a>                (item_type.as_deref(), name.as_deref()),
-<a href=#547 id=547 data-nosnippet>547</a>                <span class="kw-2">*</span>name_match,
-<a href=#548 id=548 data-nosnippet>548</a>            ),
-<a href=#549 id=549 data-nosnippet>549</a>            <span class="self">Self</span>::SpellPrepared { name, name_match } =&gt; prepared(state).is_some_and(|spell| {
-<a href=#550 id=550 data-nosnippet>550</a>                name.as_deref()
-<a href=#551 id=551 data-nosnippet>551</a>                    .is_none_or(|needle| name_match.matches(spell, needle))
-<a href=#552 id=552 data-nosnippet>552</a>            }),
-<a href=#553 id=553 data-nosnippet>553</a>            <span class="self">Self</span>::CrtrStatus { .. } =&gt; <span class="bool-val">false</span>,
-<a href=#554 id=554 data-nosnippet>554</a>            <span class="self">Self</span>::Flag { name, active } =&gt; world.flags.is_up(name, now) == <span class="kw-2">*</span>active,
-<a href=#555 id=555 data-nosnippet>555</a>            <span class="self">Self</span>::Room { name, name_match } =&gt; in_room(state, name, <span class="kw-2">*</span>name_match),
-<a href=#556 id=556 data-nosnippet>556</a>            <span class="self">Self</span>::Stance { stance } =&gt; in_stance(state, stance),
-<a href=#557 id=557 data-nosnippet>557</a>        }
-<a href=#558 id=558 data-nosnippet>558</a>    }
-<a href=#559 id=559 data-nosnippet>559</a>}
-<a href=#560 id=560 data-nosnippet>560</a>
-<a href=#561 id=561 data-nosnippet>561</a><span class="doccomment">/// The injury of the body part `area`: 1-3 its wound, 4-6 its scar, 0
-<a href=#562 id=562 data-nosnippet>562</a>/// none.
-<a href=#563 id=563 data-nosnippet>563</a></span><span class="kw">fn </span>injury_level(state: <span class="kw-2">&amp;</span>GameState, area: <span class="kw-2">&amp;</span>str) -&gt; u8 {
-<a href=#564 id=564 data-nosnippet>564</a>    state.character.injuries.get(area).map_or(<span class="number">0</span>, |injury| {
-<a href=#565 id=565 data-nosnippet>565</a>        <span class="kw">if </span>injury.wound &gt; <span class="number">0 </span>{
-<a href=#566 id=566 data-nosnippet>566</a>            injury.wound
-<a href=#567 id=567 data-nosnippet>567</a>        } <span class="kw">else if </span>injury.scar &gt; <span class="number">0 </span>{
-<a href=#568 id=568 data-nosnippet>568</a>            injury.scar + <span class="number">3
-<a href=#569 id=569 data-nosnippet>569</a>        </span>} <span class="kw">else </span>{
-<a href=#570 id=570 data-nosnippet>570</a>            <span class="number">0
-<a href=#571 id=571 data-nosnippet>571</a>        </span>}
-<a href=#572 id=572 data-nosnippet>572</a>    })
-<a href=#573 id=573 data-nosnippet>573</a>}
-<a href=#574 id=574 data-nosnippet>574</a>
-<a href=#575 id=575 data-nosnippet>575</a><span class="doccomment">/// Whether the room's title, or a part of it between commas, is `name`.
-<a href=#576 id=576 data-nosnippet>576</a></span><span class="kw">fn </span>in_room(state: <span class="kw-2">&amp;</span>GameState, name: <span class="kw-2">&amp;</span>str, name_match: NameMatch) -&gt; bool {
-<a href=#577 id=577 data-nosnippet>577</a>    <span class="kw">let </span><span class="prelude-val">Some</span>(title) = state.room.title.as_deref() <span class="kw">else </span>{
-<a href=#578 id=578 data-nosnippet>578</a>        <span class="kw">return </span><span class="bool-val">false</span>;
-<a href=#579 id=579 data-nosnippet>579</a>    };
-<a href=#580 id=580 data-nosnippet>580</a>    <span class="kw">let </span>title = title.trim().trim_start_matches(<span class="string">'['</span>).trim_end_matches(<span class="string">']'</span>);
-<a href=#581 id=581 data-nosnippet>581</a>    <span class="kw">let </span>title = title.split(<span class="string">" - "</span>).next().unwrap_or(title);
-<a href=#582 id=582 data-nosnippet>582</a>    title
-<a href=#583 id=583 data-nosnippet>583</a>        .split(<span class="string">", "</span>)
-<a href=#584 id=584 data-nosnippet>584</a>        .chain(std::iter::once(title))
-<a href=#585 id=585 data-nosnippet>585</a>        .any(|part| name_match.matches(part.trim(), name))
-<a href=#586 id=586 data-nosnippet>586</a>}
-<a href=#587 id=587 data-nosnippet>587</a>
-<a href=#588 id=588 data-nosnippet>588</a><span class="doccomment">/// Whether the stance is `stance`.
-<a href=#589 id=589 data-nosnippet>589</a></span><span class="kw">fn </span>in_stance(state: <span class="kw-2">&amp;</span>GameState, stance: <span class="kw-2">&amp;</span>str) -&gt; bool {
-<a href=#590 id=590 data-nosnippet>590</a>    state
-<a href=#591 id=591 data-nosnippet>591</a>        .character
-<a href=#592 id=592 data-nosnippet>592</a>        .stance
-<a href=#593 id=593 data-nosnippet>593</a>        .as_deref()
-<a href=#594 id=594 data-nosnippet>594</a>        .and_then(|now| now.split_whitespace().next())
-<a href=#595 id=595 data-nosnippet>595</a>        .is_some_and(|word| word.eq_ignore_ascii_case(stance))
-<a href=#596 id=596 data-nosnippet>596</a>}
-<a href=#597 id=597 data-nosnippet>597</a>
-<a href=#598 id=598 data-nosnippet>598</a><span class="doccomment">/// Whether an effect named so is up in its list at server second `now`.
-<a href=#599 id=599 data-nosnippet>599</a></span><span class="kw">fn </span>effect_up(
-<a href=#600 id=600 data-nosnippet>600</a>    state: <span class="kw-2">&amp;</span>GameState,
-<a href=#601 id=601 data-nosnippet>601</a>    (category, name, name_match): (EffectCategory, <span class="kw-2">&amp;</span>str, NameMatch),
-<a href=#602 id=602 data-nosnippet>602</a>    now: <span class="prelude-ty">Option</span>&lt;u32&gt;,
-<a href=#603 id=603 data-nosnippet>603</a>) -&gt; bool {
-<a href=#604 id=604 data-nosnippet>604</a>    <span class="kw">let </span><span class="prelude-val">Some</span>(now) = now <span class="kw">else </span>{
-<a href=#605 id=605 data-nosnippet>605</a>        <span class="kw">return </span><span class="bool-val">false</span>;
-<a href=#606 id=606 data-nosnippet>606</a>    };
-<a href=#607 id=607 data-nosnippet>607</a>    state
-<a href=#608 id=608 data-nosnippet>608</a>        .effects
-<a href=#609 id=609 data-nosnippet>609</a>        .in_category(category.dialog())
-<a href=#610 id=610 data-nosnippet>610</a>        .filter(|(<span class="kw">_</span>, effect)| name_match.matches(<span class="kw-2">&amp;</span>effect.text, name))
-<a href=#611 id=611 data-nosnippet>611</a>        .any(|(id, <span class="kw">_</span>)| state.effects.active(id, now) == <span class="prelude-val">Some</span>(<span class="bool-val">true</span>))
-<a href=#612 id=612 data-nosnippet>612</a>}
-<a href=#613 id=613 data-nosnippet>613</a>
-<a href=#614 id=614 data-nosnippet>614</a><span class="doccomment">/// The spell prepared, by name; none for none.
-<a href=#615 id=615 data-nosnippet>615</a></span><span class="kw">fn </span>prepared(state: <span class="kw-2">&amp;</span>GameState) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt; {
+<a href=#440 id=440 data-nosnippet>440</a>            <span class="comment">// Seen only as events come: not held for its rearm, however long
+<a href=#441 id=441 data-nosnippet>441</a>            // ago it was last seen so, counts, as it would had it been seen.
+<a href=#442 id=442 data-nosnippet>442</a>            </span><span class="kw">if </span><span class="self">self</span>.spent
+<a href=#443 id=443 data-nosnippet>443</a>                &amp;&amp; <span class="self">self
+<a href=#444 id=444 data-nosnippet>444</a>                    </span>.false_since
+<a href=#445 id=445 data-nosnippet>445</a>                    .is_some_and(|since| now.saturating_duration_since(since) &gt;= rearm)
+<a href=#446 id=446 data-nosnippet>446</a>            {
+<a href=#447 id=447 data-nosnippet>447</a>                <span class="self">self</span>.spent = <span class="bool-val">false</span>;
+<a href=#448 id=448 data-nosnippet>448</a>            }
+<a href=#449 id=449 data-nosnippet>449</a>            <span class="self">self</span>.false_since = <span class="prelude-val">None</span>;
+<a href=#450 id=450 data-nosnippet>450</a>            <span class="kw">if </span>was == <span class="prelude-val">Some</span>(<span class="bool-val">false</span>) &amp;&amp; !<span class="self">self</span>.spent {
+<a href=#451 id=451 data-nosnippet>451</a>                <span class="self">self</span>.spent = <span class="bool-val">true</span>;
+<a href=#452 id=452 data-nosnippet>452</a>                <span class="kw">return </span><span class="bool-val">true</span>;
+<a href=#453 id=453 data-nosnippet>453</a>            }
+<a href=#454 id=454 data-nosnippet>454</a>            <span class="kw">return </span><span class="bool-val">false</span>;
+<a href=#455 id=455 data-nosnippet>455</a>        }
+<a href=#456 id=456 data-nosnippet>456</a>        <span class="kw">let </span>since = <span class="kw-2">*</span><span class="self">self</span>.false_since.get_or_insert(now);
+<a href=#457 id=457 data-nosnippet>457</a>        <span class="kw">if </span><span class="self">self</span>.spent &amp;&amp; now.saturating_duration_since(since) &gt;= rearm {
+<a href=#458 id=458 data-nosnippet>458</a>            <span class="self">self</span>.spent = <span class="bool-val">false</span>;
+<a href=#459 id=459 data-nosnippet>459</a>        }
+<a href=#460 id=460 data-nosnippet>460</a>        <span class="bool-val">false
+<a href=#461 id=461 data-nosnippet>461</a>    </span>}
+<a href=#462 id=462 data-nosnippet>462</a>}
+<a href=#463 id=463 data-nosnippet>463</a>
+<a href=#464 id=464 data-nosnippet>464</a><span class="doccomment">/// What a condition is tested against: the character's state, the flags
+<a href=#465 id=465 data-nosnippet>465</a>/// up, and the time.
+<a href=#466 id=466 data-nosnippet>466</a></span><span class="attr">#[derive(Clone, Copy, Debug)]
+<a href=#467 id=467 data-nosnippet>467</a></span><span class="kw">pub struct </span>World&lt;<span class="lifetime">'a</span>&gt; {
+<a href=#468 id=468 data-nosnippet>468</a>    <span class="doccomment">/// The character's state.
+<a href=#469 id=469 data-nosnippet>469</a>    </span><span class="kw">pub </span>state: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>GameState,
+<a href=#470 id=470 data-nosnippet>470</a>    <span class="doccomment">/// The flags triggers set.
+<a href=#471 id=471 data-nosnippet>471</a>    </span><span class="kw">pub </span>flags: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Flags,
+<a href=#472 id=472 data-nosnippet>472</a>    <span class="doccomment">/// The custom statuses lit, which `indicator` reads as the game's.
+<a href=#473 id=473 data-nosnippet>473</a>    </span><span class="kw">pub </span>statuses: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Flags,
+<a href=#474 id=474 data-nosnippet>474</a>    <span class="doccomment">/// The wall clock's seconds, for the time of day.
+<a href=#475 id=475 data-nosnippet>475</a>    </span><span class="kw">pub </span>unix: i64,
+<a href=#476 id=476 data-nosnippet>476</a>}
+<a href=#477 id=477 data-nosnippet>477</a>
+<a href=#478 id=478 data-nosnippet>478</a><span class="kw">impl </span>Condition {
+<a href=#479 id=479 data-nosnippet>479</a>    <span class="doccomment">/// Whether it holds in `world`.
+<a href=#480 id=480 data-nosnippet>480</a>    </span><span class="attr">#[must_use]
+<a href=#481 id=481 data-nosnippet>481</a>    </span><span class="kw">pub fn </span>holds(<span class="kw-2">&amp;</span><span class="self">self</span>, world: <span class="kw-2">&amp;</span>World&lt;<span class="lifetime">'_</span>&gt;) -&gt; bool {
+<a href=#482 id=482 data-nosnippet>482</a>        <span class="kw">let </span>state = world.state;
+<a href=#483 id=483 data-nosnippet>483</a>        <span class="kw">let </span>now = state.game_time_now();
+<a href=#484 id=484 data-nosnippet>484</a>        <span class="kw">match </span><span class="self">self </span>{
+<a href=#485 id=485 data-nosnippet>485</a>            <span class="self">Self</span>::All { conditions } =&gt; conditions.iter().all(|one| one.holds(world)),
+<a href=#486 id=486 data-nosnippet>486</a>            <span class="self">Self</span>::Any { conditions } =&gt; conditions.iter().any(|one| one.holds(world)),
+<a href=#487 id=487 data-nosnippet>487</a>            <span class="self">Self</span>::Not { condition } =&gt; !condition.holds(world),
+<a href=#488 id=488 data-nosnippet>488</a>            <span class="self">Self</span>::EffectActive {
+<a href=#489 id=489 data-nosnippet>489</a>                category,
+<a href=#490 id=490 data-nosnippet>490</a>                name,
+<a href=#491 id=491 data-nosnippet>491</a>                name_match,
+<a href=#492 id=492 data-nosnippet>492</a>            } =&gt; effect_up(state, (<span class="kw-2">*</span>category, name, <span class="kw-2">*</span>name_match), now),
+<a href=#493 id=493 data-nosnippet>493</a>            <span class="self">Self</span>::EffectInactive {
+<a href=#494 id=494 data-nosnippet>494</a>                category,
+<a href=#495 id=495 data-nosnippet>495</a>                name,
+<a href=#496 id=496 data-nosnippet>496</a>                name_match,
+<a href=#497 id=497 data-nosnippet>497</a>            } =&gt; {
+<a href=#498 id=498 data-nosnippet>498</a>                state.effects.saw_category(category.dialog())
+<a href=#499 id=499 data-nosnippet>499</a>                    &amp;&amp; !effect_up(state, (<span class="kw-2">*</span>category, name, <span class="kw-2">*</span>name_match), now)
+<a href=#500 id=500 data-nosnippet>500</a>            }
+<a href=#501 id=501 data-nosnippet>501</a>            <span class="self">Self</span>::EffectTime {
+<a href=#502 id=502 data-nosnippet>502</a>                category,
+<a href=#503 id=503 data-nosnippet>503</a>                name,
+<a href=#504 id=504 data-nosnippet>504</a>                name_match,
+<a href=#505 id=505 data-nosnippet>505</a>                cmp,
+<a href=#506 id=506 data-nosnippet>506</a>                seconds,
+<a href=#507 id=507 data-nosnippet>507</a>            } =&gt; now.is_some_and(|now| {
+<a href=#508 id=508 data-nosnippet>508</a>                state
+<a href=#509 id=509 data-nosnippet>509</a>                    .effects
+<a href=#510 id=510 data-nosnippet>510</a>                    .in_category(category.dialog())
+<a href=#511 id=511 data-nosnippet>511</a>                    .filter(|(<span class="kw">_</span>, effect)| name_match.matches(<span class="kw-2">&amp;</span>effect.text, name))
+<a href=#512 id=512 data-nosnippet>512</a>                    .filter_map(|(id, <span class="kw">_</span>)| state.effects.remaining(id, now))
+<a href=#513 id=513 data-nosnippet>513</a>                    .any(|left| cmp.holds(i64::from(left), <span class="kw-2">*</span>seconds))
+<a href=#514 id=514 data-nosnippet>514</a>            }),
+<a href=#515 id=515 data-nosnippet>515</a>            <span class="self">Self</span>::RtActive =&gt; state.in_roundtime() == <span class="prelude-val">Some</span>(<span class="bool-val">true</span>),
+<a href=#516 id=516 data-nosnippet>516</a>            <span class="self">Self</span>::CtActive =&gt; state.in_casttime() == <span class="prelude-val">Some</span>(<span class="bool-val">true</span>),
+<a href=#517 id=517 data-nosnippet>517</a>            <span class="self">Self</span>::Indicator { id, active } =&gt; {
+<a href=#518 id=518 data-nosnippet>518</a>                <span class="kw">let </span>lit = state.status.get(id) || world.statuses.is_up(id, now);
+<a href=#519 id=519 data-nosnippet>519</a>                lit == <span class="kw-2">*</span>active
+<a href=#520 id=520 data-nosnippet>520</a>            }
+<a href=#521 id=521 data-nosnippet>521</a>            <span class="self">Self</span>::Vital {
+<a href=#522 id=522 data-nosnippet>522</a>                vital,
+<a href=#523 id=523 data-nosnippet>523</a>                cmp,
+<a href=#524 id=524 data-nosnippet>524</a>                value,
+<a href=#525 id=525 data-nosnippet>525</a>                unit,
+<a href=#526 id=526 data-nosnippet>526</a>            } =&gt; {
+<a href=#527 id=527 data-nosnippet>527</a>                <span class="kw">let </span>told = state.vital(vital.id());
+<a href=#528 id=528 data-nosnippet>528</a>                <span class="kw">let </span>amount = <span class="kw">match </span>unit {
+<a href=#529 id=529 data-nosnippet>529</a>                    VitalUnit::Percent =&gt; told.map(|vital| i64::from(vital.percent)),
+<a href=#530 id=530 data-nosnippet>530</a>                    VitalUnit::Absolute =&gt; told.and_then(|vital| vital.current).map(i64::from),
+<a href=#531 id=531 data-nosnippet>531</a>                };
+<a href=#532 id=532 data-nosnippet>532</a>                amount.is_some_and(|amount| cmp.holds(amount, i64::from(<span class="kw-2">*</span>value)))
+<a href=#533 id=533 data-nosnippet>533</a>            }
+<a href=#534 id=534 data-nosnippet>534</a>            <span class="self">Self</span>::Injury { area, cmp, level } =&gt; {
+<a href=#535 id=535 data-nosnippet>535</a>                cmp.holds(i64::from(injury_level(state, area)), i64::from(<span class="kw-2">*</span>level))
+<a href=#536 id=536 data-nosnippet>536</a>            }
+<a href=#537 id=537 data-nosnippet>537</a>            <span class="self">Self</span>::SpellAffordable { number } =&gt; affordable(state, <span class="kw-2">*</span>number),
+<a href=#538 id=538 data-nosnippet>538</a>            <span class="self">Self</span>::TimeOfDay { phase } =&gt; DayPhase::at(world.unix) == <span class="prelude-val">Some</span>(<span class="kw-2">*</span>phase),
+<a href=#539 id=539 data-nosnippet>539</a>            <span class="self">Self</span>::HandEmpty { hand } =&gt; <span class="kw">match </span>hand {
+<a href=#540 id=540 data-nosnippet>540</a>                HandSlot::Right =&gt; state.right_hand == Hand::Empty,
+<a href=#541 id=541 data-nosnippet>541</a>                HandSlot::Left =&gt; state.left_hand == Hand::Empty,
+<a href=#542 id=542 data-nosnippet>542</a>                HandSlot::Either =&gt; {
+<a href=#543 id=543 data-nosnippet>543</a>                    state.right_hand == Hand::Empty || state.left_hand == Hand::Empty
+<a href=#544 id=544 data-nosnippet>544</a>                }
+<a href=#545 id=545 data-nosnippet>545</a>                HandSlot::Spell =&gt; prepared(state).is_none(),
+<a href=#546 id=546 data-nosnippet>546</a>            },
+<a href=#547 id=547 data-nosnippet>547</a>            <span class="self">Self</span>::HandHolds {
+<a href=#548 id=548 data-nosnippet>548</a>                hand,
+<a href=#549 id=549 data-nosnippet>549</a>                item_type,
+<a href=#550 id=550 data-nosnippet>550</a>                name,
+<a href=#551 id=551 data-nosnippet>551</a>                name_match,
+<a href=#552 id=552 data-nosnippet>552</a>            } =&gt; holds_in_hand(
+<a href=#553 id=553 data-nosnippet>553</a>                state,
+<a href=#554 id=554 data-nosnippet>554</a>                <span class="kw-2">*</span>hand,
+<a href=#555 id=555 data-nosnippet>555</a>                (item_type.as_deref(), name.as_deref()),
+<a href=#556 id=556 data-nosnippet>556</a>                <span class="kw-2">*</span>name_match,
+<a href=#557 id=557 data-nosnippet>557</a>            ),
+<a href=#558 id=558 data-nosnippet>558</a>            <span class="self">Self</span>::SpellPrepared { name, name_match } =&gt; prepared(state).is_some_and(|spell| {
+<a href=#559 id=559 data-nosnippet>559</a>                name.as_deref()
+<a href=#560 id=560 data-nosnippet>560</a>                    .is_none_or(|needle| name_match.matches(spell, needle))
+<a href=#561 id=561 data-nosnippet>561</a>            }),
+<a href=#562 id=562 data-nosnippet>562</a>            <span class="self">Self</span>::CrtrStatus { .. } =&gt; <span class="bool-val">false</span>,
+<a href=#563 id=563 data-nosnippet>563</a>            <span class="self">Self</span>::Flag { name, active } =&gt; world.flags.is_up(name, now) == <span class="kw-2">*</span>active,
+<a href=#564 id=564 data-nosnippet>564</a>            <span class="self">Self</span>::Room { name, name_match } =&gt; in_room(state, name, <span class="kw-2">*</span>name_match),
+<a href=#565 id=565 data-nosnippet>565</a>            <span class="self">Self</span>::Stance { stance } =&gt; in_stance(state, stance),
+<a href=#566 id=566 data-nosnippet>566</a>        }
+<a href=#567 id=567 data-nosnippet>567</a>    }
+<a href=#568 id=568 data-nosnippet>568</a>}
+<a href=#569 id=569 data-nosnippet>569</a>
+<a href=#570 id=570 data-nosnippet>570</a><span class="doccomment">/// The injury of the body part `area`: 1-3 its wound, 4-6 its scar, 0
+<a href=#571 id=571 data-nosnippet>571</a>/// none.
+<a href=#572 id=572 data-nosnippet>572</a></span><span class="kw">fn </span>injury_level(state: <span class="kw-2">&amp;</span>GameState, area: <span class="kw-2">&amp;</span>str) -&gt; u8 {
+<a href=#573 id=573 data-nosnippet>573</a>    state.character.injuries.get(area).map_or(<span class="number">0</span>, |injury| {
+<a href=#574 id=574 data-nosnippet>574</a>        <span class="kw">if </span>injury.wound &gt; <span class="number">0 </span>{
+<a href=#575 id=575 data-nosnippet>575</a>            injury.wound
+<a href=#576 id=576 data-nosnippet>576</a>        } <span class="kw">else if </span>injury.scar &gt; <span class="number">0 </span>{
+<a href=#577 id=577 data-nosnippet>577</a>            injury.scar.saturating_add(<span class="number">3</span>)
+<a href=#578 id=578 data-nosnippet>578</a>        } <span class="kw">else </span>{
+<a href=#579 id=579 data-nosnippet>579</a>            <span class="number">0
+<a href=#580 id=580 data-nosnippet>580</a>        </span>}
+<a href=#581 id=581 data-nosnippet>581</a>    })
+<a href=#582 id=582 data-nosnippet>582</a>}
+<a href=#583 id=583 data-nosnippet>583</a>
+<a href=#584 id=584 data-nosnippet>584</a><span class="doccomment">/// Whether the room's title, or a part of it between commas, is `name`.
+<a href=#585 id=585 data-nosnippet>585</a></span><span class="kw">fn </span>in_room(state: <span class="kw-2">&amp;</span>GameState, name: <span class="kw-2">&amp;</span>str, name_match: NameMatch) -&gt; bool {
+<a href=#586 id=586 data-nosnippet>586</a>    <span class="kw">let </span><span class="prelude-val">Some</span>(title) = state.room.title.as_deref() <span class="kw">else </span>{
+<a href=#587 id=587 data-nosnippet>587</a>        <span class="kw">return </span><span class="bool-val">false</span>;
+<a href=#588 id=588 data-nosnippet>588</a>    };
+<a href=#589 id=589 data-nosnippet>589</a>    <span class="kw">let </span>title = title.trim().trim_start_matches(<span class="string">'['</span>).trim_end_matches(<span class="string">']'</span>);
+<a href=#590 id=590 data-nosnippet>590</a>    <span class="kw">let </span>title = title.split(<span class="string">" - "</span>).next().unwrap_or(title);
+<a href=#591 id=591 data-nosnippet>591</a>    title
+<a href=#592 id=592 data-nosnippet>592</a>        .split(<span class="string">", "</span>)
+<a href=#593 id=593 data-nosnippet>593</a>        .chain(std::iter::once(title))
+<a href=#594 id=594 data-nosnippet>594</a>        .any(|part| name_match.matches(part.trim(), name))
+<a href=#595 id=595 data-nosnippet>595</a>}
+<a href=#596 id=596 data-nosnippet>596</a>
+<a href=#597 id=597 data-nosnippet>597</a><span class="doccomment">/// Whether the stance is `stance`.
+<a href=#598 id=598 data-nosnippet>598</a></span><span class="kw">fn </span>in_stance(state: <span class="kw-2">&amp;</span>GameState, stance: <span class="kw-2">&amp;</span>str) -&gt; bool {
+<a href=#599 id=599 data-nosnippet>599</a>    state
+<a href=#600 id=600 data-nosnippet>600</a>        .character
+<a href=#601 id=601 data-nosnippet>601</a>        .stance
+<a href=#602 id=602 data-nosnippet>602</a>        .as_deref()
+<a href=#603 id=603 data-nosnippet>603</a>        .and_then(|now| now.split_whitespace().next())
+<a href=#604 id=604 data-nosnippet>604</a>        .is_some_and(|word| word.eq_ignore_ascii_case(stance))
+<a href=#605 id=605 data-nosnippet>605</a>}
+<a href=#606 id=606 data-nosnippet>606</a>
+<a href=#607 id=607 data-nosnippet>607</a><span class="doccomment">/// Whether an effect named so is up in its list at server second `now`.
+<a href=#608 id=608 data-nosnippet>608</a></span><span class="kw">fn </span>effect_up(
+<a href=#609 id=609 data-nosnippet>609</a>    state: <span class="kw-2">&amp;</span>GameState,
+<a href=#610 id=610 data-nosnippet>610</a>    (category, name, name_match): (EffectCategory, <span class="kw-2">&amp;</span>str, NameMatch),
+<a href=#611 id=611 data-nosnippet>611</a>    now: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+<a href=#612 id=612 data-nosnippet>612</a>) -&gt; bool {
+<a href=#613 id=613 data-nosnippet>613</a>    <span class="kw">let </span><span class="prelude-val">Some</span>(now) = now <span class="kw">else </span>{
+<a href=#614 id=614 data-nosnippet>614</a>        <span class="kw">return </span><span class="bool-val">false</span>;
+<a href=#615 id=615 data-nosnippet>615</a>    };
 <a href=#616 id=616 data-nosnippet>616</a>    state
-<a href=#617 id=617 data-nosnippet>617</a>        .prepared
-<a href=#618 id=618 data-nosnippet>618</a>        .as_deref()
-<a href=#619 id=619 data-nosnippet>619</a>        .map(str::trim)
-<a href=#620 id=620 data-nosnippet>620</a>        .filter(|spell| !spell.is_empty() &amp;&amp; !spell.eq_ignore_ascii_case(<span class="string">"none"</span>))
+<a href=#617 id=617 data-nosnippet>617</a>        .effects
+<a href=#618 id=618 data-nosnippet>618</a>        .in_category(category.dialog())
+<a href=#619 id=619 data-nosnippet>619</a>        .filter(|(<span class="kw">_</span>, effect)| name_match.matches(<span class="kw-2">&amp;</span>effect.text, name))
+<a href=#620 id=620 data-nosnippet>620</a>        .any(|(id, <span class="kw">_</span>)| state.effects.active(id, now) == <span class="prelude-val">Some</span>(<span class="bool-val">true</span>))
 <a href=#621 id=621 data-nosnippet>621</a>}
 <a href=#622 id=622 data-nosnippet>622</a>
-<a href=#623 id=623 data-nosnippet>623</a><span class="doccomment">/// What a hand holds: its name and noun; none for empty or not told.
-<a href=#624 id=624 data-nosnippet>624</a></span><span class="kw">fn </span>held(hand: <span class="kw-2">&amp;</span>Hand) -&gt; <span class="prelude-ty">Option</span>&lt;(<span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span>str)&gt; {
-<a href=#625 id=625 data-nosnippet>625</a>    <span class="kw">match </span>hand {
-<a href=#626 id=626 data-nosnippet>626</a>        Hand::Holding { noun, name, .. } =&gt; <span class="prelude-val">Some</span>((name.as_str(), noun.as_deref().unwrap_or(<span class="string">""</span>))),
-<a href=#627 id=627 data-nosnippet>627</a>        <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
-<a href=#628 id=628 data-nosnippet>628</a>    }
-<a href=#629 id=629 data-nosnippet>629</a>}
-<a href=#630 id=630 data-nosnippet>630</a>
-<a href=#631 id=631 data-nosnippet>631</a><span class="kw">fn </span>holds_in_hand(
-<a href=#632 id=632 data-nosnippet>632</a>    state: <span class="kw-2">&amp;</span>GameState,
-<a href=#633 id=633 data-nosnippet>633</a>    hand: HandSlot,
-<a href=#634 id=634 data-nosnippet>634</a>    (kind, name): (<span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;, <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;),
-<a href=#635 id=635 data-nosnippet>635</a>    name_match: NameMatch,
-<a href=#636 id=636 data-nosnippet>636</a>) -&gt; bool {
-<a href=#637 id=637 data-nosnippet>637</a>    <span class="kw">let </span>check = |hand: <span class="kw-2">&amp;</span>Hand| {
-<a href=#638 id=638 data-nosnippet>638</a>        <span class="kw">let </span><span class="prelude-val">Some</span>((held_name, noun)) = held(hand) <span class="kw">else </span>{
-<a href=#639 id=639 data-nosnippet>639</a>            <span class="kw">return </span><span class="bool-val">false</span>;
-<a href=#640 id=640 data-nosnippet>640</a>        };
-<a href=#641 id=641 data-nosnippet>641</a>        <span class="kw">let </span>of_kind = kind.is_none_or(|kind| {
-<a href=#642 id=642 data-nosnippet>642</a>            hydra_model::state::gameobj::classify(noun, held_name)
-<a href=#643 id=643 data-nosnippet>643</a>                .types
-<a href=#644 id=644 data-nosnippet>644</a>                .iter()
-<a href=#645 id=645 data-nosnippet>645</a>                .any(|is| is.eq_ignore_ascii_case(kind))
-<a href=#646 id=646 data-nosnippet>646</a>        });
-<a href=#647 id=647 data-nosnippet>647</a>        of_kind &amp;&amp; name.is_none_or(|needle| name_match.matches(held_name, needle))
-<a href=#648 id=648 data-nosnippet>648</a>    };
-<a href=#649 id=649 data-nosnippet>649</a>    <span class="kw">match </span>hand {
-<a href=#650 id=650 data-nosnippet>650</a>        HandSlot::Right =&gt; check(<span class="kw-2">&amp;</span>state.right_hand),
-<a href=#651 id=651 data-nosnippet>651</a>        HandSlot::Left =&gt; check(<span class="kw-2">&amp;</span>state.left_hand),
-<a href=#652 id=652 data-nosnippet>652</a>        HandSlot::Either =&gt; check(<span class="kw-2">&amp;</span>state.right_hand) || check(<span class="kw-2">&amp;</span>state.left_hand),
-<a href=#653 id=653 data-nosnippet>653</a>        HandSlot::Spell =&gt; {
-<a href=#654 id=654 data-nosnippet>654</a>            kind.is_none()
-<a href=#655 id=655 data-nosnippet>655</a>                &amp;&amp; prepared(state).is_some_and(|spell| {
-<a href=#656 id=656 data-nosnippet>656</a>                    name.is_none_or(|needle| name_match.matches(spell, needle))
-<a href=#657 id=657 data-nosnippet>657</a>                })
-<a href=#658 id=658 data-nosnippet>658</a>        }
-<a href=#659 id=659 data-nosnippet>659</a>    }
-<a href=#660 id=660 data-nosnippet>660</a>}
-<a href=#661 id=661 data-nosnippet>661</a>
-<a href=#662 id=662 data-nosnippet>662</a><span class="doccomment">/// Whether the vitals now pay the spell `number`'s stated costs.
-<a href=#663 id=663 data-nosnippet>663</a></span><span class="kw">fn </span>affordable(state: <span class="kw-2">&amp;</span>GameState, number: u16) -&gt; bool {
-<a href=#664 id=664 data-nosnippet>664</a>    <span class="kw">let </span><span class="prelude-val">Some</span>(spell) = hydra_model::spells::spell(number) <span class="kw">else </span>{
-<a href=#665 id=665 data-nosnippet>665</a>        <span class="kw">return </span><span class="bool-val">false</span>;
-<a href=#666 id=666 data-nosnippet>666</a>    };
-<a href=#667 id=667 data-nosnippet>667</a>    <span class="kw">let </span>pays = |cost: <span class="prelude-ty">Option</span>&lt;u16&gt;, vital: <span class="kw-2">&amp;</span>str| {
-<a href=#668 id=668 data-nosnippet>668</a>        cost.is_none_or(|cost| {
-<a href=#669 id=669 data-nosnippet>669</a>            state
-<a href=#670 id=670 data-nosnippet>670</a>                .vital(vital)
-<a href=#671 id=671 data-nosnippet>671</a>                .and_then(|vital| vital.current)
-<a href=#672 id=672 data-nosnippet>672</a>                .is_some_and(|now| now &gt;= i32::from(cost))
-<a href=#673 id=673 data-nosnippet>673</a>        })
-<a href=#674 id=674 data-nosnippet>674</a>    };
-<a href=#675 id=675 data-nosnippet>675</a>    pays(spell.mana, <span class="string">"mana"</span>) &amp;&amp; pays(spell.spirit, <span class="string">"spirit"</span>) &amp;&amp; pays(spell.stamina, <span class="string">"stamina"</span>)
-<a href=#676 id=676 data-nosnippet>676</a>}
-<a href=#677 id=677 data-nosnippet>677</a>
-<a href=#678 id=678 data-nosnippet>678</a><span class="attr">#[cfg(test)]
-<a href=#679 id=679 data-nosnippet>679</a></span><span class="kw">mod </span>tests;
+<a href=#623 id=623 data-nosnippet>623</a><span class="doccomment">/// The spell prepared, by name; none for none.
+<a href=#624 id=624 data-nosnippet>624</a></span><span class="kw">fn </span>prepared(state: <span class="kw-2">&amp;</span>GameState) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt; {
+<a href=#625 id=625 data-nosnippet>625</a>    state
+<a href=#626 id=626 data-nosnippet>626</a>        .prepared
+<a href=#627 id=627 data-nosnippet>627</a>        .as_deref()
+<a href=#628 id=628 data-nosnippet>628</a>        .map(str::trim)
+<a href=#629 id=629 data-nosnippet>629</a>        .filter(|spell| !spell.is_empty() &amp;&amp; !spell.eq_ignore_ascii_case(<span class="string">"none"</span>))
+<a href=#630 id=630 data-nosnippet>630</a>}
+<a href=#631 id=631 data-nosnippet>631</a>
+<a href=#632 id=632 data-nosnippet>632</a><span class="doccomment">/// What a hand holds: its name and noun; none for empty or not told.
+<a href=#633 id=633 data-nosnippet>633</a></span><span class="kw">fn </span>held(hand: <span class="kw-2">&amp;</span>Hand) -&gt; <span class="prelude-ty">Option</span>&lt;(<span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span>str)&gt; {
+<a href=#634 id=634 data-nosnippet>634</a>    <span class="kw">match </span>hand {
+<a href=#635 id=635 data-nosnippet>635</a>        Hand::Holding { noun, name, .. } =&gt; <span class="prelude-val">Some</span>((name.as_str(), noun.as_deref().unwrap_or(<span class="string">""</span>))),
+<a href=#636 id=636 data-nosnippet>636</a>        <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
+<a href=#637 id=637 data-nosnippet>637</a>    }
+<a href=#638 id=638 data-nosnippet>638</a>}
+<a href=#639 id=639 data-nosnippet>639</a>
+<a href=#640 id=640 data-nosnippet>640</a><span class="kw">fn </span>holds_in_hand(
+<a href=#641 id=641 data-nosnippet>641</a>    state: <span class="kw-2">&amp;</span>GameState,
+<a href=#642 id=642 data-nosnippet>642</a>    hand: HandSlot,
+<a href=#643 id=643 data-nosnippet>643</a>    (kind, name): (<span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;, <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;),
+<a href=#644 id=644 data-nosnippet>644</a>    name_match: NameMatch,
+<a href=#645 id=645 data-nosnippet>645</a>) -&gt; bool {
+<a href=#646 id=646 data-nosnippet>646</a>    <span class="kw">let </span>check = |hand: <span class="kw-2">&amp;</span>Hand| {
+<a href=#647 id=647 data-nosnippet>647</a>        <span class="kw">let </span><span class="prelude-val">Some</span>((held_name, noun)) = held(hand) <span class="kw">else </span>{
+<a href=#648 id=648 data-nosnippet>648</a>            <span class="kw">return </span><span class="bool-val">false</span>;
+<a href=#649 id=649 data-nosnippet>649</a>        };
+<a href=#650 id=650 data-nosnippet>650</a>        <span class="kw">let </span>of_kind = kind.is_none_or(|kind| {
+<a href=#651 id=651 data-nosnippet>651</a>            hydra_model::state::gameobj::classify(noun, held_name)
+<a href=#652 id=652 data-nosnippet>652</a>                .types
+<a href=#653 id=653 data-nosnippet>653</a>                .iter()
+<a href=#654 id=654 data-nosnippet>654</a>                .any(|is| is.eq_ignore_ascii_case(kind))
+<a href=#655 id=655 data-nosnippet>655</a>        });
+<a href=#656 id=656 data-nosnippet>656</a>        of_kind &amp;&amp; name.is_none_or(|needle| name_match.matches(held_name, needle))
+<a href=#657 id=657 data-nosnippet>657</a>    };
+<a href=#658 id=658 data-nosnippet>658</a>    <span class="kw">match </span>hand {
+<a href=#659 id=659 data-nosnippet>659</a>        HandSlot::Right =&gt; check(<span class="kw-2">&amp;</span>state.right_hand),
+<a href=#660 id=660 data-nosnippet>660</a>        HandSlot::Left =&gt; check(<span class="kw-2">&amp;</span>state.left_hand),
+<a href=#661 id=661 data-nosnippet>661</a>        HandSlot::Either =&gt; check(<span class="kw-2">&amp;</span>state.right_hand) || check(<span class="kw-2">&amp;</span>state.left_hand),
+<a href=#662 id=662 data-nosnippet>662</a>        HandSlot::Spell =&gt; {
+<a href=#663 id=663 data-nosnippet>663</a>            kind.is_none()
+<a href=#664 id=664 data-nosnippet>664</a>                &amp;&amp; prepared(state).is_some_and(|spell| {
+<a href=#665 id=665 data-nosnippet>665</a>                    name.is_none_or(|needle| name_match.matches(spell, needle))
+<a href=#666 id=666 data-nosnippet>666</a>                })
+<a href=#667 id=667 data-nosnippet>667</a>        }
+<a href=#668 id=668 data-nosnippet>668</a>    }
+<a href=#669 id=669 data-nosnippet>669</a>}
+<a href=#670 id=670 data-nosnippet>670</a>
+<a href=#671 id=671 data-nosnippet>671</a><span class="doccomment">/// Whether the vitals now pay the spell `number`'s stated costs.
+<a href=#672 id=672 data-nosnippet>672</a></span><span class="kw">fn </span>affordable(state: <span class="kw-2">&amp;</span>GameState, number: u16) -&gt; bool {
+<a href=#673 id=673 data-nosnippet>673</a>    <span class="kw">let </span><span class="prelude-val">Some</span>(spell) = hydra_model::spells::spell(number) <span class="kw">else </span>{
+<a href=#674 id=674 data-nosnippet>674</a>        <span class="kw">return </span><span class="bool-val">false</span>;
+<a href=#675 id=675 data-nosnippet>675</a>    };
+<a href=#676 id=676 data-nosnippet>676</a>    <span class="kw">let </span>pays = |cost: <span class="prelude-ty">Option</span>&lt;u16&gt;, vital: <span class="kw-2">&amp;</span>str| {
+<a href=#677 id=677 data-nosnippet>677</a>        cost.is_none_or(|cost| {
+<a href=#678 id=678 data-nosnippet>678</a>            state
+<a href=#679 id=679 data-nosnippet>679</a>                .vital(vital)
+<a href=#680 id=680 data-nosnippet>680</a>                .and_then(|vital| vital.current)
+<a href=#681 id=681 data-nosnippet>681</a>                .is_some_and(|now| now &gt;= i32::from(cost))
+<a href=#682 id=682 data-nosnippet>682</a>        })
+<a href=#683 id=683 data-nosnippet>683</a>    };
+<a href=#684 id=684 data-nosnippet>684</a>    pays(spell.mana, <span class="string">"mana"</span>) &amp;&amp; pays(spell.spirit, <span class="string">"spirit"</span>) &amp;&amp; pays(spell.stamina, <span class="string">"stamina"</span>)
+<a href=#685 id=685 data-nosnippet>685</a>}
+<a href=#686 id=686 data-nosnippet>686</a>
+<a href=#687 id=687 data-nosnippet>687</a><span class="attr">#[cfg(test)]
+<a href=#688 id=688 data-nosnippet>688</a></span><span class="kw">mod </span>tests;
 </code></pre></div></section></main></body></html>

@@ -26,9 +26,9 @@
 <a href=#26 id=26 data-nosnippet>26</a>}
 <a href=#27 id=27 data-nosnippet>27</a>
 <a href=#28 id=28 data-nosnippet>28</a><span class="kw">impl </span>Play {
-<a href=#29 id=29 data-nosnippet>29</a>    <span class="doccomment">/// Keep only lines of `min` characters or more in the history, from now.
-<a href=#30 id=30 data-nosnippet>30</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>history_min(<span class="kw-2">&amp;mut </span><span class="self">self</span>, min: usize) {
-<a href=#31 id=31 data-nosnippet>31</a>        <span class="self">self</span>.history.set_min_length(min);
+<a href=#29 id=29 data-nosnippet>29</a>    <span class="doccomment">/// Keep lines in the history as `kept` says, from now.
+<a href=#30 id=30 data-nosnippet>30</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>history_kept(<span class="kw-2">&amp;mut </span><span class="self">self</span>, kept: <span class="kw-2">&amp;</span>hydra_ui::history::Kept) {
+<a href=#31 id=31 data-nosnippet>31</a>        <span class="self">self</span>.history.set_kept(kept);
 <a href=#32 id=32 data-nosnippet>32</a>    }
 <a href=#33 id=33 data-nosnippet>33</a>
 <a href=#34 id=34 data-nosnippet>34</a>    <span class="doccomment">/// What is typed, sent: taken from the input, kept in the history

@@ -72,7 +72,7 @@
 <a href=#72 id=72 data-nosnippet>72</a>    </span><span class="attr">#[must_use]
 <a href=#73 id=73 data-nosnippet>73</a>    </span><span class="kw">pub fn </span>course_holding(<span class="kw-2">&amp;</span><span class="self">self</span>, from: i64, held: <span class="prelude-ty">Option</span>&lt;Heading&gt;, to: i64) -&gt; <span class="prelude-ty">Option</span>&lt;Course&gt; {
 <a href=#74 id=74 data-nosnippet>74</a>        <span class="kw">let </span>rooms = <span class="self">self</span>.rooms();
-<a href=#75 id=75 data-nosnippet>75</a>        <span class="kw">let </span>at = |uid: i64| rooms.iter().position(|room| room.uid == uid);
+<a href=#75 id=75 data-nosnippet>75</a>        <span class="kw">let </span>at = |uid: i64| <span class="self">self</span>.index_of(uid);
 <a href=#76 id=76 data-nosnippet>76</a>        <span class="kw">let </span>(start, goal) = (at(from)<span class="question-mark">?</span>, at(to)<span class="question-mark">?</span>);
 <a href=#77 id=77 data-nosnippet>77</a>        <span class="comment">// The least cost found to each place, and the place it came from.
 <a href=#78 id=78 data-nosnippet>78</a>        </span><span class="kw">let </span><span class="kw-2">mut </span>least = <span class="macro">vec!</span>[[u32::MAX; <span class="number">9</span>]; rooms.len()];

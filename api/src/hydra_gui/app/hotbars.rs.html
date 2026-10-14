@@ -51,65 +51,67 @@
 <a href=#51 id=51 data-nosnippet>51</a>            .map(|bar| (bar.clone(), hotbars.is_own(<span class="kw-2">&amp;</span>bar.name)))
 <a href=#52 id=52 data-nosnippet>52</a>            .filter(|(<span class="kw">_</span>, mine)| own || !mine)
 <a href=#53 id=53 data-nosnippet>53</a>            .collect();
-<a href=#54 id=54 data-nosnippet>54</a>        <span class="kw">let </span>folder = Folder::read(hotbars.icons_dir(), hotbars.sheets.clone());
-<a href=#55 id=55 data-nosnippet>55</a>        (bars, <span class="prelude-val">Some</span>(Arc::clone(<span class="kw-2">&amp;</span>character.seat)), folder)
-<a href=#56 id=56 data-nosnippet>56</a>    }
-<a href=#57 id=57 data-nosnippet>57</a>
-<a href=#58 id=58 data-nosnippet>58</a>    <span class="doccomment">/// Do what the editor asked, on `session`'s hotbars, and tell it what
-<a href=#59 id=59 data-nosnippet>59</a>    /// was done.
-<a href=#60 id=60 data-nosnippet>60</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>hotbar_asked(<span class="kw-2">&amp;mut </span><span class="self">self</span>, session: <span class="prelude-ty">Option</span>&lt;u32&gt;, asked: Asked) {
-<a href=#61 id=61 data-nosnippet>61</a>        <span class="kw">let </span><span class="prelude-val">Some</span>(character) = session.and_then(|session| <span class="self">self</span>.characters.get_mut(<span class="kw-2">&amp;</span>session)) <span class="kw">else </span>{
-<a href=#62 id=62 data-nosnippet>62</a>            <span class="self">self</span>.hotbar_editor
-<a href=#63 id=63 data-nosnippet>63</a>                .said(<span class="string">"Hotbars are kept with a character: start one first."</span>.to_owned());
-<a href=#64 id=64 data-nosnippet>64</a>            <span class="kw">return</span>;
-<a href=#65 id=65 data-nosnippet>65</a>        };
-<a href=#66 id=66 data-nosnippet>66</a>        <span class="kw">let </span>hotbars = character.play.hotbars_mut();
-<a href=#67 id=67 data-nosnippet>67</a>        <span class="kw">match </span>asked {
-<a href=#68 id=68 data-nosnippet>68</a>            Asked::Save { bar, own, was } =&gt; {
-<a href=#69 id=69 data-nosnippet>69</a>                <span class="kw">let </span>was = was.as_ref().map(|(name, own)| (name.as_str(), <span class="kw-2">*</span>own));
-<a href=#70 id=70 data-nosnippet>70</a>                <span class="kw">match </span>hotbars.save_bar(<span class="kw-2">&amp;</span>bar, own, was) {
-<a href=#71 id=71 data-nosnippet>71</a>                    <span class="prelude-val">Ok</span>(()) =&gt; {
-<a href=#72 id=72 data-nosnippet>72</a>                        <span class="self">self</span>.hotbar_editor.kept();
-<a href=#73 id=73 data-nosnippet>73</a>                        <span class="self">self</span>.hotbar_editor.said(<span class="macro">format!</span>(<span class="string">"{} saved."</span>, bar.name));
-<a href=#74 id=74 data-nosnippet>74</a>                    }
-<a href=#75 id=75 data-nosnippet>75</a>                    <span class="prelude-val">Err</span>(why) =&gt; <span class="self">self</span>.hotbar_editor.said(<span class="macro">format!</span>(<span class="string">"Not saved: {why}"</span>)),
-<a href=#76 id=76 data-nosnippet>76</a>                }
-<a href=#77 id=77 data-nosnippet>77</a>            }
-<a href=#78 id=78 data-nosnippet>78</a>            Asked::CopyIn(adding) =&gt; {
-<a href=#79 id=79 data-nosnippet>79</a>                <span class="kw">let </span>sheet = adding.sheet.trim();
-<a href=#80 id=80 data-nosnippet>80</a>                <span class="kw">let </span>sheet = (!sheet.is_empty()).then_some((sheet, adding.cell));
-<a href=#81 id=81 data-nosnippet>81</a>                <span class="kw">match </span>hotbars.copy_in(std::path::Path::new(adding.file.trim()), sheet) {
-<a href=#82 id=82 data-nosnippet>82</a>                    <span class="prelude-val">Ok</span>(done) =&gt; {
-<a href=#83 id=83 data-nosnippet>83</a>                        <span class="self">self</span>.hotbar_editor.copied();
-<a href=#84 id=84 data-nosnippet>84</a>                        <span class="self">self</span>.hotbar_editor.said(done);
-<a href=#85 id=85 data-nosnippet>85</a>                    }
-<a href=#86 id=86 data-nosnippet>86</a>                    <span class="prelude-val">Err</span>(why) =&gt; <span class="self">self</span>.hotbar_editor.said(<span class="macro">format!</span>(<span class="string">"Not copied in: {why}"</span>)),
-<a href=#87 id=87 data-nosnippet>87</a>                }
-<a href=#88 id=88 data-nosnippet>88</a>            }
-<a href=#89 id=89 data-nosnippet>89</a>            Asked::Remove { name, own } =&gt; <span class="kw">match </span>hotbars.remove_bar(<span class="kw-2">&amp;</span>name, own) {
-<a href=#90 id=90 data-nosnippet>90</a>                <span class="prelude-val">Ok</span>(()) =&gt; {
-<a href=#91 id=91 data-nosnippet>91</a>                    <span class="self">self</span>.hotbar_editor.removed();
-<a href=#92 id=92 data-nosnippet>92</a>                    <span class="self">self</span>.hotbar_editor.said(<span class="macro">format!</span>(<span class="string">"{name} taken away."</span>));
-<a href=#93 id=93 data-nosnippet>93</a>                }
-<a href=#94 id=94 data-nosnippet>94</a>                <span class="prelude-val">Err</span>(why) =&gt; <span class="self">self</span>.hotbar_editor.said(<span class="macro">format!</span>(<span class="string">"Not taken away: {why}"</span>)),
-<a href=#95 id=95 data-nosnippet>95</a>            },
-<a href=#96 id=96 data-nosnippet>96</a>        }
-<a href=#97 id=97 data-nosnippet>97</a>    }
-<a href=#98 id=98 data-nosnippet>98</a>
-<a href=#99 id=99 data-nosnippet>99</a>    <span class="doccomment">/// `.hotbars` on `seat`'s window: Settings opened at its Hotbars page;
-<a href=#100 id=100 data-nosnippet>100</a>    /// `.hotbars reload`, every character's hotbars read again now.
-<a href=#101 id=101 data-nosnippet>101</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>hotbars_command(<span class="kw-2">&amp;mut </span><span class="self">self</span>, seat: <span class="kw-2">&amp;</span>Seat, rest: <span class="kw-2">&amp;</span>str) -&gt; Vec&lt;String&gt; {
-<a href=#102 id=102 data-nosnippet>102</a>        <span class="kw">if </span>rest.eq_ignore_ascii_case(<span class="string">"reload"</span>) {
-<a href=#103 id=103 data-nosnippet>103</a>            <span class="kw">for </span>character <span class="kw">in </span><span class="self">self</span>.characters.values_mut() {
-<a href=#104 id=104 data-nosnippet>104</a>                character.play.hotbars_mut().reload();
-<a href=#105 id=105 data-nosnippet>105</a>            }
-<a href=#106 id=106 data-nosnippet>106</a>            <span class="kw">return </span><span class="macro">vec!</span>[<span class="string">"The hotbars files are read again."</span>.to_owned()];
-<a href=#107 id=107 data-nosnippet>107</a>        }
-<a href=#108 id=108 data-nosnippet>108</a>        <span class="self">self</span>.settings.open_at(
-<a href=#109 id=109 data-nosnippet>109</a>            <span class="prelude-val">Some</span>(<span class="macro">format!</span>(<span class="string">"{}:{}"</span>, seat.game, seat.name)),
-<a href=#110 id=110 data-nosnippet>110</a>            <span class="prelude-val">Some</span>(<span class="kw">crate</span>::settings_menu::Outside::Hotbars.id()),
-<a href=#111 id=111 data-nosnippet>111</a>        );
-<a href=#112 id=112 data-nosnippet>112</a>        <span class="macro">vec!</span>[<span class="string">"Settings is open at this character's hotbars."</span>.to_owned()]
-<a href=#113 id=113 data-nosnippet>113</a>    }
-<a href=#114 id=114 data-nosnippet>114</a>}
+<a href=#54 id=54 data-nosnippet>54</a>        <span class="kw">let </span>seat = Arc::clone(<span class="kw-2">&amp;</span>character.seat);
+<a href=#55 id=55 data-nosnippet>55</a>        <span class="comment">// The folder as last listed, once a second: not listed every frame.
+<a href=#56 id=56 data-nosnippet>56</a>        </span><span class="kw">let </span>folder = <span class="self">self</span>.icon_folder_of(<span class="prelude-val">Some</span>(session), std::time::Instant::now());
+<a href=#57 id=57 data-nosnippet>57</a>        (bars, <span class="prelude-val">Some</span>(seat), folder)
+<a href=#58 id=58 data-nosnippet>58</a>    }
+<a href=#59 id=59 data-nosnippet>59</a>
+<a href=#60 id=60 data-nosnippet>60</a>    <span class="doccomment">/// Do what the editor asked, on `session`'s hotbars, and tell it what
+<a href=#61 id=61 data-nosnippet>61</a>    /// was done.
+<a href=#62 id=62 data-nosnippet>62</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>hotbar_asked(<span class="kw-2">&amp;mut </span><span class="self">self</span>, session: <span class="prelude-ty">Option</span>&lt;u32&gt;, asked: Asked) {
+<a href=#63 id=63 data-nosnippet>63</a>        <span class="kw">let </span><span class="prelude-val">Some</span>(character) = session.and_then(|session| <span class="self">self</span>.characters.get_mut(<span class="kw-2">&amp;</span>session)) <span class="kw">else </span>{
+<a href=#64 id=64 data-nosnippet>64</a>            <span class="self">self</span>.hotbar_editor
+<a href=#65 id=65 data-nosnippet>65</a>                .said(<span class="string">"Hotbars are kept with a character: start one first."</span>.to_owned());
+<a href=#66 id=66 data-nosnippet>66</a>            <span class="kw">return</span>;
+<a href=#67 id=67 data-nosnippet>67</a>        };
+<a href=#68 id=68 data-nosnippet>68</a>        <span class="kw">let </span>hotbars = character.play.hotbars_mut();
+<a href=#69 id=69 data-nosnippet>69</a>        <span class="kw">match </span>asked {
+<a href=#70 id=70 data-nosnippet>70</a>            Asked::Save { bar, own, was } =&gt; {
+<a href=#71 id=71 data-nosnippet>71</a>                <span class="kw">let </span>was = was.as_ref().map(|(name, own)| (name.as_str(), <span class="kw-2">*</span>own));
+<a href=#72 id=72 data-nosnippet>72</a>                <span class="kw">match </span>hotbars.save_bar(<span class="kw-2">&amp;</span>bar, own, was) {
+<a href=#73 id=73 data-nosnippet>73</a>                    <span class="prelude-val">Ok</span>(()) =&gt; {
+<a href=#74 id=74 data-nosnippet>74</a>                        <span class="self">self</span>.hotbar_editor.kept();
+<a href=#75 id=75 data-nosnippet>75</a>                        <span class="self">self</span>.hotbar_editor.said(<span class="macro">format!</span>(<span class="string">"{} saved."</span>, bar.name));
+<a href=#76 id=76 data-nosnippet>76</a>                    }
+<a href=#77 id=77 data-nosnippet>77</a>                    <span class="prelude-val">Err</span>(why) =&gt; <span class="self">self</span>.hotbar_editor.said(<span class="macro">format!</span>(<span class="string">"Not saved: {why}"</span>)),
+<a href=#78 id=78 data-nosnippet>78</a>                }
+<a href=#79 id=79 data-nosnippet>79</a>            }
+<a href=#80 id=80 data-nosnippet>80</a>            Asked::CopyIn(adding) =&gt; {
+<a href=#81 id=81 data-nosnippet>81</a>                <span class="kw">let </span>sheet = adding.sheet.trim();
+<a href=#82 id=82 data-nosnippet>82</a>                <span class="kw">let </span>sheet = (!sheet.is_empty()).then_some((sheet, adding.cell));
+<a href=#83 id=83 data-nosnippet>83</a>                <span class="kw">match </span>hotbars.copy_in(std::path::Path::new(adding.file.trim()), sheet) {
+<a href=#84 id=84 data-nosnippet>84</a>                    <span class="prelude-val">Ok</span>(done) =&gt; {
+<a href=#85 id=85 data-nosnippet>85</a>                        <span class="self">self</span>.hotbar_editor.copied();
+<a href=#86 id=86 data-nosnippet>86</a>                        <span class="self">self</span>.hotbar_editor.said(done);
+<a href=#87 id=87 data-nosnippet>87</a>                    }
+<a href=#88 id=88 data-nosnippet>88</a>                    <span class="prelude-val">Err</span>(why) =&gt; <span class="self">self</span>.hotbar_editor.said(<span class="macro">format!</span>(<span class="string">"Not copied in: {why}"</span>)),
+<a href=#89 id=89 data-nosnippet>89</a>                }
+<a href=#90 id=90 data-nosnippet>90</a>            }
+<a href=#91 id=91 data-nosnippet>91</a>            Asked::Remove { name, own } =&gt; <span class="kw">match </span>hotbars.remove_bar(<span class="kw-2">&amp;</span>name, own) {
+<a href=#92 id=92 data-nosnippet>92</a>                <span class="prelude-val">Ok</span>(()) =&gt; {
+<a href=#93 id=93 data-nosnippet>93</a>                    <span class="self">self</span>.hotbar_editor.removed();
+<a href=#94 id=94 data-nosnippet>94</a>                    <span class="self">self</span>.hotbar_editor.said(<span class="macro">format!</span>(<span class="string">"{name} taken away."</span>));
+<a href=#95 id=95 data-nosnippet>95</a>                }
+<a href=#96 id=96 data-nosnippet>96</a>                <span class="prelude-val">Err</span>(why) =&gt; <span class="self">self</span>.hotbar_editor.said(<span class="macro">format!</span>(<span class="string">"Not taken away: {why}"</span>)),
+<a href=#97 id=97 data-nosnippet>97</a>            },
+<a href=#98 id=98 data-nosnippet>98</a>        }
+<a href=#99 id=99 data-nosnippet>99</a>    }
+<a href=#100 id=100 data-nosnippet>100</a>
+<a href=#101 id=101 data-nosnippet>101</a>    <span class="doccomment">/// `.hotbars` on `seat`'s window: Settings opened at its Hotbars page;
+<a href=#102 id=102 data-nosnippet>102</a>    /// `.hotbars reload`, every character's hotbars read again now.
+<a href=#103 id=103 data-nosnippet>103</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>hotbars_command(<span class="kw-2">&amp;mut </span><span class="self">self</span>, seat: <span class="kw-2">&amp;</span>Seat, rest: <span class="kw-2">&amp;</span>str) -&gt; Vec&lt;String&gt; {
+<a href=#104 id=104 data-nosnippet>104</a>        <span class="kw">if </span>rest.eq_ignore_ascii_case(<span class="string">"reload"</span>) {
+<a href=#105 id=105 data-nosnippet>105</a>            <span class="kw">for </span>character <span class="kw">in </span><span class="self">self</span>.characters.values_mut() {
+<a href=#106 id=106 data-nosnippet>106</a>                character.play.hotbars_mut().reload();
+<a href=#107 id=107 data-nosnippet>107</a>            }
+<a href=#108 id=108 data-nosnippet>108</a>            <span class="kw">return </span><span class="macro">vec!</span>[<span class="string">"The hotbars files are read again."</span>.to_owned()];
+<a href=#109 id=109 data-nosnippet>109</a>        }
+<a href=#110 id=110 data-nosnippet>110</a>        <span class="self">self</span>.settings.open_at(
+<a href=#111 id=111 data-nosnippet>111</a>            <span class="prelude-val">Some</span>(<span class="macro">format!</span>(<span class="string">"{}:{}"</span>, seat.game, seat.name)),
+<a href=#112 id=112 data-nosnippet>112</a>            <span class="prelude-val">Some</span>(<span class="kw">crate</span>::settings_menu::Outside::Hotbars.id()),
+<a href=#113 id=113 data-nosnippet>113</a>        );
+<a href=#114 id=114 data-nosnippet>114</a>        <span class="macro">vec!</span>[<span class="string">"Settings is open at this character's hotbars."</span>.to_owned()]
+<a href=#115 id=115 data-nosnippet>115</a>    }
+<a href=#116 id=116 data-nosnippet>116</a>}
 </code></pre></div></section></main></body></html>

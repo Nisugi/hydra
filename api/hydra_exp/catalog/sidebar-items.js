@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["CATALOG"],"enum":["Takes"],"struct":["Entry"]};

@@ -151,73 +151,74 @@
 <a href=#151 id=151 data-nosnippet>151</a>        labels,
 <a href=#152 id=152 data-nosnippet>152</a>        min: (sheet.min.x, sheet.min.y),
 <a href=#153 id=153 data-nosnippet>153</a>        max: (sheet.max.x, sheet.max.y),
-<a href=#154 id=154 data-nosnippet>154</a>    }
-<a href=#155 id=155 data-nosnippet>155</a>}
-<a href=#156 id=156 data-nosnippet>156</a>
-<a href=#157 id=157 data-nosnippet>157</a><span class="doccomment">/// What room `id` is: its map tags' kinds of place, each once.
-<a href=#158 id=158 data-nosnippet>158</a></span><span class="kw">fn </span>marks(map: <span class="kw-2">&amp;</span>Map, id: RoomId) -&gt; Vec&lt;String&gt; {
-<a href=#159 id=159 data-nosnippet>159</a>    <span class="kw">let </span><span class="kw-2">mut </span>marks: Vec&lt;String&gt; = map
-<a href=#160 id=160 data-nosnippet>160</a>        .room(id)
-<a href=#161 id=161 data-nosnippet>161</a>        .into_iter()
-<a href=#162 id=162 data-nosnippet>162</a>        .flat_map(|room| <span class="kw-2">&amp;</span>room.tags)
-<a href=#163 id=163 data-nosnippet>163</a>        .filter_map(|tag| {
-<a href=#164 id=164 data-nosnippet>164</a>            <span class="prelude-val">Some</span>(<span class="kw">match </span>tag.as_str() {
-<a href=#165 id=165 data-nosnippet>165</a>                <span class="string">"bank" </span>=&gt; <span class="string">"bank"</span>,
-<a href=#166 id=166 data-nosnippet>166</a>                <span class="string">"furrier" </span>=&gt; <span class="string">"furrier"</span>,
-<a href=#167 id=167 data-nosnippet>167</a>                <span class="string">"gemshop" </span>=&gt; <span class="string">"gemshop"</span>,
-<a href=#168 id=168 data-nosnippet>168</a>                <span class="string">"pawnshop" </span>=&gt; <span class="string">"pawnshop"</span>,
-<a href=#169 id=169 data-nosnippet>169</a>                <span class="string">"advguild" </span>| <span class="string">"advguard" </span>| <span class="string">"advguard2" </span>| <span class="string">"advpickup" </span>=&gt; <span class="string">"advguild"</span>,
-<a href=#170 id=170 data-nosnippet>170</a>                <span class="string">"locksmith" </span>=&gt; <span class="string">"locksmith"</span>,
-<a href=#171 id=171 data-nosnippet>171</a>                <span class="string">"npchealer" </span>| <span class="string">"npccleric" </span>=&gt; <span class="string">"healer"</span>,
-<a href=#172 id=172 data-nosnippet>172</a>                <span class="string">"herbalist" </span>=&gt; <span class="string">"herbalist"</span>,
-<a href=#173 id=173 data-nosnippet>173</a>                <span class="string">"alchemist" </span>=&gt; <span class="string">"alchemist"</span>,
-<a href=#174 id=174 data-nosnippet>174</a>                <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">None</span>,
-<a href=#175 id=175 data-nosnippet>175</a>            })
-<a href=#176 id=176 data-nosnippet>176</a>        })
-<a href=#177 id=177 data-nosnippet>177</a>        .map(str::to_owned)
-<a href=#178 id=178 data-nosnippet>178</a>        .collect();
-<a href=#179 id=179 data-nosnippet>179</a>    marks.sort();
-<a href=#180 id=180 data-nosnippet>180</a>    marks.dedup();
-<a href=#181 id=181 data-nosnippet>181</a>    marks
-<a href=#182 id=182 data-nosnippet>182</a>}
-<a href=#183 id=183 data-nosnippet>183</a>
-<a href=#184 id=184 data-nosnippet>184</a><span class="attr">#[cfg(test)]
-<a href=#185 id=185 data-nosnippet>185</a></span><span class="kw">mod </span>tests {
-<a href=#186 id=186 data-nosnippet>186</a>    <span class="kw">use </span>super::<span class="kw-2">*</span>;
-<a href=#187 id=187 data-nosnippet>187</a>
-<a href=#188 id=188 data-nosnippet>188</a>    <span class="doccomment">/// The map Hydra ships, decoded.
-<a href=#189 id=189 data-nosnippet>189</a>    </span><span class="kw">fn </span>shipped() -&gt; Map {
-<a href=#190 id=190 data-nosnippet>190</a>        cena_map::binary::decode(cena_gs_map::GS_MAP).expect(<span class="string">"the shipped map decodes"</span>)
-<a href=#191 id=191 data-nosnippet>191</a>    }
-<a href=#192 id=192 data-nosnippet>192</a>
-<a href=#193 id=193 data-nosnippet>193</a>    <span class="doccomment">/// A small area of the shipped map lays out whole: every room once,
-<a href=#194 id=194 data-nosnippet>194</a>    /// every line between two drawn rooms along its own path.
-<a href=#195 id=195 data-nosnippet>195</a>    </span><span class="attr">#[test]
-<a href=#196 id=196 data-nosnippet>196</a>    </span><span class="kw">fn </span>an_area_of_the_shipped_map_lays_out() {
-<a href=#197 id=197 data-nosnippet>197</a>        <span class="kw">let </span>map = shipped();
-<a href=#198 id=198 data-nosnippet>198</a>        <span class="kw">let </span>areas = cena_map_layout::areas::baked(<span class="kw-2">&amp;</span>map);
-<a href=#199 id=199 data-nosnippet>199</a>        <span class="kw">let </span>placeable = cena_map_layout::regions::placeable_rooms(<span class="kw-2">&amp;</span>map);
-<a href=#200 id=200 data-nosnippet>200</a>        <span class="kw">let </span>rooms = <span class="kw-2">&amp;</span>areas[<span class="string">"icemule-trace-ranger-guild"</span>];
-<a href=#201 id=201 data-nosnippet>201</a>        <span class="kw">let </span>scene = lay_out(<span class="kw-2">&amp;</span>map, <span class="string">"icemule-trace-ranger-guild"</span>, rooms, <span class="kw-2">&amp;</span>placeable)
-<a href=#202 id=202 data-nosnippet>202</a>            .map(|engine| convert(<span class="kw-2">&amp;</span>map, <span class="string">"icemule-trace-ranger-guild"</span>, <span class="kw-2">&amp;</span>engine))
-<a href=#203 id=203 data-nosnippet>203</a>            .expect(<span class="string">"the guild is a place"</span>);
-<a href=#204 id=204 data-nosnippet>204</a>
-<a href=#205 id=205 data-nosnippet>205</a>        <span class="macro">assert_eq!</span>(scene.area, <span class="string">"icemule-trace-ranger-guild"</span>);
-<a href=#206 id=206 data-nosnippet>206</a>        <span class="macro">assert!</span>(!scene.rooms.is_empty());
-<a href=#207 id=207 data-nosnippet>207</a>        <span class="kw">let </span>ids: HashSet&lt;u32&gt; = scene.rooms.iter().map(|r| r.id).collect();
-<a href=#208 id=208 data-nosnippet>208</a>        <span class="macro">assert_eq!</span>(ids.len(), scene.rooms.len(), <span class="string">"a room drawn twice"</span>);
-<a href=#209 id=209 data-nosnippet>209</a>        <span class="kw">for </span>edge <span class="kw">in </span><span class="kw-2">&amp;</span>scene.edges {
-<a href=#210 id=210 data-nosnippet>210</a>            <span class="macro">assert!</span>(ids.contains(<span class="kw-2">&amp;</span>edge.a) &amp;&amp; ids.contains(<span class="kw-2">&amp;</span>edge.b));
-<a href=#211 id=211 data-nosnippet>211</a>            <span class="macro">assert!</span>(edge.path.len() &gt;= <span class="number">2</span>);
-<a href=#212 id=212 data-nosnippet>212</a>            <span class="kw">let </span>start = scene.room(edge.a).expect(<span class="string">"drawn"</span>).cell;
-<a href=#213 id=213 data-nosnippet>213</a>            <span class="attr">#[allow(clippy::cast_precision_loss)]
-<a href=#214 id=214 data-nosnippet>214</a>            </span><span class="kw">let </span>start = (start.<span class="number">0 </span><span class="kw">as </span>f32, start.<span class="number">1 </span><span class="kw">as </span>f32);
-<a href=#215 id=215 data-nosnippet>215</a>            <span class="macro">assert_eq!</span>(edge.path[<span class="number">0</span>], start, <span class="string">"a line starts at its room"</span>);
-<a href=#216 id=216 data-nosnippet>216</a>        }
-<a href=#217 id=217 data-nosnippet>217</a>        <span class="kw">for </span>room <span class="kw">in </span><span class="kw-2">&amp;</span>scene.rooms {
-<a href=#218 id=218 data-nosnippet>218</a>            <span class="macro">assert!</span>(room.cell.<span class="number">0 </span>&gt;= scene.min.<span class="number">0 </span>&amp;&amp; room.cell.<span class="number">0 </span>&lt;= scene.max.<span class="number">0</span>);
-<a href=#219 id=219 data-nosnippet>219</a>            <span class="macro">assert!</span>(room.cell.<span class="number">1 </span>&gt;= scene.min.<span class="number">1 </span>&amp;&amp; room.cell.<span class="number">1 </span>&lt;= scene.max.<span class="number">1</span>);
-<a href=#220 id=220 data-nosnippet>220</a>        }
-<a href=#221 id=221 data-nosnippet>221</a>    }
-<a href=#222 id=222 data-nosnippet>222</a>}
+<a href=#154 id=154 data-nosnippet>154</a>        by_id: <span class="kw">crate</span>::scene::ById::default(),
+<a href=#155 id=155 data-nosnippet>155</a>    }
+<a href=#156 id=156 data-nosnippet>156</a>}
+<a href=#157 id=157 data-nosnippet>157</a>
+<a href=#158 id=158 data-nosnippet>158</a><span class="doccomment">/// What room `id` is: its map tags' kinds of place, each once.
+<a href=#159 id=159 data-nosnippet>159</a></span><span class="kw">fn </span>marks(map: <span class="kw-2">&amp;</span>Map, id: RoomId) -&gt; Vec&lt;String&gt; {
+<a href=#160 id=160 data-nosnippet>160</a>    <span class="kw">let </span><span class="kw-2">mut </span>marks: Vec&lt;String&gt; = map
+<a href=#161 id=161 data-nosnippet>161</a>        .room(id)
+<a href=#162 id=162 data-nosnippet>162</a>        .into_iter()
+<a href=#163 id=163 data-nosnippet>163</a>        .flat_map(|room| <span class="kw-2">&amp;</span>room.tags)
+<a href=#164 id=164 data-nosnippet>164</a>        .filter_map(|tag| {
+<a href=#165 id=165 data-nosnippet>165</a>            <span class="prelude-val">Some</span>(<span class="kw">match </span>tag.as_str() {
+<a href=#166 id=166 data-nosnippet>166</a>                <span class="string">"bank" </span>=&gt; <span class="string">"bank"</span>,
+<a href=#167 id=167 data-nosnippet>167</a>                <span class="string">"furrier" </span>=&gt; <span class="string">"furrier"</span>,
+<a href=#168 id=168 data-nosnippet>168</a>                <span class="string">"gemshop" </span>=&gt; <span class="string">"gemshop"</span>,
+<a href=#169 id=169 data-nosnippet>169</a>                <span class="string">"pawnshop" </span>=&gt; <span class="string">"pawnshop"</span>,
+<a href=#170 id=170 data-nosnippet>170</a>                <span class="string">"advguild" </span>| <span class="string">"advguard" </span>| <span class="string">"advguard2" </span>| <span class="string">"advpickup" </span>=&gt; <span class="string">"advguild"</span>,
+<a href=#171 id=171 data-nosnippet>171</a>                <span class="string">"locksmith" </span>=&gt; <span class="string">"locksmith"</span>,
+<a href=#172 id=172 data-nosnippet>172</a>                <span class="string">"npchealer" </span>| <span class="string">"npccleric" </span>=&gt; <span class="string">"healer"</span>,
+<a href=#173 id=173 data-nosnippet>173</a>                <span class="string">"herbalist" </span>=&gt; <span class="string">"herbalist"</span>,
+<a href=#174 id=174 data-nosnippet>174</a>                <span class="string">"alchemist" </span>=&gt; <span class="string">"alchemist"</span>,
+<a href=#175 id=175 data-nosnippet>175</a>                <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">None</span>,
+<a href=#176 id=176 data-nosnippet>176</a>            })
+<a href=#177 id=177 data-nosnippet>177</a>        })
+<a href=#178 id=178 data-nosnippet>178</a>        .map(str::to_owned)
+<a href=#179 id=179 data-nosnippet>179</a>        .collect();
+<a href=#180 id=180 data-nosnippet>180</a>    marks.sort();
+<a href=#181 id=181 data-nosnippet>181</a>    marks.dedup();
+<a href=#182 id=182 data-nosnippet>182</a>    marks
+<a href=#183 id=183 data-nosnippet>183</a>}
+<a href=#184 id=184 data-nosnippet>184</a>
+<a href=#185 id=185 data-nosnippet>185</a><span class="attr">#[cfg(test)]
+<a href=#186 id=186 data-nosnippet>186</a></span><span class="kw">mod </span>tests {
+<a href=#187 id=187 data-nosnippet>187</a>    <span class="kw">use </span>super::<span class="kw-2">*</span>;
+<a href=#188 id=188 data-nosnippet>188</a>
+<a href=#189 id=189 data-nosnippet>189</a>    <span class="doccomment">/// The map Hydra ships, decoded.
+<a href=#190 id=190 data-nosnippet>190</a>    </span><span class="kw">fn </span>shipped() -&gt; Map {
+<a href=#191 id=191 data-nosnippet>191</a>        cena_map::binary::decode(cena_gs_map::GS_MAP).expect(<span class="string">"the shipped map decodes"</span>)
+<a href=#192 id=192 data-nosnippet>192</a>    }
+<a href=#193 id=193 data-nosnippet>193</a>
+<a href=#194 id=194 data-nosnippet>194</a>    <span class="doccomment">/// A small area of the shipped map lays out whole: every room once,
+<a href=#195 id=195 data-nosnippet>195</a>    /// every line between two drawn rooms along its own path.
+<a href=#196 id=196 data-nosnippet>196</a>    </span><span class="attr">#[test]
+<a href=#197 id=197 data-nosnippet>197</a>    </span><span class="kw">fn </span>an_area_of_the_shipped_map_lays_out() {
+<a href=#198 id=198 data-nosnippet>198</a>        <span class="kw">let </span>map = shipped();
+<a href=#199 id=199 data-nosnippet>199</a>        <span class="kw">let </span>areas = cena_map_layout::areas::baked(<span class="kw-2">&amp;</span>map);
+<a href=#200 id=200 data-nosnippet>200</a>        <span class="kw">let </span>placeable = cena_map_layout::regions::placeable_rooms(<span class="kw-2">&amp;</span>map);
+<a href=#201 id=201 data-nosnippet>201</a>        <span class="kw">let </span>rooms = <span class="kw-2">&amp;</span>areas[<span class="string">"icemule-trace-ranger-guild"</span>];
+<a href=#202 id=202 data-nosnippet>202</a>        <span class="kw">let </span>scene = lay_out(<span class="kw-2">&amp;</span>map, <span class="string">"icemule-trace-ranger-guild"</span>, rooms, <span class="kw-2">&amp;</span>placeable)
+<a href=#203 id=203 data-nosnippet>203</a>            .map(|engine| convert(<span class="kw-2">&amp;</span>map, <span class="string">"icemule-trace-ranger-guild"</span>, <span class="kw-2">&amp;</span>engine))
+<a href=#204 id=204 data-nosnippet>204</a>            .expect(<span class="string">"the guild is a place"</span>);
+<a href=#205 id=205 data-nosnippet>205</a>
+<a href=#206 id=206 data-nosnippet>206</a>        <span class="macro">assert_eq!</span>(scene.area, <span class="string">"icemule-trace-ranger-guild"</span>);
+<a href=#207 id=207 data-nosnippet>207</a>        <span class="macro">assert!</span>(!scene.rooms.is_empty());
+<a href=#208 id=208 data-nosnippet>208</a>        <span class="kw">let </span>ids: HashSet&lt;u32&gt; = scene.rooms.iter().map(|r| r.id).collect();
+<a href=#209 id=209 data-nosnippet>209</a>        <span class="macro">assert_eq!</span>(ids.len(), scene.rooms.len(), <span class="string">"a room drawn twice"</span>);
+<a href=#210 id=210 data-nosnippet>210</a>        <span class="kw">for </span>edge <span class="kw">in </span><span class="kw-2">&amp;</span>scene.edges {
+<a href=#211 id=211 data-nosnippet>211</a>            <span class="macro">assert!</span>(ids.contains(<span class="kw-2">&amp;</span>edge.a) &amp;&amp; ids.contains(<span class="kw-2">&amp;</span>edge.b));
+<a href=#212 id=212 data-nosnippet>212</a>            <span class="macro">assert!</span>(edge.path.len() &gt;= <span class="number">2</span>);
+<a href=#213 id=213 data-nosnippet>213</a>            <span class="kw">let </span>start = scene.room(edge.a).expect(<span class="string">"drawn"</span>).cell;
+<a href=#214 id=214 data-nosnippet>214</a>            <span class="attr">#[allow(clippy::cast_precision_loss)]
+<a href=#215 id=215 data-nosnippet>215</a>            </span><span class="kw">let </span>start = (start.<span class="number">0 </span><span class="kw">as </span>f32, start.<span class="number">1 </span><span class="kw">as </span>f32);
+<a href=#216 id=216 data-nosnippet>216</a>            <span class="macro">assert_eq!</span>(edge.path[<span class="number">0</span>], start, <span class="string">"a line starts at its room"</span>);
+<a href=#217 id=217 data-nosnippet>217</a>        }
+<a href=#218 id=218 data-nosnippet>218</a>        <span class="kw">for </span>room <span class="kw">in </span><span class="kw-2">&amp;</span>scene.rooms {
+<a href=#219 id=219 data-nosnippet>219</a>            <span class="macro">assert!</span>(room.cell.<span class="number">0 </span>&gt;= scene.min.<span class="number">0 </span>&amp;&amp; room.cell.<span class="number">0 </span>&lt;= scene.max.<span class="number">0</span>);
+<a href=#220 id=220 data-nosnippet>220</a>            <span class="macro">assert!</span>(room.cell.<span class="number">1 </span>&gt;= scene.min.<span class="number">1 </span>&amp;&amp; room.cell.<span class="number">1 </span>&lt;= scene.max.<span class="number">1</span>);
+<a href=#221 id=221 data-nosnippet>221</a>        }
+<a href=#222 id=222 data-nosnippet>222</a>    }
+<a href=#223 id=223 data-nosnippet>223</a>}
 </code></pre></div></section></main></body></html>

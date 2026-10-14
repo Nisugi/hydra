@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["attack_by_name","attack_detail","creature","tree"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["element","empty","escape","runs"]};
+window.SIDEBAR_ITEMS = {"fn":["element","empty","escape","escape_attribute","runs"]};

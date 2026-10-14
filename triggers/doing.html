@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-1161a6b9.js";
+            window.path_to_searchindex_js = "../searchindex-b9a4b3c6.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-893df2d8.js"></script>
+        <script src="../toc-366a6130.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -225,8 +225,10 @@ can fill a command’s words: <code>target $1</code>. Some care is built in:</p>
 <ul>
 <li><code>$1</code> fills a command’s words, never the command itself.</li>
 <li>Only game commands: never Hydra’s own or Lich’s.</li>
-<li>At most five commands in ten seconds, and only while the character is
-in the game and ready.</li>
+<li>Only once the character is in the game and ready: nothing while it
+logs in or reconnects.</li>
+<li>The trigger’s <strong>Cooldown</strong> is the pace of its sends: at <code>0</code> it sends
+for every line it finds.</li>
 <li>A send that an import brought waits until you read it and press
 <strong>Approve this send</strong>.</li>
 </ul>

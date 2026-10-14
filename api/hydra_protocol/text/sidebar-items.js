@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["attribute","attribute_u32","attributes","decode_attribute_value","decode_entities","find_tag_start","is_close_tag","link_from_tag","strip_control_chars","tag_name"]};
+window.SIDEBAR_ITEMS = {"fn":["attribute","attribute_u32","attributes","decode_attribute_value","decode_entities","find_tag_start","is_close_tag","is_prose","link_from_tag","strip_control_chars","tag_name"]};

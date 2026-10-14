@@ -94,7 +94,7 @@
 <a href=#94 id=94 data-nosnippet>94</a>        </span>kits.clear();
 <a href=#95 id=95 data-nosnippet>95</a>        targeting.clear();
 <a href=#96 id=96 data-nosnippet>96</a>        maneuvers.clear();
-<a href=#97 id=97 data-nosnippet>97</a>        (<span class="kw-2">*</span>cast_time_ends, <span class="kw-2">*</span>stun_ends) = (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>);
+<a href=#97 id=97 data-nosnippet>97</a>        <span class="kw-2">*</span>stun_ends = <span class="prelude-val">None</span>;
 <a href=#98 id=98 data-nosnippet>98</a>        (<span class="kw-2">*</span>prepared, <span class="kw-2">*</span>prepared_id) = (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>);
 <a href=#99 id=99 data-nosnippet>99</a>        <span class="comment">// Effects keep what they had LEFT, dated again by the next prompt.
 <a href=#100 id=100 data-nosnippet>100</a>        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(then) = ended_at {
@@ -133,60 +133,63 @@
 <a href=#133 id=133 data-nosnippet>133</a>            left_hand,
 <a href=#134 id=134 data-nosnippet>134</a>            right_hand,
 <a href=#135 id=135 data-nosnippet>135</a>            roundtime_ends,
-<a href=#136 id=136 data-nosnippet>136</a>            vitals,
-<a href=#137 id=137 data-nosnippet>137</a>            objectives,
-<a href=#138 id=138 data-nosnippet>138</a>            learned_commands,
-<a href=#139 id=139 data-nosnippet>139</a>            dialogs,
-<a href=#140 id=140 data-nosnippet>140</a>            <span class="comment">// The player's own, which the game neither ends nor restates.
-<a href=#141 id=141 data-nosnippet>141</a>            </span>custom_timers,
-<a href=#142 id=142 data-nosnippet>142</a>            tally,
-<a href=#143 id=143 data-nosnippet>143</a>            <span class="comment">// A consumer's choice, which the drop does not change.
-<a href=#144 id=144 data-nosnippet>144</a>            </span>retained,
-<a href=#145 id=145 data-nosnippet>145</a>            incidents,
-<a href=#146 id=146 data-nosnippet>146</a>            unknown_tags,
-<a href=#147 id=147 data-nosnippet>147</a>            unknown_tag_counts,
-<a href=#148 id=148 data-nosnippet>148</a>        );
-<a href=#149 id=149 data-nosnippet>149</a>    }
-<a href=#150 id=150 data-nosnippet>150</a>}
-<a href=#151 id=151 data-nosnippet>151</a>
-<a href=#152 id=152 data-nosnippet>152</a><span class="attr">#[cfg(test)]
-<a href=#153 id=153 data-nosnippet>153</a></span><span class="kw">mod </span>tests {
-<a href=#154 id=154 data-nosnippet>154</a>    <span class="kw">use </span>std::time::{Duration, Instant};
-<a href=#155 id=155 data-nosnippet>155</a>
-<a href=#156 id=156 data-nosnippet>156</a>    <span class="kw">use </span>hydra_protocol::Parser;
-<a href=#157 id=157 data-nosnippet>157</a>
-<a href=#158 id=158 data-nosnippet>158</a>    <span class="kw">use </span><span class="kw">super</span>::GameState;
-<a href=#159 id=159 data-nosnippet>159</a>
-<a href=#160 id=160 data-nosnippet>160</a>    <span class="kw">fn </span>feed(state: <span class="kw-2">&amp;mut </span>GameState, parser: <span class="kw-2">&amp;mut </span>Parser, wire: <span class="kw-2">&amp;</span>str) {
-<a href=#161 id=161 data-nosnippet>161</a>        <span class="kw">for </span>frame <span class="kw">in </span>parser.push_bytes(wire.as_bytes()) {
-<a href=#162 id=162 data-nosnippet>162</a>            state.apply(<span class="kw-2">&amp;</span>frame);
-<a href=#163 id=163 data-nosnippet>163</a>        }
-<a href=#164 id=164 data-nosnippet>164</a>    }
-<a href=#165 id=165 data-nosnippet>165</a>
-<a href=#166 id=166 data-nosnippet>166</a>    <span class="doccomment">/// An effect keeps what it had left when the connection ended, not what
-<a href=#167 id=167 data-nosnippet>167</a>    /// it had at the last prompt: time spent since is spent. Celerity, 104
-<a href=#168 id=168 data-nosnippet>168</a>    /// seconds at the prompt, has run out two minutes later, and stays out.
-<a href=#169 id=169 data-nosnippet>169</a>    </span><span class="attr">#[test]
-<a href=#170 id=170 data-nosnippet>170</a>    </span><span class="kw">fn </span>an_effect_keeps_what_it_had_left_when_the_connection_ended() {
-<a href=#171 id=171 data-nosnippet>171</a>        <span class="kw">let </span><span class="kw-2">mut </span>state = GameState::default();
-<a href=#172 id=172 data-nosnippet>172</a>        <span class="kw">let </span><span class="kw-2">mut </span>parser = Parser::new();
-<a href=#173 id=173 data-nosnippet>173</a>        feed(
-<a href=#174 id=174 data-nosnippet>174</a>            <span class="kw-2">&amp;mut </span>state,
-<a href=#175 id=175 data-nosnippet>175</a>            <span class="kw-2">&amp;mut </span>parser,
-<a href=#176 id=176 data-nosnippet>176</a>            <span class="string">"&lt;dialogData id='Buffs'&gt;&lt;progressBar id='506' value='100' text=\"Celerity\" \
-<a href=#177 id=177 data-nosnippet>177</a>             time='00:01:44'/&gt;&lt;/dialogData&gt;\n&lt;prompt time=\"500\"&gt;&amp;gt;&lt;/prompt&gt;\n"</span>,
-<a href=#178 id=178 data-nosnippet>178</a>        );
-<a href=#179 id=179 data-nosnippet>179</a>        <span class="comment">// The connection ends two minutes after that prompt.
-<a href=#180 id=180 data-nosnippet>180</a>        </span>state.game_time_received =
-<a href=#181 id=181 data-nosnippet>181</a>            <span class="kw">super</span>::<span class="kw">super</span>::Received(Instant::now().checked_sub(Duration::from_mins(<span class="number">2</span>)));
-<a href=#182 id=182 data-nosnippet>182</a>        state.invalidate_for_reconnect();
-<a href=#183 id=183 data-nosnippet>183</a>        <span class="comment">// The new connection's first prompt, an hour of server time later.
-<a href=#184 id=184 data-nosnippet>184</a>        </span>feed(
-<a href=#185 id=185 data-nosnippet>185</a>            <span class="kw-2">&amp;mut </span>state,
-<a href=#186 id=186 data-nosnippet>186</a>            <span class="kw-2">&amp;mut </span>parser,
-<a href=#187 id=187 data-nosnippet>187</a>            <span class="string">"&lt;prompt time=\"4100\"&gt;&amp;gt;&lt;/prompt&gt;\n"</span>,
-<a href=#188 id=188 data-nosnippet>188</a>        );
-<a href=#189 id=189 data-nosnippet>189</a>        <span class="macro">assert_eq!</span>(state.effects.active(<span class="string">"506"</span>, <span class="number">4100</span>), <span class="prelude-val">Some</span>(<span class="bool-val">false</span>));
-<a href=#190 id=190 data-nosnippet>190</a>    }
-<a href=#191 id=191 data-nosnippet>191</a>}
+<a href=#136 id=136 data-nosnippet>136</a>            <span class="comment">// An absolute server time, as roundtime is: cleared,
+<a href=#137 id=137 data-nosnippet>137</a>            // `in_casttime` would say no during a live one.
+<a href=#138 id=138 data-nosnippet>138</a>            </span>cast_time_ends,
+<a href=#139 id=139 data-nosnippet>139</a>            vitals,
+<a href=#140 id=140 data-nosnippet>140</a>            objectives,
+<a href=#141 id=141 data-nosnippet>141</a>            learned_commands,
+<a href=#142 id=142 data-nosnippet>142</a>            dialogs,
+<a href=#143 id=143 data-nosnippet>143</a>            <span class="comment">// The player's own, which the game neither ends nor restates.
+<a href=#144 id=144 data-nosnippet>144</a>            </span>custom_timers,
+<a href=#145 id=145 data-nosnippet>145</a>            tally,
+<a href=#146 id=146 data-nosnippet>146</a>            <span class="comment">// A consumer's choice, which the drop does not change.
+<a href=#147 id=147 data-nosnippet>147</a>            </span>retained,
+<a href=#148 id=148 data-nosnippet>148</a>            incidents,
+<a href=#149 id=149 data-nosnippet>149</a>            unknown_tags,
+<a href=#150 id=150 data-nosnippet>150</a>            unknown_tag_counts,
+<a href=#151 id=151 data-nosnippet>151</a>        );
+<a href=#152 id=152 data-nosnippet>152</a>    }
+<a href=#153 id=153 data-nosnippet>153</a>}
+<a href=#154 id=154 data-nosnippet>154</a>
+<a href=#155 id=155 data-nosnippet>155</a><span class="attr">#[cfg(test)]
+<a href=#156 id=156 data-nosnippet>156</a></span><span class="kw">mod </span>tests {
+<a href=#157 id=157 data-nosnippet>157</a>    <span class="kw">use </span>std::time::{Duration, Instant};
+<a href=#158 id=158 data-nosnippet>158</a>
+<a href=#159 id=159 data-nosnippet>159</a>    <span class="kw">use </span>hydra_protocol::Parser;
+<a href=#160 id=160 data-nosnippet>160</a>
+<a href=#161 id=161 data-nosnippet>161</a>    <span class="kw">use </span><span class="kw">super</span>::GameState;
+<a href=#162 id=162 data-nosnippet>162</a>
+<a href=#163 id=163 data-nosnippet>163</a>    <span class="kw">fn </span>feed(state: <span class="kw-2">&amp;mut </span>GameState, parser: <span class="kw-2">&amp;mut </span>Parser, wire: <span class="kw-2">&amp;</span>str) {
+<a href=#164 id=164 data-nosnippet>164</a>        <span class="kw">for </span>frame <span class="kw">in </span>parser.push_bytes(wire.as_bytes()) {
+<a href=#165 id=165 data-nosnippet>165</a>            state.apply(<span class="kw-2">&amp;</span>frame);
+<a href=#166 id=166 data-nosnippet>166</a>        }
+<a href=#167 id=167 data-nosnippet>167</a>    }
+<a href=#168 id=168 data-nosnippet>168</a>
+<a href=#169 id=169 data-nosnippet>169</a>    <span class="doccomment">/// An effect keeps what it had left when the connection ended, not what
+<a href=#170 id=170 data-nosnippet>170</a>    /// it had at the last prompt: time spent since is spent. Celerity, 104
+<a href=#171 id=171 data-nosnippet>171</a>    /// seconds at the prompt, has run out two minutes later, and stays out.
+<a href=#172 id=172 data-nosnippet>172</a>    </span><span class="attr">#[test]
+<a href=#173 id=173 data-nosnippet>173</a>    </span><span class="kw">fn </span>an_effect_keeps_what_it_had_left_when_the_connection_ended() {
+<a href=#174 id=174 data-nosnippet>174</a>        <span class="kw">let </span><span class="kw-2">mut </span>state = GameState::default();
+<a href=#175 id=175 data-nosnippet>175</a>        <span class="kw">let </span><span class="kw-2">mut </span>parser = Parser::new();
+<a href=#176 id=176 data-nosnippet>176</a>        feed(
+<a href=#177 id=177 data-nosnippet>177</a>            <span class="kw-2">&amp;mut </span>state,
+<a href=#178 id=178 data-nosnippet>178</a>            <span class="kw-2">&amp;mut </span>parser,
+<a href=#179 id=179 data-nosnippet>179</a>            <span class="string">"&lt;dialogData id='Buffs'&gt;&lt;progressBar id='506' value='100' text=\"Celerity\" \
+<a href=#180 id=180 data-nosnippet>180</a>             time='00:01:44'/&gt;&lt;/dialogData&gt;\n&lt;prompt time=\"500\"&gt;&amp;gt;&lt;/prompt&gt;\n"</span>,
+<a href=#181 id=181 data-nosnippet>181</a>        );
+<a href=#182 id=182 data-nosnippet>182</a>        <span class="comment">// The connection ends two minutes after that prompt.
+<a href=#183 id=183 data-nosnippet>183</a>        </span>state.game_time_received =
+<a href=#184 id=184 data-nosnippet>184</a>            <span class="kw">super</span>::<span class="kw">super</span>::Received(Instant::now().checked_sub(Duration::from_mins(<span class="number">2</span>)));
+<a href=#185 id=185 data-nosnippet>185</a>        state.invalidate_for_reconnect();
+<a href=#186 id=186 data-nosnippet>186</a>        <span class="comment">// The new connection's first prompt, an hour of server time later.
+<a href=#187 id=187 data-nosnippet>187</a>        </span>feed(
+<a href=#188 id=188 data-nosnippet>188</a>            <span class="kw-2">&amp;mut </span>state,
+<a href=#189 id=189 data-nosnippet>189</a>            <span class="kw-2">&amp;mut </span>parser,
+<a href=#190 id=190 data-nosnippet>190</a>            <span class="string">"&lt;prompt time=\"4100\"&gt;&amp;gt;&lt;/prompt&gt;\n"</span>,
+<a href=#191 id=191 data-nosnippet>191</a>        );
+<a href=#192 id=192 data-nosnippet>192</a>        <span class="macro">assert_eq!</span>(state.effects.active(<span class="string">"506"</span>, <span class="number">4100</span>), <span class="prelude-val">Some</span>(<span class="bool-val">false</span>));
+<a href=#193 id=193 data-nosnippet>193</a>    }
+<a href=#194 id=194 data-nosnippet>194</a>}
 </code></pre></div></section></main></body></html>

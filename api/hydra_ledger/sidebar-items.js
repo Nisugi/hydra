@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["FILE_NAME"],"mod":["reader","row","writer"],"struct":["Ledger"],"type":["Error"]};

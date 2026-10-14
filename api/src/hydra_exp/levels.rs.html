@@ -1,0 +1,56 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates\hydra-exp\src\levels.rs`."><title>levels.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="hydra_exp" data-themes="" data-resource-suffix="" data-rustdoc-version="1.96.1 (31fca3adb 2026-06-26)" data-channel="1.96.1" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="../../static.files/src-script-813739b1.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><h1><div class="sub-heading">hydra_exp/</div>levels.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap digits-2"><pre class="rust"><code><a href=#1 id=1 data-nosnippet>1</a><span class="doccomment">//! The experience each level takes, and the level a total has reached.
+<a href=#2 id=2 data-nosnippet>2</a>
+<a href=#3 id=3 data-nosnippet>3</a>/// Total experience to attain each level, the index the level, 0 to 100.
+<a href=#4 id=4 data-nosnippet>4</a></span><span class="kw">pub const </span>LEVEL_TOTALS: [u64; <span class="number">101</span>] = [
+<a href=#5 id=5 data-nosnippet>5</a>    <span class="number">0</span>, <span class="number">2500</span>, <span class="number">5000</span>, <span class="number">10000</span>, <span class="number">17500</span>, <span class="number">27500</span>, <span class="number">40000</span>, <span class="number">55000</span>, <span class="number">72500</span>, <span class="number">92500</span>, <span class="number">115_000</span>, <span class="number">140_000</span>, <span class="number">167_000</span>,
+<a href=#6 id=6 data-nosnippet>6</a>    <span class="number">197_500</span>, <span class="number">230_000</span>, <span class="number">265_000</span>, <span class="number">302_000</span>, <span class="number">341_000</span>, <span class="number">382_000</span>, <span class="number">425_000</span>, <span class="number">470_000</span>, <span class="number">517_000</span>, <span class="number">566_000</span>,
+<a href=#7 id=7 data-nosnippet>7</a>    <span class="number">617_000</span>, <span class="number">670_000</span>, <span class="number">725_000</span>, <span class="number">781_500</span>, <span class="number">839_500</span>, <span class="number">899_000</span>, <span class="number">960_000</span>, <span class="number">1_022_500</span>, <span class="number">1_086_500</span>, <span class="number">1_152_000</span>,
+<a href=#8 id=8 data-nosnippet>8</a>    <span class="number">1_219_000</span>, <span class="number">1_287_500</span>, <span class="number">1_357_500</span>, <span class="number">1_429_000</span>, <span class="number">1_502_000</span>, <span class="number">1_576_500</span>, <span class="number">1_652_500</span>, <span class="number">1_730_000</span>,
+<a href=#9 id=9 data-nosnippet>9</a>    <span class="number">1_808_500</span>, <span class="number">1_888_000</span>, <span class="number">1_968_500</span>, <span class="number">2_050_000</span>, <span class="number">2_132_500</span>, <span class="number">2_216_000</span>, <span class="number">2_300_500</span>, <span class="number">2_386_000</span>,
+<a href=#10 id=10 data-nosnippet>10</a>    <span class="number">2_472_500</span>, <span class="number">2_560_000</span>, <span class="number">2_648_000</span>, <span class="number">2_736_500</span>, <span class="number">2_825_500</span>, <span class="number">2_915_000</span>, <span class="number">3_005_000</span>, <span class="number">3_095_500</span>,
+<a href=#11 id=11 data-nosnippet>11</a>    <span class="number">3_186_500</span>, <span class="number">3_278_000</span>, <span class="number">3_370_000</span>, <span class="number">3_462_500</span>, <span class="number">3_555_500</span>, <span class="number">3_649_000</span>, <span class="number">3_743_000</span>, <span class="number">3_837_500</span>,
+<a href=#12 id=12 data-nosnippet>12</a>    <span class="number">3_932_500</span>, <span class="number">4_028_000</span>, <span class="number">4_124_000</span>, <span class="number">4_220_500</span>, <span class="number">4_317_500</span>, <span class="number">4_415_000</span>, <span class="number">4_513_000</span>, <span class="number">4_611_500</span>,
+<a href=#13 id=13 data-nosnippet>13</a>    <span class="number">4_710_500</span>, <span class="number">4_810_000</span>, <span class="number">4_910_000</span>, <span class="number">5_010_500</span>, <span class="number">5_111_500</span>, <span class="number">5_213_000</span>, <span class="number">5_315_000</span>, <span class="number">5_417_500</span>,
+<a href=#14 id=14 data-nosnippet>14</a>    <span class="number">5_520_500</span>, <span class="number">5_624_000</span>, <span class="number">5_728_000</span>, <span class="number">5_832_500</span>, <span class="number">5_937_500</span>, <span class="number">6_043_000</span>, <span class="number">6_149_000</span>, <span class="number">6_255_500</span>,
+<a href=#15 id=15 data-nosnippet>15</a>    <span class="number">6_362_500</span>, <span class="number">6_470_000</span>, <span class="number">6_578_000</span>, <span class="number">6_686_500</span>, <span class="number">6_795_500</span>, <span class="number">6_905_000</span>, <span class="number">7_015_000</span>, <span class="number">7_125_500</span>,
+<a href=#16 id=16 data-nosnippet>16</a>    <span class="number">7_236_500</span>, <span class="number">7_348_000</span>, <span class="number">7_460_000</span>, <span class="number">7_572_500</span>,
+<a href=#17 id=17 data-nosnippet>17</a>];
+<a href=#18 id=18 data-nosnippet>18</a>
+<a href=#19 id=19 data-nosnippet>19</a><span class="doccomment">/// The level a total has attained; 100 at the cap.
+<a href=#20 id=20 data-nosnippet>20</a></span><span class="attr">#[must_use]
+<a href=#21 id=21 data-nosnippet>21</a></span><span class="kw">pub fn </span>level_for(exp: u64) -&gt; usize {
+<a href=#22 id=22 data-nosnippet>22</a>    LEVEL_TOTALS
+<a href=#23 id=23 data-nosnippet>23</a>        .iter()
+<a href=#24 id=24 data-nosnippet>24</a>        .rposition(|<span class="kw-2">&amp;</span>total| exp &gt;= total)
+<a href=#25 id=25 data-nosnippet>25</a>        .unwrap_or(<span class="number">0</span>)
+<a href=#26 id=26 data-nosnippet>26</a>}
+<a href=#27 id=27 data-nosnippet>27</a>
+<a href=#28 id=28 data-nosnippet>28</a><span class="doccomment">/// `level N (X.X% through)`: how far from N to N+1 the total is.
+<a href=#29 id=29 data-nosnippet>29</a></span><span class="attr">#[must_use]
+<a href=#30 id=30 data-nosnippet>30</a></span><span class="kw">pub fn </span>label(exp: u64) -&gt; String {
+<a href=#31 id=31 data-nosnippet>31</a>    <span class="kw">let </span>level = level_for(exp);
+<a href=#32 id=32 data-nosnippet>32</a>    <span class="kw">if </span>level &gt;= <span class="number">100 </span>{
+<a href=#33 id=33 data-nosnippet>33</a>        <span class="kw">return </span><span class="string">"level 100 (cap)"</span>.to_owned();
+<a href=#34 id=34 data-nosnippet>34</a>    }
+<a href=#35 id=35 data-nosnippet>35</a>    <span class="kw">let </span>span = LEVEL_TOTALS[level + <span class="number">1</span>] - LEVEL_TOTALS[level];
+<a href=#36 id=36 data-nosnippet>36</a>    <span class="attr">#[allow(clippy::cast_precision_loss)]
+<a href=#37 id=37 data-nosnippet>37</a>    </span><span class="kw">let </span>through = (exp - LEVEL_TOTALS[level]) <span class="kw">as </span>f64 * <span class="number">100.0 </span>/ span <span class="kw">as </span>f64;
+<a href=#38 id=38 data-nosnippet>38</a>    <span class="macro">format!</span>(<span class="string">"level {level} ({through:.1}% through)"</span>)
+<a href=#39 id=39 data-nosnippet>39</a>}
+<a href=#40 id=40 data-nosnippet>40</a>
+<a href=#41 id=41 data-nosnippet>41</a><span class="attr">#[cfg(test)]
+<a href=#42 id=42 data-nosnippet>42</a></span><span class="kw">mod </span>tests {
+<a href=#43 id=43 data-nosnippet>43</a>    <span class="kw">use </span>super::<span class="kw-2">*</span>;
+<a href=#44 id=44 data-nosnippet>44</a>
+<a href=#45 id=45 data-nosnippet>45</a>    <span class="attr">#[test]
+<a href=#46 id=46 data-nosnippet>46</a>    </span><span class="kw">fn </span>levels_are_read_off_the_table() {
+<a href=#47 id=47 data-nosnippet>47</a>        <span class="macro">assert_eq!</span>(level_for(<span class="number">0</span>), <span class="number">0</span>);
+<a href=#48 id=48 data-nosnippet>48</a>        <span class="macro">assert_eq!</span>(level_for(<span class="number">2499</span>), <span class="number">0</span>);
+<a href=#49 id=49 data-nosnippet>49</a>        <span class="macro">assert_eq!</span>(level_for(<span class="number">2500</span>), <span class="number">1</span>);
+<a href=#50 id=50 data-nosnippet>50</a>        <span class="macro">assert_eq!</span>(level_for(<span class="number">7_572_500</span>), <span class="number">100</span>);
+<a href=#51 id=51 data-nosnippet>51</a>        <span class="macro">assert_eq!</span>(level_for(u64::MAX), <span class="number">100</span>);
+<a href=#52 id=52 data-nosnippet>52</a>        <span class="macro">assert_eq!</span>(label(<span class="number">3750</span>), <span class="string">"level 1 (50.0% through)"</span>);
+<a href=#53 id=53 data-nosnippet>53</a>        <span class="macro">assert_eq!</span>(label(<span class="number">8_000_000</span>), <span class="string">"level 100 (cap)"</span>);
+<a href=#54 id=54 data-nosnippet>54</a>    }
+<a href=#55 id=55 data-nosnippet>55</a>}
+</code></pre></div></section></main></body></html>

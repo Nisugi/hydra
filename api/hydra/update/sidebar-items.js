@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["AGAIN","EVERY","TICK"],"fn":["fetch","keep","said","start"]};
+window.SIDEBAR_ITEMS = {"constant":["AGAIN","EVERY","FETCH_FOR","LOOK_FOR","TICK"],"fn":["fetch","keep","said","start"]};

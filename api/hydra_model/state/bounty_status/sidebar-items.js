@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["Refusal"],"fn":["classify_refusal","vouchers_remaining"],"struct":["BountyStatus"]};
+window.SIDEBAR_ITEMS = {"enum":["Refusal"],"fn":["classify_refusal","task_finished","vouchers_remaining"],"struct":["BountyStatus"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["PER_PAGE"],"fn":["attacks","creatures","flare_names","paged"],"struct":["Listing"]};

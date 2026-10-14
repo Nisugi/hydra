@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["names_a_snapshot","start"]};

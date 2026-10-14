@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["catalog","command","levels","recorder","report","tracker"]};

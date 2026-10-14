@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Kind"],"fn":["alongside","analytics","barkskin","compare","defense","flare","hp","intercepts"]};

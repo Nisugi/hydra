@@ -329,7 +329,7 @@
 <a href=#329 id=329 data-nosnippet>329</a>        .name(<span class="string">"hydra-packs"</span>.to_owned())
 <a href=#330 id=330 data-nosnippet>330</a>        .spawn(<span class="kw">move </span>|| {
 <a href=#331 id=331 data-nosnippet>331</a>            <span class="kw">let </span>sha = <span class="prelude-val">Some</span>(pack.sha256.trim()).filter(|sha| !sha.is_empty());
-<a href=#332 id=332 data-nosnippet>332</a>            <span class="kw">let </span>landed = fetch_bytes(<span class="kw-2">&amp;</span>pack.url, MOST.max(pack.size)).and_then(|bytes| {
+<a href=#332 id=332 data-nosnippet>332</a>            <span class="kw">let </span>landed = fetch_bytes(<span class="kw-2">&amp;</span>pack.url, MOST).and_then(|bytes| {
 <a href=#333 id=333 data-nosnippet>333</a>                gs_base::packs::install_zip(<span class="kw-2">&amp;</span>bytes, sha, <span class="kw-2">&amp;</span>pool)
 <a href=#334 id=334 data-nosnippet>334</a>                    .map(|report| report.summary())
 <a href=#335 id=335 data-nosnippet>335</a>                    .map_err(|why| <span class="macro">format!</span>(<span class="string">"{}: {why:#}"</span>, pack.id))

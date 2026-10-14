@@ -632,22 +632,25 @@
 <a href=#632 id=632 data-nosnippet>632</a>                <span class="self">self</span>.at = At::Ending(<span class="bool-val">true</span>);
 <a href=#633 id=633 data-nosnippet>633</a>                Next::Put(put)
 <a href=#634 id=634 data-nosnippet>634</a>            }
-<a href=#635 id=635 data-nosnippet>635</a>            At::Clerk | At::ToBank(<span class="kw">_</span>) | At::FromBank(<span class="kw">_</span>) <span class="kw">if </span>!seen.ok =&gt; <span class="self">self</span>.end(<span class="bool-val">true</span>),
-<a href=#636 id=636 data-nosnippet>636</a>            At::Clerk =&gt; <span class="self">self</span>.arrive(seen),
-<a href=#637 id=637 data-nosnippet>637</a>            At::Unhidden =&gt; <span class="self">self</span>.ask(<span class="number">0</span>),
-<a href=#638 id=638 data-nosnippet>638</a>            <span class="comment">// The first asking is only quoted a price.
-<a href=#639 id=639 data-nosnippet>639</a>            </span>At::Asked(<span class="number">1</span>) <span class="kw">if </span>!<span class="self">self</span>.banked =&gt; <span class="self">self</span>.ask(<span class="number">1</span>),
-<a href=#640 id=640 data-nosnippet>640</a>            At::Asked(asked) =&gt; <span class="self">self</span>.asked(asked, seen),
-<a href=#641 id=641 data-nosnippet>641</a>            At::ToBank(<span class="kw">_</span>) | At::Withdrew | At::FromBank(<span class="kw">_</span>) =&gt; <span class="self">self</span>.bank(seen),
-<a href=#642 id=642 data-nosnippet>642</a>            At::LookedAtNew =&gt; {
-<a href=#643 id=643 data-nosnippet>643</a>                <span class="self">self</span>.at = At::SteppedBack;
-<a href=#644 id=644 data-nosnippet>644</a>                Next::Go(from.map_or(<span class="string">""</span>, |town| town.step_back).to_owned())
-<a href=#645 id=645 data-nosnippet>645</a>            }
-<a href=#646 id=646 data-nosnippet>646</a>            At::Ending(done) =&gt; <span class="self">self</span>.end(done),
-<a href=#647 id=647 data-nosnippet>647</a>        }
-<a href=#648 id=648 data-nosnippet>648</a>    }
-<a href=#649 id=649 data-nosnippet>649</a>}
-<a href=#650 id=650 data-nosnippet>650</a>
-<a href=#651 id=651 data-nosnippet>651</a><span class="attr">#[cfg(test)]
-<a href=#652 id=652 data-nosnippet>652</a></span><span class="kw">mod </span>tests;
+<a href=#635 id=635 data-nosnippet>635</a>            <span class="comment">// A move of the bank walk failed: the walker is on the way,
+<a href=#636 id=636 data-nosnippet>636</a>            // at neither end of the exit. Failed, so the exit is banned,
+<a href=#637 id=637 data-nosnippet>637</a>            // rather than Done, which would only plan the trip again.
+<a href=#638 id=638 data-nosnippet>638</a>            </span>At::Clerk | At::ToBank(<span class="kw">_</span>) | At::FromBank(<span class="kw">_</span>) <span class="kw">if </span>!seen.ok =&gt; <span class="self">self</span>.end(<span class="bool-val">false</span>),
+<a href=#639 id=639 data-nosnippet>639</a>            At::Clerk =&gt; <span class="self">self</span>.arrive(seen),
+<a href=#640 id=640 data-nosnippet>640</a>            At::Unhidden =&gt; <span class="self">self</span>.ask(<span class="number">0</span>),
+<a href=#641 id=641 data-nosnippet>641</a>            <span class="comment">// The first asking is only quoted a price.
+<a href=#642 id=642 data-nosnippet>642</a>            </span>At::Asked(<span class="number">1</span>) <span class="kw">if </span>!<span class="self">self</span>.banked =&gt; <span class="self">self</span>.ask(<span class="number">1</span>),
+<a href=#643 id=643 data-nosnippet>643</a>            At::Asked(asked) =&gt; <span class="self">self</span>.asked(asked, seen),
+<a href=#644 id=644 data-nosnippet>644</a>            At::ToBank(<span class="kw">_</span>) | At::Withdrew | At::FromBank(<span class="kw">_</span>) =&gt; <span class="self">self</span>.bank(seen),
+<a href=#645 id=645 data-nosnippet>645</a>            At::LookedAtNew =&gt; {
+<a href=#646 id=646 data-nosnippet>646</a>                <span class="self">self</span>.at = At::SteppedBack;
+<a href=#647 id=647 data-nosnippet>647</a>                Next::Go(from.map_or(<span class="string">""</span>, |town| town.step_back).to_owned())
+<a href=#648 id=648 data-nosnippet>648</a>            }
+<a href=#649 id=649 data-nosnippet>649</a>            At::Ending(done) =&gt; <span class="self">self</span>.end(done),
+<a href=#650 id=650 data-nosnippet>650</a>        }
+<a href=#651 id=651 data-nosnippet>651</a>    }
+<a href=#652 id=652 data-nosnippet>652</a>}
+<a href=#653 id=653 data-nosnippet>653</a>
+<a href=#654 id=654 data-nosnippet>654</a><span class="attr">#[cfg(test)]
+<a href=#655 id=655 data-nosnippet>655</a></span><span class="kw">mod </span>tests;
 </code></pre></div></section></main></body></html>

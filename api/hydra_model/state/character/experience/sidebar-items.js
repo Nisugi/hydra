@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["Encumbrance","Experience"]};
+window.SIDEBAR_ITEMS = {"fn":["instant_absorbed"],"struct":["Encumbrance","Experience"]};

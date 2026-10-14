@@ -125,151 +125,239 @@
 <a href=#125 id=125 data-nosnippet>125</a>    kinds
 <a href=#126 id=126 data-nosnippet>126</a>}
 <a href=#127 id=127 data-nosnippet>127</a>
-<a href=#128 id=128 data-nosnippet>128</a><span class="doccomment">/// Whether the walker can cross `exit` now.
-<a href=#129 id=129 data-nosnippet>129</a></span><span class="attr">#[must_use]
-<a href=#130 id=130 data-nosnippet>130</a></span><span class="kw">pub fn </span>walked(exit: <span class="kw-2">&amp;</span>Exit) -&gt; bool {
-<a href=#131 id=131 data-nosnippet>131</a>    kinds(exit).iter().all(|kind| RUNS.contains(<span class="kw-2">&amp;</span>kind.as_str()))
-<a href=#132 id=132 data-nosnippet>132</a>}
-<a href=#133 id=133 data-nosnippet>133</a>
-<a href=#134 id=134 data-nosnippet>134</a><span class="doccomment">/// A routine's name; a puzzle's and an errand's are their own.
-<a href=#135 id=135 data-nosnippet>135</a></span><span class="kw">fn </span>routine_name(routine: <span class="kw-2">&amp;</span>Routine) -&gt; String {
-<a href=#136 id=136 data-nosnippet>136</a>    <span class="kw">match </span>routine {
-<a href=#137 id=137 data-nosnippet>137</a>        Routine::Puzzle { puzzle } =&gt; <span class="macro">format!</span>(<span class="string">"Puzzle {}"</span>, variant(puzzle)),
-<a href=#138 id=138 data-nosnippet>138</a>        Routine::Errand { errand } =&gt; <span class="macro">format!</span>(<span class="string">"Errand {}"</span>, variant(errand)),
-<a href=#139 id=139 data-nosnippet>139</a>        other =&gt; variant(other),
-<a href=#140 id=140 data-nosnippet>140</a>    }
-<a href=#141 id=141 data-nosnippet>141</a>}
-<a href=#142 id=142 data-nosnippet>142</a>
-<a href=#143 id=143 data-nosnippet>143</a><span class="doccomment">/// The name of `value`'s variant, as its `Debug` begins. Formatting stops
-<a href=#144 id=144 data-nosnippet>144</a>/// where the name does: a route search asks this of every exit it looks
-<a href=#145 id=145 data-nosnippet>145</a>/// at, and a step's whole `Debug` -- its commands and its strings -- would be
-<a href=#146 id=146 data-nosnippet>146</a>/// made only to be thrown away.
-<a href=#147 id=147 data-nosnippet>147</a></span><span class="kw">fn </span>variant(value: <span class="kw-2">&amp;</span><span class="kw">impl </span>std::fmt::Debug) -&gt; String {
-<a href=#148 id=148 data-nosnippet>148</a>    <span class="doccomment">/// Keeps what is written while it is a name, and stops the formatting
-<a href=#149 id=149 data-nosnippet>149</a>    /// at the first character that is not.
-<a href=#150 id=150 data-nosnippet>150</a>    </span><span class="kw">struct </span>Name(String);
-<a href=#151 id=151 data-nosnippet>151</a>    <span class="kw">impl </span>std::fmt::Write <span class="kw">for </span>Name {
-<a href=#152 id=152 data-nosnippet>152</a>        <span class="kw">fn </span>write_str(<span class="kw-2">&amp;mut </span><span class="self">self</span>, text: <span class="kw-2">&amp;</span>str) -&gt; std::fmt::Result {
-<a href=#153 id=153 data-nosnippet>153</a>            <span class="kw">for </span>c <span class="kw">in </span>text.chars() {
-<a href=#154 id=154 data-nosnippet>154</a>                <span class="kw">if </span>!c.is_ascii_alphanumeric() {
-<a href=#155 id=155 data-nosnippet>155</a>                    <span class="kw">return </span><span class="prelude-val">Err</span>(std::fmt::Error);
-<a href=#156 id=156 data-nosnippet>156</a>                }
-<a href=#157 id=157 data-nosnippet>157</a>                <span class="self">self</span>.<span class="number">0</span>.push(c);
-<a href=#158 id=158 data-nosnippet>158</a>            }
-<a href=#159 id=159 data-nosnippet>159</a>            <span class="prelude-val">Ok</span>(())
-<a href=#160 id=160 data-nosnippet>160</a>        }
-<a href=#161 id=161 data-nosnippet>161</a>    }
-<a href=#162 id=162 data-nosnippet>162</a>    <span class="kw">let </span><span class="kw-2">mut </span>name = Name(String::new());
-<a href=#163 id=163 data-nosnippet>163</a>    <span class="comment">// Stopped on purpose at the name's end: the error is the stop.
-<a href=#164 id=164 data-nosnippet>164</a>    </span><span class="kw">let _ </span>= std::fmt::Write::write_fmt(<span class="kw-2">&amp;mut </span>name, <span class="macro">format_args!</span>(<span class="string">"{value:?}"</span>));
-<a href=#165 id=165 data-nosnippet>165</a>    name.<span class="number">0
-<a href=#166 id=166 data-nosnippet>166</a></span>}
-<a href=#167 id=167 data-nosnippet>167</a>
-<a href=#168 id=168 data-nosnippet>168</a><span class="doccomment">/// Every exit of `map` that is a route somewhere: one with a cost.
-<a href=#169 id=169 data-nosnippet>169</a></span><span class="kw">fn </span>routes(map: <span class="kw-2">&amp;</span>Map) -&gt; <span class="kw">impl </span>Iterator&lt;Item = <span class="kw-2">&amp;</span>Exit&gt; {
-<a href=#170 id=170 data-nosnippet>170</a>    map.rooms()
-<a href=#171 id=171 data-nosnippet>171</a>        .iter()
-<a href=#172 id=172 data-nosnippet>172</a>        .flat_map(|room| <span class="kw-2">&amp;</span>room.exits)
-<a href=#173 id=173 data-nosnippet>173</a>        .filter(|exit| exit.cost.is_some())
-<a href=#174 id=174 data-nosnippet>174</a>}
-<a href=#175 id=175 data-nosnippet>175</a>
-<a href=#176 id=176 data-nosnippet>176</a><span class="doccomment">/// Every kind the map uses: how many exits need it, and whether it is run.
-<a href=#177 id=177 data-nosnippet>177</a></span><span class="attr">#[must_use]
-<a href=#178 id=178 data-nosnippet>178</a></span><span class="kw">pub fn </span>census(map: <span class="kw-2">&amp;</span>Map) -&gt; BTreeMap&lt;String, (usize, bool)&gt; {
-<a href=#179 id=179 data-nosnippet>179</a>    <span class="kw">let </span><span class="kw-2">mut </span>census = BTreeMap::new();
-<a href=#180 id=180 data-nosnippet>180</a>    <span class="kw">for </span>exit <span class="kw">in </span>routes(map) {
-<a href=#181 id=181 data-nosnippet>181</a>        <span class="kw">let </span><span class="kw-2">mut </span>needs = kinds(exit);
-<a href=#182 id=182 data-nosnippet>182</a>        needs.sort_unstable();
-<a href=#183 id=183 data-nosnippet>183</a>        needs.dedup();
-<a href=#184 id=184 data-nosnippet>184</a>        <span class="kw">for </span>kind <span class="kw">in </span>needs {
-<a href=#185 id=185 data-nosnippet>185</a>            <span class="kw">let </span>runs = RUNS.contains(<span class="kw-2">&amp;</span>kind.as_str());
-<a href=#186 id=186 data-nosnippet>186</a>            census.entry(kind).or_insert((<span class="number">0</span>, runs)).<span class="number">0 </span>+= <span class="number">1</span>;
-<a href=#187 id=187 data-nosnippet>187</a>        }
-<a href=#188 id=188 data-nosnippet>188</a>    }
-<a href=#189 id=189 data-nosnippet>189</a>    census
-<a href=#190 id=190 data-nosnippet>190</a>}
-<a href=#191 id=191 data-nosnippet>191</a>
-<a href=#192 id=192 data-nosnippet>192</a><span class="doccomment">/// How many of the map's exits the walker cannot cross yet, of how many.
-<a href=#193 id=193 data-nosnippet>193</a></span><span class="attr">#[must_use]
-<a href=#194 id=194 data-nosnippet>194</a></span><span class="kw">pub fn </span>unwalked(map: <span class="kw-2">&amp;</span>Map) -&gt; (usize, usize) {
-<a href=#195 id=195 data-nosnippet>195</a>    <span class="kw">let </span>(<span class="kw-2">mut </span>not, <span class="kw-2">mut </span>all) = (<span class="number">0</span>, <span class="number">0</span>);
-<a href=#196 id=196 data-nosnippet>196</a>    <span class="kw">for </span>exit <span class="kw">in </span>routes(map) {
-<a href=#197 id=197 data-nosnippet>197</a>        all += <span class="number">1</span>;
-<a href=#198 id=198 data-nosnippet>198</a>        <span class="kw">if </span>!walked(exit) {
-<a href=#199 id=199 data-nosnippet>199</a>            not += <span class="number">1</span>;
-<a href=#200 id=200 data-nosnippet>200</a>        }
-<a href=#201 id=201 data-nosnippet>201</a>    }
-<a href=#202 id=202 data-nosnippet>202</a>    (not, all)
-<a href=#203 id=203 data-nosnippet>203</a>}
-<a href=#204 id=204 data-nosnippet>204</a>
-<a href=#205 id=205 data-nosnippet>205</a><span class="doccomment">/// The census as lines a person reads: what is left, most-used first.
-<a href=#206 id=206 data-nosnippet>206</a></span><span class="attr">#[must_use]
-<a href=#207 id=207 data-nosnippet>207</a></span><span class="kw">pub fn </span>report(map: <span class="kw-2">&amp;</span>Map) -&gt; Vec&lt;String&gt; {
-<a href=#208 id=208 data-nosnippet>208</a>    <span class="kw">let </span>(not, all) = unwalked(map);
-<a href=#209 id=209 data-nosnippet>209</a>    <span class="kw">let </span><span class="kw-2">mut </span>left: Vec&lt;(String, usize)&gt; = census(map)
-<a href=#210 id=210 data-nosnippet>210</a>        .into_iter()
-<a href=#211 id=211 data-nosnippet>211</a>        .filter(|(<span class="kw">_</span>, (<span class="kw">_</span>, runs))| !runs)
-<a href=#212 id=212 data-nosnippet>212</a>        .map(|(kind, (exits, <span class="kw">_</span>))| (kind, exits))
-<a href=#213 id=213 data-nosnippet>213</a>        .collect();
-<a href=#214 id=214 data-nosnippet>214</a>    left.sort_by(|a, b| b.<span class="number">1</span>.cmp(<span class="kw-2">&amp;</span>a.<span class="number">1</span>).then_with(|| a.<span class="number">0</span>.cmp(<span class="kw-2">&amp;</span>b.<span class="number">0</span>)));
-<a href=#215 id=215 data-nosnippet>215</a>    <span class="kw">let </span><span class="kw-2">mut </span>lines = <span class="macro">vec!</span>[<span class="macro">format!</span>(
-<a href=#216 id=216 data-nosnippet>216</a>        <span class="string">"Travel walks {} of the map's {all} exits; {not} are left, needing {} kinds:"</span>,
-<a href=#217 id=217 data-nosnippet>217</a>        all - not,
-<a href=#218 id=218 data-nosnippet>218</a>        left.len()
-<a href=#219 id=219 data-nosnippet>219</a>    )];
-<a href=#220 id=220 data-nosnippet>220</a>    lines.extend(
-<a href=#221 id=221 data-nosnippet>221</a>        left.into_iter()
-<a href=#222 id=222 data-nosnippet>222</a>            .map(|(kind, exits)| <span class="macro">format!</span>(<span class="string">"  {exits:&gt;6}  {kind}"</span>)),
-<a href=#223 id=223 data-nosnippet>223</a>    );
-<a href=#224 id=224 data-nosnippet>224</a>    lines
-<a href=#225 id=225 data-nosnippet>225</a>}
-<a href=#226 id=226 data-nosnippet>226</a>
-<a href=#227 id=227 data-nosnippet>227</a><span class="attr">#[cfg(test)]
-<a href=#228 id=228 data-nosnippet>228</a></span><span class="kw">mod </span>tests {
-<a href=#229 id=229 data-nosnippet>229</a>    <span class="kw">use </span>cena_map::Cost;
-<a href=#230 id=230 data-nosnippet>230</a>
-<a href=#231 id=231 data-nosnippet>231</a>    <span class="kw">use </span>super::<span class="kw-2">*</span>;
-<a href=#232 id=232 data-nosnippet>232</a>
-<a href=#233 id=233 data-nosnippet>233</a>    <span class="doccomment">/// The ratchet: the built-in map's exits not yet walked, held exactly.
-<a href=#234 id=234 data-nosnippet>234</a>    /// Lower it when the walker runs more; it may never rise.
-<a href=#235 id=235 data-nosnippet>235</a>    </span><span class="kw">const </span>UNWALKED: usize = <span class="number">0</span>;
-<a href=#236 id=236 data-nosnippet>236</a>
-<a href=#237 id=237 data-nosnippet>237</a>    <span class="attr">#[test]
-<a href=#238 id=238 data-nosnippet>238</a>    </span><span class="kw">fn </span>the_count_of_what_is_not_walked_yet() {
-<a href=#239 id=239 data-nosnippet>239</a>        <span class="kw">let </span>map = cena_map::binary::decode(cena_gs_map::GS_MAP).expect(<span class="string">"the built-in map"</span>);
-<a href=#240 id=240 data-nosnippet>240</a>        <span class="kw">let </span>(not, all) = unwalked(<span class="kw-2">&amp;</span>map);
-<a href=#241 id=241 data-nosnippet>241</a>        <span class="macro">assert_eq!</span>(not, UNWALKED, <span class="string">"{}"</span>, report(<span class="kw-2">&amp;</span>map).join(<span class="string">"\n"</span>));
-<a href=#242 id=242 data-nosnippet>242</a>        <span class="macro">assert!</span>(all &gt;= not);
-<a href=#243 id=243 data-nosnippet>243</a>    }
-<a href=#244 id=244 data-nosnippet>244</a>
-<a href=#245 id=245 data-nosnippet>245</a>    <span class="doccomment">/// Nothing in the map is beyond the vocabulary: every exit is a kind the
-<a href=#246 id=246 data-nosnippet>246</a>    /// walker can be taught.
-<a href=#247 id=247 data-nosnippet>247</a>    </span><span class="attr">#[test]
-<a href=#248 id=248 data-nosnippet>248</a>    </span><span class="kw">fn </span>the_map_holds_nothing_unported() {
-<a href=#249 id=249 data-nosnippet>249</a>        <span class="kw">let </span>map = cena_map::binary::decode(cena_gs_map::GS_MAP).expect(<span class="string">"the built-in map"</span>);
-<a href=#250 id=250 data-nosnippet>250</a>        <span class="kw">let </span>strays: Vec&lt;String&gt; = census(<span class="kw-2">&amp;</span>map)
-<a href=#251 id=251 data-nosnippet>251</a>            .into_keys()
-<a href=#252 id=252 data-nosnippet>252</a>            .filter(|kind| kind.starts_with(<span class="string">"unported"</span>) || kind.starts_with(<span class="string">"unknown"</span>))
-<a href=#253 id=253 data-nosnippet>253</a>            .collect();
-<a href=#254 id=254 data-nosnippet>254</a>        <span class="macro">assert_eq!</span>(strays, Vec::&lt;String&gt;::new());
-<a href=#255 id=255 data-nosnippet>255</a>    }
-<a href=#256 id=256 data-nosnippet>256</a>
-<a href=#257 id=257 data-nosnippet>257</a>    <span class="attr">#[test]
-<a href=#258 id=258 data-nosnippet>258</a>    </span><span class="kw">fn </span>an_exit_is_walked_only_when_all_it_needs_is_run() {
-<a href=#259 id=259 data-nosnippet>259</a>        <span class="kw">let </span>exit = |crossing| Exit {
-<a href=#260 id=260 data-nosnippet>260</a>            to: cena_map::RoomId(<span class="number">1</span>),
-<a href=#261 id=261 data-nosnippet>261</a>            kind: cena_map::ExitKind::Cardinal,
-<a href=#262 id=262 data-nosnippet>262</a>            crossing,
-<a href=#263 id=263 data-nosnippet>263</a>            cost: <span class="prelude-val">Some</span>(Cost::Fixed(<span class="number">0.2</span>)),
-<a href=#264 id=264 data-nosnippet>264</a>            dirto: <span class="prelude-val">None</span>,
-<a href=#265 id=265 data-nosnippet>265</a>        };
-<a href=#266 id=266 data-nosnippet>266</a>        <span class="kw">let </span>north = exit(Crossing::Command(<span class="string">"north"</span>.into()));
-<a href=#267 id=267 data-nosnippet>267</a>        <span class="macro">assert_eq!</span>(kinds(<span class="kw-2">&amp;</span>north), [<span class="string">"command"</span>, <span class="string">"cost Fixed"</span>]);
-<a href=#268 id=268 data-nosnippet>268</a>        <span class="macro">assert!</span>(walked(<span class="kw-2">&amp;</span>north), <span class="string">"a plain exit is walked"</span>);
-<a href=#269 id=269 data-nosnippet>269</a>        <span class="kw">let </span><span class="kw-2">mut </span>free = north.clone();
-<a href=#270 id=270 data-nosnippet>270</a>        free.cost = <span class="prelude-val">None</span>;
-<a href=#271 id=271 data-nosnippet>271</a>        <span class="macro">assert_eq!</span>(kinds(<span class="kw-2">&amp;</span>free), [<span class="string">"command"</span>, <span class="string">"no cost"</span>]);
-<a href=#272 id=272 data-nosnippet>272</a>        <span class="macro">assert!</span>(!walked(<span class="kw-2">&amp;</span>free));
-<a href=#273 id=273 data-nosnippet>273</a>    }
-<a href=#274 id=274 data-nosnippet>274</a>}
+<a href=#128 id=128 data-nosnippet>128</a><span class="doccomment">/// Whether the walker can cross `exit` now: each kind it needs is one of
+<a href=#129 id=129 data-nosnippet>129</a>/// [`RUNS`]. The same answer as [`kinds`] checked against [`RUNS`], without
+<a href=#130 id=130 data-nosnippet>130</a>/// a string made: a route search asks this of every exit it prices.
+<a href=#131 id=131 data-nosnippet>131</a></span><span class="attr">#[must_use]
+<a href=#132 id=132 data-nosnippet>132</a></span><span class="kw">pub fn </span>walked(exit: <span class="kw-2">&amp;</span>Exit) -&gt; bool {
+<a href=#133 id=133 data-nosnippet>133</a>    <span class="kw">let </span>crossing = <span class="kw">match </span><span class="kw-2">&amp;</span>exit.crossing {
+<a href=#134 id=134 data-nosnippet>134</a>        Crossing::Command(<span class="kw">_</span>) =&gt; RUNS.contains(<span class="kw-2">&amp;</span><span class="string">"command"</span>),
+<a href=#135 id=135 data-nosnippet>135</a>        Crossing::PassThrough(<span class="kw">_</span>) =&gt; RUNS.contains(<span class="kw-2">&amp;</span><span class="string">"pass"</span>),
+<a href=#136 id=136 data-nosnippet>136</a>        Crossing::Steps(steps) =&gt; steps.iter().all(|step| runs(<span class="string">"step "</span>, <span class="kw-2">&amp;</span>step.action)),
+<a href=#137 id=137 data-nosnippet>137</a>        Crossing::Routine(Routine::Puzzle { puzzle }) =&gt; runs(<span class="string">"routine Puzzle "</span>, puzzle),
+<a href=#138 id=138 data-nosnippet>138</a>        Crossing::Routine(Routine::Errand { errand }) =&gt; runs(<span class="string">"routine Errand "</span>, errand),
+<a href=#139 id=139 data-nosnippet>139</a>        Crossing::Routine(other) =&gt; runs(<span class="string">"routine "</span>, other),
+<a href=#140 id=140 data-nosnippet>140</a>        Crossing::Unported(<span class="kw">_</span>) | Crossing::Unknown(<span class="kw">_</span>) =&gt; <span class="bool-val">false</span>,
+<a href=#141 id=141 data-nosnippet>141</a>    };
+<a href=#142 id=142 data-nosnippet>142</a>    crossing
+<a href=#143 id=143 data-nosnippet>143</a>        &amp;&amp; <span class="kw">match </span><span class="kw-2">&amp;</span>exit.cost {
+<a href=#144 id=144 data-nosnippet>144</a>            <span class="prelude-val">Some</span>(cost) =&gt; runs(<span class="string">"cost "</span>, cost),
+<a href=#145 id=145 data-nosnippet>145</a>            <span class="prelude-val">None </span>=&gt; RUNS.contains(<span class="kw-2">&amp;</span><span class="string">"no cost"</span>),
+<a href=#146 id=146 data-nosnippet>146</a>        }
+<a href=#147 id=147 data-nosnippet>147</a>}
+<a href=#148 id=148 data-nosnippet>148</a>
+<a href=#149 id=149 data-nosnippet>149</a><span class="doccomment">/// Whether `prefix` and the name of `value`'s variant make one of [`RUNS`].
+<a href=#150 id=150 data-nosnippet>150</a></span><span class="kw">fn </span>runs(prefix: <span class="kw-2">&amp;</span>str, value: <span class="kw-2">&amp;</span><span class="kw">impl </span>std::fmt::Debug) -&gt; bool {
+<a href=#151 id=151 data-nosnippet>151</a>    RUNS.iter()
+<a href=#152 id=152 data-nosnippet>152</a>        .filter_map(|run| run.strip_prefix(prefix))
+<a href=#153 id=153 data-nosnippet>153</a>        .any(|name| variant_is(value, name))
+<a href=#154 id=154 data-nosnippet>154</a>}
+<a href=#155 id=155 data-nosnippet>155</a>
+<a href=#156 id=156 data-nosnippet>156</a><span class="doccomment">/// Whether the name of `value`'s variant is `name`: its `Debug` read as far
+<a href=#157 id=157 data-nosnippet>157</a>/// as the name goes and compared as it is written, nothing kept.
+<a href=#158 id=158 data-nosnippet>158</a></span><span class="kw">fn </span>variant_is(value: <span class="kw-2">&amp;</span><span class="kw">impl </span>std::fmt::Debug, name: <span class="kw-2">&amp;</span>str) -&gt; bool {
+<a href=#159 id=159 data-nosnippet>159</a>    <span class="doccomment">/// Compares what is written to the name left to match, and stops the
+<a href=#160 id=160 data-nosnippet>160</a>    /// formatting at the name's end or the first mismatch.
+<a href=#161 id=161 data-nosnippet>161</a>    </span><span class="kw">struct </span>Matching&lt;<span class="lifetime">'a</span>&gt; {
+<a href=#162 id=162 data-nosnippet>162</a>        left: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>str,
+<a href=#163 id=163 data-nosnippet>163</a>        matched: bool,
+<a href=#164 id=164 data-nosnippet>164</a>    }
+<a href=#165 id=165 data-nosnippet>165</a>    <span class="kw">impl </span>std::fmt::Write <span class="kw">for </span>Matching&lt;<span class="lifetime">'_</span>&gt; {
+<a href=#166 id=166 data-nosnippet>166</a>        <span class="kw">fn </span>write_str(<span class="kw-2">&amp;mut </span><span class="self">self</span>, text: <span class="kw-2">&amp;</span>str) -&gt; std::fmt::Result {
+<a href=#167 id=167 data-nosnippet>167</a>            <span class="kw">for </span>c <span class="kw">in </span>text.chars() {
+<a href=#168 id=168 data-nosnippet>168</a>                <span class="kw">if </span>!c.is_ascii_alphanumeric() {
+<a href=#169 id=169 data-nosnippet>169</a>                    <span class="comment">// The name's end: a match when nothing of it is left.
+<a href=#170 id=170 data-nosnippet>170</a>                    </span><span class="self">self</span>.matched = <span class="self">self</span>.left.is_empty();
+<a href=#171 id=171 data-nosnippet>171</a>                    <span class="kw">return </span><span class="prelude-val">Err</span>(std::fmt::Error);
+<a href=#172 id=172 data-nosnippet>172</a>                }
+<a href=#173 id=173 data-nosnippet>173</a>                <span class="kw">match </span><span class="self">self</span>.left.strip_prefix(c) {
+<a href=#174 id=174 data-nosnippet>174</a>                    <span class="prelude-val">Some</span>(rest) =&gt; <span class="self">self</span>.left = rest,
+<a href=#175 id=175 data-nosnippet>175</a>                    <span class="prelude-val">None </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(std::fmt::Error),
+<a href=#176 id=176 data-nosnippet>176</a>                }
+<a href=#177 id=177 data-nosnippet>177</a>            }
+<a href=#178 id=178 data-nosnippet>178</a>            <span class="prelude-val">Ok</span>(())
+<a href=#179 id=179 data-nosnippet>179</a>        }
+<a href=#180 id=180 data-nosnippet>180</a>    }
+<a href=#181 id=181 data-nosnippet>181</a>    <span class="kw">let </span><span class="kw-2">mut </span>matching = Matching {
+<a href=#182 id=182 data-nosnippet>182</a>        left: name,
+<a href=#183 id=183 data-nosnippet>183</a>        matched: <span class="bool-val">false</span>,
+<a href=#184 id=184 data-nosnippet>184</a>    };
+<a href=#185 id=185 data-nosnippet>185</a>    <span class="comment">// Stopped on purpose at the name's end: the error is the stop. A value
+<a href=#186 id=186 data-nosnippet>186</a>    // whose Debug is the bare name alone ends with nothing written after
+<a href=#187 id=187 data-nosnippet>187</a>    // it, and the name left decides.
+<a href=#188 id=188 data-nosnippet>188</a>    </span><span class="kw">match </span>std::fmt::Write::write_fmt(<span class="kw-2">&amp;mut </span>matching, <span class="macro">format_args!</span>(<span class="string">"{value:?}"</span>)) {
+<a href=#189 id=189 data-nosnippet>189</a>        <span class="prelude-val">Ok</span>(()) =&gt; matching.left.is_empty(),
+<a href=#190 id=190 data-nosnippet>190</a>        <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; matching.matched,
+<a href=#191 id=191 data-nosnippet>191</a>    }
+<a href=#192 id=192 data-nosnippet>192</a>}
+<a href=#193 id=193 data-nosnippet>193</a>
+<a href=#194 id=194 data-nosnippet>194</a><span class="doccomment">/// A routine's name; a puzzle's and an errand's are their own.
+<a href=#195 id=195 data-nosnippet>195</a></span><span class="kw">fn </span>routine_name(routine: <span class="kw-2">&amp;</span>Routine) -&gt; String {
+<a href=#196 id=196 data-nosnippet>196</a>    <span class="kw">match </span>routine {
+<a href=#197 id=197 data-nosnippet>197</a>        Routine::Puzzle { puzzle } =&gt; <span class="macro">format!</span>(<span class="string">"Puzzle {}"</span>, variant(puzzle)),
+<a href=#198 id=198 data-nosnippet>198</a>        Routine::Errand { errand } =&gt; <span class="macro">format!</span>(<span class="string">"Errand {}"</span>, variant(errand)),
+<a href=#199 id=199 data-nosnippet>199</a>        other =&gt; variant(other),
+<a href=#200 id=200 data-nosnippet>200</a>    }
+<a href=#201 id=201 data-nosnippet>201</a>}
+<a href=#202 id=202 data-nosnippet>202</a>
+<a href=#203 id=203 data-nosnippet>203</a><span class="doccomment">/// The name of `value`'s variant, as its `Debug` begins. Formatting stops
+<a href=#204 id=204 data-nosnippet>204</a>/// where the name does: a route search asks this of every exit it looks
+<a href=#205 id=205 data-nosnippet>205</a>/// at, and a step's whole `Debug` -- its commands and its strings -- would be
+<a href=#206 id=206 data-nosnippet>206</a>/// made only to be thrown away.
+<a href=#207 id=207 data-nosnippet>207</a></span><span class="kw">fn </span>variant(value: <span class="kw-2">&amp;</span><span class="kw">impl </span>std::fmt::Debug) -&gt; String {
+<a href=#208 id=208 data-nosnippet>208</a>    <span class="doccomment">/// Keeps what is written while it is a name, and stops the formatting
+<a href=#209 id=209 data-nosnippet>209</a>    /// at the first character that is not.
+<a href=#210 id=210 data-nosnippet>210</a>    </span><span class="kw">struct </span>Name(String);
+<a href=#211 id=211 data-nosnippet>211</a>    <span class="kw">impl </span>std::fmt::Write <span class="kw">for </span>Name {
+<a href=#212 id=212 data-nosnippet>212</a>        <span class="kw">fn </span>write_str(<span class="kw-2">&amp;mut </span><span class="self">self</span>, text: <span class="kw-2">&amp;</span>str) -&gt; std::fmt::Result {
+<a href=#213 id=213 data-nosnippet>213</a>            <span class="kw">for </span>c <span class="kw">in </span>text.chars() {
+<a href=#214 id=214 data-nosnippet>214</a>                <span class="kw">if </span>!c.is_ascii_alphanumeric() {
+<a href=#215 id=215 data-nosnippet>215</a>                    <span class="kw">return </span><span class="prelude-val">Err</span>(std::fmt::Error);
+<a href=#216 id=216 data-nosnippet>216</a>                }
+<a href=#217 id=217 data-nosnippet>217</a>                <span class="self">self</span>.<span class="number">0</span>.push(c);
+<a href=#218 id=218 data-nosnippet>218</a>            }
+<a href=#219 id=219 data-nosnippet>219</a>            <span class="prelude-val">Ok</span>(())
+<a href=#220 id=220 data-nosnippet>220</a>        }
+<a href=#221 id=221 data-nosnippet>221</a>    }
+<a href=#222 id=222 data-nosnippet>222</a>    <span class="kw">let </span><span class="kw-2">mut </span>name = Name(String::new());
+<a href=#223 id=223 data-nosnippet>223</a>    <span class="comment">// Stopped on purpose at the name's end: the error is the stop.
+<a href=#224 id=224 data-nosnippet>224</a>    </span><span class="kw">let _ </span>= std::fmt::Write::write_fmt(<span class="kw-2">&amp;mut </span>name, <span class="macro">format_args!</span>(<span class="string">"{value:?}"</span>));
+<a href=#225 id=225 data-nosnippet>225</a>    name.<span class="number">0
+<a href=#226 id=226 data-nosnippet>226</a></span>}
+<a href=#227 id=227 data-nosnippet>227</a>
+<a href=#228 id=228 data-nosnippet>228</a><span class="doccomment">/// Every exit of `map` that is a route somewhere: one with a cost.
+<a href=#229 id=229 data-nosnippet>229</a></span><span class="kw">fn </span>routes(map: <span class="kw-2">&amp;</span>Map) -&gt; <span class="kw">impl </span>Iterator&lt;Item = <span class="kw-2">&amp;</span>Exit&gt; {
+<a href=#230 id=230 data-nosnippet>230</a>    map.rooms()
+<a href=#231 id=231 data-nosnippet>231</a>        .iter()
+<a href=#232 id=232 data-nosnippet>232</a>        .flat_map(|room| <span class="kw-2">&amp;</span>room.exits)
+<a href=#233 id=233 data-nosnippet>233</a>        .filter(|exit| exit.cost.is_some())
+<a href=#234 id=234 data-nosnippet>234</a>}
+<a href=#235 id=235 data-nosnippet>235</a>
+<a href=#236 id=236 data-nosnippet>236</a><span class="doccomment">/// Every kind the map uses: how many exits need it, and whether it is run.
+<a href=#237 id=237 data-nosnippet>237</a></span><span class="attr">#[must_use]
+<a href=#238 id=238 data-nosnippet>238</a></span><span class="kw">pub fn </span>census(map: <span class="kw-2">&amp;</span>Map) -&gt; BTreeMap&lt;String, (usize, bool)&gt; {
+<a href=#239 id=239 data-nosnippet>239</a>    <span class="kw">let </span><span class="kw-2">mut </span>census = BTreeMap::new();
+<a href=#240 id=240 data-nosnippet>240</a>    <span class="kw">for </span>exit <span class="kw">in </span>routes(map) {
+<a href=#241 id=241 data-nosnippet>241</a>        <span class="kw">let </span><span class="kw-2">mut </span>needs = kinds(exit);
+<a href=#242 id=242 data-nosnippet>242</a>        needs.sort_unstable();
+<a href=#243 id=243 data-nosnippet>243</a>        needs.dedup();
+<a href=#244 id=244 data-nosnippet>244</a>        <span class="kw">for </span>kind <span class="kw">in </span>needs {
+<a href=#245 id=245 data-nosnippet>245</a>            <span class="kw">let </span>runs = RUNS.contains(<span class="kw-2">&amp;</span>kind.as_str());
+<a href=#246 id=246 data-nosnippet>246</a>            census.entry(kind).or_insert((<span class="number">0</span>, runs)).<span class="number">0 </span>+= <span class="number">1</span>;
+<a href=#247 id=247 data-nosnippet>247</a>        }
+<a href=#248 id=248 data-nosnippet>248</a>    }
+<a href=#249 id=249 data-nosnippet>249</a>    census
+<a href=#250 id=250 data-nosnippet>250</a>}
+<a href=#251 id=251 data-nosnippet>251</a>
+<a href=#252 id=252 data-nosnippet>252</a><span class="doccomment">/// How many of the map's exits the walker cannot cross yet, of how many.
+<a href=#253 id=253 data-nosnippet>253</a></span><span class="attr">#[must_use]
+<a href=#254 id=254 data-nosnippet>254</a></span><span class="kw">pub fn </span>unwalked(map: <span class="kw-2">&amp;</span>Map) -&gt; (usize, usize) {
+<a href=#255 id=255 data-nosnippet>255</a>    <span class="kw">let </span>(<span class="kw-2">mut </span>not, <span class="kw-2">mut </span>all) = (<span class="number">0</span>, <span class="number">0</span>);
+<a href=#256 id=256 data-nosnippet>256</a>    <span class="kw">for </span>exit <span class="kw">in </span>routes(map) {
+<a href=#257 id=257 data-nosnippet>257</a>        all += <span class="number">1</span>;
+<a href=#258 id=258 data-nosnippet>258</a>        <span class="kw">if </span>!walked(exit) {
+<a href=#259 id=259 data-nosnippet>259</a>            not += <span class="number">1</span>;
+<a href=#260 id=260 data-nosnippet>260</a>        }
+<a href=#261 id=261 data-nosnippet>261</a>    }
+<a href=#262 id=262 data-nosnippet>262</a>    (not, all)
+<a href=#263 id=263 data-nosnippet>263</a>}
+<a href=#264 id=264 data-nosnippet>264</a>
+<a href=#265 id=265 data-nosnippet>265</a><span class="doccomment">/// The census as lines a person reads: what is left, most-used first.
+<a href=#266 id=266 data-nosnippet>266</a></span><span class="attr">#[must_use]
+<a href=#267 id=267 data-nosnippet>267</a></span><span class="kw">pub fn </span>report(map: <span class="kw-2">&amp;</span>Map) -&gt; Vec&lt;String&gt; {
+<a href=#268 id=268 data-nosnippet>268</a>    <span class="kw">let </span>(not, all) = unwalked(map);
+<a href=#269 id=269 data-nosnippet>269</a>    <span class="kw">let </span><span class="kw-2">mut </span>left: Vec&lt;(String, usize)&gt; = census(map)
+<a href=#270 id=270 data-nosnippet>270</a>        .into_iter()
+<a href=#271 id=271 data-nosnippet>271</a>        .filter(|(<span class="kw">_</span>, (<span class="kw">_</span>, runs))| !runs)
+<a href=#272 id=272 data-nosnippet>272</a>        .map(|(kind, (exits, <span class="kw">_</span>))| (kind, exits))
+<a href=#273 id=273 data-nosnippet>273</a>        .collect();
+<a href=#274 id=274 data-nosnippet>274</a>    left.sort_by(|a, b| b.<span class="number">1</span>.cmp(<span class="kw-2">&amp;</span>a.<span class="number">1</span>).then_with(|| a.<span class="number">0</span>.cmp(<span class="kw-2">&amp;</span>b.<span class="number">0</span>)));
+<a href=#275 id=275 data-nosnippet>275</a>    <span class="kw">let </span><span class="kw-2">mut </span>lines = <span class="macro">vec!</span>[<span class="macro">format!</span>(
+<a href=#276 id=276 data-nosnippet>276</a>        <span class="string">"Travel walks {} of the map's {all} exits; {not} are left, needing {} kinds:"</span>,
+<a href=#277 id=277 data-nosnippet>277</a>        all - not,
+<a href=#278 id=278 data-nosnippet>278</a>        left.len()
+<a href=#279 id=279 data-nosnippet>279</a>    )];
+<a href=#280 id=280 data-nosnippet>280</a>    lines.extend(
+<a href=#281 id=281 data-nosnippet>281</a>        left.into_iter()
+<a href=#282 id=282 data-nosnippet>282</a>            .map(|(kind, exits)| <span class="macro">format!</span>(<span class="string">"  {exits:&gt;6}  {kind}"</span>)),
+<a href=#283 id=283 data-nosnippet>283</a>    );
+<a href=#284 id=284 data-nosnippet>284</a>    lines
+<a href=#285 id=285 data-nosnippet>285</a>}
+<a href=#286 id=286 data-nosnippet>286</a>
+<a href=#287 id=287 data-nosnippet>287</a><span class="attr">#[cfg(test)]
+<a href=#288 id=288 data-nosnippet>288</a></span><span class="kw">mod </span>tests {
+<a href=#289 id=289 data-nosnippet>289</a>    <span class="kw">use </span>cena_map::Cost;
+<a href=#290 id=290 data-nosnippet>290</a>
+<a href=#291 id=291 data-nosnippet>291</a>    <span class="kw">use </span>super::<span class="kw-2">*</span>;
+<a href=#292 id=292 data-nosnippet>292</a>
+<a href=#293 id=293 data-nosnippet>293</a>    <span class="doccomment">/// The ratchet: the built-in map's exits not yet walked, held exactly.
+<a href=#294 id=294 data-nosnippet>294</a>    /// Lower it when the walker runs more; it may never rise.
+<a href=#295 id=295 data-nosnippet>295</a>    </span><span class="kw">const </span>UNWALKED: usize = <span class="number">0</span>;
+<a href=#296 id=296 data-nosnippet>296</a>
+<a href=#297 id=297 data-nosnippet>297</a>    <span class="attr">#[test]
+<a href=#298 id=298 data-nosnippet>298</a>    </span><span class="kw">fn </span>the_count_of_what_is_not_walked_yet() {
+<a href=#299 id=299 data-nosnippet>299</a>        <span class="kw">let </span>map = cena_map::binary::decode(cena_gs_map::GS_MAP).expect(<span class="string">"the built-in map"</span>);
+<a href=#300 id=300 data-nosnippet>300</a>        <span class="kw">let </span>(not, all) = unwalked(<span class="kw-2">&amp;</span>map);
+<a href=#301 id=301 data-nosnippet>301</a>        <span class="macro">assert_eq!</span>(not, UNWALKED, <span class="string">"{}"</span>, report(<span class="kw-2">&amp;</span>map).join(<span class="string">"\n"</span>));
+<a href=#302 id=302 data-nosnippet>302</a>        <span class="macro">assert!</span>(all &gt;= not);
+<a href=#303 id=303 data-nosnippet>303</a>    }
+<a href=#304 id=304 data-nosnippet>304</a>
+<a href=#305 id=305 data-nosnippet>305</a>    <span class="doccomment">/// `walked`, which makes no string, agrees with `kinds` checked
+<a href=#306 id=306 data-nosnippet>306</a>    /// against `RUNS` for every exit of the built-in map, and for one of
+<a href=#307 id=307 data-nosnippet>307</a>    /// each kind the map does not have.
+<a href=#308 id=308 data-nosnippet>308</a>    </span><span class="attr">#[test]
+<a href=#309 id=309 data-nosnippet>309</a>    </span><span class="kw">fn </span>walked_agrees_with_the_kinds_named() {
+<a href=#310 id=310 data-nosnippet>310</a>        <span class="kw">let </span>map = cena_map::binary::decode(cena_gs_map::GS_MAP).expect(<span class="string">"the built-in map"</span>);
+<a href=#311 id=311 data-nosnippet>311</a>        <span class="kw">let </span>by_kinds = |exit: <span class="kw-2">&amp;</span>Exit| kinds(exit).iter().all(|kind| RUNS.contains(<span class="kw-2">&amp;</span>kind.as_str()));
+<a href=#312 id=312 data-nosnippet>312</a>        <span class="kw">for </span>exit <span class="kw">in </span>map.rooms().iter().flat_map(|room| <span class="kw-2">&amp;</span>room.exits) {
+<a href=#313 id=313 data-nosnippet>313</a>            <span class="macro">assert_eq!</span>(walked(exit), by_kinds(exit), <span class="string">"{:?}"</span>, kinds(exit));
+<a href=#314 id=314 data-nosnippet>314</a>        }
+<a href=#315 id=315 data-nosnippet>315</a>        <span class="kw">let </span>made = |crossing, cost| Exit {
+<a href=#316 id=316 data-nosnippet>316</a>            to: cena_map::RoomId(<span class="number">1</span>),
+<a href=#317 id=317 data-nosnippet>317</a>            kind: cena_map::ExitKind::Cardinal,
+<a href=#318 id=318 data-nosnippet>318</a>            crossing,
+<a href=#319 id=319 data-nosnippet>319</a>            cost,
+<a href=#320 id=320 data-nosnippet>320</a>            dirto: <span class="prelude-val">None</span>,
+<a href=#321 id=321 data-nosnippet>321</a>        };
+<a href=#322 id=322 data-nosnippet>322</a>        <span class="kw">for </span>exit <span class="kw">in </span>[
+<a href=#323 id=323 data-nosnippet>323</a>            made(
+<a href=#324 id=324 data-nosnippet>324</a>                Crossing::Unknown(<span class="string">"ghost"</span>.to_owned()),
+<a href=#325 id=325 data-nosnippet>325</a>                <span class="prelude-val">Some</span>(Cost::Fixed(<span class="number">0.2</span>)),
+<a href=#326 id=326 data-nosnippet>326</a>            ),
+<a href=#327 id=327 data-nosnippet>327</a>            made(Crossing::Command(<span class="string">"north"</span>.to_owned()), <span class="prelude-val">None</span>),
+<a href=#328 id=328 data-nosnippet>328</a>        ] {
+<a href=#329 id=329 data-nosnippet>329</a>            <span class="macro">assert_eq!</span>(walked(<span class="kw-2">&amp;</span>exit), by_kinds(<span class="kw-2">&amp;</span>exit), <span class="string">"{:?}"</span>, kinds(<span class="kw-2">&amp;</span>exit));
+<a href=#330 id=330 data-nosnippet>330</a>        }
+<a href=#331 id=331 data-nosnippet>331</a>    }
+<a href=#332 id=332 data-nosnippet>332</a>
+<a href=#333 id=333 data-nosnippet>333</a>    <span class="doccomment">/// Nothing in the map is beyond the vocabulary: every exit is a kind the
+<a href=#334 id=334 data-nosnippet>334</a>    /// walker can be taught.
+<a href=#335 id=335 data-nosnippet>335</a>    </span><span class="attr">#[test]
+<a href=#336 id=336 data-nosnippet>336</a>    </span><span class="kw">fn </span>the_map_holds_nothing_unported() {
+<a href=#337 id=337 data-nosnippet>337</a>        <span class="kw">let </span>map = cena_map::binary::decode(cena_gs_map::GS_MAP).expect(<span class="string">"the built-in map"</span>);
+<a href=#338 id=338 data-nosnippet>338</a>        <span class="kw">let </span>strays: Vec&lt;String&gt; = census(<span class="kw-2">&amp;</span>map)
+<a href=#339 id=339 data-nosnippet>339</a>            .into_keys()
+<a href=#340 id=340 data-nosnippet>340</a>            .filter(|kind| kind.starts_with(<span class="string">"unported"</span>) || kind.starts_with(<span class="string">"unknown"</span>))
+<a href=#341 id=341 data-nosnippet>341</a>            .collect();
+<a href=#342 id=342 data-nosnippet>342</a>        <span class="macro">assert_eq!</span>(strays, Vec::&lt;String&gt;::new());
+<a href=#343 id=343 data-nosnippet>343</a>    }
+<a href=#344 id=344 data-nosnippet>344</a>
+<a href=#345 id=345 data-nosnippet>345</a>    <span class="attr">#[test]
+<a href=#346 id=346 data-nosnippet>346</a>    </span><span class="kw">fn </span>an_exit_is_walked_only_when_all_it_needs_is_run() {
+<a href=#347 id=347 data-nosnippet>347</a>        <span class="kw">let </span>exit = |crossing| Exit {
+<a href=#348 id=348 data-nosnippet>348</a>            to: cena_map::RoomId(<span class="number">1</span>),
+<a href=#349 id=349 data-nosnippet>349</a>            kind: cena_map::ExitKind::Cardinal,
+<a href=#350 id=350 data-nosnippet>350</a>            crossing,
+<a href=#351 id=351 data-nosnippet>351</a>            cost: <span class="prelude-val">Some</span>(Cost::Fixed(<span class="number">0.2</span>)),
+<a href=#352 id=352 data-nosnippet>352</a>            dirto: <span class="prelude-val">None</span>,
+<a href=#353 id=353 data-nosnippet>353</a>        };
+<a href=#354 id=354 data-nosnippet>354</a>        <span class="kw">let </span>north = exit(Crossing::Command(<span class="string">"north"</span>.into()));
+<a href=#355 id=355 data-nosnippet>355</a>        <span class="macro">assert_eq!</span>(kinds(<span class="kw-2">&amp;</span>north), [<span class="string">"command"</span>, <span class="string">"cost Fixed"</span>]);
+<a href=#356 id=356 data-nosnippet>356</a>        <span class="macro">assert!</span>(walked(<span class="kw-2">&amp;</span>north), <span class="string">"a plain exit is walked"</span>);
+<a href=#357 id=357 data-nosnippet>357</a>        <span class="kw">let </span><span class="kw-2">mut </span>free = north.clone();
+<a href=#358 id=358 data-nosnippet>358</a>        free.cost = <span class="prelude-val">None</span>;
+<a href=#359 id=359 data-nosnippet>359</a>        <span class="macro">assert_eq!</span>(kinds(<span class="kw-2">&amp;</span>free), [<span class="string">"command"</span>, <span class="string">"no cost"</span>]);
+<a href=#360 id=360 data-nosnippet>360</a>        <span class="macro">assert!</span>(!walked(<span class="kw-2">&amp;</span>free));
+<a href=#361 id=361 data-nosnippet>361</a>    }
+<a href=#362 id=362 data-nosnippet>362</a>}
 </code></pre></div></section></main></body></html>

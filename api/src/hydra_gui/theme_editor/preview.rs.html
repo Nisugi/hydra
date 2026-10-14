@@ -137,25 +137,26 @@
 <a href=#137 id=137 data-nosnippet>137</a>    <span class="kw">for </span>group <span class="kw">in </span>[
 <a href=#138 id=138 data-nosnippet>138</a>        Group::Surfaces,
 <a href=#139 id=139 data-nosnippet>139</a>        Group::Text,
-<a href=#140 id=140 data-nosnippet>140</a>        Group::Vitals,
-<a href=#141 id=141 data-nosnippet>141</a>        Group::Status,
-<a href=#142 id=142 data-nosnippet>142</a>        Group::Injuries,
-<a href=#143 id=143 data-nosnippet>143</a>        Group::Map,
-<a href=#144 id=144 data-nosnippet>144</a>        Group::Marks,
-<a href=#145 id=145 data-nosnippet>145</a>        Group::Chrome,
-<a href=#146 id=146 data-nosnippet>146</a>    ] {
-<a href=#147 id=147 data-nosnippet>147</a>        ui.horizontal_wrapped(|ui| {
-<a href=#148 id=148 data-nosnippet>148</a>            <span class="kw">for </span>token <span class="kw">in </span>Token::ALL.into_iter().filter(|t| t.group() == group) {
-<a href=#149 id=149 data-nosnippet>149</a>                <span class="kw">let </span>(rect, response) =
-<a href=#150 id=150 data-nosnippet>150</a>                    ui.allocate_exact_size(egui::vec2(<span class="number">22.0</span>, <span class="number">16.0</span>), egui::Sense::hover());
-<a href=#151 id=151 data-nosnippet>151</a>                ui.painter().rect_filled(rect, <span class="number">2.0</span>, of(token));
-<a href=#152 id=152 data-nosnippet>152</a>                response.on_hover_text(<span class="macro">format!</span>(
-<a href=#153 id=153 data-nosnippet>153</a>                    <span class="string">"{}: {}"</span>,
-<a href=#154 id=154 data-nosnippet>154</a>                    token.name(),
-<a href=#155 id=155 data-nosnippet>155</a>                    hydra_ui::theme::hex(outfit.palette.get(token))
-<a href=#156 id=156 data-nosnippet>156</a>                ));
-<a href=#157 id=157 data-nosnippet>157</a>            }
-<a href=#158 id=158 data-nosnippet>158</a>        });
-<a href=#159 id=159 data-nosnippet>159</a>    }
-<a href=#160 id=160 data-nosnippet>160</a>}
+<a href=#140 id=140 data-nosnippet>140</a>        Group::Channels,
+<a href=#141 id=141 data-nosnippet>141</a>        Group::Vitals,
+<a href=#142 id=142 data-nosnippet>142</a>        Group::Status,
+<a href=#143 id=143 data-nosnippet>143</a>        Group::Injuries,
+<a href=#144 id=144 data-nosnippet>144</a>        Group::Map,
+<a href=#145 id=145 data-nosnippet>145</a>        Group::Marks,
+<a href=#146 id=146 data-nosnippet>146</a>        Group::Chrome,
+<a href=#147 id=147 data-nosnippet>147</a>    ] {
+<a href=#148 id=148 data-nosnippet>148</a>        ui.horizontal_wrapped(|ui| {
+<a href=#149 id=149 data-nosnippet>149</a>            <span class="kw">for </span>token <span class="kw">in </span>Token::ALL.into_iter().filter(|t| t.group() == group) {
+<a href=#150 id=150 data-nosnippet>150</a>                <span class="kw">let </span>(rect, response) =
+<a href=#151 id=151 data-nosnippet>151</a>                    ui.allocate_exact_size(egui::vec2(<span class="number">22.0</span>, <span class="number">16.0</span>), egui::Sense::hover());
+<a href=#152 id=152 data-nosnippet>152</a>                ui.painter().rect_filled(rect, <span class="number">2.0</span>, of(token));
+<a href=#153 id=153 data-nosnippet>153</a>                response.on_hover_text(<span class="macro">format!</span>(
+<a href=#154 id=154 data-nosnippet>154</a>                    <span class="string">"{}: {}"</span>,
+<a href=#155 id=155 data-nosnippet>155</a>                    token.name(),
+<a href=#156 id=156 data-nosnippet>156</a>                    hydra_ui::theme::hex(outfit.palette.get(token))
+<a href=#157 id=157 data-nosnippet>157</a>                ));
+<a href=#158 id=158 data-nosnippet>158</a>            }
+<a href=#159 id=159 data-nosnippet>159</a>        });
+<a href=#160 id=160 data-nosnippet>160</a>    }
+<a href=#161 id=161 data-nosnippet>161</a>}
 </code></pre></div></section></main></body></html>

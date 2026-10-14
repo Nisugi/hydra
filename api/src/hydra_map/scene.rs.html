@@ -78,94 +78,149 @@
 <a href=#78 id=78 data-nosnippet>78</a>    </span><span class="kw">pub </span>min: (i32, i32),
 <a href=#79 id=79 data-nosnippet>79</a>    <span class="doccomment">/// The greatest.
 <a href=#80 id=80 data-nosnippet>80</a>    </span><span class="kw">pub </span>max: (i32, i32),
-<a href=#81 id=81 data-nosnippet>81</a>}
-<a href=#82 id=82 data-nosnippet>82</a>
-<a href=#83 id=83 data-nosnippet>83</a><span class="doccomment">/// One room on the sheet.
-<a href=#84 id=84 data-nosnippet>84</a></span><span class="attr">#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-<a href=#85 id=85 data-nosnippet>85</a></span><span class="kw">pub struct </span>SceneRoom {
-<a href=#86 id=86 data-nosnippet>86</a>    <span class="doccomment">/// The map's room number.
-<a href=#87 id=87 data-nosnippet>87</a>    </span><span class="kw">pub </span>id: u32,
-<a href=#88 id=88 data-nosnippet>88</a>    <span class="doccomment">/// Its cell.
-<a href=#89 id=89 data-nosnippet>89</a>    </span><span class="kw">pub </span>cell: (i32, i32),
-<a href=#90 id=90 data-nosnippet>90</a>    <span class="doccomment">/// The room's title, `[Town Square, Center]`.
-<a href=#91 id=91 data-nosnippet>91</a>    </span><span class="kw">pub </span>title: String,
-<a href=#92 id=92 data-nosnippet>92</a>    <span class="doccomment">/// The building it is in, by index into [`MapScene::buildings`];
-<a href=#93 id=93 data-nosnippet>93</a>    /// `None` for a street or the country between.
-<a href=#94 id=94 data-nosnippet>94</a>    </span><span class="kw">pub </span>building: <span class="prelude-ty">Option</span>&lt;usize&gt;,
-<a href=#95 id=95 data-nosnippet>95</a>    <span class="doccomment">/// Its ways out as the game lists them (`Obvious paths: north, east`),
-<a href=#96 id=96 data-nosnippet>96</a>    /// for the card a hover shows.
-<a href=#97 id=97 data-nosnippet>97</a>    </span><span class="attr">#[serde(default)]
-<a href=#98 id=98 data-nosnippet>98</a>    </span><span class="kw">pub </span>paths: String,
-<a href=#99 id=99 data-nosnippet>99</a>    <span class="doccomment">/// What kind of place it is: `bank`, `healer`, `gemshop`...
-<a href=#100 id=100 data-nosnippet>100</a>    </span><span class="attr">#[serde(default)]
-<a href=#101 id=101 data-nosnippet>101</a>    </span><span class="kw">pub </span>marks: Vec&lt;String&gt;,
-<a href=#102 id=102 data-nosnippet>102</a>}
-<a href=#103 id=103 data-nosnippet>103</a>
-<a href=#104 id=104 data-nosnippet>104</a><span class="doccomment">/// How a line is drawn.
-<a href=#105 id=105 data-nosnippet>105</a></span><span class="attr">#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-<a href=#106 id=106 data-nosnippet>106</a></span><span class="kw">pub enum </span>EdgeKind {
-<a href=#107 id=107 data-nosnippet>107</a>    <span class="doccomment">/// An exit with a compass direction: a solid line.
-<a href=#108 id=108 data-nosnippet>108</a>    </span>Directional,
-<a href=#109 id=109 data-nosnippet>109</a>    <span class="doccomment">/// An exit with no direction (`go door`, `climb rope`): a dashed line,
-<a href=#110 id=110 data-nosnippet>110</a>    /// which may bend round what is in its way.
-<a href=#111 id=111 data-nosnippet>111</a>    </span>Connector,
-<a href=#112 id=112 data-nosnippet>112</a>    <span class="doccomment">/// A link too long to draw across the sheet: a short mark at each end,
-<a href=#113 id=113 data-nosnippet>113</a>    /// each labelled with the room at the other.
-<a href=#114 id=114 data-nosnippet>114</a>    </span>Stub,
-<a href=#115 id=115 data-nosnippet>115</a>}
-<a href=#116 id=116 data-nosnippet>116</a>
-<a href=#117 id=117 data-nosnippet>117</a><span class="doccomment">/// One line between two rooms.
-<a href=#118 id=118 data-nosnippet>118</a></span><span class="attr">#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-<a href=#119 id=119 data-nosnippet>119</a></span><span class="kw">pub struct </span>SceneEdge {
-<a href=#120 id=120 data-nosnippet>120</a>    <span class="doccomment">/// One end's room number.
-<a href=#121 id=121 data-nosnippet>121</a>    </span><span class="kw">pub </span>a: u32,
-<a href=#122 id=122 data-nosnippet>122</a>    <span class="doccomment">/// The other's.
-<a href=#123 id=123 data-nosnippet>123</a>    </span><span class="kw">pub </span>b: u32,
-<a href=#124 id=124 data-nosnippet>124</a>    <span class="doccomment">/// How it is drawn.
-<a href=#125 id=125 data-nosnippet>125</a>    </span><span class="kw">pub </span>kind: EdgeKind,
-<a href=#126 id=126 data-nosnippet>126</a>    <span class="doccomment">/// The line from `a` to `b`, both ends and every bend, as points.
-<a href=#127 id=127 data-nosnippet>127</a>    </span><span class="kw">pub </span>path: Vec&lt;(f32, f32)&gt;,
-<a href=#128 id=128 data-nosnippet>128</a>    <span class="doccomment">/// What a connector says, when it is worth saying (`dock`, `gate`).
-<a href=#129 id=129 data-nosnippet>129</a>    </span><span class="kw">pub </span>label: <span class="prelude-ty">Option</span>&lt;String&gt;,
-<a href=#130 id=130 data-nosnippet>130</a>    <span class="doccomment">/// The building the line is inside, when both ends are in one.
-<a href=#131 id=131 data-nosnippet>131</a>    </span><span class="kw">pub </span>building: <span class="prelude-ty">Option</span>&lt;usize&gt;,
+<a href=#81 id=81 data-nosnippet>81</a>    <span class="doccomment">/// Where each room is among `rooms`, by its number, built the first time
+<a href=#82 id=82 data-nosnippet>82</a>    /// one is asked for: the minimap asks for the rooms of a route every
+<a href=#83 id=83 data-nosnippet>83</a>    /// frame.
+<a href=#84 id=84 data-nosnippet>84</a>    </span><span class="attr">#[serde(skip)]
+<a href=#85 id=85 data-nosnippet>85</a>    </span><span class="kw">pub </span>by_id: ById,
+<a href=#86 id=86 data-nosnippet>86</a>}
+<a href=#87 id=87 data-nosnippet>87</a>
+<a href=#88 id=88 data-nosnippet>88</a><span class="doccomment">/// Where each room is among a scene's rooms, by its number, once asked.
+<a href=#89 id=89 data-nosnippet>89</a>/// Built from the rooms, so two scenes with the same rooms compare equal
+<a href=#90 id=90 data-nosnippet>90</a>/// whether or not either has been asked yet.
+<a href=#91 id=91 data-nosnippet>91</a></span><span class="attr">#[derive(Clone, Debug, Default)]
+<a href=#92 id=92 data-nosnippet>92</a></span><span class="kw">pub struct </span>ById(std::sync::OnceLock&lt;std::collections::HashMap&lt;u32, usize&gt;&gt;);
+<a href=#93 id=93 data-nosnippet>93</a>
+<a href=#94 id=94 data-nosnippet>94</a><span class="kw">impl </span>PartialEq <span class="kw">for </span>ById {
+<a href=#95 id=95 data-nosnippet>95</a>    <span class="kw">fn </span>eq(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw">_</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; bool {
+<a href=#96 id=96 data-nosnippet>96</a>        <span class="bool-val">true
+<a href=#97 id=97 data-nosnippet>97</a>    </span>}
+<a href=#98 id=98 data-nosnippet>98</a>}
+<a href=#99 id=99 data-nosnippet>99</a>
+<a href=#100 id=100 data-nosnippet>100</a><span class="doccomment">/// One room on the sheet.
+<a href=#101 id=101 data-nosnippet>101</a></span><span class="attr">#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+<a href=#102 id=102 data-nosnippet>102</a></span><span class="kw">pub struct </span>SceneRoom {
+<a href=#103 id=103 data-nosnippet>103</a>    <span class="doccomment">/// The map's room number.
+<a href=#104 id=104 data-nosnippet>104</a>    </span><span class="kw">pub </span>id: u32,
+<a href=#105 id=105 data-nosnippet>105</a>    <span class="doccomment">/// Its cell.
+<a href=#106 id=106 data-nosnippet>106</a>    </span><span class="kw">pub </span>cell: (i32, i32),
+<a href=#107 id=107 data-nosnippet>107</a>    <span class="doccomment">/// The room's title, `[Town Square, Center]`.
+<a href=#108 id=108 data-nosnippet>108</a>    </span><span class="kw">pub </span>title: String,
+<a href=#109 id=109 data-nosnippet>109</a>    <span class="doccomment">/// The building it is in, by index into [`MapScene::buildings`];
+<a href=#110 id=110 data-nosnippet>110</a>    /// `None` for a street or the country between.
+<a href=#111 id=111 data-nosnippet>111</a>    </span><span class="kw">pub </span>building: <span class="prelude-ty">Option</span>&lt;usize&gt;,
+<a href=#112 id=112 data-nosnippet>112</a>    <span class="doccomment">/// Its ways out as the game lists them (`Obvious paths: north, east`),
+<a href=#113 id=113 data-nosnippet>113</a>    /// for the card a hover shows.
+<a href=#114 id=114 data-nosnippet>114</a>    </span><span class="attr">#[serde(default)]
+<a href=#115 id=115 data-nosnippet>115</a>    </span><span class="kw">pub </span>paths: String,
+<a href=#116 id=116 data-nosnippet>116</a>    <span class="doccomment">/// What kind of place it is: `bank`, `healer`, `gemshop`...
+<a href=#117 id=117 data-nosnippet>117</a>    </span><span class="attr">#[serde(default)]
+<a href=#118 id=118 data-nosnippet>118</a>    </span><span class="kw">pub </span>marks: Vec&lt;String&gt;,
+<a href=#119 id=119 data-nosnippet>119</a>}
+<a href=#120 id=120 data-nosnippet>120</a>
+<a href=#121 id=121 data-nosnippet>121</a><span class="doccomment">/// How a line is drawn.
+<a href=#122 id=122 data-nosnippet>122</a></span><span class="attr">#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+<a href=#123 id=123 data-nosnippet>123</a></span><span class="kw">pub enum </span>EdgeKind {
+<a href=#124 id=124 data-nosnippet>124</a>    <span class="doccomment">/// An exit with a compass direction: a solid line.
+<a href=#125 id=125 data-nosnippet>125</a>    </span>Directional,
+<a href=#126 id=126 data-nosnippet>126</a>    <span class="doccomment">/// An exit with no direction (`go door`, `climb rope`): a dashed line,
+<a href=#127 id=127 data-nosnippet>127</a>    /// which may bend round what is in its way.
+<a href=#128 id=128 data-nosnippet>128</a>    </span>Connector,
+<a href=#129 id=129 data-nosnippet>129</a>    <span class="doccomment">/// A link too long to draw across the sheet: a short mark at each end,
+<a href=#130 id=130 data-nosnippet>130</a>    /// each labelled with the room at the other.
+<a href=#131 id=131 data-nosnippet>131</a>    </span>Stub,
 <a href=#132 id=132 data-nosnippet>132</a>}
 <a href=#133 id=133 data-nosnippet>133</a>
-<a href=#134 id=134 data-nosnippet>134</a><span class="doccomment">/// A way into a place not drawn: a dot beside the street room it is
-<a href=#135 id=135 data-nosnippet>135</a>/// entered from.
-<a href=#136 id=136 data-nosnippet>136</a></span><span class="attr">#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-<a href=#137 id=137 data-nosnippet>137</a></span><span class="kw">pub struct </span>SceneDoor {
-<a href=#138 id=138 data-nosnippet>138</a>    <span class="doccomment">/// The street room.
-<a href=#139 id=139 data-nosnippet>139</a>    </span><span class="kw">pub </span>street: u32,
-<a href=#140 id=140 data-nosnippet>140</a>    <span class="doccomment">/// The first room inside.
-<a href=#141 id=141 data-nosnippet>141</a>    </span><span class="kw">pub </span>inside: u32,
-<a href=#142 id=142 data-nosnippet>142</a>    <span class="doccomment">/// Where the dot is, as a point.
-<a href=#143 id=143 data-nosnippet>143</a>    </span><span class="kw">pub </span>at: (f32, f32),
-<a href=#144 id=144 data-nosnippet>144</a>    <span class="doccomment">/// The place behind it (`Angargreft`, `Trader's Bank`).
-<a href=#145 id=145 data-nosnippet>145</a>    </span><span class="kw">pub </span>place: String,
-<a href=#146 id=146 data-nosnippet>146</a>    <span class="doccomment">/// Whether the place is big enough to name on the map.
-<a href=#147 id=147 data-nosnippet>147</a>    </span><span class="kw">pub </span>named: bool,
-<a href=#148 id=148 data-nosnippet>148</a>    <span class="doccomment">/// What the place is, as its first room marks it.
-<a href=#149 id=149 data-nosnippet>149</a>    </span><span class="attr">#[serde(default)]
-<a href=#150 id=150 data-nosnippet>150</a>    </span><span class="kw">pub </span>marks: Vec&lt;String&gt;,
-<a href=#151 id=151 data-nosnippet>151</a>}
-<a href=#152 id=152 data-nosnippet>152</a>
-<a href=#153 id=153 data-nosnippet>153</a><span class="doccomment">/// A building's name, drawn beside it.
-<a href=#154 id=154 data-nosnippet>154</a></span><span class="attr">#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-<a href=#155 id=155 data-nosnippet>155</a></span><span class="kw">pub struct </span>SceneLabel {
-<a href=#156 id=156 data-nosnippet>156</a>    <span class="doccomment">/// The name.
-<a href=#157 id=157 data-nosnippet>157</a>    </span><span class="kw">pub </span>text: String,
-<a href=#158 id=158 data-nosnippet>158</a>    <span class="doccomment">/// Where it is drawn, as a point: its building's top-left.
-<a href=#159 id=159 data-nosnippet>159</a>    </span><span class="kw">pub </span>at: (f32, f32),
-<a href=#160 id=160 data-nosnippet>160</a>    <span class="doccomment">/// The building it names, by index into [`MapScene::buildings`].
-<a href=#161 id=161 data-nosnippet>161</a>    </span><span class="kw">pub </span>building: <span class="prelude-ty">Option</span>&lt;usize&gt;,
-<a href=#162 id=162 data-nosnippet>162</a>}
-<a href=#163 id=163 data-nosnippet>163</a>
-<a href=#164 id=164 data-nosnippet>164</a><span class="kw">impl </span>MapScene {
-<a href=#165 id=165 data-nosnippet>165</a>    <span class="doccomment">/// The room with number `id`, if it is drawn here.
-<a href=#166 id=166 data-nosnippet>166</a>    </span><span class="attr">#[must_use]
-<a href=#167 id=167 data-nosnippet>167</a>    </span><span class="kw">pub fn </span>room(<span class="kw-2">&amp;</span><span class="self">self</span>, id: u32) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>SceneRoom&gt; {
-<a href=#168 id=168 data-nosnippet>168</a>        <span class="self">self</span>.rooms.iter().find(|r| r.id == id)
-<a href=#169 id=169 data-nosnippet>169</a>    }
-<a href=#170 id=170 data-nosnippet>170</a>}
+<a href=#134 id=134 data-nosnippet>134</a><span class="doccomment">/// One line between two rooms.
+<a href=#135 id=135 data-nosnippet>135</a></span><span class="attr">#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+<a href=#136 id=136 data-nosnippet>136</a></span><span class="kw">pub struct </span>SceneEdge {
+<a href=#137 id=137 data-nosnippet>137</a>    <span class="doccomment">/// One end's room number.
+<a href=#138 id=138 data-nosnippet>138</a>    </span><span class="kw">pub </span>a: u32,
+<a href=#139 id=139 data-nosnippet>139</a>    <span class="doccomment">/// The other's.
+<a href=#140 id=140 data-nosnippet>140</a>    </span><span class="kw">pub </span>b: u32,
+<a href=#141 id=141 data-nosnippet>141</a>    <span class="doccomment">/// How it is drawn.
+<a href=#142 id=142 data-nosnippet>142</a>    </span><span class="kw">pub </span>kind: EdgeKind,
+<a href=#143 id=143 data-nosnippet>143</a>    <span class="doccomment">/// The line from `a` to `b`, both ends and every bend, as points.
+<a href=#144 id=144 data-nosnippet>144</a>    </span><span class="kw">pub </span>path: Vec&lt;(f32, f32)&gt;,
+<a href=#145 id=145 data-nosnippet>145</a>    <span class="doccomment">/// What a connector says, when it is worth saying (`dock`, `gate`).
+<a href=#146 id=146 data-nosnippet>146</a>    </span><span class="kw">pub </span>label: <span class="prelude-ty">Option</span>&lt;String&gt;,
+<a href=#147 id=147 data-nosnippet>147</a>    <span class="doccomment">/// The building the line is inside, when both ends are in one.
+<a href=#148 id=148 data-nosnippet>148</a>    </span><span class="kw">pub </span>building: <span class="prelude-ty">Option</span>&lt;usize&gt;,
+<a href=#149 id=149 data-nosnippet>149</a>}
+<a href=#150 id=150 data-nosnippet>150</a>
+<a href=#151 id=151 data-nosnippet>151</a><span class="doccomment">/// A way into a place not drawn: a dot beside the street room it is
+<a href=#152 id=152 data-nosnippet>152</a>/// entered from.
+<a href=#153 id=153 data-nosnippet>153</a></span><span class="attr">#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+<a href=#154 id=154 data-nosnippet>154</a></span><span class="kw">pub struct </span>SceneDoor {
+<a href=#155 id=155 data-nosnippet>155</a>    <span class="doccomment">/// The street room.
+<a href=#156 id=156 data-nosnippet>156</a>    </span><span class="kw">pub </span>street: u32,
+<a href=#157 id=157 data-nosnippet>157</a>    <span class="doccomment">/// The first room inside.
+<a href=#158 id=158 data-nosnippet>158</a>    </span><span class="kw">pub </span>inside: u32,
+<a href=#159 id=159 data-nosnippet>159</a>    <span class="doccomment">/// Where the dot is, as a point.
+<a href=#160 id=160 data-nosnippet>160</a>    </span><span class="kw">pub </span>at: (f32, f32),
+<a href=#161 id=161 data-nosnippet>161</a>    <span class="doccomment">/// The place behind it (`Angargreft`, `Trader's Bank`).
+<a href=#162 id=162 data-nosnippet>162</a>    </span><span class="kw">pub </span>place: String,
+<a href=#163 id=163 data-nosnippet>163</a>    <span class="doccomment">/// Whether the place is big enough to name on the map.
+<a href=#164 id=164 data-nosnippet>164</a>    </span><span class="kw">pub </span>named: bool,
+<a href=#165 id=165 data-nosnippet>165</a>    <span class="doccomment">/// What the place is, as its first room marks it.
+<a href=#166 id=166 data-nosnippet>166</a>    </span><span class="attr">#[serde(default)]
+<a href=#167 id=167 data-nosnippet>167</a>    </span><span class="kw">pub </span>marks: Vec&lt;String&gt;,
+<a href=#168 id=168 data-nosnippet>168</a>}
+<a href=#169 id=169 data-nosnippet>169</a>
+<a href=#170 id=170 data-nosnippet>170</a><span class="doccomment">/// A building's name, drawn beside it.
+<a href=#171 id=171 data-nosnippet>171</a></span><span class="attr">#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+<a href=#172 id=172 data-nosnippet>172</a></span><span class="kw">pub struct </span>SceneLabel {
+<a href=#173 id=173 data-nosnippet>173</a>    <span class="doccomment">/// The name.
+<a href=#174 id=174 data-nosnippet>174</a>    </span><span class="kw">pub </span>text: String,
+<a href=#175 id=175 data-nosnippet>175</a>    <span class="doccomment">/// Where it is drawn, as a point: its building's top-left.
+<a href=#176 id=176 data-nosnippet>176</a>    </span><span class="kw">pub </span>at: (f32, f32),
+<a href=#177 id=177 data-nosnippet>177</a>    <span class="doccomment">/// The building it names, by index into [`MapScene::buildings`].
+<a href=#178 id=178 data-nosnippet>178</a>    </span><span class="kw">pub </span>building: <span class="prelude-ty">Option</span>&lt;usize&gt;,
+<a href=#179 id=179 data-nosnippet>179</a>}
+<a href=#180 id=180 data-nosnippet>180</a>
+<a href=#181 id=181 data-nosnippet>181</a><span class="kw">impl </span>MapScene {
+<a href=#182 id=182 data-nosnippet>182</a>    <span class="doccomment">/// The room with number `id`, if it is drawn here.
+<a href=#183 id=183 data-nosnippet>183</a>    </span><span class="attr">#[must_use]
+<a href=#184 id=184 data-nosnippet>184</a>    </span><span class="kw">pub fn </span>room(<span class="kw-2">&amp;</span><span class="self">self</span>, id: u32) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>SceneRoom&gt; {
+<a href=#185 id=185 data-nosnippet>185</a>        <span class="kw">let </span>by_id = <span class="self">self</span>.by_id.<span class="number">0</span>.get_or_init(|| {
+<a href=#186 id=186 data-nosnippet>186</a>            <span class="self">self</span>.rooms
+<a href=#187 id=187 data-nosnippet>187</a>                .iter()
+<a href=#188 id=188 data-nosnippet>188</a>                .enumerate()
+<a href=#189 id=189 data-nosnippet>189</a>                .map(|(at, r)| (r.id, at))
+<a href=#190 id=190 data-nosnippet>190</a>                .collect()
+<a href=#191 id=191 data-nosnippet>191</a>        });
+<a href=#192 id=192 data-nosnippet>192</a>        by_id.get(<span class="kw-2">&amp;</span>id).and_then(|<span class="kw-2">&amp;</span>at| <span class="self">self</span>.rooms.get(at))
+<a href=#193 id=193 data-nosnippet>193</a>    }
+<a href=#194 id=194 data-nosnippet>194</a>}
+<a href=#195 id=195 data-nosnippet>195</a>
+<a href=#196 id=196 data-nosnippet>196</a><span class="attr">#[cfg(test)]
+<a href=#197 id=197 data-nosnippet>197</a></span><span class="kw">mod </span>tests {
+<a href=#198 id=198 data-nosnippet>198</a>    <span class="kw">use </span>super::<span class="kw-2">*</span>;
+<a href=#199 id=199 data-nosnippet>199</a>
+<a href=#200 id=200 data-nosnippet>200</a>    <span class="doccomment">/// A room is found by its number as a scan would find it, and none for
+<a href=#201 id=201 data-nosnippet>201</a>    /// a number no room has.
+<a href=#202 id=202 data-nosnippet>202</a>    </span><span class="attr">#[test]
+<a href=#203 id=203 data-nosnippet>203</a>    </span><span class="kw">fn </span>a_room_is_found_by_its_number() {
+<a href=#204 id=204 data-nosnippet>204</a>        <span class="kw">let </span>room = |id, cell| SceneRoom {
+<a href=#205 id=205 data-nosnippet>205</a>            id,
+<a href=#206 id=206 data-nosnippet>206</a>            cell,
+<a href=#207 id=207 data-nosnippet>207</a>            title: String::new(),
+<a href=#208 id=208 data-nosnippet>208</a>            building: <span class="prelude-val">None</span>,
+<a href=#209 id=209 data-nosnippet>209</a>            paths: String::new(),
+<a href=#210 id=210 data-nosnippet>210</a>            marks: Vec::new(),
+<a href=#211 id=211 data-nosnippet>211</a>        };
+<a href=#212 id=212 data-nosnippet>212</a>        <span class="kw">let </span>scene = MapScene {
+<a href=#213 id=213 data-nosnippet>213</a>            rooms: <span class="macro">vec!</span>[room(<span class="number">7</span>, (<span class="number">0</span>, <span class="number">0</span>)), room(<span class="number">9</span>, (<span class="number">1</span>, <span class="number">0</span>)), room(<span class="number">3</span>, (<span class="number">2</span>, <span class="number">0</span>))],
+<a href=#214 id=214 data-nosnippet>214</a>            ..MapScene::default()
+<a href=#215 id=215 data-nosnippet>215</a>        };
+<a href=#216 id=216 data-nosnippet>216</a>        <span class="kw">for </span>id <span class="kw">in </span>[<span class="number">7</span>, <span class="number">9</span>, <span class="number">3</span>, <span class="number">4</span>] {
+<a href=#217 id=217 data-nosnippet>217</a>            <span class="macro">assert_eq!</span>(
+<a href=#218 id=218 data-nosnippet>218</a>                scene.room(id).map(|r| r.cell),
+<a href=#219 id=219 data-nosnippet>219</a>                scene.rooms.iter().find(|r| r.id == id).map(|r| r.cell),
+<a href=#220 id=220 data-nosnippet>220</a>                <span class="string">"{id}"
+<a href=#221 id=221 data-nosnippet>221</a>            </span>);
+<a href=#222 id=222 data-nosnippet>222</a>        }
+<a href=#223 id=223 data-nosnippet>223</a>        <span class="macro">assert_eq!</span>(scene.room(<span class="number">9</span>).map(|r| r.cell), <span class="prelude-val">Some</span>((<span class="number">1</span>, <span class="number">0</span>)));
+<a href=#224 id=224 data-nosnippet>224</a>    }
+<a href=#225 id=225 data-nosnippet>225</a>}
 </code></pre></div></section></main></body></html>
