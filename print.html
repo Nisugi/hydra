@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-b9a4b3c6.js";
+            window.path_to_searchindex_js = "searchindex-a56a457a.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-366a6130.js"></script>
+        <script src="toc-6d2367c3.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -950,6 +950,304 @@ shows <em>Warded</em> while the spell lasts, and any trigger can ask for it
 under <strong>When</strong>: <em>indicator Warded</em>. A flag works the same way, but shows
 nowhere: it is for other triggers alone.</p>
 <div style="break-before: page; page-break-before: always;"></div>
+<h1 id="themes"><a class="header" href="#themes">Themes</a></h1>
+<p>A theme is how Hydra looks: its colours, the shape of its windows and
+controls, its fonts, and a frame round its windows if you want one. Hydra
+comes with two, <strong>Despana</strong>, dark, and <strong>Light</strong>. A theme you make is
+kept in the <code>themes</code> folder in Hydra’s <code>data</code> folder, and says only what
+it changes from the theme it is laid over.</p>
+<p>This chapter goes through the editor, then
+<a href="#making-the-colours">making the colours</a>,
+<a href="#pins">pinning a colour</a>,
+<a href="#shape-frame-and-type">shape, frame and type</a>, and
+<a href="#examples-1">examples</a>.</p>
+<h2 id="wearing-a-theme"><a class="header" href="#wearing-a-theme">Wearing a theme</a></h2>
+<ul>
+<li><strong>Settings › Window › Theme</strong>: the theme every window wears. Tick
+<strong>Follow the computer’s dark or light mode</strong> and Hydra wears the
+<strong>Light theme</strong> chosen below it while the computer is in light mode.</li>
+<li><strong>Settings</strong>, a character, its <strong>Theme</strong> page: that character’s window
+can wear a theme of its own, and an <strong>Accent</strong> of its own over it: the
+colour of what is chosen, a guide while arranging, a find’s hit.</li>
+<li>From a play window: <code>.theme list</code> lists them, <code>.theme mine &lt;name&gt;</code> (or
+<code>off</code>) chooses the character’s own, and <code>.theme accent &lt;#rrggbb&gt;</code> (or
+<code>off</code>) its accent.</li>
+</ul>
+<h2 id="the-editor"><a class="header" href="#the-editor">The editor</a></h2>
+<p>Open <strong>Settings</strong> and choose <strong>Themes</strong>, under <em>Editors</em>. The <strong>Menu</strong>,
+on the hub and on every play window’s title bar, has <strong>Themes</strong> too.</p>
+<p><img src="images/theme_editor.png" alt="The theme editor: the sections down the left, Generate open; the draft drawn on the right"></p>
+<p>Along the top:</p>
+<ul>
+<li><strong>Start from</strong>: the theme the draft begins as. A built-in theme starts
+a new one laid over it, called <em>My Despana</em> or <em>My Light</em>; one of yours
+opens as it is, to change.</li>
+<li><strong>Name</strong>: what the theme is called.</li>
+<li><strong>over</strong>: the theme it is laid over, which it takes everything it does
+not say from; <em>nothing</em> for none.</li>
+<li><strong>Wear while editing</strong>: every window wears the draft as you change it,
+while the page is open. Leave the page and Hydra wears its own theme
+again.</li>
+<li><strong>Save</strong>: writes the theme to the <code>themes</code> folder. A built-in theme is
+never written over: save under another name.</li>
+</ul>
+<p>Down the left, the sections: <em>How to</em>, a short version of this chapter;
+<em>Generate</em>; <em>Pins</em>; <em>Shape</em>; <em>Frame</em>; <em>Type</em>; and <em>Import from Wrayth</em>.
+On the right, the draft as it comes out: a room, story text, the bars, a
+button, a switch, a field and a choice, and under them every colour as a
+swatch, a row to a group. Point at a swatch for its name and value.</p>
+<h2 id="the-theme-file"><a class="header" href="#the-theme-file">The theme file</a></h2>
+<p>A saved theme is a short TOML file, holding only what differs from its
+base:</p>
+<pre><code class="language-toml">base = "Despana"
+
+[recipe]
+seed = "#c9733a"
+
+[pins]
+health = "#112233"
+fatal_crit = "#d03a3a"
+creature_death = "none"
+
+[shape]
+bar_thickness = 14
+
+[shape.corners]
+bars = 0
+
+[type]
+story_font = "Iosevka"
+</code></pre>
+<p>The editor writes it for you; you can write one by hand too.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="making-the-colours"><a class="header" href="#making-the-colours">Making the colours</a></h1>
+<p><em>Generate</em> makes every colour of the theme from two you choose, so they
+belong together: the links, the creatures, the speech and the channels
+all from one seed, each readable on the ground.</p>
+<p><img src="images/theme_generate.png" alt="Generate over nothing: an orange seed and a triadic scheme, the draft on the right"></p>
+<ul>
+<li>
+<p><strong>Seed</strong>: a colour whose hue the theme is built round. Its lightness
+and strength set how bright every colour is. Click the swatch to choose
+one.</p>
+</li>
+<li>
+<p><strong>Seeds from</strong>: the vivid colours of the theme you started from,
+offered as seeds. A click makes one the seed.</p>
+</li>
+<li>
+<p><strong>Background</strong>: what every colour must read against. A light one makes
+a light theme.</p>
+</li>
+<li>
+<p><strong>Scheme</strong>: how the colours spread round the colour wheel from the
+seed:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Scheme</th><th></th></tr>
+</thead>
+<tbody>
+<tr><td>monochrome</td><td>one hue, varied lightness and strength</td></tr>
+<tr><td>analogous</td><td>neighbours: calm, low contrast</td></tr>
+<tr><td>complementary</td><td>opposites: a strong pairing</td></tr>
+<tr><td>split</td><td>softer than complementary</td></tr>
+<tr><td>triadic</td><td>even thirds: vivid, balanced</td></tr>
+<tr><td>tetradic</td><td>two complementary pairs</td></tr>
+<tr><td>golden</td><td>the golden angle: the most separation</td></tr>
+<tr><td>compound</td><td>an analogous pair, and its opposite</td></tr>
+</tbody>
+</table>
+</div>
+</li>
+<li>
+<p><strong>Spread</strong>: how far the scheme’s colours sit from the seed’s: 0.7 close,
+1.4 far.</p>
+</li>
+<li>
+<p><strong>Contrast</strong>: how readable every colour must be on the background: 3 is
+low, 4.5 the usual floor, 7 high.</p>
+</li>
+<li>
+<p><strong>Separation</strong>: how different two colours of one group must be, so two
+channels, or health and stamina, never look alike: 0.04 low, 0.09
+medium, 0.15 high.</p>
+</li>
+<li>
+<p><strong>Room plate</strong>: the room name’s contrast on the plate under it: 2.5
+subtle, 7 hard.</p>
+</li>
+</ul>
+<p>Some colours mean something by their hue, and keep it whatever the seed:
+health is red, mana blue, a warning amber, a creature’s spell coming
+orange. The generator moves only their lightness, to suit the background.</p>
+<h2 id="over-despana-the-dials-do-nothing"><a class="header" href="#over-despana-the-dials-do-nothing">Over Despana the dials do nothing</a></h2>
+<p>Despana pins every colour as it is, and a theme laid over Despana takes
+its pins: the dials change nothing there. To make a theme from a seed,
+set <strong>over</strong> to <em>nothing</em>, or <strong>Start from</strong> <em>Light</em>, which is generated.
+Every colour you have not <a href="#pins">pinned</a> is then made by the
+generator.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="pins"><a class="header" href="#pins">Pins</a></h1>
+<p>A pin keeps a colour exactly as you set it; everything else is made by
+the generator round it. Open <em>Pins</em>: every colour Hydra draws, by group.</p>
+<p><img src="images/theme_pins.png" alt="Pins, open on the story’s colours: fatal_crit at None beside creature_death"></p>
+<p>Each row is a colour’s box, its swatch and its name, and for many, a row
+of small swatches:</p>
+<ul>
+<li>Tick the box to pin the colour as it is now; untick it to let the
+generator make it again.</li>
+<li>Click the swatch to choose a colour: that pins it.</li>
+<li>The small swatches are other hues the generator could give it. A click
+pins one.</li>
+</ul>
+<h2 id="the-groups"><a class="header" href="#the-groups">The groups</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Group</th><th>What it colours</th></tr>
+</thead>
+<tbody>
+<tr><td>Surfaces and text</td><td>the grounds, the edges, text and weak text, a selection, a tab and the shown tab</td></tr>
+<tr><td>The story and the room</td><td>the accent, links, Hydra’s own words, warnings, the room’s name and its plate, creatures, players, objects, containers, speech, whispers, thoughts, commands, each kind of line, and a line’s time</td></tr>
+<tr><td>Channels</td><td>a line said on Merchant, General, Help, Realm, OOC, Society or House, whole</td></tr>
+<tr><td>Vitals</td><td>the bars</td></tr>
+<tr><td>Status</td><td>the indicators and the lists of effects</td></tr>
+<tr><td>Injuries</td><td>the doll</td></tr>
+<tr><td>The map</td><td>the map’s rooms, lines, doors, you and the route</td></tr>
+<tr><td>The map’s marks</td><td>the bank, the furrier, the gem shop and the other shops</td></tr>
+<tr><td>Chrome</td><td>the veil and the grid drawn while arranging, part clear, and the calibrator’s mark on the doll</td></tr>
+</tbody>
+</table>
+</div>
+<p>Colours of one group are kept apart from each other, by <em>Separation</em>;
+colours of different groups may be alike, since they are never side by
+side.</p>
+<h2 id="none"><a class="header" href="#none">None</a></h2>
+<p>A kind of line can be <strong>None</strong>: drawn as the story’s own text, with no
+colour of its own. The kinds are a creature’s death, a fatal crit, a
+creature preparing a spell, about to land a special, or recovering, a
+flare, a status landing on you, and each channel. Tick <strong>None</strong> beside
+it.</p>
+<p>A <strong>fatal crit</strong> starts at None in every theme. A creature that cannot be
+crit to death dies by its death message, which is coloured as a death;
+the crit that killed one that can is a line of its own. Untick its None
+to give fatal crits a colour: it starts at the theme’s red, to change.</p>
+<h2 id="each-flare-each-status-by-name"><a class="header" href="#each-flare-each-status-by-name">Each flare, each status, by name</a></h2>
+<p>Under <em>flare</em> and <em>status_you</em>, <strong>Each flare by name</strong> and <strong>Each status
+on you by name</strong> list every name the combat reader knows. <strong>Filter</strong>
+narrows the list. Tick a name to give it a colour of its own over its
+kind’s, or <strong>None</strong> to draw it plain; the count in the heading says how
+many have one. An acid flare can be green and a fire flare red, while
+the rest stay the flare colour.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="shape-frame-and-type"><a class="header" href="#shape-frame-and-type">Shape, frame and type</a></h1>
+<h2 id="shape"><a class="header" href="#shape">Shape</a></h2>
+<p><img src="images/theme_shape.png" alt="Shape, open as a theme starts"></p>
+<ul>
+<li><strong>Corners</strong>, each from 0, square, to 32:
+<ul>
+<li><strong>Controls</strong>: buttons, fields, checkboxes, dropdowns and tabs.</li>
+<li><strong>Windows</strong>: windows, menus and popups.</li>
+<li><strong>Bars</strong>: the vitals and every other bar.</li>
+<li><strong>In panes</strong>: indicators, the compass’s cells, a find’s hits, and the
+outline of the window in use.</li>
+</ul>
+</li>
+<li><strong>Edges</strong>: an edge’s width on controls and windows.</li>
+<li><strong>Density</strong>: how close controls sit and how much room is inside them:
+<em>tight</em>, <em>normal</em> or <em>roomy</em>.</li>
+<li><strong>Buttons</strong>: how a button looks at rest: <em>flat</em>, its words alone until
+you point at it; <em>outlined</em>; or <em>filled</em>. Every style fills under the
+pointer.</li>
+<li><strong>Scrollbar</strong>: its width.</li>
+<li><strong>Windows and menus cast shadows</strong>.</li>
+<li><strong>Gap between cells</strong>: between the cells of a custom window.</li>
+<li><strong>Room inside a pane</strong>: round each widget, inside its pane.</li>
+<li><strong>Bar thickness</strong>: the most a bar is thick, centred in its pane; 0
+fills the pane.</li>
+<li><strong>Title bars</strong>: a window’s title bar’s height, and a cell’s tabs’; 0 is
+the usual.</li>
+<li><strong>Title text</strong>: where a window’s title sits: <em>left</em>, <em>center</em> or
+<em>right</em>.</li>
+<li><strong>Tabs</strong>: how a cell’s tabs are drawn: <em>plain</em>, their words alone;
+<em>separated</em>, a line between each two; <em>boxed</em>, an edge round each, the
+shown one filled; or <em>filled</em>, each on the tab ground. A theme’s tabs
+are boxed unless it says otherwise. A cell can choose its own, under
+<strong>Tab look</strong> on any of its tabs’ pages in Settings. The grounds are the
+<code>tab</code> and <code>tab_shown</code> <a href="#pins">pins</a>.</li>
+</ul>
+<h2 id="frame"><a class="header" href="#frame">Frame</a></h2>
+<p><strong>Frame</strong> draws a picture frame round every window and card: a recipe
+from the <code>frames</code> folder in Hydra’s <code>data</code> folder, or from a pack. <em>The
+base’s</em> keeps the frame of the theme it is laid over; <em>none</em> draws none.
+The window’s own edge is drawn outside a frame: <strong>Hide it</strong> takes it
+away.</p>
+<h2 id="type"><a class="header" href="#type">Type</a></h2>
+<ul>
+<li><strong>UI font</strong> and <strong>UI size</strong>: everything but the game’s words.</li>
+<li><strong>Story font</strong> and <strong>Story size</strong>: the story, its streams and the room.</li>
+<li><strong>Story line spacing</strong>: room added between two lines of the story and
+its streams.</li>
+<li><strong>Fixed-width font</strong> and <strong>Fixed-width size</strong>: the tables the game lines
+up, Hydra’s tables, and the log window.</li>
+<li><strong>Fallbacks</strong>: fonts tried in turn for a character a font lacks, a
+symbol or an accented letter. <strong>Add a fallback</strong> adds one; <strong>Take out</strong>
+removes it.</li>
+<li><strong>Give a kind its own…</strong>: a kind of widget with a font or size of its
+own, Thoughts smaller or the Room in another font. One widget can have
+its own too, on its page in Settings.</li>
+</ul>
+<p>A font is one in the <code>fonts</code> folder of Hydra’s <code>data</code> folder, a <code>.ttf</code> or
+<code>.otf</code> put there, or any font installed on the computer: open the list
+and type part of its name. A font takes a moment to load the first time;
+the window redraws once it has.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="examples-1"><a class="header" href="#examples-1">Examples</a></h1>
+<p>Each starts from <strong>Settings › Themes</strong>. Tick <strong>Wear while editing</strong> to
+see every window change as you go, and <strong>Save</strong> when it is right; then
+choose it on <strong>Settings › Window › Theme</strong>, or on one character’s
+<strong>Theme</strong> page.</p>
+<h2 id="a-theme-from-one-colour"><a class="header" href="#a-theme-from-one-colour">A theme from one colour</a></h2>
+<p><strong>Start from</strong> <em>Despana</em>, and set <strong>over</strong> to <em>nothing</em>, so every colour
+is generated. Click one of the <strong>Seeds from Despana</strong>, or the <strong>Seed</strong>
+swatch to choose your own colour, and try the <strong>Scheme</strong>s: <em>triadic</em> for
+three hues round the wheel, <em>analogous</em> for a calm one. Name it and save.</p>
+<p><img src="images/theme_generate.png" alt="An orange seed, triadic, over nothing"></p>
+<h2 id="a-light-theme"><a class="header" href="#a-light-theme">A light theme</a></h2>
+<p><strong>Start from</strong> <em>Light</em>: a warm white ground and its blue seed, every
+colour generated to read on it. Change the <strong>Seed</strong> for another accent,
+or the <strong>Background</strong> for another ground. To wear it only by day, tick
+<strong>Follow the computer’s dark or light mode</strong> on <strong>Settings › Window</strong> and
+choose it as the <strong>Light theme</strong>.</p>
+<p><img src="images/theme_light.png" alt="Light"></p>
+<h2 id="each-channel-its-own-colour"><a class="header" href="#each-channel-its-own-colour">Each channel its own colour</a></h2>
+<p>Open <strong>Pins › Channels</strong>. Each channel colours its lines whole, the
+<code>[Merchant]</code> tag and all; click a channel’s swatch and choose. Tick
+<strong>None</strong> for a channel you would rather read as plain text.</p>
+<p><img src="images/theme_channels.png" alt="Merchant, General, Help and OOC pinned"></p>
+<h2 id="make-fatal-crits-stand-out"><a class="header" href="#make-fatal-crits-stand-out">Make fatal crits stand out</a></h2>
+<p>Open <strong>Pins › The story and the room</strong>. <code>fatal_crit</code> is at <strong>None</strong>:
+untick it, and choose its colour. A creature’s death message keeps the
+<code>creature_death</code> colour, so a kill by a crit and a kill by damage read
+apart.</p>
+<h2 id="a-square-tight-look"><a class="header" href="#a-square-tight-look">A square, tight look</a></h2>
+<p>Open <strong>Shape</strong>. Set every <strong>Corner</strong> to 0, <strong>Density</strong> to <em>tight</em>,
+<strong>Buttons</strong> to <em>outlined</em>, and <strong>Tabs</strong> to <em>filled</em>, so every tab sits on
+a ground of its own.</p>
+<p><img src="images/theme_square.png" alt="Square corners, tight, outlined buttons and filled tabs"></p>
+<h2 id="bring-a-wrayth-skin-over"><a class="header" href="#bring-a-wrayth-skin-over">Bring a Wrayth skin over</a></h2>
+<p>Open <strong>Import from Wrayth</strong>. Paste the path of a Wrayth skin (<code>.skn</code>) or
+settings file (<code>.xml</code>), give it a <strong>Name</strong> if you like, and press
+<strong>Import</strong>. Its preset colours, the room names, creatures, speech,
+whispers, thoughts, watching and links, become a theme over Despana. A
+skin’s pictures and fonts are not brought, only its colours.</p>
+<p>From a play window, the same: <code>.theme import &lt;file&gt;</code>, or <code>.theme import &lt;file&gt; as &lt;name&gt;</code>.</p>
+<h2 id="one-character-in-its-own-colours"><a class="header" href="#one-character-in-its-own-colours">One character in its own colours</a></h2>
+<p>On <strong>Settings</strong>, choose the character, and its <strong>Theme</strong> page: choose a
+<strong>Theme</strong> for its window alone, and an <strong>Accent</strong> over it. Two characters
+side by side are told apart at a glance. From its play window: <code>.theme mine &lt;name&gt;</code> and <code>.theme accent &lt;#rrggbb&gt;</code>.</p>
+<div style="break-before: page; page-break-before: always;"></div>
 <h1 id="reports"><a class="header" href="#reports">Reports</a></h1>
 <p>Hydra keeps a ledger of what each character does: every experience pulse
 as the mind-state bar states it, and every hunt the combat reader saw, with
@@ -986,6 +1284,19 @@ has been run, <strong>Refresh</strong> runs the report shown again, and <strong>
 writes it to a file under the data folder’s <code>reports</code>.</p>
 <p>A hunt closing runs the report shown again on its own, so a hunt’s numbers
 are current without a click.</p>
+<h2 id="gemstones"><a class="header" href="#gemstones">Gemstones</a></h2>
+<p>A hunt is recorded with the gemstones equipped as it opened, since a set
+cannot change in combat. A hunt’s report lists them with their ranks, and
+a gemstone flare’s report (mirror image, hunter’s afterimage, the shroud)
+says the property it belongs to and its rate at each rank it ran at. The
+set comes from <code>gem list all</code>, read when it passes and kept in the
+character’s file; equipping or unequipping a gemstone keeps it current.</p>
+<h2 id="syncing"><a class="header" href="#syncing">Syncing</a></h2>
+<p>The first time a character is seated with nothing stored, Hydra sends the
+reports that teach its facts once: <code>info full</code>, <code>skills full</code>, the PSM
+lists, <code>inventory enhancive totals</code>, <code>gem list all</code>, <code>society</code> and the
+rest. After that, play keeps them current and nothing is sent at login.
+<code>.sync</code> sends them all again, <code>.sync &lt;group&gt;</code> one of them, and <code>.sync reset</code> drops what is stored first.</p>
 <h2 id="typed"><a class="header" href="#typed">Typed</a></h2>
 <p>The same reports answer on the command line, in a character’s play window:
 <code>.exp</code> for the experience reports and <code>.cstats</code> for combat. <code>.exp help</code> and

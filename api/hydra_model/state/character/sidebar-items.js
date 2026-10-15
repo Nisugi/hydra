@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["blocks","body","currency","enhancive","experience","identity","injured","nerves","profile","psm","shadow","skills","snapshot","spellsong","stance","standing","stats","vocabulary"],"struct":["Character","Injury"]};
+window.SIDEBAR_ITEMS = {"mod":["blocks","body","currency","enhancive","experience","gemstones","identity","injured","nerves","profile","psm","shadow","skills","snapshot","spellsong","stance","standing","stats","vocabulary"],"struct":["Character","Injury"]};

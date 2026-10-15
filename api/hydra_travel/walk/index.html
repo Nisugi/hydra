@@ -13,7 +13,7 @@ through the trip as steps beside the plan (<a href="struct.Trip.html#method.asid
 anywhere else is a fact to plan from: the trip plans again from wherever
 it now is.</p>
 <h2 id="when-a-move-does-not-simply-work"><a class="doc-anchor" href="#when-a-move-does-not-simply-work">§</a>When a move does not simply work</h2>
-<p>The driver hands every line [<code>hydra_model::movement</code>] can name to
+<p>The driver hands every line <a href="../../hydra_model/movement/index.html" title="mod hydra_model::movement"><code>hydra_model::movement</code></a> can name to
 <a href="struct.Trip.html#method.heard" title="method hydra_travel::walk::Trip::heard"><code>Trip::heard</code></a>. Nothing is done with it there: it waits for the next
 tick, <strong>so that a room change is always looked at first</strong>. A failure
 line that raced an arrival belongs to a move that worked, and acting on
@@ -36,7 +36,7 @@ before the trip says it is over</strong> – hands, stance, language, a key – 
 arrival, and on failure (<a href="struct.Trip.html#method.owed" title="method hydra_travel::walk::Trip::owed"><code>Trip::owed</code></a>).</p>
 </div></details><h2 id="modules" class="section-header">Modules<a href="#modules" class="anchor">§</a></h2><dl class="item-table"><dt><a class="mod" href="drive/index.html" title="mod hydra_travel::walk::drive">drive</a></dt><dd>The thin <code>async</code> layer round <a href="struct.Trip.html" title="struct hydra_travel::walk::Trip"><code>Trip</code></a>: what has the socket and the
 clock. It joins the session (<code>SessionHandle::join</code>), keeps its own
-[<code>GameState</code>] by folding the frames that follow, says where the character
+<a href="../../hydra_model/state/struct.GameState.html" title="struct hydra_model::state::GameState"><code>GameState</code></a> by folding the frames that follow, says where the character
 is, sends what the trip says to send, does its <a href="enum.Deed.html" title="enum hydra_travel::walk::Deed"><code>Deed</code></a>s (<code>deeds</code>), and
 stops when told.</dd><dt><a class="mod" href="instability/index.html" title="mod hydra_travel::walk::instability">instability</a></dt><dd>The way into the Elemental Confluence: the map has no exit into the
 plane, only the instabilities that open on it, which wander.

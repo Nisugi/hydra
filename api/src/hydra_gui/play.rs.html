@@ -624,126 +624,134 @@
 <a href=#624 id=624 data-nosnippet>624</a>                <span class="kw">return </span><span class="prelude-val">Some</span>(Ask::Change(Change::Aim { name, goals }));
 <a href=#625 id=625 data-nosnippet>625</a>            }
 <a href=#626 id=626 data-nosnippet>626</a>            Profiled::Save { name, goals } =&gt; {
-<a href=#627 id=627 data-nosnippet>627</a>                <span class="self">self</span>.profiles.profiles.insert(name, goals);
-<a href=#628 id=628 data-nosnippet>628</a>            }
-<a href=#629 id=629 data-nosnippet>629</a>            Profiled::Delete(name) =&gt; {
-<a href=#630 id=630 data-nosnippet>630</a>                <span class="self">self</span>.profiles.profiles.remove(<span class="kw-2">&amp;</span>name)<span class="question-mark">?</span>;
-<a href=#631 id=631 data-nosnippet>631</a>            }
-<a href=#632 id=632 data-nosnippet>632</a>        }
-<a href=#633 id=633 data-nosnippet>633</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(dir) = <span class="kw-2">&amp;</span><span class="self">self</span>.layouts {
-<a href=#634 id=634 data-nosnippet>634</a>            <span class="self">self</span>.unsaved = <span class="self">self
-<a href=#635 id=635 data-nosnippet>635</a>                </span>.profiles
-<a href=#636 id=636 data-nosnippet>636</a>                .save(dir, <span class="self">self</span>.instance.as_deref(), <span class="kw-2">&amp;</span><span class="self">self</span>.name)
-<a href=#637 id=637 data-nosnippet>637</a>                .err()
-<a href=#638 id=638 data-nosnippet>638</a>                .map(|why| why.to_string());
-<a href=#639 id=639 data-nosnippet>639</a>        }
-<a href=#640 id=640 data-nosnippet>640</a>        <span class="prelude-val">None
-<a href=#641 id=641 data-nosnippet>641</a>    </span>}
-<a href=#642 id=642 data-nosnippet>642</a>
-<a href=#643 id=643 data-nosnippet>643</a>    <span class="doccomment">/// Keep the layout under the character's name, or say why it could not
-<a href=#644 id=644 data-nosnippet>644</a>    /// be: at once, unless a pointer button is held, when it is kept once
-<a href=#645 id=645 data-nosnippet>645</a>    /// the button is let go.
-<a href=#646 id=646 data-nosnippet>646</a>    </span><span class="kw">fn </span>save(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
-<a href=#647 id=647 data-nosnippet>647</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(due) = <span class="self">self</span>.save_held.as_mut() {
-<a href=#648 id=648 data-nosnippet>648</a>            <span class="kw-2">*</span>due = <span class="bool-val">true</span>;
-<a href=#649 id=649 data-nosnippet>649</a>            <span class="kw">return</span>;
-<a href=#650 id=650 data-nosnippet>650</a>        }
-<a href=#651 id=651 data-nosnippet>651</a>        <span class="self">self</span>.save_now();
-<a href=#652 id=652 data-nosnippet>652</a>    }
-<a href=#653 id=653 data-nosnippet>653</a>
-<a href=#654 id=654 data-nosnippet>654</a>    <span class="doccomment">/// Write a layout change still waiting on a held button: the window is
-<a href=#655 id=655 data-nosnippet>655</a>    /// closing, and will not see the button let go.
-<a href=#656 id=656 data-nosnippet>656</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>keep_waiting_layout(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
-<a href=#657 id=657 data-nosnippet>657</a>        <span class="kw">if </span><span class="self">self</span>.save_held.take() == <span class="prelude-val">Some</span>(<span class="bool-val">true</span>) {
-<a href=#658 id=658 data-nosnippet>658</a>            <span class="self">self</span>.save_now();
-<a href=#659 id=659 data-nosnippet>659</a>        }
+<a href=#627 id=627 data-nosnippet>627</a>                <span class="self">self</span>.profiles.profiles.insert(name.clone(), goals.clone());
+<a href=#628 id=628 data-nosnippet>628</a>                <span class="self">self</span>.change_profile(<span class="kw-2">&amp;</span>name, <span class="prelude-val">Some</span>(goals));
+<a href=#629 id=629 data-nosnippet>629</a>            }
+<a href=#630 id=630 data-nosnippet>630</a>            Profiled::Delete(name) =&gt; {
+<a href=#631 id=631 data-nosnippet>631</a>                <span class="self">self</span>.profiles.profiles.remove(<span class="kw-2">&amp;</span>name)<span class="question-mark">?</span>;
+<a href=#632 id=632 data-nosnippet>632</a>                <span class="self">self</span>.change_profile(<span class="kw-2">&amp;</span>name, <span class="prelude-val">None</span>);
+<a href=#633 id=633 data-nosnippet>633</a>            }
+<a href=#634 id=634 data-nosnippet>634</a>        }
+<a href=#635 id=635 data-nosnippet>635</a>        <span class="prelude-val">None
+<a href=#636 id=636 data-nosnippet>636</a>    </span>}
+<a href=#637 id=637 data-nosnippet>637</a>
+<a href=#638 id=638 data-nosnippet>638</a>    <span class="doccomment">/// The profile `name` kept as `goals`, or deleted, in the character's
+<a href=#639 id=639 data-nosnippet>639</a>    /// file as it stands, beside what a web page keeps there.
+<a href=#640 id=640 data-nosnippet>640</a>    </span><span class="kw">fn </span>change_profile(<span class="kw-2">&amp;</span><span class="self">self</span>, name: <span class="kw-2">&amp;</span>str, goals: <span class="prelude-ty">Option</span>&lt;std::collections::BTreeMap&lt;u32, i64&gt;&gt;) {
+<a href=#641 id=641 data-nosnippet>641</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(dir) = <span class="kw-2">&amp;</span><span class="self">self</span>.layouts {
+<a href=#642 id=642 data-nosnippet>642</a>            <span class="kw">crate</span>::trainer::GoalProfiles::change(
+<a href=#643 id=643 data-nosnippet>643</a>                dir,
+<a href=#644 id=644 data-nosnippet>644</a>                <span class="self">self</span>.instance.as_deref(),
+<a href=#645 id=645 data-nosnippet>645</a>                <span class="kw-2">&amp;</span><span class="self">self</span>.name,
+<a href=#646 id=646 data-nosnippet>646</a>                (name, goals),
+<a href=#647 id=647 data-nosnippet>647</a>            );
+<a href=#648 id=648 data-nosnippet>648</a>        }
+<a href=#649 id=649 data-nosnippet>649</a>    }
+<a href=#650 id=650 data-nosnippet>650</a>
+<a href=#651 id=651 data-nosnippet>651</a>    <span class="doccomment">/// Keep the layout under the character's name, or say why it could not
+<a href=#652 id=652 data-nosnippet>652</a>    /// be: at once, unless a pointer button is held, when it is kept once
+<a href=#653 id=653 data-nosnippet>653</a>    /// the button is let go.
+<a href=#654 id=654 data-nosnippet>654</a>    </span><span class="kw">fn </span>save(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+<a href=#655 id=655 data-nosnippet>655</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(due) = <span class="self">self</span>.save_held.as_mut() {
+<a href=#656 id=656 data-nosnippet>656</a>            <span class="kw-2">*</span>due = <span class="bool-val">true</span>;
+<a href=#657 id=657 data-nosnippet>657</a>            <span class="kw">return</span>;
+<a href=#658 id=658 data-nosnippet>658</a>        }
+<a href=#659 id=659 data-nosnippet>659</a>        <span class="self">self</span>.save_now();
 <a href=#660 id=660 data-nosnippet>660</a>    }
 <a href=#661 id=661 data-nosnippet>661</a>
-<a href=#662 id=662 data-nosnippet>662</a>    <span class="kw">fn </span>save_now(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
-<a href=#663 id=663 data-nosnippet>663</a>        <span class="kw">let </span>(<span class="prelude-val">Some</span>(dir), <span class="prelude-val">Some</span>(layout)) = (<span class="kw-2">&amp;</span><span class="self">self</span>.layouts, <span class="kw-2">&amp;</span><span class="self">self</span>.layout) <span class="kw">else </span>{
-<a href=#664 id=664 data-nosnippet>664</a>            <span class="kw">return</span>;
-<a href=#665 id=665 data-nosnippet>665</a>        };
-<a href=#666 id=666 data-nosnippet>666</a>        layout.save_later(
-<a href=#667 id=667 data-nosnippet>667</a>            <span class="kw-2">&amp;mut </span><span class="self">self</span>.layout_saves,
-<a href=#668 id=668 data-nosnippet>668</a>            dir,
-<a href=#669 id=669 data-nosnippet>669</a>            (<span class="self">self</span>.instance.as_deref(), <span class="kw-2">&amp;</span><span class="self">self</span>.name),
-<a href=#670 id=670 data-nosnippet>670</a>        );
-<a href=#671 id=671 data-nosnippet>671</a>    }
-<a href=#672 id=672 data-nosnippet>672</a>
-<a href=#673 id=673 data-nosnippet>673</a>    <span class="doccomment">/// The top bar, drawn and its asks done: whether the layout changed,
-<a href=#674 id=674 data-nosnippet>674</a>    /// and what the window is to do.
-<a href=#675 id=675 data-nosnippet>675</a>    </span><span class="kw">fn </span>top_bar(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ui: <span class="kw-2">&amp;mut </span>egui::Ui, view: <span class="kw-2">&amp;</span>PlayView&lt;<span class="lifetime">'_</span>&gt;) -&gt; (bool, <span class="prelude-ty">Option</span>&lt;Asked&gt;) {
-<a href=#676 id=676 data-nosnippet>676</a>        <span class="kw">let </span>session = <span class="self">self</span>.session;
-<a href=#677 id=677 data-nosnippet>677</a>        <span class="kw">let </span><span class="kw-2">mut </span>grid = <span class="self">self</span>.layout.as_ref().map_or(GRID, |layout| layout.grid);
-<a href=#678 id=678 data-nosnippet>678</a>        <span class="kw">let </span>unsaved = <span class="self">self
-<a href=#679 id=679 data-nosnippet>679</a>            </span>.unsaved
-<a href=#680 id=680 data-nosnippet>680</a>            .clone()
-<a href=#681 id=681 data-nosnippet>681</a>            .or_else(|| <span class="self">self</span>.layout_saves.failed())
-<a href=#682 id=682 data-nosnippet>682</a>            .map(|why| <span class="macro">format!</span>(<span class="string">"Layout not saved: {why}"</span>))
-<a href=#683 id=683 data-nosnippet>683</a>            .or_else(|| {
-<a href=#684 id=684 data-nosnippet>684</a>                (<span class="self">self</span>.history_saves.failed()).map(|why| <span class="macro">format!</span>(<span class="string">"History not saved: {why}"</span>))
-<a href=#685 id=685 data-nosnippet>685</a>            });
-<a href=#686 id=686 data-nosnippet>686</a>        <span class="kw">let </span><span class="kw-2">mut </span>arranging = <span class="self">self</span>.arranging;
-<a href=#687 id=687 data-nosnippet>687</a>        <span class="kw">let </span><span class="kw-2">mut </span>locked = <span class="self">self</span>.layout.as_ref().is_some_and(|layout| layout.locked);
-<a href=#688 id=688 data-nosnippet>688</a>        <span class="kw">let </span><span class="kw-2">mut </span>drawers = <span class="self">self
-<a href=#689 id=689 data-nosnippet>689</a>            </span>.layout
-<a href=#690 id=690 data-nosnippet>690</a>            .as_ref()
-<a href=#691 id=691 data-nosnippet>691</a>            .map_or_else(Drawers::default, |layout| layout.drawers);
-<a href=#692 id=692 data-nosnippet>692</a>        <span class="kw">let </span>title = <span class="self">self
-<a href=#693 id=693 data-nosnippet>693</a>            </span>.layout
-<a href=#694 id=694 data-nosnippet>694</a>            .as_ref()
-<a href=#695 id=695 data-nosnippet>695</a>            .map(|layout| layout.title.clone())
-<a href=#696 id=696 data-nosnippet>696</a>            .unwrap_or_default();
-<a href=#697 id=697 data-nosnippet>697</a>        <span class="kw">let </span>top = egui::Panel::top(Id::new((<span class="string">"play-top"</span>, session)))
-<a href=#698 id=698 data-nosnippet>698</a>            .show(ui, |ui| {
-<a href=#699 id=699 data-nosnippet>699</a>                draw::top(
-<a href=#700 id=700 data-nosnippet>700</a>                    ui,
-<a href=#701 id=701 data-nosnippet>701</a>                    view,
-<a href=#702 id=702 data-nosnippet>702</a>                    <span class="kw-2">&amp;</span>title,
-<a href=#703 id=703 data-nosnippet>703</a>                    (<span class="kw-2">&amp;mut </span>grid, <span class="kw-2">&amp;mut </span>drawers),
-<a href=#704 id=704 data-nosnippet>704</a>                    (<span class="kw-2">&amp;mut </span>arranging, <span class="kw-2">&amp;mut </span>locked),
-<a href=#705 id=705 data-nosnippet>705</a>                    unsaved.as_deref(),
-<a href=#706 id=706 data-nosnippet>706</a>                )
-<a href=#707 id=707 data-nosnippet>707</a>            })
-<a href=#708 id=708 data-nosnippet>708</a>            .inner;
-<a href=#709 id=709 data-nosnippet>709</a>        <span class="kw">if </span>title.own {
-<a href=#710 id=710 data-nosnippet>710</a>            draw::resize_edges(ui.ctx());
-<a href=#711 id=711 data-nosnippet>711</a>        }
-<a href=#712 id=712 data-nosnippet>712</a>        <span class="self">self</span>.arranging = arranging &amp;&amp; !locked;
-<a href=#713 id=713 data-nosnippet>713</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(layout) = <span class="kw-2">&amp;mut </span><span class="self">self</span>.layout
-<a href=#714 id=714 data-nosnippet>714</a>            &amp;&amp; layout.locked != locked
-<a href=#715 id=715 data-nosnippet>715</a>        {
-<a href=#716 id=716 data-nosnippet>716</a>            layout.locked = locked;
-<a href=#717 id=717 data-nosnippet>717</a>            <span class="self">self</span>.save();
-<a href=#718 id=718 data-nosnippet>718</a>        }
-<a href=#719 id=719 data-nosnippet>719</a>        <span class="self">self</span>.top_done(top, grid, drawers)
-<a href=#720 id=720 data-nosnippet>720</a>    }
-<a href=#721 id=721 data-nosnippet>721</a>
-<a href=#722 id=722 data-nosnippet>722</a>    <span class="doccomment">/// The command input at the window's foot: Enter sends. Up and down
-<a href=#723 id=723 data-nosnippet>723</a>    /// walk what was sent as keys bind them (`keyed.rs`).
-<a href=#724 id=724 data-nosnippet>724</a>    </span><span class="kw">fn </span>input(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ui: <span class="kw-2">&amp;mut </span>egui::Ui) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
-<a href=#725 id=725 data-nosnippet>725</a>        <span class="kw">let </span>id = <span class="self">self</span>.input_id();
-<a href=#726 id=726 data-nosnippet>726</a>        <span class="kw">let </span><span class="kw-2">mut </span>typing = command_line::Typing {
-<a href=#727 id=727 data-nosnippet>727</a>            input: <span class="kw-2">&amp;mut </span><span class="self">self</span>.input,
-<a href=#728 id=728 data-nosnippet>728</a>            walked: <span class="kw-2">&amp;mut </span><span class="self">self</span>.walked,
-<a href=#729 id=729 data-nosnippet>729</a>            history: <span class="kw-2">&amp;</span><span class="self">self</span>.history,
-<a href=#730 id=730 data-nosnippet>730</a>            id,
-<a href=#731 id=731 data-nosnippet>731</a>        };
-<a href=#732 id=732 data-nosnippet>732</a>        <span class="kw">if </span>command_line::command_line(ui, <span class="kw-2">&amp;mut </span>typing) {
-<a href=#733 id=733 data-nosnippet>733</a>            <span class="self">self</span>.enter()
-<a href=#734 id=734 data-nosnippet>734</a>        } <span class="kw">else </span>{
-<a href=#735 id=735 data-nosnippet>735</a>            <span class="prelude-val">None
-<a href=#736 id=736 data-nosnippet>736</a>        </span>}
-<a href=#737 id=737 data-nosnippet>737</a>    }
-<a href=#738 id=738 data-nosnippet>738</a>}
-<a href=#739 id=739 data-nosnippet>739</a>
-<a href=#740 id=740 data-nosnippet>740</a><span class="kw">impl </span>Drop <span class="kw">for </span>Play {
-<a href=#741 id=741 data-nosnippet>741</a>    <span class="doccomment">/// Hydra closing mid-drag keeps the layout change it was waiting on.
-<a href=#742 id=742 data-nosnippet>742</a>    </span><span class="kw">fn </span>drop(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
-<a href=#743 id=743 data-nosnippet>743</a>        <span class="self">self</span>.keep_waiting_layout();
-<a href=#744 id=744 data-nosnippet>744</a>    }
-<a href=#745 id=745 data-nosnippet>745</a>}
-<a href=#746 id=746 data-nosnippet>746</a>
-<a href=#747 id=747 data-nosnippet>747</a><span class="attr">#[cfg(test)]
-<a href=#748 id=748 data-nosnippet>748</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod </span>tests;
+<a href=#662 id=662 data-nosnippet>662</a>    <span class="doccomment">/// Write a layout change still waiting on a held button: the window is
+<a href=#663 id=663 data-nosnippet>663</a>    /// closing, and will not see the button let go.
+<a href=#664 id=664 data-nosnippet>664</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>keep_waiting_layout(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+<a href=#665 id=665 data-nosnippet>665</a>        <span class="kw">if </span><span class="self">self</span>.save_held.take() == <span class="prelude-val">Some</span>(<span class="bool-val">true</span>) {
+<a href=#666 id=666 data-nosnippet>666</a>            <span class="self">self</span>.save_now();
+<a href=#667 id=667 data-nosnippet>667</a>        }
+<a href=#668 id=668 data-nosnippet>668</a>    }
+<a href=#669 id=669 data-nosnippet>669</a>
+<a href=#670 id=670 data-nosnippet>670</a>    <span class="kw">fn </span>save_now(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+<a href=#671 id=671 data-nosnippet>671</a>        <span class="kw">let </span>(<span class="prelude-val">Some</span>(dir), <span class="prelude-val">Some</span>(layout)) = (<span class="kw-2">&amp;</span><span class="self">self</span>.layouts, <span class="kw-2">&amp;</span><span class="self">self</span>.layout) <span class="kw">else </span>{
+<a href=#672 id=672 data-nosnippet>672</a>            <span class="kw">return</span>;
+<a href=#673 id=673 data-nosnippet>673</a>        };
+<a href=#674 id=674 data-nosnippet>674</a>        layout.save_later(
+<a href=#675 id=675 data-nosnippet>675</a>            <span class="kw-2">&amp;mut </span><span class="self">self</span>.layout_saves,
+<a href=#676 id=676 data-nosnippet>676</a>            dir,
+<a href=#677 id=677 data-nosnippet>677</a>            (<span class="self">self</span>.instance.as_deref(), <span class="kw-2">&amp;</span><span class="self">self</span>.name),
+<a href=#678 id=678 data-nosnippet>678</a>        );
+<a href=#679 id=679 data-nosnippet>679</a>    }
+<a href=#680 id=680 data-nosnippet>680</a>
+<a href=#681 id=681 data-nosnippet>681</a>    <span class="doccomment">/// The top bar, drawn and its asks done: whether the layout changed,
+<a href=#682 id=682 data-nosnippet>682</a>    /// and what the window is to do.
+<a href=#683 id=683 data-nosnippet>683</a>    </span><span class="kw">fn </span>top_bar(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ui: <span class="kw-2">&amp;mut </span>egui::Ui, view: <span class="kw-2">&amp;</span>PlayView&lt;<span class="lifetime">'_</span>&gt;) -&gt; (bool, <span class="prelude-ty">Option</span>&lt;Asked&gt;) {
+<a href=#684 id=684 data-nosnippet>684</a>        <span class="kw">let </span>session = <span class="self">self</span>.session;
+<a href=#685 id=685 data-nosnippet>685</a>        <span class="kw">let </span><span class="kw-2">mut </span>grid = <span class="self">self</span>.layout.as_ref().map_or(GRID, |layout| layout.grid);
+<a href=#686 id=686 data-nosnippet>686</a>        <span class="kw">let </span>unsaved = <span class="self">self
+<a href=#687 id=687 data-nosnippet>687</a>            </span>.unsaved
+<a href=#688 id=688 data-nosnippet>688</a>            .clone()
+<a href=#689 id=689 data-nosnippet>689</a>            .or_else(|| <span class="self">self</span>.layout_saves.failed())
+<a href=#690 id=690 data-nosnippet>690</a>            .map(|why| <span class="macro">format!</span>(<span class="string">"Layout not saved: {why}"</span>))
+<a href=#691 id=691 data-nosnippet>691</a>            .or_else(|| {
+<a href=#692 id=692 data-nosnippet>692</a>                (<span class="self">self</span>.history_saves.failed()).map(|why| <span class="macro">format!</span>(<span class="string">"History not saved: {why}"</span>))
+<a href=#693 id=693 data-nosnippet>693</a>            });
+<a href=#694 id=694 data-nosnippet>694</a>        <span class="kw">let </span><span class="kw-2">mut </span>arranging = <span class="self">self</span>.arranging;
+<a href=#695 id=695 data-nosnippet>695</a>        <span class="kw">let </span><span class="kw-2">mut </span>locked = <span class="self">self</span>.layout.as_ref().is_some_and(|layout| layout.locked);
+<a href=#696 id=696 data-nosnippet>696</a>        <span class="kw">let </span><span class="kw-2">mut </span>drawers = <span class="self">self
+<a href=#697 id=697 data-nosnippet>697</a>            </span>.layout
+<a href=#698 id=698 data-nosnippet>698</a>            .as_ref()
+<a href=#699 id=699 data-nosnippet>699</a>            .map_or_else(Drawers::default, |layout| layout.drawers);
+<a href=#700 id=700 data-nosnippet>700</a>        <span class="kw">let </span>title = <span class="self">self
+<a href=#701 id=701 data-nosnippet>701</a>            </span>.layout
+<a href=#702 id=702 data-nosnippet>702</a>            .as_ref()
+<a href=#703 id=703 data-nosnippet>703</a>            .map(|layout| layout.title.clone())
+<a href=#704 id=704 data-nosnippet>704</a>            .unwrap_or_default();
+<a href=#705 id=705 data-nosnippet>705</a>        <span class="kw">let </span>top = egui::Panel::top(Id::new((<span class="string">"play-top"</span>, session)))
+<a href=#706 id=706 data-nosnippet>706</a>            .show(ui, |ui| {
+<a href=#707 id=707 data-nosnippet>707</a>                draw::top(
+<a href=#708 id=708 data-nosnippet>708</a>                    ui,
+<a href=#709 id=709 data-nosnippet>709</a>                    view,
+<a href=#710 id=710 data-nosnippet>710</a>                    <span class="kw-2">&amp;</span>title,
+<a href=#711 id=711 data-nosnippet>711</a>                    (<span class="kw-2">&amp;mut </span>grid, <span class="kw-2">&amp;mut </span>drawers),
+<a href=#712 id=712 data-nosnippet>712</a>                    (<span class="kw-2">&amp;mut </span>arranging, <span class="kw-2">&amp;mut </span>locked),
+<a href=#713 id=713 data-nosnippet>713</a>                    unsaved.as_deref(),
+<a href=#714 id=714 data-nosnippet>714</a>                )
+<a href=#715 id=715 data-nosnippet>715</a>            })
+<a href=#716 id=716 data-nosnippet>716</a>            .inner;
+<a href=#717 id=717 data-nosnippet>717</a>        <span class="kw">if </span>title.own {
+<a href=#718 id=718 data-nosnippet>718</a>            draw::resize_edges(ui.ctx());
+<a href=#719 id=719 data-nosnippet>719</a>        }
+<a href=#720 id=720 data-nosnippet>720</a>        <span class="self">self</span>.arranging = arranging &amp;&amp; !locked;
+<a href=#721 id=721 data-nosnippet>721</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(layout) = <span class="kw-2">&amp;mut </span><span class="self">self</span>.layout
+<a href=#722 id=722 data-nosnippet>722</a>            &amp;&amp; layout.locked != locked
+<a href=#723 id=723 data-nosnippet>723</a>        {
+<a href=#724 id=724 data-nosnippet>724</a>            layout.locked = locked;
+<a href=#725 id=725 data-nosnippet>725</a>            <span class="self">self</span>.save();
+<a href=#726 id=726 data-nosnippet>726</a>        }
+<a href=#727 id=727 data-nosnippet>727</a>        <span class="self">self</span>.top_done(top, grid, drawers)
+<a href=#728 id=728 data-nosnippet>728</a>    }
+<a href=#729 id=729 data-nosnippet>729</a>
+<a href=#730 id=730 data-nosnippet>730</a>    <span class="doccomment">/// The command input at the window's foot: Enter sends. Up and down
+<a href=#731 id=731 data-nosnippet>731</a>    /// walk what was sent as keys bind them (`keyed.rs`).
+<a href=#732 id=732 data-nosnippet>732</a>    </span><span class="kw">fn </span>input(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ui: <span class="kw-2">&amp;mut </span>egui::Ui) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
+<a href=#733 id=733 data-nosnippet>733</a>        <span class="kw">let </span>id = <span class="self">self</span>.input_id();
+<a href=#734 id=734 data-nosnippet>734</a>        <span class="kw">let </span><span class="kw-2">mut </span>typing = command_line::Typing {
+<a href=#735 id=735 data-nosnippet>735</a>            input: <span class="kw-2">&amp;mut </span><span class="self">self</span>.input,
+<a href=#736 id=736 data-nosnippet>736</a>            walked: <span class="kw-2">&amp;mut </span><span class="self">self</span>.walked,
+<a href=#737 id=737 data-nosnippet>737</a>            history: <span class="kw-2">&amp;</span><span class="self">self</span>.history,
+<a href=#738 id=738 data-nosnippet>738</a>            id,
+<a href=#739 id=739 data-nosnippet>739</a>        };
+<a href=#740 id=740 data-nosnippet>740</a>        <span class="kw">if </span>command_line::command_line(ui, <span class="kw-2">&amp;mut </span>typing) {
+<a href=#741 id=741 data-nosnippet>741</a>            <span class="self">self</span>.enter()
+<a href=#742 id=742 data-nosnippet>742</a>        } <span class="kw">else </span>{
+<a href=#743 id=743 data-nosnippet>743</a>            <span class="prelude-val">None
+<a href=#744 id=744 data-nosnippet>744</a>        </span>}
+<a href=#745 id=745 data-nosnippet>745</a>    }
+<a href=#746 id=746 data-nosnippet>746</a>}
+<a href=#747 id=747 data-nosnippet>747</a>
+<a href=#748 id=748 data-nosnippet>748</a><span class="kw">impl </span>Drop <span class="kw">for </span>Play {
+<a href=#749 id=749 data-nosnippet>749</a>    <span class="doccomment">/// Hydra closing mid-drag keeps the layout change it was waiting on.
+<a href=#750 id=750 data-nosnippet>750</a>    </span><span class="kw">fn </span>drop(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+<a href=#751 id=751 data-nosnippet>751</a>        <span class="self">self</span>.keep_waiting_layout();
+<a href=#752 id=752 data-nosnippet>752</a>    }
+<a href=#753 id=753 data-nosnippet>753</a>}
+<a href=#754 id=754 data-nosnippet>754</a>
+<a href=#755 id=755 data-nosnippet>755</a><span class="attr">#[cfg(test)]
+<a href=#756 id=756 data-nosnippet>756</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod </span>tests;
 </code></pre></div></section></main></body></html>

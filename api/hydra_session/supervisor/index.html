@@ -4,7 +4,7 @@ runs one actor over each, and decides whether to open another. Between
 two, in order:</p>
 <ol>
 <li>the game state forgets what the new connection has not told it
-([<code>GameState::invalidate_for_reconnect</code>]);</li>
+(<a href="../../hydra_model/state/struct.GameState.html#method.invalidate_for_reconnect" title="method hydra_model::state::GameState::invalidate_for_reconnect"><code>GameState::invalidate_for_reconnect</code></a>);</li>
 <li>the generation advances, so a command meant for the old connection is
 not sent on the new one;</li>
 <li><a href="../lifecycle/enum.State.html#variant.Reconnecting" title="variant hydra_session::lifecycle::State::Reconnecting"><code>State::Reconnecting</code></a> is published;</li>

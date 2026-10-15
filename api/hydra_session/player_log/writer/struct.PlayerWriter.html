@@ -15,7 +15,7 @@ a rotation between a chunk ending <code>SEC</code> and one starting <code>RET</c
 both halves in clear.</p>
 <p>That cannot happen here: the unit is a <strong>line</strong>, already finished by
 the model (<code>route_text</code>) before it reaches <a href="../channel/struct.LogLine.html" title="struct hydra_session::player_log::channel::LogLine"><code>LogLine</code></a>, and
-[<code>Redactions::apply</code>] sees each one whole. Recorded so nobody later
+<a href="../../../hydra_net/sink/redactions/struct.Redactions.html#method.apply" title="method hydra_net::sink::redactions::Redactions::apply"><code>Redactions::apply</code></a> sees each one whole. Recorded so nobody later
 reads the missing <code>pending</code> as an oversight – and so that anyone who
 changes the unit from a line to something smaller knows what they are
 giving up.</p>

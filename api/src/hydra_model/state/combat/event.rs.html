@@ -502,14 +502,19 @@
 <a href=#502 id=502 data-nosnippet>502</a>    /// before this chunk's kills were counted: what a flare that spreads to
 <a href=#503 id=503 data-nosnippet>503</a>    /// other targets could have reached.
 <a href=#504 id=504 data-nosnippet>504</a>    </span><span class="kw">pub </span>room_targets: usize,
-<a href=#505 id=505 data-nosnippet>505</a>}
-<a href=#506 id=506 data-nosnippet>506</a>
-<a href=#507 id=507 data-nosnippet>507</a><span class="kw">impl </span>ChunkFacts {
-<a href=#508 id=508 data-nosnippet>508</a>    <span class="doccomment">/// Nothing at all.
-<a href=#509 id=509 data-nosnippet>509</a>    </span><span class="attr">#[must_use]
-<a href=#510 id=510 data-nosnippet>510</a>    </span><span class="kw">pub fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-<a href=#511 id=511 data-nosnippet>511</a>        <span class="comment">// `at` is when, not what: a stamped chunk with nothing in it is empty
-<a href=#512 id=512 data-nosnippet>512</a>        </span><span class="self">self</span>.events.is_empty() &amp;&amp; <span class="self">self</span>.facts.is_empty()
-<a href=#513 id=513 data-nosnippet>513</a>    }
-<a href=#514 id=514 data-nosnippet>514</a>}
+<a href=#505 id=505 data-nosnippet>505</a>    <span class="doccomment">/// The character's gemstones, when they changed since the last chunk
+<a href=#506 id=506 data-nosnippet>506</a>    /// that carried them: the first listing, a gemstone equipped or
+<a href=#507 id=507 data-nosnippet>507</a>    /// unequipped. A recorder keeps the last it was handed; a set cannot
+<a href=#508 id=508 data-nosnippet>508</a>    /// change in combat, so a change ends a hunt.
+<a href=#509 id=509 data-nosnippet>509</a>    </span><span class="kw">pub </span>gemstones: <span class="prelude-ty">Option</span>&lt;std::sync::Arc&lt;<span class="kw">crate</span>::state::character::gemstones::Gemstones&gt;&gt;,
+<a href=#510 id=510 data-nosnippet>510</a>}
+<a href=#511 id=511 data-nosnippet>511</a>
+<a href=#512 id=512 data-nosnippet>512</a><span class="kw">impl </span>ChunkFacts {
+<a href=#513 id=513 data-nosnippet>513</a>    <span class="doccomment">/// Nothing at all: no event, no fact, and no set of gemstones to carry.
+<a href=#514 id=514 data-nosnippet>514</a>    </span><span class="attr">#[must_use]
+<a href=#515 id=515 data-nosnippet>515</a>    </span><span class="kw">pub fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+<a href=#516 id=516 data-nosnippet>516</a>        <span class="comment">// `at` is when, not what: a stamped chunk with nothing in it is empty
+<a href=#517 id=517 data-nosnippet>517</a>        </span><span class="self">self</span>.events.is_empty() &amp;&amp; <span class="self">self</span>.facts.is_empty() &amp;&amp; <span class="self">self</span>.gemstones.is_none()
+<a href=#518 id=518 data-nosnippet>518</a>    }
+<a href=#519 id=519 data-nosnippet>519</a>}
 </code></pre></div></section></main></body></html>

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FLARE","NAMED","STATUS_YOU"],"fn":["mark","names","preset"]};
+window.SIDEBAR_ITEMS = {"constant":["FATAL","FLARE","NAMED","STATUS_YOU"],"fn":["mark","names","preset"]};

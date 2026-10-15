@@ -409,39 +409,40 @@
 <a href=#409 id=409 data-nosnippet>409</a>        <span class="kw-2">&amp;</span>[
 <a href=#410 id=410 data-nosnippet>410</a>            <span class="string">"A pin keeps a colour exactly as you set it; the rest are generated round it. Tick a colour's box to pin it as it is now, or click its swatch to choose one."</span>,
 <a href=#411 id=411 data-nosnippet>411</a>            <span class="string">"The small swatches beside a colour are other hues the generator could give it: a click pins it to one."</span>,
-<a href=#412 id=412 data-nosnippet>412</a>            <span class="string">"Despana pins every colour, so over Despana the generator's dials change nothing until you unpin one, or set Over to nothing, or start from Light."</span>,
-<a href=#413 id=413 data-nosnippet>413</a>        ],
-<a href=#414 id=414 data-nosnippet>414</a>    ),
-<a href=#415 id=415 data-nosnippet>415</a>    (
-<a href=#416 id=416 data-nosnippet>416</a>        <span class="string">"Shape"</span>,
-<a href=#417 id=417 data-nosnippet>417</a>        <span class="kw-2">&amp;</span>[
-<a href=#418 id=418 data-nosnippet>418</a>            <span class="string">"Corners for each kind of thing, the edges, how roomy the controls are, the scrollbar, the shadows, the gap between a custom window's cells and the room inside each pane, how thick a bar may be (0 fills its pane), the title bars' height (0 is the usual), and how buttons are drawn."</span>,
-<a href=#419 id=419 data-nosnippet>419</a>        ],
-<a href=#420 id=420 data-nosnippet>420</a>    ),
-<a href=#421 id=421 data-nosnippet>421</a>    (
-<a href=#422 id=422 data-nosnippet>422</a>        <span class="string">"Type"</span>,
-<a href=#423 id=423 data-nosnippet>423</a>        <span class="kw-2">&amp;</span>[
-<a href=#424 id=424 data-nosnippet>424</a>            <span class="string">"Three fonts: the UI's, for everything but the game's words; the story's, for the story, its streams and the room; and a fixed-width one, for tables and the log window. Each has its size."</span>,
-<a href=#425 id=425 data-nosnippet>425</a>            <span class="string">"A font is one in the fonts folder of Hydra's data folder (a .ttf or .otf put there), or any font installed on the computer: open the list and type part of its name."</span>,
-<a href=#426 id=426 data-nosnippet>426</a>            <span class="string">"Story line spacing adds room between the story's lines. Fallbacks are fonts tried in turn for a character the font lacks: a symbol, an accented letter."</span>,
-<a href=#427 id=427 data-nosnippet>427</a>            <span class="string">"A kind of widget can have a font or size of its own: Thoughts smaller, the Room in another font. One widget can have its own too, on its page in Settings."</span>,
-<a href=#428 id=428 data-nosnippet>428</a>            <span class="string">"A font chosen takes a moment to load the first time: the window redraws once it has."</span>,
-<a href=#429 id=429 data-nosnippet>429</a>        ],
-<a href=#430 id=430 data-nosnippet>430</a>    ),
-<a href=#431 id=431 data-nosnippet>431</a>    (
-<a href=#432 id=432 data-nosnippet>432</a>        <span class="string">"Save and wear"</span>,
-<a href=#433 id=433 data-nosnippet>433</a>        <span class="kw-2">&amp;</span>[
-<a href=#434 id=434 data-nosnippet>434</a>            <span class="string">"Save writes the theme to the themes folder in Hydra's data folder, saying only what differs from its base. A built-in is never written over: save under another name."</span>,
-<a href=#435 id=435 data-nosnippet>435</a>            <span class="string">"To wear it, choose it on Settings, Window: Theme. A light one can be worn while the computer is in light mode."</span>,
-<a href=#436 id=436 data-nosnippet>436</a>            <span class="string">"One character's window can wear a theme of its own, and an accent of its own over it: Settings, that character's Theme page, or .theme mine and .theme accent."</span>,
-<a href=#437 id=437 data-nosnippet>437</a>        ],
-<a href=#438 id=438 data-nosnippet>438</a>    ),
-<a href=#439 id=439 data-nosnippet>439</a>    (
-<a href=#440 id=440 data-nosnippet>440</a>        <span class="string">"Import from Wrayth"</span>,
-<a href=#441 id=441 data-nosnippet>441</a>        <span class="kw-2">&amp;</span>[
-<a href=#442 id=442 data-nosnippet>442</a>            <span class="string">"Paste the path of a Wrayth skin (.skn) or settings file (.xml) and press Import: its preset colours become a theme over Despana, named for the file unless you name it. A skin's pictures and fonts are not brought, only its colours."</span>,
-<a href=#443 id=443 data-nosnippet>443</a>            <span class="string">"The same from the command line: .theme import &lt;file&gt; [as &lt;name&gt;]."</span>,
-<a href=#444 id=444 data-nosnippet>444</a>        ],
-<a href=#445 id=445 data-nosnippet>445</a>    ),
-<a href=#446 id=446 data-nosnippet>446</a>];
+<a href=#412 id=412 data-nosnippet>412</a>            <span class="string">"Despana pins every colour, and a theme over it takes its pins: over Despana the generator's dials change nothing. Set over to nothing, or start from Light, and every colour you have not pinned is generated."</span>,
+<a href=#413 id=413 data-nosnippet>413</a>            <span class="string">"A kind of line -- a creature's death, a fatal crit, a flare, a channel -- can be None: drawn as the story's own text. A fatal crit is None until you pin it a colour."</span>,
+<a href=#414 id=414 data-nosnippet>414</a>        ],
+<a href=#415 id=415 data-nosnippet>415</a>    ),
+<a href=#416 id=416 data-nosnippet>416</a>    (
+<a href=#417 id=417 data-nosnippet>417</a>        <span class="string">"Shape"</span>,
+<a href=#418 id=418 data-nosnippet>418</a>        <span class="kw-2">&amp;</span>[
+<a href=#419 id=419 data-nosnippet>419</a>            <span class="string">"Corners for each kind of thing, the edges, how roomy the controls are, the scrollbar, the shadows, the gap between a custom window's cells and the room inside each pane, how thick a bar may be (0 fills its pane), the title bars' height (0 is the usual), how buttons are drawn, and how a cell's tabs are drawn."</span>,
+<a href=#420 id=420 data-nosnippet>420</a>        ],
+<a href=#421 id=421 data-nosnippet>421</a>    ),
+<a href=#422 id=422 data-nosnippet>422</a>    (
+<a href=#423 id=423 data-nosnippet>423</a>        <span class="string">"Type"</span>,
+<a href=#424 id=424 data-nosnippet>424</a>        <span class="kw-2">&amp;</span>[
+<a href=#425 id=425 data-nosnippet>425</a>            <span class="string">"Three fonts: the UI's, for everything but the game's words; the story's, for the story, its streams and the room; and a fixed-width one, for tables and the log window. Each has its size."</span>,
+<a href=#426 id=426 data-nosnippet>426</a>            <span class="string">"A font is one in the fonts folder of Hydra's data folder (a .ttf or .otf put there), or any font installed on the computer: open the list and type part of its name."</span>,
+<a href=#427 id=427 data-nosnippet>427</a>            <span class="string">"Story line spacing adds room between the story's lines. Fallbacks are fonts tried in turn for a character the font lacks: a symbol, an accented letter."</span>,
+<a href=#428 id=428 data-nosnippet>428</a>            <span class="string">"A kind of widget can have a font or size of its own: Thoughts smaller, the Room in another font. One widget can have its own too, on its page in Settings."</span>,
+<a href=#429 id=429 data-nosnippet>429</a>            <span class="string">"A font chosen takes a moment to load the first time: the window redraws once it has."</span>,
+<a href=#430 id=430 data-nosnippet>430</a>        ],
+<a href=#431 id=431 data-nosnippet>431</a>    ),
+<a href=#432 id=432 data-nosnippet>432</a>    (
+<a href=#433 id=433 data-nosnippet>433</a>        <span class="string">"Save and wear"</span>,
+<a href=#434 id=434 data-nosnippet>434</a>        <span class="kw-2">&amp;</span>[
+<a href=#435 id=435 data-nosnippet>435</a>            <span class="string">"Save writes the theme to the themes folder in Hydra's data folder, saying only what differs from its base. A built-in is never written over: save under another name."</span>,
+<a href=#436 id=436 data-nosnippet>436</a>            <span class="string">"To wear it, choose it on Settings, Window: Theme. A light one can be worn while the computer is in light mode."</span>,
+<a href=#437 id=437 data-nosnippet>437</a>            <span class="string">"One character's window can wear a theme of its own, and an accent of its own over it: Settings, that character's Theme page, or .theme mine and .theme accent."</span>,
+<a href=#438 id=438 data-nosnippet>438</a>        ],
+<a href=#439 id=439 data-nosnippet>439</a>    ),
+<a href=#440 id=440 data-nosnippet>440</a>    (
+<a href=#441 id=441 data-nosnippet>441</a>        <span class="string">"Import from Wrayth"</span>,
+<a href=#442 id=442 data-nosnippet>442</a>        <span class="kw-2">&amp;</span>[
+<a href=#443 id=443 data-nosnippet>443</a>            <span class="string">"Paste the path of a Wrayth skin (.skn) or settings file (.xml) and press Import: its preset colours become a theme over Despana, named for the file unless you name it. A skin's pictures and fonts are not brought, only its colours."</span>,
+<a href=#444 id=444 data-nosnippet>444</a>            <span class="string">"The same from the command line: .theme import &lt;file&gt; [as &lt;name&gt;]."</span>,
+<a href=#445 id=445 data-nosnippet>445</a>        ],
+<a href=#446 id=446 data-nosnippet>446</a>    ),
+<a href=#447 id=447 data-nosnippet>447</a>];
 </code></pre></div></section></main></body></html>

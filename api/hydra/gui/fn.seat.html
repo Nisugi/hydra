@@ -3,7 +3,7 @@
     game: &amp;Handle,
     logins: <a class="struct" href="https://doc.rust-lang.org/1.96.1/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;(Login, <a class="struct" href="https://doc.rust-lang.org/1.96.1/alloc/string/struct.String.html" title="struct alloc::string::String">String</a>)&gt;,
     resume: <a class="struct" href="https://doc.rust-lang.org/1.96.1/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;Resume&gt;,
-) -&gt; (<a class="struct" href="../../hydra_board/sessions/struct.Sessions.html" title="struct hydra_board::sessions::Sessions">Sessions</a>, <a class="struct" href="https://doc.rust-lang.org/1.96.1/alloc/sync/struct.Arc.html" title="struct alloc::sync::Arc">Arc</a>&lt;Table&gt;)</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Serve the web page on <code>runtime</code> while it is wanted: by the settings the
+) -&gt; (Sessions, <a class="struct" href="https://doc.rust-lang.org/1.96.1/alloc/sync/struct.Arc.html" title="struct alloc::sync::Arc">Arc</a>&lt;Table&gt;)</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Serve the web page on <code>runtime</code> while it is wanted: by the settings the
 window keeps, kept in <code>data</code>, so with no window open too, and on the
 port <code>told.web</code> says for the run.
 The sessions and the table over them, answering the hub, with each

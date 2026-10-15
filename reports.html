@@ -35,10 +35,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-b9a4b3c6.js";
+            window.path_to_searchindex_js = "searchindex-a56a457a.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-366a6130.js"></script>
+        <script src="toc-6d2367c3.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -210,6 +210,19 @@ has been run, <strong>Refresh</strong> runs the report shown again, and <strong>
 writes it to a file under the data folder’s <code>reports</code>.</p>
 <p>A hunt closing runs the report shown again on its own, so a hunt’s numbers
 are current without a click.</p>
+<h2 id="gemstones"><a class="header" href="#gemstones">Gemstones</a></h2>
+<p>A hunt is recorded with the gemstones equipped as it opened, since a set
+cannot change in combat. A hunt’s report lists them with their ranks, and
+a gemstone flare’s report (mirror image, hunter’s afterimage, the shroud)
+says the property it belongs to and its rate at each rank it ran at. The
+set comes from <code>gem list all</code>, read when it passes and kept in the
+character’s file; equipping or unequipping a gemstone keeps it current.</p>
+<h2 id="syncing"><a class="header" href="#syncing">Syncing</a></h2>
+<p>The first time a character is seated with nothing stored, Hydra sends the
+reports that teach its facts once: <code>info full</code>, <code>skills full</code>, the PSM
+lists, <code>inventory enhancive totals</code>, <code>gem list all</code>, <code>society</code> and the
+rest. After that, play keeps them current and nothing is sent at login.
+<code>.sync</code> sends them all again, <code>.sync &lt;group&gt;</code> one of them, and <code>.sync reset</code> drops what is stored first.</p>
 <h2 id="typed"><a class="header" href="#typed">Typed</a></h2>
 <p>The same reports answer on the command line, in a character’s play window:
 <code>.exp</code> for the experience reports and <code>.cstats</code> for combat. <code>.exp help</code> and
@@ -230,7 +243,7 @@ skipped.</p>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="triggers/examples.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="themes/examples.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
@@ -244,7 +257,7 @@ skipped.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="triggers/examples.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="themes/examples.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 

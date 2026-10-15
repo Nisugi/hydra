@@ -2,7 +2,7 @@
 <a href=#2 id=2 data-nosnippet>2</a>//! density, the scrollbar, the shadows, the panes' gap and padding, the
 <a href=#3 id=3 data-nosnippet>3</a>//! bars' thickness, the title bars' height and the buttons.
 <a href=#4 id=4 data-nosnippet>4</a>
-<a href=#5 id=5 data-nosnippet>5</a></span><span class="kw">use </span>hydra_ui::theme::{Buttons, Density, Shape, TitleAlign};
+<a href=#5 id=5 data-nosnippet>5</a></span><span class="kw">use </span>hydra_ui::theme::{Buttons, Density, Shape, TabStyle, TitleAlign};
 <a href=#6 id=6 data-nosnippet>6</a>
 <a href=#7 id=7 data-nosnippet>7</a><span class="doccomment">/// Draw the shape's controls into `ui`, changing `shape` as the player
 <a href=#8 id=8 data-nosnippet>8</a>/// does.
@@ -64,5 +64,16 @@
 <a href=#64 id=64 data-nosnippet>64</a>    })
 <a href=#65 id=65 data-nosnippet>65</a>    .response
 <a href=#66 id=66 data-nosnippet>66</a>    .on_hover_text(<span class="string">"Where a window's title sits in its title bar"</span>);
-<a href=#67 id=67 data-nosnippet>67</a>}
+<a href=#67 id=67 data-nosnippet>67</a>    ui.horizontal(|ui| {
+<a href=#68 id=68 data-nosnippet>68</a>        ui.label(<span class="string">"Tabs"</span>);
+<a href=#69 id=69 data-nosnippet>69</a>        <span class="kw">for </span>style <span class="kw">in </span>TabStyle::ALL {
+<a href=#70 id=70 data-nosnippet>70</a>            ui.selectable_value(<span class="kw-2">&amp;mut </span>shape.tabs, style, style.name());
+<a href=#71 id=71 data-nosnippet>71</a>        }
+<a href=#72 id=72 data-nosnippet>72</a>    })
+<a href=#73 id=73 data-nosnippet>73</a>    .response
+<a href=#74 id=74 data-nosnippet>74</a>    .on_hover_text(
+<a href=#75 id=75 data-nosnippet>75</a>        <span class="string">"How a cell's tabs are drawn: their words alone, a line between them, an edge \
+<a href=#76 id=76 data-nosnippet>76</a>         round each, or each on the tab ground; a cell may choose its own"</span>,
+<a href=#77 id=77 data-nosnippet>77</a>    );
+<a href=#78 id=78 data-nosnippet>78</a>}
 </code></pre></div></section></main></body></html>

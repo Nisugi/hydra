@@ -6,133 +6,137 @@
 <a href=#6 id=6 data-nosnippet>6</a>//!
 <a href=#7 id=7 data-nosnippet>7</a>//! A preset carries the flare's or the status's name after a colon --
 <a href=#8 id=8 data-nosnippet>8</a>//! `flare:acid`, `status_you:stunned` -- and is coloured as its kind
-<a href=#9 id=9 data-nosnippet>9</a>//! ([`crate::run::preset_token`]). A killing blow is coloured as a creature's
-<a href=#10 id=10 data-nosnippet>10</a>//! death.
-<a href=#11 id=11 data-nosnippet>11</a>
-<a href=#12 id=12 data-nosnippet>12</a></span><span class="kw">use </span>std::sync::OnceLock;
+<a href=#9 id=9 data-nosnippet>9</a>//! ([`crate::run::preset_token`]). A killing blow -- a fatal critical hit --
+<a href=#10 id=10 data-nosnippet>10</a>//! has a preset of its own, apart from a creature's death, since a creature
+<a href=#11 id=11 data-nosnippet>11</a>//! immune to them dies by its death message alone: plain until a theme
+<a href=#12 id=12 data-nosnippet>12</a>//! pins it.
 <a href=#13 id=13 data-nosnippet>13</a>
-<a href=#14 id=14 data-nosnippet>14</a><span class="kw">use </span>hydra_model::StatusName;
-<a href=#15 id=15 data-nosnippet>15</a><span class="kw">use </span>hydra_model::state::combat::MarkKind;
-<a href=#16 id=16 data-nosnippet>16</a><span class="kw">use </span>hydra_model::state::combat::defs::flare_names;
-<a href=#17 id=17 data-nosnippet>17</a>
-<a href=#18 id=18 data-nosnippet>18</a><span class="kw">use </span><span class="kw">crate</span>::run::StyledRun;
-<a href=#19 id=19 data-nosnippet>19</a><span class="kw">use </span><span class="kw">crate</span>::theme::Token;
-<a href=#20 id=20 data-nosnippet>20</a>
-<a href=#21 id=21 data-nosnippet>21</a><span class="doccomment">/// The preset of a flare.
-<a href=#22 id=22 data-nosnippet>22</a></span><span class="kw">pub const </span>FLARE: <span class="kw-2">&amp;</span>str = <span class="string">"flare"</span>;
-<a href=#23 id=23 data-nosnippet>23</a><span class="doccomment">/// The preset of a status landing on the character.
-<a href=#24 id=24 data-nosnippet>24</a></span><span class="kw">pub const </span>STATUS_YOU: <span class="kw-2">&amp;</span>str = <span class="string">"status_you"</span>;
-<a href=#25 id=25 data-nosnippet>25</a>
-<a href=#26 id=26 data-nosnippet>26</a><span class="doccomment">/// The kinds of line named one by one, each with the token it is coloured
-<a href=#27 id=27 data-nosnippet>27</a>/// by: a theme can give each of their names a colour of its own.
-<a href=#28 id=28 data-nosnippet>28</a></span><span class="kw">pub const </span>NAMED: [(<span class="kw-2">&amp;</span>str, Token); <span class="number">2</span>] = [(FLARE, Token::Flare), (STATUS_YOU, Token::StatusYou)];
+<a href=#14 id=14 data-nosnippet>14</a></span><span class="kw">use </span>std::sync::OnceLock;
+<a href=#15 id=15 data-nosnippet>15</a>
+<a href=#16 id=16 data-nosnippet>16</a><span class="kw">use </span>hydra_model::StatusName;
+<a href=#17 id=17 data-nosnippet>17</a><span class="kw">use </span>hydra_model::state::combat::MarkKind;
+<a href=#18 id=18 data-nosnippet>18</a><span class="kw">use </span>hydra_model::state::combat::defs::flare_names;
+<a href=#19 id=19 data-nosnippet>19</a>
+<a href=#20 id=20 data-nosnippet>20</a><span class="kw">use </span><span class="kw">crate</span>::run::StyledRun;
+<a href=#21 id=21 data-nosnippet>21</a><span class="kw">use </span><span class="kw">crate</span>::theme::Token;
+<a href=#22 id=22 data-nosnippet>22</a>
+<a href=#23 id=23 data-nosnippet>23</a><span class="doccomment">/// The preset of a flare.
+<a href=#24 id=24 data-nosnippet>24</a></span><span class="kw">pub const </span>FLARE: <span class="kw-2">&amp;</span>str = <span class="string">"flare"</span>;
+<a href=#25 id=25 data-nosnippet>25</a><span class="doccomment">/// The preset of a status landing on the character.
+<a href=#26 id=26 data-nosnippet>26</a></span><span class="kw">pub const </span>STATUS_YOU: <span class="kw-2">&amp;</span>str = <span class="string">"status_you"</span>;
+<a href=#27 id=27 data-nosnippet>27</a><span class="doccomment">/// The preset of a fatal critical hit.
+<a href=#28 id=28 data-nosnippet>28</a></span><span class="kw">pub const </span>FATAL: <span class="kw-2">&amp;</span>str = <span class="string">"fatal_crit"</span>;
 <a href=#29 id=29 data-nosnippet>29</a>
-<a href=#30 id=30 data-nosnippet>30</a><span class="doccomment">/// Every name a kind of line named one by one (`kind`, one of [`NAMED`])
-<a href=#31 id=31 data-nosnippet>31</a>/// can carry, as the combat reader's tables have them, sorted; none for
-<a href=#32 id=32 data-nosnippet>32</a>/// another kind. Read once.
-<a href=#33 id=33 data-nosnippet>33</a></span><span class="attr">#[must_use]
-<a href=#34 id=34 data-nosnippet>34</a></span><span class="kw">pub fn </span>names(kind: <span class="kw-2">&amp;</span>str) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>[<span class="kw-2">&amp;</span><span class="lifetime">'static </span>str] {
-<a href=#35 id=35 data-nosnippet>35</a>    <span class="kw">static </span>FLARES: OnceLock&lt;Vec&lt;<span class="kw-2">&amp;</span><span class="lifetime">'static </span>str&gt;&gt; = OnceLock::new();
-<a href=#36 id=36 data-nosnippet>36</a>    <span class="kw">static </span>STATUSES: OnceLock&lt;Vec&lt;<span class="kw-2">&amp;</span><span class="lifetime">'static </span>str&gt;&gt; = OnceLock::new();
-<a href=#37 id=37 data-nosnippet>37</a>    <span class="kw">match </span>kind {
-<a href=#38 id=38 data-nosnippet>38</a>        FLARE =&gt; FLARES.get_or_init(|| flare_names().into_iter().collect()),
-<a href=#39 id=39 data-nosnippet>39</a>        STATUS_YOU =&gt; STATUSES.get_or_init(|| {
-<a href=#40 id=40 data-nosnippet>40</a>            <span class="kw">let </span><span class="kw-2">mut </span>names: Vec&lt;<span class="kw-2">&amp;</span>str&gt; = StatusName::ALL
-<a href=#41 id=41 data-nosnippet>41</a>                .into_iter()
-<a href=#42 id=42 data-nosnippet>42</a>                .map(StatusName::as_str)
-<a href=#43 id=43 data-nosnippet>43</a>                .collect();
-<a href=#44 id=44 data-nosnippet>44</a>            names.sort_unstable();
-<a href=#45 id=45 data-nosnippet>45</a>            names
-<a href=#46 id=46 data-nosnippet>46</a>        }),
-<a href=#47 id=47 data-nosnippet>47</a>        <span class="kw">_ </span>=&gt; <span class="kw-2">&amp;</span>[],
-<a href=#48 id=48 data-nosnippet>48</a>    }
-<a href=#49 id=49 data-nosnippet>49</a>}
-<a href=#50 id=50 data-nosnippet>50</a>
-<a href=#51 id=51 data-nosnippet>51</a><span class="doccomment">/// The preset a line the combat reader marked takes.
-<a href=#52 id=52 data-nosnippet>52</a></span><span class="attr">#[must_use]
-<a href=#53 id=53 data-nosnippet>53</a></span><span class="kw">pub fn </span>preset(kind: <span class="kw-2">&amp;</span>MarkKind) -&gt; String {
-<a href=#54 id=54 data-nosnippet>54</a>    <span class="kw">match </span>kind {
-<a href=#55 id=55 data-nosnippet>55</a>        MarkKind::Flare(name) =&gt; <span class="macro">format!</span>(<span class="string">"{FLARE}:{name}"</span>),
-<a href=#56 id=56 data-nosnippet>56</a>        MarkKind::StatusYou(name) =&gt; <span class="macro">format!</span>(<span class="string">"{STATUS_YOU}:{name}"</span>),
-<a href=#57 id=57 data-nosnippet>57</a>        MarkKind::Fatal =&gt; <span class="kw">crate</span>::creature_line::DEATH.to_owned(),
-<a href=#58 id=58 data-nosnippet>58</a>    }
-<a href=#59 id=59 data-nosnippet>59</a>}
-<a href=#60 id=60 data-nosnippet>60</a>
-<a href=#61 id=61 data-nosnippet>61</a><span class="doccomment">/// Mark `line` as the combat reader found it was: every run of it without a
-<a href=#62 id=62 data-nosnippet>62</a>/// preset of its own takes `kind`'s.
-<a href=#63 id=63 data-nosnippet>63</a></span><span class="kw">pub fn </span>mark(line: <span class="kw-2">&amp;mut </span>[StyledRun], kind: <span class="kw-2">&amp;</span>MarkKind) {
-<a href=#64 id=64 data-nosnippet>64</a>    <span class="kw">let </span>preset = preset(kind);
-<a href=#65 id=65 data-nosnippet>65</a>    <span class="kw">for </span>run <span class="kw">in </span>line.iter_mut().filter(|run| run.preset.is_none()) {
-<a href=#66 id=66 data-nosnippet>66</a>        run.preset = <span class="prelude-val">Some</span>(preset.clone());
-<a href=#67 id=67 data-nosnippet>67</a>    }
-<a href=#68 id=68 data-nosnippet>68</a>}
-<a href=#69 id=69 data-nosnippet>69</a>
-<a href=#70 id=70 data-nosnippet>70</a><span class="attr">#[cfg(test)]
-<a href=#71 id=71 data-nosnippet>71</a></span><span class="kw">mod </span>tests {
-<a href=#72 id=72 data-nosnippet>72</a>    <span class="kw">use </span>super::<span class="kw-2">*</span>;
+<a href=#30 id=30 data-nosnippet>30</a><span class="doccomment">/// The kinds of line named one by one, each with the token it is coloured
+<a href=#31 id=31 data-nosnippet>31</a>/// by: a theme can give each of their names a colour of its own.
+<a href=#32 id=32 data-nosnippet>32</a></span><span class="kw">pub const </span>NAMED: [(<span class="kw-2">&amp;</span>str, Token); <span class="number">2</span>] = [(FLARE, Token::Flare), (STATUS_YOU, Token::StatusYou)];
+<a href=#33 id=33 data-nosnippet>33</a>
+<a href=#34 id=34 data-nosnippet>34</a><span class="doccomment">/// Every name a kind of line named one by one (`kind`, one of [`NAMED`])
+<a href=#35 id=35 data-nosnippet>35</a>/// can carry, as the combat reader's tables have them, sorted; none for
+<a href=#36 id=36 data-nosnippet>36</a>/// another kind. Read once.
+<a href=#37 id=37 data-nosnippet>37</a></span><span class="attr">#[must_use]
+<a href=#38 id=38 data-nosnippet>38</a></span><span class="kw">pub fn </span>names(kind: <span class="kw-2">&amp;</span>str) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>[<span class="kw-2">&amp;</span><span class="lifetime">'static </span>str] {
+<a href=#39 id=39 data-nosnippet>39</a>    <span class="kw">static </span>FLARES: OnceLock&lt;Vec&lt;<span class="kw-2">&amp;</span><span class="lifetime">'static </span>str&gt;&gt; = OnceLock::new();
+<a href=#40 id=40 data-nosnippet>40</a>    <span class="kw">static </span>STATUSES: OnceLock&lt;Vec&lt;<span class="kw-2">&amp;</span><span class="lifetime">'static </span>str&gt;&gt; = OnceLock::new();
+<a href=#41 id=41 data-nosnippet>41</a>    <span class="kw">match </span>kind {
+<a href=#42 id=42 data-nosnippet>42</a>        FLARE =&gt; FLARES.get_or_init(|| flare_names().into_iter().collect()),
+<a href=#43 id=43 data-nosnippet>43</a>        STATUS_YOU =&gt; STATUSES.get_or_init(|| {
+<a href=#44 id=44 data-nosnippet>44</a>            <span class="kw">let </span><span class="kw-2">mut </span>names: Vec&lt;<span class="kw-2">&amp;</span>str&gt; = StatusName::ALL
+<a href=#45 id=45 data-nosnippet>45</a>                .into_iter()
+<a href=#46 id=46 data-nosnippet>46</a>                .map(StatusName::as_str)
+<a href=#47 id=47 data-nosnippet>47</a>                .collect();
+<a href=#48 id=48 data-nosnippet>48</a>            names.sort_unstable();
+<a href=#49 id=49 data-nosnippet>49</a>            names
+<a href=#50 id=50 data-nosnippet>50</a>        }),
+<a href=#51 id=51 data-nosnippet>51</a>        <span class="kw">_ </span>=&gt; <span class="kw-2">&amp;</span>[],
+<a href=#52 id=52 data-nosnippet>52</a>    }
+<a href=#53 id=53 data-nosnippet>53</a>}
+<a href=#54 id=54 data-nosnippet>54</a>
+<a href=#55 id=55 data-nosnippet>55</a><span class="doccomment">/// The preset a line the combat reader marked takes.
+<a href=#56 id=56 data-nosnippet>56</a></span><span class="attr">#[must_use]
+<a href=#57 id=57 data-nosnippet>57</a></span><span class="kw">pub fn </span>preset(kind: <span class="kw-2">&amp;</span>MarkKind) -&gt; String {
+<a href=#58 id=58 data-nosnippet>58</a>    <span class="kw">match </span>kind {
+<a href=#59 id=59 data-nosnippet>59</a>        MarkKind::Flare(name) =&gt; <span class="macro">format!</span>(<span class="string">"{FLARE}:{name}"</span>),
+<a href=#60 id=60 data-nosnippet>60</a>        MarkKind::StatusYou(name) =&gt; <span class="macro">format!</span>(<span class="string">"{STATUS_YOU}:{name}"</span>),
+<a href=#61 id=61 data-nosnippet>61</a>        MarkKind::Fatal =&gt; FATAL.to_owned(),
+<a href=#62 id=62 data-nosnippet>62</a>    }
+<a href=#63 id=63 data-nosnippet>63</a>}
+<a href=#64 id=64 data-nosnippet>64</a>
+<a href=#65 id=65 data-nosnippet>65</a><span class="doccomment">/// Mark `line` as the combat reader found it was: every run of it without a
+<a href=#66 id=66 data-nosnippet>66</a>/// preset of its own takes `kind`'s.
+<a href=#67 id=67 data-nosnippet>67</a></span><span class="kw">pub fn </span>mark(line: <span class="kw-2">&amp;mut </span>[StyledRun], kind: <span class="kw-2">&amp;</span>MarkKind) {
+<a href=#68 id=68 data-nosnippet>68</a>    <span class="kw">let </span>preset = preset(kind);
+<a href=#69 id=69 data-nosnippet>69</a>    <span class="kw">for </span>run <span class="kw">in </span>line.iter_mut().filter(|run| run.preset.is_none()) {
+<a href=#70 id=70 data-nosnippet>70</a>        run.preset = <span class="prelude-val">Some</span>(preset.clone());
+<a href=#71 id=71 data-nosnippet>71</a>    }
+<a href=#72 id=72 data-nosnippet>72</a>}
 <a href=#73 id=73 data-nosnippet>73</a>
-<a href=#74 id=74 data-nosnippet>74</a>    <span class="doccomment">/// Each kind's preset is coloured as its kind, whatever it is named.
-<a href=#75 id=75 data-nosnippet>75</a>    </span><span class="attr">#[test]
-<a href=#76 id=76 data-nosnippet>76</a>    </span><span class="kw">fn </span>each_mark_is_coloured_as_its_kind() {
-<a href=#77 id=77 data-nosnippet>77</a>        <span class="kw">for </span>(kind, token) <span class="kw">in </span>[
-<a href=#78 id=78 data-nosnippet>78</a>            (MarkKind::Flare(<span class="string">"acid"</span>.to_owned()), Token::Flare),
-<a href=#79 id=79 data-nosnippet>79</a>            (MarkKind::StatusYou(<span class="string">"stunned"</span>), Token::StatusYou),
-<a href=#80 id=80 data-nosnippet>80</a>            (MarkKind::Fatal, Token::CreatureDeath),
-<a href=#81 id=81 data-nosnippet>81</a>        ] {
-<a href=#82 id=82 data-nosnippet>82</a>            <span class="macro">assert_eq!</span>(
-<a href=#83 id=83 data-nosnippet>83</a>                <span class="kw">crate</span>::run::preset_token(<span class="kw-2">&amp;</span>preset(<span class="kw-2">&amp;</span>kind)),
-<a href=#84 id=84 data-nosnippet>84</a>                <span class="prelude-val">Some</span>(token),
-<a href=#85 id=85 data-nosnippet>85</a>                <span class="string">"{kind:?}"
-<a href=#86 id=86 data-nosnippet>86</a>            </span>);
-<a href=#87 id=87 data-nosnippet>87</a>        }
-<a href=#88 id=88 data-nosnippet>88</a>        <span class="macro">assert_eq!</span>(preset(<span class="kw-2">&amp;</span>MarkKind::Flare(<span class="string">"acid"</span>.to_owned())), <span class="string">"flare:acid"</span>);
-<a href=#89 id=89 data-nosnippet>89</a>    }
-<a href=#90 id=90 data-nosnippet>90</a>
-<a href=#91 id=91 data-nosnippet>91</a>    <span class="doccomment">/// A named line takes the colour the theme gives its name, else its
-<a href=#92 id=92 data-nosnippet>92</a>    /// kind's; a link in it keeps the link's.
-<a href=#93 id=93 data-nosnippet>93</a>    </span><span class="attr">#[test]
-<a href=#94 id=94 data-nosnippet>94</a>    </span><span class="kw">fn </span>a_named_line_takes_its_names_colour_over_its_kinds() {
-<a href=#95 id=95 data-nosnippet>95</a>        <span class="kw">use </span><span class="kw">crate</span>::run::run_rgb;
-<a href=#96 id=96 data-nosnippet>96</a>        <span class="kw">use </span><span class="kw">crate</span>::theme::Palette;
-<a href=#97 id=97 data-nosnippet>97</a>        <span class="kw">let </span><span class="kw-2">mut </span>palette = Palette::bare();
-<a href=#98 id=98 data-nosnippet>98</a>        palette.set_names([(<span class="string">"flare:acid"</span>.to_owned(), [<span class="number">0x00</span>, <span class="number">0xff</span>, <span class="number">0x00</span>])].into());
-<a href=#99 id=99 data-nosnippet>99</a>        <span class="kw">let </span>marked = |name: <span class="kw-2">&amp;</span>str| {
-<a href=#100 id=100 data-nosnippet>100</a>            <span class="kw">let </span><span class="kw-2">mut </span>line = <span class="macro">vec!</span>[StyledRun {
-<a href=#101 id=101 data-nosnippet>101</a>                text: <span class="string">"** Your bow flares! **"</span>.to_owned(),
-<a href=#102 id=102 data-nosnippet>102</a>                ..StyledRun::default()
-<a href=#103 id=103 data-nosnippet>103</a>            }];
-<a href=#104 id=104 data-nosnippet>104</a>            mark(<span class="kw-2">&amp;mut </span>line, <span class="kw-2">&amp;</span>MarkKind::Flare(name.to_owned()));
-<a href=#105 id=105 data-nosnippet>105</a>            line.remove(<span class="number">0</span>)
-<a href=#106 id=106 data-nosnippet>106</a>        };
-<a href=#107 id=107 data-nosnippet>107</a>        <span class="macro">assert_eq!</span>(run_rgb(<span class="kw-2">&amp;</span>marked(<span class="string">"acid"</span>), <span class="kw-2">&amp;</span>palette), <span class="prelude-val">Some</span>([<span class="number">0x00</span>, <span class="number">0xff</span>, <span class="number">0x00</span>]));
-<a href=#108 id=108 data-nosnippet>108</a>        <span class="macro">assert_eq!</span>(
-<a href=#109 id=109 data-nosnippet>109</a>            run_rgb(<span class="kw-2">&amp;</span>marked(<span class="string">"fire"</span>), <span class="kw-2">&amp;</span>palette),
-<a href=#110 id=110 data-nosnippet>110</a>            <span class="prelude-val">Some</span>(palette.get(Token::Flare))
-<a href=#111 id=111 data-nosnippet>111</a>        );
-<a href=#112 id=112 data-nosnippet>112</a>        <span class="kw">let </span>linked = StyledRun {
-<a href=#113 id=113 data-nosnippet>113</a>            link: <span class="prelude-val">Some</span>(<span class="kw">crate</span>::RunLink::Command {
-<a href=#114 id=114 data-nosnippet>114</a>                command: <span class="string">"look"</span>.to_owned(),
-<a href=#115 id=115 data-nosnippet>115</a>            }),
-<a href=#116 id=116 data-nosnippet>116</a>            ..marked(<span class="string">"acid"</span>)
-<a href=#117 id=117 data-nosnippet>117</a>        };
-<a href=#118 id=118 data-nosnippet>118</a>        <span class="macro">assert_eq!</span>(
-<a href=#119 id=119 data-nosnippet>119</a>            run_rgb(<span class="kw-2">&amp;</span>linked, <span class="kw-2">&amp;</span>palette),
-<a href=#120 id=120 data-nosnippet>120</a>            <span class="prelude-val">Some</span>(palette.get(Token::Command))
-<a href=#121 id=121 data-nosnippet>121</a>        );
-<a href=#122 id=122 data-nosnippet>122</a>    }
-<a href=#123 id=123 data-nosnippet>123</a>
-<a href=#124 id=124 data-nosnippet>124</a>    <span class="doccomment">/// Each named kind lists its names from the tables, sorted; another
-<a href=#125 id=125 data-nosnippet>125</a>    /// kind lists none.
-<a href=#126 id=126 data-nosnippet>126</a>    </span><span class="attr">#[test]
-<a href=#127 id=127 data-nosnippet>127</a>    </span><span class="kw">fn </span>each_named_kind_lists_its_names() {
-<a href=#128 id=128 data-nosnippet>128</a>        <span class="kw">for </span>(kind, <span class="kw">_</span>) <span class="kw">in </span>NAMED {
-<a href=#129 id=129 data-nosnippet>129</a>            <span class="kw">let </span>listed = names(kind);
-<a href=#130 id=130 data-nosnippet>130</a>            <span class="macro">assert!</span>(listed.is_sorted(), <span class="string">"{kind}"</span>);
-<a href=#131 id=131 data-nosnippet>131</a>            <span class="macro">assert!</span>(!listed.is_empty(), <span class="string">"{kind}"</span>);
-<a href=#132 id=132 data-nosnippet>132</a>        }
-<a href=#133 id=133 data-nosnippet>133</a>        <span class="macro">assert!</span>(names(FLARE).contains(<span class="kw-2">&amp;</span><span class="string">"acid"</span>));
-<a href=#134 id=134 data-nosnippet>134</a>        <span class="macro">assert!</span>(names(STATUS_YOU).contains(<span class="kw-2">&amp;</span><span class="string">"stunned"</span>));
-<a href=#135 id=135 data-nosnippet>135</a>        <span class="macro">assert!</span>(names(<span class="string">"speech"</span>).is_empty());
-<a href=#136 id=136 data-nosnippet>136</a>    }
-<a href=#137 id=137 data-nosnippet>137</a>}
+<a href=#74 id=74 data-nosnippet>74</a><span class="attr">#[cfg(test)]
+<a href=#75 id=75 data-nosnippet>75</a></span><span class="kw">mod </span>tests {
+<a href=#76 id=76 data-nosnippet>76</a>    <span class="kw">use </span>super::<span class="kw-2">*</span>;
+<a href=#77 id=77 data-nosnippet>77</a>
+<a href=#78 id=78 data-nosnippet>78</a>    <span class="doccomment">/// Each kind's preset is coloured as its kind, whatever it is named.
+<a href=#79 id=79 data-nosnippet>79</a>    </span><span class="attr">#[test]
+<a href=#80 id=80 data-nosnippet>80</a>    </span><span class="kw">fn </span>each_mark_is_coloured_as_its_kind() {
+<a href=#81 id=81 data-nosnippet>81</a>        <span class="kw">for </span>(kind, token) <span class="kw">in </span>[
+<a href=#82 id=82 data-nosnippet>82</a>            (MarkKind::Flare(<span class="string">"acid"</span>.to_owned()), Token::Flare),
+<a href=#83 id=83 data-nosnippet>83</a>            (MarkKind::StatusYou(<span class="string">"stunned"</span>), Token::StatusYou),
+<a href=#84 id=84 data-nosnippet>84</a>            (MarkKind::Fatal, Token::FatalCrit),
+<a href=#85 id=85 data-nosnippet>85</a>        ] {
+<a href=#86 id=86 data-nosnippet>86</a>            <span class="macro">assert_eq!</span>(
+<a href=#87 id=87 data-nosnippet>87</a>                <span class="kw">crate</span>::run::preset_token(<span class="kw-2">&amp;</span>preset(<span class="kw-2">&amp;</span>kind)),
+<a href=#88 id=88 data-nosnippet>88</a>                <span class="prelude-val">Some</span>(token),
+<a href=#89 id=89 data-nosnippet>89</a>                <span class="string">"{kind:?}"
+<a href=#90 id=90 data-nosnippet>90</a>            </span>);
+<a href=#91 id=91 data-nosnippet>91</a>        }
+<a href=#92 id=92 data-nosnippet>92</a>        <span class="macro">assert_eq!</span>(preset(<span class="kw-2">&amp;</span>MarkKind::Flare(<span class="string">"acid"</span>.to_owned())), <span class="string">"flare:acid"</span>);
+<a href=#93 id=93 data-nosnippet>93</a>    }
+<a href=#94 id=94 data-nosnippet>94</a>
+<a href=#95 id=95 data-nosnippet>95</a>    <span class="doccomment">/// A named line takes the colour the theme gives its name, else its
+<a href=#96 id=96 data-nosnippet>96</a>    /// kind's; a link in it keeps the link's.
+<a href=#97 id=97 data-nosnippet>97</a>    </span><span class="attr">#[test]
+<a href=#98 id=98 data-nosnippet>98</a>    </span><span class="kw">fn </span>a_named_line_takes_its_names_colour_over_its_kinds() {
+<a href=#99 id=99 data-nosnippet>99</a>        <span class="kw">use </span><span class="kw">crate</span>::run::run_rgb;
+<a href=#100 id=100 data-nosnippet>100</a>        <span class="kw">use </span><span class="kw">crate</span>::theme::Palette;
+<a href=#101 id=101 data-nosnippet>101</a>        <span class="kw">let </span><span class="kw-2">mut </span>palette = Palette::bare();
+<a href=#102 id=102 data-nosnippet>102</a>        palette.set_names([(<span class="string">"flare:acid"</span>.to_owned(), [<span class="number">0x00</span>, <span class="number">0xff</span>, <span class="number">0x00</span>])].into());
+<a href=#103 id=103 data-nosnippet>103</a>        <span class="kw">let </span>marked = |name: <span class="kw-2">&amp;</span>str| {
+<a href=#104 id=104 data-nosnippet>104</a>            <span class="kw">let </span><span class="kw-2">mut </span>line = <span class="macro">vec!</span>[StyledRun {
+<a href=#105 id=105 data-nosnippet>105</a>                text: <span class="string">"** Your bow flares! **"</span>.to_owned(),
+<a href=#106 id=106 data-nosnippet>106</a>                ..StyledRun::default()
+<a href=#107 id=107 data-nosnippet>107</a>            }];
+<a href=#108 id=108 data-nosnippet>108</a>            mark(<span class="kw-2">&amp;mut </span>line, <span class="kw-2">&amp;</span>MarkKind::Flare(name.to_owned()));
+<a href=#109 id=109 data-nosnippet>109</a>            line.remove(<span class="number">0</span>)
+<a href=#110 id=110 data-nosnippet>110</a>        };
+<a href=#111 id=111 data-nosnippet>111</a>        <span class="macro">assert_eq!</span>(run_rgb(<span class="kw-2">&amp;</span>marked(<span class="string">"acid"</span>), <span class="kw-2">&amp;</span>palette), <span class="prelude-val">Some</span>([<span class="number">0x00</span>, <span class="number">0xff</span>, <span class="number">0x00</span>]));
+<a href=#112 id=112 data-nosnippet>112</a>        <span class="macro">assert_eq!</span>(
+<a href=#113 id=113 data-nosnippet>113</a>            run_rgb(<span class="kw-2">&amp;</span>marked(<span class="string">"fire"</span>), <span class="kw-2">&amp;</span>palette),
+<a href=#114 id=114 data-nosnippet>114</a>            <span class="prelude-val">Some</span>(palette.get(Token::Flare))
+<a href=#115 id=115 data-nosnippet>115</a>        );
+<a href=#116 id=116 data-nosnippet>116</a>        <span class="kw">let </span>linked = StyledRun {
+<a href=#117 id=117 data-nosnippet>117</a>            link: <span class="prelude-val">Some</span>(<span class="kw">crate</span>::RunLink::Command {
+<a href=#118 id=118 data-nosnippet>118</a>                command: <span class="string">"look"</span>.to_owned(),
+<a href=#119 id=119 data-nosnippet>119</a>            }),
+<a href=#120 id=120 data-nosnippet>120</a>            ..marked(<span class="string">"acid"</span>)
+<a href=#121 id=121 data-nosnippet>121</a>        };
+<a href=#122 id=122 data-nosnippet>122</a>        <span class="macro">assert_eq!</span>(
+<a href=#123 id=123 data-nosnippet>123</a>            run_rgb(<span class="kw-2">&amp;</span>linked, <span class="kw-2">&amp;</span>palette),
+<a href=#124 id=124 data-nosnippet>124</a>            <span class="prelude-val">Some</span>(palette.get(Token::Command))
+<a href=#125 id=125 data-nosnippet>125</a>        );
+<a href=#126 id=126 data-nosnippet>126</a>    }
+<a href=#127 id=127 data-nosnippet>127</a>
+<a href=#128 id=128 data-nosnippet>128</a>    <span class="doccomment">/// Each named kind lists its names from the tables, sorted; another
+<a href=#129 id=129 data-nosnippet>129</a>    /// kind lists none.
+<a href=#130 id=130 data-nosnippet>130</a>    </span><span class="attr">#[test]
+<a href=#131 id=131 data-nosnippet>131</a>    </span><span class="kw">fn </span>each_named_kind_lists_its_names() {
+<a href=#132 id=132 data-nosnippet>132</a>        <span class="kw">for </span>(kind, <span class="kw">_</span>) <span class="kw">in </span>NAMED {
+<a href=#133 id=133 data-nosnippet>133</a>            <span class="kw">let </span>listed = names(kind);
+<a href=#134 id=134 data-nosnippet>134</a>            <span class="macro">assert!</span>(listed.is_sorted(), <span class="string">"{kind}"</span>);
+<a href=#135 id=135 data-nosnippet>135</a>            <span class="macro">assert!</span>(!listed.is_empty(), <span class="string">"{kind}"</span>);
+<a href=#136 id=136 data-nosnippet>136</a>        }
+<a href=#137 id=137 data-nosnippet>137</a>        <span class="macro">assert!</span>(names(FLARE).contains(<span class="kw-2">&amp;</span><span class="string">"acid"</span>));
+<a href=#138 id=138 data-nosnippet>138</a>        <span class="macro">assert!</span>(names(STATUS_YOU).contains(<span class="kw-2">&amp;</span><span class="string">"stunned"</span>));
+<a href=#139 id=139 data-nosnippet>139</a>        <span class="macro">assert!</span>(names(<span class="string">"speech"</span>).is_empty());
+<a href=#140 id=140 data-nosnippet>140</a>    }
+<a href=#141 id=141 data-nosnippet>141</a>}
 </code></pre></div></section></main></body></html>
