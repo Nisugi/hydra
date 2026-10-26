@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["DEADLINE","GRACE","QUIT_WAIT"],"enum":["Outcome"],"fn":["quit","read"]};

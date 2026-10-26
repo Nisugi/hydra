@@ -179,11 +179,11 @@
 <a href=#179 id=179 data-nosnippet>179</a>        <span class="kw">let </span>character = character.clone();
 <a href=#180 id=180 data-nosnippet>180</a>        <span class="kw">crate</span>::commands::spawn(<span class="kw">async move </span>{
 <a href=#181 id=181 data-nosnippet>181</a>            <span class="kw">let </span>say = |kind, lines: Vec&lt;String&gt;| {
-<a href=#182 id=182 data-nosnippet>182</a>                handle.say_unlogged(Notice::prose(kind, lines).answering());
+<a href=#182 id=182 data-nosnippet>182</a>                handle.say(Notice::prose(kind, lines).answering());
 <a href=#183 id=183 data-nosnippet>183</a>            };
 <a href=#184 id=184 data-nosnippet>184</a>            <span class="comment">// The usage and the listing have columns.
 <a href=#185 id=185 data-nosnippet>185</a>            </span><span class="kw">let </span>table = |lines: Vec&lt;String&gt;| {
-<a href=#186 id=186 data-nosnippet>186</a>                handle.say_unlogged(Notice::table(NoticeKind::Info, lines).answering());
+<a href=#186 id=186 data-nosnippet>186</a>                handle.say(<span class="kw">crate</span>::commands::table_or_help(lines, HELP).answering());
 <a href=#187 id=187 data-nosnippet>187</a>            };
 <a href=#188 id=188 data-nosnippet>188</a>            <span class="kw">let </span><span class="prelude-val">Some</span>(snapshot) = handle.snapshot().<span class="kw">await else </span>{
 <a href=#189 id=189 data-nosnippet>189</a>                <span class="kw">return</span>;
@@ -342,21 +342,22 @@
 <a href=#342 id=342 data-nosnippet>342</a>            <span class="kw-2">&amp;</span>login,
 <a href=#343 id=343 data-nosnippet>343</a>            alone,
 <a href=#344 id=344 data-nosnippet>344</a>            <span class="kw-2">&amp;</span><span class="kw">crate</span>::lich_command::Lichs::default(),
-<a href=#345 id=345 data-nosnippet>345</a>        );
-<a href=#346 id=346 data-nosnippet>346</a>        <span class="kw">let </span>running = tokio::spawn(session.run());
-<a href=#347 id=347 data-nosnippet>347</a>        <span class="kw">let </span>wait = Duration::from_secs(<span class="number">5</span>);
-<a href=#348 id=348 data-nosnippet>348</a>        tokio::time::sleep(Duration::from_millis(<span class="number">10</span>)).<span class="kw">await</span>;
-<a href=#349 id=349 data-nosnippet>349</a>        <span class="kw">let _ </span>= handle.send(<span class="string">".timer cata 90"</span>, Origin::Lich, wait).<span class="kw">await</span>;
-<a href=#350 id=350 data-nosnippet>350</a>        tokio::time::sleep(Duration::from_millis(<span class="number">10</span>)).<span class="kw">await</span>;
-<a href=#351 id=351 data-nosnippet>351</a>        <span class="kw">let </span>state = handle.snapshot().<span class="kw">await</span>.expect(<span class="string">"a snapshot"</span>).state;
-<a href=#352 id=352 data-nosnippet>352</a>        <span class="kw">let </span>ends = state.custom_timers.get(<span class="string">"cata"</span>).expect(<span class="string">"set"</span>);
-<a href=#353 id=353 data-nosnippet>353</a>        <span class="macro">assert!</span>(ends &gt; <span class="number">90</span>, <span class="string">"{ends}"</span>);
-<a href=#354 id=354 data-nosnippet>354</a>        <span class="kw">let _ </span>= handle.send(<span class="string">".timer cata off"</span>, Origin::Player, wait).<span class="kw">await</span>;
-<a href=#355 id=355 data-nosnippet>355</a>        tokio::time::sleep(Duration::from_millis(<span class="number">10</span>)).<span class="kw">await</span>;
-<a href=#356 id=356 data-nosnippet>356</a>        <span class="kw">let </span>state = handle.snapshot().<span class="kw">await</span>.expect(<span class="string">"a snapshot"</span>).state;
-<a href=#357 id=357 data-nosnippet>357</a>        <span class="macro">assert_eq!</span>(state.custom_timers.get(<span class="string">"cata"</span>), <span class="prelude-val">None</span>);
-<a href=#358 id=358 data-nosnippet>358</a>        <span class="macro">assert!</span>(game.lines().is_empty(), <span class="string">"{:?}"</span>, game.lines());
-<a href=#359 id=359 data-nosnippet>359</a>        running.abort();
-<a href=#360 id=360 data-nosnippet>360</a>    }
-<a href=#361 id=361 data-nosnippet>361</a>}
+<a href=#345 id=345 data-nosnippet>345</a>            hydra_session::stream_rules::StreamRules::default(),
+<a href=#346 id=346 data-nosnippet>346</a>        );
+<a href=#347 id=347 data-nosnippet>347</a>        <span class="kw">let </span>running = tokio::spawn(session.run());
+<a href=#348 id=348 data-nosnippet>348</a>        <span class="kw">let </span>wait = Duration::from_secs(<span class="number">5</span>);
+<a href=#349 id=349 data-nosnippet>349</a>        tokio::time::sleep(Duration::from_millis(<span class="number">10</span>)).<span class="kw">await</span>;
+<a href=#350 id=350 data-nosnippet>350</a>        <span class="kw">let _ </span>= handle.send(<span class="string">".timer cata 90"</span>, Origin::Lich, wait).<span class="kw">await</span>;
+<a href=#351 id=351 data-nosnippet>351</a>        tokio::time::sleep(Duration::from_millis(<span class="number">10</span>)).<span class="kw">await</span>;
+<a href=#352 id=352 data-nosnippet>352</a>        <span class="kw">let </span>state = handle.snapshot().<span class="kw">await</span>.expect(<span class="string">"a snapshot"</span>).state;
+<a href=#353 id=353 data-nosnippet>353</a>        <span class="kw">let </span>ends = state.custom_timers.get(<span class="string">"cata"</span>).expect(<span class="string">"set"</span>);
+<a href=#354 id=354 data-nosnippet>354</a>        <span class="macro">assert!</span>(ends &gt; <span class="number">90</span>, <span class="string">"{ends}"</span>);
+<a href=#355 id=355 data-nosnippet>355</a>        <span class="kw">let _ </span>= handle.send(<span class="string">".timer cata off"</span>, Origin::Player, wait).<span class="kw">await</span>;
+<a href=#356 id=356 data-nosnippet>356</a>        tokio::time::sleep(Duration::from_millis(<span class="number">10</span>)).<span class="kw">await</span>;
+<a href=#357 id=357 data-nosnippet>357</a>        <span class="kw">let </span>state = handle.snapshot().<span class="kw">await</span>.expect(<span class="string">"a snapshot"</span>).state;
+<a href=#358 id=358 data-nosnippet>358</a>        <span class="macro">assert_eq!</span>(state.custom_timers.get(<span class="string">"cata"</span>), <span class="prelude-val">None</span>);
+<a href=#359 id=359 data-nosnippet>359</a>        <span class="macro">assert!</span>(game.lines().is_empty(), <span class="string">"{:?}"</span>, game.lines());
+<a href=#360 id=360 data-nosnippet>360</a>        running.abort();
+<a href=#361 id=361 data-nosnippet>361</a>    }
+<a href=#362 id=362 data-nosnippet>362</a>}
 </code></pre></div></section></main></body></html>

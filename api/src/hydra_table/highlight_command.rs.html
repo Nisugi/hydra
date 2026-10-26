@@ -85,11 +85,11 @@
 <a href=#85 id=85 data-nosnippet>85</a>        </span><span class="kw">let </span>table = <span class="macro">matches!</span>(asked, <span class="prelude-val">Ok</span>(Asked::Help | Asked::List(<span class="kw">_</span>)));
 <a href=#86 id=86 data-nosnippet>86</a>        <span class="kw">let </span>said = asked.and_then(|asked| run(<span class="kw-2">&amp;</span><span class="kw">crate</span>::account::data_dir(), asked));
 <a href=#87 id=87 data-nosnippet>87</a>        <span class="kw">let </span>notice = <span class="kw">match </span>said {
-<a href=#88 id=88 data-nosnippet>88</a>            <span class="prelude-val">Ok</span>(lines) <span class="kw">if </span>table =&gt; Notice::table(NoticeKind::Info, lines),
+<a href=#88 id=88 data-nosnippet>88</a>            <span class="prelude-val">Ok</span>(lines) <span class="kw">if </span>table =&gt; <span class="kw">crate</span>::commands::table_or_help(lines, HELP),
 <a href=#89 id=89 data-nosnippet>89</a>            <span class="prelude-val">Ok</span>(lines) =&gt; Notice::prose(NoticeKind::Info, lines),
 <a href=#90 id=90 data-nosnippet>90</a>            <span class="prelude-val">Err</span>(why) =&gt; Notice::line(NoticeKind::Error, <span class="macro">format!</span>(<span class="string">"Triggers: {why}"</span>)),
 <a href=#91 id=91 data-nosnippet>91</a>        };
-<a href=#92 id=92 data-nosnippet>92</a>        handle.say_unlogged(notice.answering());
+<a href=#92 id=92 data-nosnippet>92</a>        handle.say(notice.answering());
 <a href=#93 id=93 data-nosnippet>93</a>        <span class="prelude-val">Some</span>(Claimed::Done)
 <a href=#94 id=94 data-nosnippet>94</a>    })
 <a href=#95 id=95 data-nosnippet>95</a>}

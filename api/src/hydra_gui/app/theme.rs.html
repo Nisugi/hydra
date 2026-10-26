@@ -16,8 +16,8 @@
 <a href=#16 id=16 data-nosnippet>16</a>    <span class="doccomment">/// Wear the theme Hydra's own settings choose, once, and again after a
 <a href=#17 id=17 data-nosnippet>17</a>    /// change: the one chosen, or the light one while the computer is in
 <a href=#18 id=18 data-nosnippet>18</a>    /// light mode and the setting follows it; the editor's draft over
-<a href=#19 id=19 data-nosnippet>19</a>    /// either while it is worn. A theme that cannot be worn is said on the
-<a href=#20 id=20 data-nosnippet>20</a>    /// Window page, and Despana is worn.
+<a href=#19 id=19 data-nosnippet>19</a>    /// either while it is worn. A theme that cannot be worn is said on
+<a href=#20 id=20 data-nosnippet>20</a>    /// Hydra's Hub page, and Despana is worn.
 <a href=#21 id=21 data-nosnippet>21</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>wear_theme(<span class="kw-2">&amp;mut </span><span class="self">self</span>, context: <span class="kw-2">&amp;</span>egui::Context) {
 <a href=#22 id=22 data-nosnippet>22</a>        <span class="self">self</span>.read_themes_again();
 <a href=#23 id=23 data-nosnippet>23</a>        <span class="comment">// Fonts given last frame are egui's now: worn again, in them.
@@ -143,83 +143,94 @@
 <a href=#143 id=143 data-nosnippet>143</a>        }
 <a href=#144 id=144 data-nosnippet>144</a>    }
 <a href=#145 id=145 data-nosnippet>145</a>
-<a href=#146 id=146 data-nosnippet>146</a>    <span class="doccomment">/// Do what the theme editor asked: a theme saved, its draft worn or
-<a href=#147 id=147 data-nosnippet>147</a>    /// put off, a Wrayth theme imported and opened in it.
-<a href=#148 id=148 data-nosnippet>148</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>theme_asked(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ask: Asked) {
-<a href=#149 id=149 data-nosnippet>149</a>        {
-<a href=#150 id=150 data-nosnippet>150</a>            <span class="kw">match </span>ask {
-<a href=#151 id=151 data-nosnippet>151</a>                Asked::Save(theme) =&gt; {
-<a href=#152 id=152 data-nosnippet>152</a>                    <span class="kw">let </span>said = <span class="self">self</span>.save_theme(<span class="kw-2">&amp;</span>theme);
-<a href=#153 id=153 data-nosnippet>153</a>                    <span class="self">self</span>.themer.said(said);
-<a href=#154 id=154 data-nosnippet>154</a>                }
-<a href=#155 id=155 data-nosnippet>155</a>                Asked::Preview(outfit) =&gt; {
-<a href=#156 id=156 data-nosnippet>156</a>                    <span class="self">self</span>.preview = outfit;
-<a href=#157 id=157 data-nosnippet>157</a>                    <span class="self">self</span>.worn = <span class="prelude-val">None</span>;
-<a href=#158 id=158 data-nosnippet>158</a>                }
-<a href=#159 id=159 data-nosnippet>159</a>                Asked::Import { file, name } =&gt; {
-<a href=#160 id=160 data-nosnippet>160</a>                    <span class="kw">let </span>folder = <span class="self">self</span>.data.join(<span class="string">"themes"</span>);
-<a href=#161 id=161 data-nosnippet>161</a>                    <span class="kw">let </span>name = (!name.is_empty()).then_some(name);
-<a href=#162 id=162 data-nosnippet>162</a>                    <span class="kw">let </span>said = hydra_ui::theme::import_wrayth(<span class="kw-2">&amp;</span>folder, <span class="kw-2">&amp;</span>file, name.as_deref());
-<a href=#163 id=163 data-nosnippet>163</a>                    <span class="kw">let </span>said = <span class="kw">match </span>said {
-<a href=#164 id=164 data-nosnippet>164</a>                        <span class="prelude-val">Ok</span>((made, said)) =&gt; {
-<a href=#165 id=165 data-nosnippet>165</a>                            <span class="self">self</span>.themes = Themes::load(<span class="kw-2">&amp;</span>folder);
-<a href=#166 id=166 data-nosnippet>166</a>                            <span class="comment">// Opened in the editor, to see and change.
-<a href=#167 id=167 data-nosnippet>167</a>                            </span><span class="self">self</span>.themer.start_from(<span class="kw-2">&amp;</span><span class="self">self</span>.themes, <span class="kw-2">&amp;</span>made);
-<a href=#168 id=168 data-nosnippet>168</a>                            said
-<a href=#169 id=169 data-nosnippet>169</a>                        }
-<a href=#170 id=170 data-nosnippet>170</a>                        <span class="prelude-val">Err</span>(why) =&gt; why,
-<a href=#171 id=171 data-nosnippet>171</a>                    };
-<a href=#172 id=172 data-nosnippet>172</a>                    <span class="self">self</span>.themer.said(said);
-<a href=#173 id=173 data-nosnippet>173</a>                }
-<a href=#174 id=174 data-nosnippet>174</a>            }
-<a href=#175 id=175 data-nosnippet>175</a>        }
-<a href=#176 id=176 data-nosnippet>176</a>    }
-<a href=#177 id=177 data-nosnippet>177</a>
-<a href=#178 id=178 data-nosnippet>178</a>    <span class="doccomment">/// Write `theme` to the themes folder with the next batch of saves,
-<a href=#179 id=179 data-nosnippet>179</a>    /// and in use at once; what was done, for the editor.
-<a href=#180 id=180 data-nosnippet>180</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>save_theme(<span class="kw-2">&amp;mut </span><span class="self">self</span>, theme: <span class="kw-2">&amp;</span>Theme) -&gt; String {
-<a href=#181 id=181 data-nosnippet>181</a>        <span class="kw">let </span>folder = <span class="self">self</span>.data.join(<span class="string">"themes"</span>);
-<a href=#182 id=182 data-nosnippet>182</a>        <span class="kw">let </span>stem = hydra_ui::theme::file_stem(<span class="kw-2">&amp;</span>theme.name);
-<a href=#183 id=183 data-nosnippet>183</a>        <span class="kw">let </span>path = folder.join(<span class="macro">format!</span>(<span class="string">"{stem}.toml"</span>));
-<a href=#184 id=184 data-nosnippet>184</a>        <span class="comment">// Two names may make one file name ("Storm 2.0", "Storm 2-0"): the
-<a href=#185 id=185 data-nosnippet>185</a>        // other theme is not written over.
-<a href=#186 id=186 data-nosnippet>186</a>        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(there) = <span class="self">self
-<a href=#187 id=187 data-nosnippet>187</a>            </span>.themes
-<a href=#188 id=188 data-nosnippet>188</a>            .names()
-<a href=#189 id=189 data-nosnippet>189</a>            .into_iter()
-<a href=#190 id=190 data-nosnippet>190</a>            .find(|name| hydra_ui::theme::file_stem(name) == stem &amp;&amp; <span class="kw-2">*</span>name != theme.name)
-<a href=#191 id=191 data-nosnippet>191</a>        {
-<a href=#192 id=192 data-nosnippet>192</a>            <span class="kw">return </span><span class="macro">format!</span>(
-<a href=#193 id=193 data-nosnippet>193</a>                <span class="string">"{} already holds the theme {there}: give this one another name."</span>,
-<a href=#194 id=194 data-nosnippet>194</a>                path.display()
-<a href=#195 id=195 data-nosnippet>195</a>            );
-<a href=#196 id=196 data-nosnippet>196</a>        }
-<a href=#197 id=197 data-nosnippet>197</a>        <span class="kw">crate</span>::store::whole(<span class="kw-2">&amp;</span>folder, <span class="kw-2">&amp;</span>path, theme.to_toml().into_bytes());
-<a href=#198 id=198 data-nosnippet>198</a>        <span class="self">self</span>.themes.add(theme.clone());
-<a href=#199 id=199 data-nosnippet>199</a>        <span class="self">self</span>.worn = <span class="prelude-val">None</span>;
-<a href=#200 id=200 data-nosnippet>200</a>        <span class="macro">format!</span>(
-<a href=#201 id=201 data-nosnippet>201</a>            <span class="string">"{} written. Choose it on Settings' Window page."</span>,
-<a href=#202 id=202 data-nosnippet>202</a>            path.display()
-<a href=#203 id=203 data-nosnippet>203</a>        )
-<a href=#204 id=204 data-nosnippet>204</a>    }
-<a href=#205 id=205 data-nosnippet>205</a>}
-<a href=#206 id=206 data-nosnippet>206</a>
-<a href=#207 id=207 data-nosnippet>207</a><span class="doccomment">/// The `.toml` files in the themes folder `folder`, each with when it was
-<a href=#208 id=208 data-nosnippet>208</a>/// last changed, in order.
-<a href=#209 id=209 data-nosnippet>209</a></span><span class="kw">fn </span>theme_files(folder: <span class="kw-2">&amp;</span>Path) -&gt; Vec&lt;(PathBuf, <span class="prelude-ty">Option</span>&lt;SystemTime&gt;)&gt; {
-<a href=#210 id=210 data-nosnippet>210</a>    <span class="kw">let </span><span class="kw-2">mut </span>files: Vec&lt;(PathBuf, <span class="prelude-ty">Option</span>&lt;SystemTime&gt;)&gt; = std::fs::read_dir(folder)
-<a href=#211 id=211 data-nosnippet>211</a>        .map(|entries| {
-<a href=#212 id=212 data-nosnippet>212</a>            entries
-<a href=#213 id=213 data-nosnippet>213</a>                .filter_map(Result::ok)
-<a href=#214 id=214 data-nosnippet>214</a>                .map(|entry| {
-<a href=#215 id=215 data-nosnippet>215</a>                    <span class="kw">let </span>modified = entry.metadata().and_then(|m| m.modified()).ok();
-<a href=#216 id=216 data-nosnippet>216</a>                    (entry.path(), modified)
-<a href=#217 id=217 data-nosnippet>217</a>                })
-<a href=#218 id=218 data-nosnippet>218</a>                .filter(|(path, <span class="kw">_</span>)| path.extension().is_some_and(|ext| ext == <span class="string">"toml"</span>))
-<a href=#219 id=219 data-nosnippet>219</a>                .collect()
-<a href=#220 id=220 data-nosnippet>220</a>        })
-<a href=#221 id=221 data-nosnippet>221</a>        .unwrap_or_default();
-<a href=#222 id=222 data-nosnippet>222</a>    files.sort();
-<a href=#223 id=223 data-nosnippet>223</a>    files
-<a href=#224 id=224 data-nosnippet>224</a>}
+<a href=#146 id=146 data-nosnippet>146</a>    <span class="doccomment">/// The Editors window opened at the theme editor, its draft starting
+<a href=#147 id=147 data-nosnippet>147</a>    /// from the theme named `name`, open as it was or not.
+<a href=#148 id=148 data-nosnippet>148</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>edit_theme(<span class="kw-2">&amp;mut </span><span class="self">self</span>, name: <span class="kw-2">&amp;</span>str) {
+<a href=#149 id=149 data-nosnippet>149</a>        <span class="self">self</span>.editors.open(<span class="kw">crate</span>::editors_menu::Editor::Themes);
+<a href=#150 id=150 data-nosnippet>150</a>        <span class="kw">if </span><span class="self">self</span>.font_names.is_none() {
+<a href=#151 id=151 data-nosnippet>151</a>            <span class="self">self</span>.font_names = <span class="prelude-val">Some</span>(<span class="self">self</span>.fonts.names());
+<a href=#152 id=152 data-nosnippet>152</a>        }
+<a href=#153 id=153 data-nosnippet>153</a>        <span class="self">self</span>.themer.open();
+<a href=#154 id=154 data-nosnippet>154</a>        <span class="self">self</span>.themer.start_from(<span class="kw-2">&amp;</span><span class="self">self</span>.themes, name);
+<a href=#155 id=155 data-nosnippet>155</a>    }
+<a href=#156 id=156 data-nosnippet>156</a>
+<a href=#157 id=157 data-nosnippet>157</a>    <span class="doccomment">/// Do what the theme editor asked: a theme saved, its draft worn or
+<a href=#158 id=158 data-nosnippet>158</a>    /// put off, a Wrayth theme imported and opened in it.
+<a href=#159 id=159 data-nosnippet>159</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>theme_asked(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ask: Asked) {
+<a href=#160 id=160 data-nosnippet>160</a>        {
+<a href=#161 id=161 data-nosnippet>161</a>            <span class="kw">match </span>ask {
+<a href=#162 id=162 data-nosnippet>162</a>                Asked::Save(theme) =&gt; {
+<a href=#163 id=163 data-nosnippet>163</a>                    <span class="kw">let </span>said = <span class="self">self</span>.save_theme(<span class="kw-2">&amp;</span>theme);
+<a href=#164 id=164 data-nosnippet>164</a>                    <span class="self">self</span>.themer.said(said);
+<a href=#165 id=165 data-nosnippet>165</a>                }
+<a href=#166 id=166 data-nosnippet>166</a>                Asked::Preview(outfit) =&gt; {
+<a href=#167 id=167 data-nosnippet>167</a>                    <span class="self">self</span>.preview = outfit;
+<a href=#168 id=168 data-nosnippet>168</a>                    <span class="self">self</span>.worn = <span class="prelude-val">None</span>;
+<a href=#169 id=169 data-nosnippet>169</a>                }
+<a href=#170 id=170 data-nosnippet>170</a>                Asked::Import { file, name } =&gt; {
+<a href=#171 id=171 data-nosnippet>171</a>                    <span class="kw">let </span>folder = <span class="self">self</span>.data.join(<span class="string">"themes"</span>);
+<a href=#172 id=172 data-nosnippet>172</a>                    <span class="kw">let </span>name = (!name.is_empty()).then_some(name);
+<a href=#173 id=173 data-nosnippet>173</a>                    <span class="kw">let </span>said = hydra_ui::theme::import_wrayth(<span class="kw-2">&amp;</span>folder, <span class="kw-2">&amp;</span>file, name.as_deref());
+<a href=#174 id=174 data-nosnippet>174</a>                    <span class="kw">let </span>said = <span class="kw">match </span>said {
+<a href=#175 id=175 data-nosnippet>175</a>                        <span class="prelude-val">Ok</span>((made, said)) =&gt; {
+<a href=#176 id=176 data-nosnippet>176</a>                            <span class="self">self</span>.themes = Themes::load(<span class="kw-2">&amp;</span>folder);
+<a href=#177 id=177 data-nosnippet>177</a>                            <span class="comment">// Opened in the editor, to see and change.
+<a href=#178 id=178 data-nosnippet>178</a>                            </span><span class="self">self</span>.themer.start_from(<span class="kw-2">&amp;</span><span class="self">self</span>.themes, <span class="kw-2">&amp;</span>made);
+<a href=#179 id=179 data-nosnippet>179</a>                            said
+<a href=#180 id=180 data-nosnippet>180</a>                        }
+<a href=#181 id=181 data-nosnippet>181</a>                        <span class="prelude-val">Err</span>(why) =&gt; why,
+<a href=#182 id=182 data-nosnippet>182</a>                    };
+<a href=#183 id=183 data-nosnippet>183</a>                    <span class="self">self</span>.themer.said(said);
+<a href=#184 id=184 data-nosnippet>184</a>                }
+<a href=#185 id=185 data-nosnippet>185</a>            }
+<a href=#186 id=186 data-nosnippet>186</a>        }
+<a href=#187 id=187 data-nosnippet>187</a>    }
+<a href=#188 id=188 data-nosnippet>188</a>
+<a href=#189 id=189 data-nosnippet>189</a>    <span class="doccomment">/// Write `theme` to the themes folder with the next batch of saves,
+<a href=#190 id=190 data-nosnippet>190</a>    /// and in use at once; what was done, for the editor.
+<a href=#191 id=191 data-nosnippet>191</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>save_theme(<span class="kw-2">&amp;mut </span><span class="self">self</span>, theme: <span class="kw-2">&amp;</span>Theme) -&gt; String {
+<a href=#192 id=192 data-nosnippet>192</a>        <span class="kw">let </span>folder = <span class="self">self</span>.data.join(<span class="string">"themes"</span>);
+<a href=#193 id=193 data-nosnippet>193</a>        <span class="kw">let </span>stem = hydra_ui::theme::file_stem(<span class="kw-2">&amp;</span>theme.name);
+<a href=#194 id=194 data-nosnippet>194</a>        <span class="kw">let </span>path = folder.join(<span class="macro">format!</span>(<span class="string">"{stem}.toml"</span>));
+<a href=#195 id=195 data-nosnippet>195</a>        <span class="comment">// Two names may make one file name ("Storm 2.0", "Storm 2-0"): the
+<a href=#196 id=196 data-nosnippet>196</a>        // other theme is not written over.
+<a href=#197 id=197 data-nosnippet>197</a>        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(there) = <span class="self">self
+<a href=#198 id=198 data-nosnippet>198</a>            </span>.themes
+<a href=#199 id=199 data-nosnippet>199</a>            .names()
+<a href=#200 id=200 data-nosnippet>200</a>            .into_iter()
+<a href=#201 id=201 data-nosnippet>201</a>            .find(|name| hydra_ui::theme::file_stem(name) == stem &amp;&amp; <span class="kw-2">*</span>name != theme.name)
+<a href=#202 id=202 data-nosnippet>202</a>        {
+<a href=#203 id=203 data-nosnippet>203</a>            <span class="kw">return </span><span class="macro">format!</span>(
+<a href=#204 id=204 data-nosnippet>204</a>                <span class="string">"{} already holds the theme {there}: give this one another name."</span>,
+<a href=#205 id=205 data-nosnippet>205</a>                path.display()
+<a href=#206 id=206 data-nosnippet>206</a>            );
+<a href=#207 id=207 data-nosnippet>207</a>        }
+<a href=#208 id=208 data-nosnippet>208</a>        <span class="kw">crate</span>::store::whole(<span class="kw-2">&amp;</span>folder, <span class="kw-2">&amp;</span>path, theme.to_toml().into_bytes());
+<a href=#209 id=209 data-nosnippet>209</a>        <span class="self">self</span>.themes.add(theme.clone());
+<a href=#210 id=210 data-nosnippet>210</a>        <span class="self">self</span>.worn = <span class="prelude-val">None</span>;
+<a href=#211 id=211 data-nosnippet>211</a>        <span class="macro">format!</span>(
+<a href=#212 id=212 data-nosnippet>212</a>            <span class="string">"{} written. Choose it on Settings, Hydra's Hub page."</span>,
+<a href=#213 id=213 data-nosnippet>213</a>            path.display()
+<a href=#214 id=214 data-nosnippet>214</a>        )
+<a href=#215 id=215 data-nosnippet>215</a>    }
+<a href=#216 id=216 data-nosnippet>216</a>}
+<a href=#217 id=217 data-nosnippet>217</a>
+<a href=#218 id=218 data-nosnippet>218</a><span class="doccomment">/// The `.toml` files in the themes folder `folder`, each with when it was
+<a href=#219 id=219 data-nosnippet>219</a>/// last changed, in order.
+<a href=#220 id=220 data-nosnippet>220</a></span><span class="kw">fn </span>theme_files(folder: <span class="kw-2">&amp;</span>Path) -&gt; Vec&lt;(PathBuf, <span class="prelude-ty">Option</span>&lt;SystemTime&gt;)&gt; {
+<a href=#221 id=221 data-nosnippet>221</a>    <span class="kw">let </span><span class="kw-2">mut </span>files: Vec&lt;(PathBuf, <span class="prelude-ty">Option</span>&lt;SystemTime&gt;)&gt; = std::fs::read_dir(folder)
+<a href=#222 id=222 data-nosnippet>222</a>        .map(|entries| {
+<a href=#223 id=223 data-nosnippet>223</a>            entries
+<a href=#224 id=224 data-nosnippet>224</a>                .filter_map(Result::ok)
+<a href=#225 id=225 data-nosnippet>225</a>                .map(|entry| {
+<a href=#226 id=226 data-nosnippet>226</a>                    <span class="kw">let </span>modified = entry.metadata().and_then(|m| m.modified()).ok();
+<a href=#227 id=227 data-nosnippet>227</a>                    (entry.path(), modified)
+<a href=#228 id=228 data-nosnippet>228</a>                })
+<a href=#229 id=229 data-nosnippet>229</a>                .filter(|(path, <span class="kw">_</span>)| path.extension().is_some_and(|ext| ext == <span class="string">"toml"</span>))
+<a href=#230 id=230 data-nosnippet>230</a>                .collect()
+<a href=#231 id=231 data-nosnippet>231</a>        })
+<a href=#232 id=232 data-nosnippet>232</a>        .unwrap_or_default();
+<a href=#233 id=233 data-nosnippet>233</a>    files.sort();
+<a href=#234 id=234 data-nosnippet>234</a>    files
+<a href=#235 id=235 data-nosnippet>235</a>}
 </code></pre></div></section></main></body></html>

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["Cmp","Condition","DayPhase","EffectCategory","HandSlot","NameMatch","VitalKind","VitalUnit"],"struct":["Edge","Flags","World"]};
+window.SIDEBAR_ITEMS = {"enum":["Cmp","Condition","DayPhase","EffectCategory","HandSlot","NameMatch","ResourceKind","TargetKindName","VitalKind","VitalUnit"],"struct":["Edge","Flags","World"]};

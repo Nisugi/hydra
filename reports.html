@@ -35,10 +35,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-a56a457a.js";
+            window.path_to_searchindex_js = "searchindex-50dd7f95.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-6d2367c3.js"></script>
+        <script src="toc-b5471689.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -196,7 +196,7 @@ first that fits. A click on a report runs it.</p>
 for the combat reports that take a scope.</li>
 <li><strong>Between</strong>, with a <em>from</em> and a <em>to</em>: two hunt ids for the combat
 reports, or two times for the experience report over a span. A time is
-<code>13:05</code> for today, <code>07-20 13:05</code> for this year, or <code>2026-07-20 13:05:52</code>.</li>
+<code>13:05</code> for today, <code>07-20 13:05</code> for this year, or <code>2026-07-20  13:05:52</code>.</li>
 <li><strong>Name</strong>, for the reports that take one: a creature’s noun.</li>
 </ul>
 <p><strong>Attacks</strong> and <strong>Creatures</strong> list every one over the scope, by damage, a
@@ -217,17 +217,53 @@ a gemstone flare’s report (mirror image, hunter’s afterimage, the shroud)
 says the property it belongs to and its rate at each rank it ran at. The
 set comes from <code>gem list all</code>, read when it passes and kept in the
 character’s file; equipping or unequipping a gemstone keeps it current.</p>
+<h2 id="barriers"><a class="header" href="#barriers">Barriers</a></h2>
+<p>Wall of Thorns blocks an attack before any roll, so a block says nothing
+of whether it would have hit; Barkskin absorbs the next hit, so every
+absorb would have. The reports keep the two apart: Intercepts counts the
+attacks blocked before any roll, then of those past the barriers, the
+ones that would have hit, absorbed or landed. The hunt keeps when each
+barrier was up (see Effects), so the thorns’ report gives blocks over the
+attacks that came while the wall was up, beside the one in five the spell
+says, and the lash that poisons over the blocks, beside its one in four;
+the bark’s, absorbs over what would have hit while it was up.</p>
+<h2 id="gear"><a class="header" href="#gear">Gear</a></h2>
+<p>Every swing of yours is recorded with what the hands held as it was made,
+by the item’s own id, so two bows of one noun are two bows to the reports.
+A volley’s arrows carry their round. A flare the gauntlets lent, told by
+“You feel drained.” before it, is the gauntlets’ and not the bow’s. The
+items worn are kept per hunt as spans: from the second an item was first
+seen worn to the second it was seen gone, so a swap during a hunt is a
+closed span and an open one. An item is one name across logins, where the
+game’s own id for it changes with each. A flare’s report then shows its
+rate by the weapon in hand, by round, and by source; a flare that fires
+on a first flight only leaves a volley’s later rounds out of its base.
+<strong>Gear</strong> lists each item held with the flares seen on it, the gauntlets’
+flares, and the items worn over the hunts.</p>
+<h2 id="effects"><a class="header" href="#effects">Effects</a></h2>
+<p>Every spell, buff, debuff and cooldown the game lists is kept over a hunt
+the same way, as a span from the second it was seen up to the second it
+was seen down; Barkskin, which shows no bar while up, is read off its
+lines. Nothing is copied per attack: an attack’s active set is whatever
+spans cover its time. <strong>Effects</strong> lists what was up over a scope, in how
+many hunts and for how long against the hunting time. A hunt’s report
+says what was up as it opened. A flare’s report ends with the effects that
+were up for some of its swings and not the rest, with the rate each side,
+which is where a buff or a gemstone property shows whether it changes
+anything. Names are kept once, in one table, so the file does not repeat
+them: a flare, a spell, a property, a piece of gear is a number in the
+rows and a name in the table.</p>
 <h2 id="syncing"><a class="header" href="#syncing">Syncing</a></h2>
 <p>The first time a character is seated with nothing stored, Hydra sends the
 reports that teach its facts once: <code>info full</code>, <code>skills full</code>, the PSM
 lists, <code>inventory enhancive totals</code>, <code>gem list all</code>, <code>society</code> and the
 rest. After that, play keeps them current and nothing is sent at login.
-<code>.sync</code> sends them all again, <code>.sync &lt;group&gt;</code> one of them, and <code>.sync reset</code> drops what is stored first.</p>
+<code>.sync</code> sends them all again, <code>.sync &lt;group&gt;</code> one of them, and <code>.sync  reset</code> drops what is stored first.</p>
 <h2 id="typed"><a class="header" href="#typed">Typed</a></h2>
 <p>The same reports answer on the command line, in a character’s play window:
 <code>.exp</code> for the experience reports and <code>.cstats</code> for combat. <code>.exp help</code> and
 <code>.cstats help</code> list every one. Three words change the ledger and are only
-ever typed: <code>.exp addgain &lt;n&gt;</code> for a gain the bar did not state, <code>.exp clean</code> to drop pulses with no gain, and <code>.exp reset</code> to drop every row of
+ever typed: <code>.exp addgain &lt;n&gt;</code> for a gain the bar did not state, <code>.exp  clean</code> to drop pulses with no gain, and <code>.exp reset</code> to drop every row of
 that character’s, which asks first.</p>
 <h2 id="filling-the-ledger-from-recordings"><a class="header" href="#filling-the-ledger-from-recordings">Filling the ledger from recordings</a></h2>
 <p>A session Hydra recorded (its <code>.bytes</code> files, when recording is on) can be
@@ -243,11 +279,11 @@ skipped.</p>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="themes/examples.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="macros/hotbars.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="reference/developers.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="rewards.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -257,11 +293,11 @@ skipped.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="themes/examples.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="macros/hotbars.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="reference/developers.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="rewards.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>

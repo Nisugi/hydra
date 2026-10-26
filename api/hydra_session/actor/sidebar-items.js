@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["EndReason"],"struct":["Session","SessionActor","SessionEnd"]};
+window.SIDEBAR_ITEMS = {"constant":["LICH_QUIT"],"enum":["EndReason"],"struct":["Session","SessionActor","SessionEnd"]};

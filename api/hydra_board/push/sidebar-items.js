@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["BODY_MOST","FILE","PHONES_MOST","RELAY","TITLE_MOST"],"fn":["allow","fitted","forget","forget_named","open","pair","read","seal","send"],"struct":["Alert","Forgotten","Kept","Paired","Phone"]};

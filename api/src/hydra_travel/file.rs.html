@@ -243,197 +243,277 @@
 <a href=#243 id=243 data-nosnippet>243</a>    })
 <a href=#244 id=244 data-nosnippet>244</a>}
 <a href=#245 id=245 data-nosnippet>245</a>
-<a href=#246 id=246 data-nosnippet>246</a><span class="doccomment">/// The instabilities seen lately on `instance`, as the file keeps them.
-<a href=#247 id=247 data-nosnippet>247</a>///
-<a href=#248 id=248 data-nosnippet>248</a>/// # Errors
+<a href=#246 id=246 data-nosnippet>246</a><span class="doccomment">/// The travel settings an earlier Hydra kept in `character`'s spot, taken
+<a href=#247 id=247 data-nosnippet>247</a>/// out of the file: what is on the Travel page now lived here once, under
+<a href=#248 id=248 data-nosnippet>248</a>/// `settings`. Empty when there were none; the file is then not written.
 <a href=#249 id=249 data-nosnippet>249</a>///
-<a href=#250 id=250 data-nosnippet>250</a>/// [`Refused`], as [`load`].
-<a href=#251 id=251 data-nosnippet>251</a></span><span class="kw">pub fn </span>instabilities(
-<a href=#252 id=252 data-nosnippet>252</a>    dir: <span class="kw-2">&amp;</span>Path,
-<a href=#253 id=253 data-nosnippet>253</a>    instance: <span class="kw-2">&amp;</span>str,
-<a href=#254 id=254 data-nosnippet>254</a>) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;<span class="kw">crate</span>::walk::instability::Seen&gt;, Refused&gt; {
-<a href=#255 id=255 data-nosnippet>255</a>    <span class="kw">let </span>shared = read(dir)<span class="question-mark">?</span>;
-<a href=#256 id=256 data-nosnippet>256</a>    <span class="prelude-val">Ok</span>(key_in(<span class="kw-2">&amp;</span>shared.instabilities, instance)
-<a href=#257 id=257 data-nosnippet>257</a>        .and_then(|key| shared.instabilities.get(<span class="kw-2">&amp;</span>key).cloned())
-<a href=#258 id=258 data-nosnippet>258</a>        .unwrap_or_default())
-<a href=#259 id=259 data-nosnippet>259</a>}
-<a href=#260 id=260 data-nosnippet>260</a>
-<a href=#261 id=261 data-nosnippet>261</a><span class="doccomment">/// Keep `seen` as the instabilities seen lately on `instance`, in place of
-<a href=#262 id=262 data-nosnippet>262</a>/// what was.
-<a href=#263 id=263 data-nosnippet>263</a>///
-<a href=#264 id=264 data-nosnippet>264</a>/// # Errors
-<a href=#265 id=265 data-nosnippet>265</a>///
-<a href=#266 id=266 data-nosnippet>266</a>/// As [`save_last_room`].
-<a href=#267 id=267 data-nosnippet>267</a></span><span class="kw">pub fn </span>save_instabilities(
-<a href=#268 id=268 data-nosnippet>268</a>    dir: <span class="kw-2">&amp;</span>Path,
-<a href=#269 id=269 data-nosnippet>269</a>    instance: <span class="kw-2">&amp;</span>str,
-<a href=#270 id=270 data-nosnippet>270</a>    seen: <span class="kw-2">&amp;</span>[<span class="kw">crate</span>::walk::instability::Seen],
-<a href=#271 id=271 data-nosnippet>271</a>) -&gt; io::Result&lt;()&gt; {
-<a href=#272 id=272 data-nosnippet>272</a>    change(dir, |shared| {
-<a href=#273 id=273 data-nosnippet>273</a>        <span class="kw">let </span>key = key_in(<span class="kw-2">&amp;</span>shared.instabilities, instance).unwrap_or_else(|| instance.to_owned());
-<a href=#274 id=274 data-nosnippet>274</a>        shared.instabilities.insert(key, seen.to_vec());
-<a href=#275 id=275 data-nosnippet>275</a>        <span class="prelude-val">Ok</span>(())
-<a href=#276 id=276 data-nosnippet>276</a>    })
-<a href=#277 id=277 data-nosnippet>277</a>}
-<a href=#278 id=278 data-nosnippet>278</a>
-<a href=#279 id=279 data-nosnippet>279</a><span class="doccomment">/// Whose a saved name is.
-<a href=#280 id=280 data-nosnippet>280</a></span><span class="attr">#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-<a href=#281 id=281 data-nosnippet>281</a></span><span class="kw">pub enum </span>Whose&lt;<span class="lifetime">'a</span>&gt; {
-<a href=#282 id=282 data-nosnippet>282</a>    <span class="doccomment">/// One character's: its instance and name.
-<a href=#283 id=283 data-nosnippet>283</a>    </span>Own(<span class="kw-2">&amp;</span><span class="lifetime">'a </span>str, <span class="kw-2">&amp;</span><span class="lifetime">'a </span>str),
-<a href=#284 id=284 data-nosnippet>284</a>    <span class="doccomment">/// Everyone's.
-<a href=#285 id=285 data-nosnippet>285</a>    </span>Everyone,
-<a href=#286 id=286 data-nosnippet>286</a>}
-<a href=#287 id=287 data-nosnippet>287</a>
-<a href=#288 id=288 data-nosnippet>288</a><span class="doccomment">/// From now on `name` means `rooms` for `whose`. A name that already means
-<a href=#289 id=289 data-nosnippet>289</a>/// several rooms gains these, so a list of rooms grows one save at a time;
-<a href=#290 id=290 data-nosnippet>290</a>/// a name that means one room is replaced.
-<a href=#291 id=291 data-nosnippet>291</a>///
-<a href=#292 id=292 data-nosnippet>292</a>/// # Errors
-<a href=#293 id=293 data-nosnippet>293</a>///
-<a href=#294 id=294 data-nosnippet>294</a>/// As [`save_last_room`].
-<a href=#295 id=295 data-nosnippet>295</a></span><span class="kw">pub fn </span>save_target(dir: <span class="kw-2">&amp;</span>Path, whose: Whose&lt;<span class="lifetime">'_</span>&gt;, name: <span class="kw-2">&amp;</span>str, rooms: <span class="kw-2">&amp;</span>[u32]) -&gt; io::Result&lt;()&gt; {
-<a href=#296 id=296 data-nosnippet>296</a>    change(dir, |shared| {
-<a href=#297 id=297 data-nosnippet>297</a>        <span class="kw">let </span>targets = <span class="kw">match </span>whose {
-<a href=#298 id=298 data-nosnippet>298</a>            Whose::Own(instance, character) =&gt; <span class="kw-2">&amp;mut </span>spot_in(shared, instance, character)<span class="question-mark">?</span>.targets,
-<a href=#299 id=299 data-nosnippet>299</a>            Whose::Everyone =&gt; <span class="kw-2">&amp;mut </span>shared.targets,
-<a href=#300 id=300 data-nosnippet>300</a>        };
-<a href=#301 id=301 data-nosnippet>301</a>        <span class="kw">let </span>key = key_in(targets, name).unwrap_or_else(|| name.to_owned());
-<a href=#302 id=302 data-nosnippet>302</a>        <span class="kw">let </span>kept = targets.entry(key).or_default();
-<a href=#303 id=303 data-nosnippet>303</a>        <span class="kw">if </span>kept.len() &gt; <span class="number">1 </span>{
-<a href=#304 id=304 data-nosnippet>304</a>            <span class="kw">for </span>room <span class="kw">in </span>rooms {
-<a href=#305 id=305 data-nosnippet>305</a>                <span class="kw">if </span>!kept.contains(room) {
-<a href=#306 id=306 data-nosnippet>306</a>                    kept.push(<span class="kw-2">*</span>room);
-<a href=#307 id=307 data-nosnippet>307</a>                }
-<a href=#308 id=308 data-nosnippet>308</a>            }
-<a href=#309 id=309 data-nosnippet>309</a>        } <span class="kw">else </span>{
-<a href=#310 id=310 data-nosnippet>310</a>            rooms.clone_into(kept);
-<a href=#311 id=311 data-nosnippet>311</a>        }
-<a href=#312 id=312 data-nosnippet>312</a>        <span class="prelude-val">Ok</span>(())
-<a href=#313 id=313 data-nosnippet>313</a>    })
-<a href=#314 id=314 data-nosnippet>314</a>}
-<a href=#315 id=315 data-nosnippet>315</a>
-<a href=#316 id=316 data-nosnippet>316</a><span class="doccomment">/// Forget `name` of `whose`'s. Whether there was one.
-<a href=#317 id=317 data-nosnippet>317</a>///
-<a href=#318 id=318 data-nosnippet>318</a>/// # Errors
-<a href=#319 id=319 data-nosnippet>319</a>///
-<a href=#320 id=320 data-nosnippet>320</a>/// As [`save_last_room`].
-<a href=#321 id=321 data-nosnippet>321</a></span><span class="kw">pub fn </span>forget_target(dir: <span class="kw-2">&amp;</span>Path, whose: Whose&lt;<span class="lifetime">'_</span>&gt;, name: <span class="kw-2">&amp;</span>str) -&gt; io::Result&lt;bool&gt; {
-<a href=#322 id=322 data-nosnippet>322</a>    <span class="kw">let </span><span class="kw-2">mut </span>was = <span class="bool-val">false</span>;
-<a href=#323 id=323 data-nosnippet>323</a>    change(dir, |shared| {
-<a href=#324 id=324 data-nosnippet>324</a>        <span class="kw">let </span>targets = <span class="kw">match </span>whose {
-<a href=#325 id=325 data-nosnippet>325</a>            Whose::Own(instance, character) =&gt; <span class="kw-2">&amp;mut </span>spot_in(shared, instance, character)<span class="question-mark">?</span>.targets,
-<a href=#326 id=326 data-nosnippet>326</a>            Whose::Everyone =&gt; <span class="kw-2">&amp;mut </span>shared.targets,
-<a href=#327 id=327 data-nosnippet>327</a>        };
-<a href=#328 id=328 data-nosnippet>328</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(key) = key_in(targets, name) {
-<a href=#329 id=329 data-nosnippet>329</a>            was = targets.remove(<span class="kw-2">&amp;</span>key).is_some();
-<a href=#330 id=330 data-nosnippet>330</a>        }
-<a href=#331 id=331 data-nosnippet>331</a>        <span class="prelude-val">Ok</span>(())
-<a href=#332 id=332 data-nosnippet>332</a>    })<span class="question-mark">?</span>;
-<a href=#333 id=333 data-nosnippet>333</a>    <span class="prelude-val">Ok</span>(was)
-<a href=#334 id=334 data-nosnippet>334</a>}
-<a href=#335 id=335 data-nosnippet>335</a>
-<a href=#336 id=336 data-nosnippet>336</a><span class="attr">#[cfg(test)]
-<a href=#337 id=337 data-nosnippet>337</a></span><span class="kw">mod </span>tests {
-<a href=#338 id=338 data-nosnippet>338</a>    <span class="kw">use </span>super::<span class="kw-2">*</span>;
-<a href=#339 id=339 data-nosnippet>339</a>
-<a href=#340 id=340 data-nosnippet>340</a>    <span class="kw">fn </span>dir(name: <span class="kw-2">&amp;</span>str) -&gt; PathBuf {
-<a href=#341 id=341 data-nosnippet>341</a>        <span class="kw">let </span>dir = std::env::temp_dir().join(<span class="macro">format!</span>(<span class="string">"hydra-travel-{name}-{}"</span>, std::process::id()));
-<a href=#342 id=342 data-nosnippet>342</a>        <span class="kw">let _ </span>= fs::remove_dir_all(<span class="kw-2">&amp;</span>dir);
-<a href=#343 id=343 data-nosnippet>343</a>        fs::create_dir_all(<span class="kw-2">&amp;</span>dir).expect(<span class="string">"a test folder"</span>);
-<a href=#344 id=344 data-nosnippet>344</a>        dir
-<a href=#345 id=345 data-nosnippet>345</a>    }
-<a href=#346 id=346 data-nosnippet>346</a>
-<a href=#347 id=347 data-nosnippet>347</a>    <span class="attr">#[test]
-<a href=#348 id=348 data-nosnippet>348</a>    </span><span class="kw">fn </span>nobody_has_travelled_yet() {
-<a href=#349 id=349 data-nosnippet>349</a>        <span class="kw">let </span>dir = dir(<span class="string">"empty"</span>);
-<a href=#350 id=350 data-nosnippet>350</a>        <span class="macro">assert_eq!</span>(load(<span class="kw-2">&amp;</span>dir, <span class="string">"GS3"</span>, <span class="string">"Nerten"</span>), <span class="prelude-val">Ok</span>(Notes::default()));
-<a href=#351 id=351 data-nosnippet>351</a>        <span class="macro">assert!</span>(!travel_path(<span class="kw-2">&amp;</span>dir).exists(), <span class="string">"loading writes nothing"</span>);
-<a href=#352 id=352 data-nosnippet>352</a>    }
-<a href=#353 id=353 data-nosnippet>353</a>
-<a href=#354 id=354 data-nosnippet>354</a>    <span class="attr">#[test]
-<a href=#355 id=355 data-nosnippet>355</a>    </span><span class="kw">fn </span>a_name_is_one_characters_unless_everyones_and_its_own_comes_first() {
-<a href=#356 id=356 data-nosnippet>356</a>        <span class="kw">let </span>dir = dir(<span class="string">"targets"</span>);
-<a href=#357 id=357 data-nosnippet>357</a>        save_target(<span class="kw-2">&amp;</span>dir, Whose::Everyone, <span class="string">"den"</span>, <span class="kw-2">&amp;</span>[<span class="number">100</span>]).expect(<span class="string">"saved"</span>);
-<a href=#358 id=358 data-nosnippet>358</a>        save_target(<span class="kw-2">&amp;</span>dir, Whose::Own(<span class="string">"GS3"</span>, <span class="string">"Nerten"</span>), <span class="string">"den"</span>, <span class="kw-2">&amp;</span>[<span class="number">228</span>]).expect(<span class="string">"saved"</span>);
-<a href=#359 id=359 data-nosnippet>359</a>        save_target(<span class="kw-2">&amp;</span>dir, Whose::Own(<span class="string">"GS3"</span>, <span class="string">"Nerten"</span>), <span class="string">"shop"</span>, <span class="kw-2">&amp;</span>[<span class="number">7</span>]).expect(<span class="string">"saved"</span>);
-<a href=#360 id=360 data-nosnippet>360</a>        <span class="kw">let </span>nerten = load(<span class="kw-2">&amp;</span>dir, <span class="string">"GS3"</span>, <span class="string">"nerten"</span>).expect(<span class="string">"loads"</span>);
-<a href=#361 id=361 data-nosnippet>361</a>        <span class="macro">assert_eq!</span>(nerten.targets.get(<span class="string">"den"</span>), <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">228</span>]));
-<a href=#362 id=362 data-nosnippet>362</a>        <span class="macro">assert_eq!</span>(nerten.targets.get(<span class="string">"shop"</span>), <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">7</span>]));
-<a href=#363 id=363 data-nosnippet>363</a>        <span class="kw">let </span>other = load(<span class="kw-2">&amp;</span>dir, <span class="string">"GS3"</span>, <span class="string">"Ashryn"</span>).expect(<span class="string">"loads"</span>);
-<a href=#364 id=364 data-nosnippet>364</a>        <span class="macro">assert_eq!</span>(other.targets.get(<span class="string">"den"</span>), <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">100</span>]));
-<a href=#365 id=365 data-nosnippet>365</a>        <span class="macro">assert_eq!</span>(other.targets.get(<span class="string">"shop"</span>), <span class="prelude-val">None</span>);
-<a href=#366 id=366 data-nosnippet>366</a>
-<a href=#367 id=367 data-nosnippet>367</a>        <span class="macro">assert!</span>(forget_target(<span class="kw-2">&amp;</span>dir, Whose::Own(<span class="string">"GS3"</span>, <span class="string">"Nerten"</span>), <span class="string">"DEN"</span>).expect(<span class="string">"saved"</span>));
-<a href=#368 id=368 data-nosnippet>368</a>        <span class="kw">let </span>nerten = load(<span class="kw-2">&amp;</span>dir, <span class="string">"GS3"</span>, <span class="string">"Nerten"</span>).expect(<span class="string">"loads"</span>);
-<a href=#369 id=369 data-nosnippet>369</a>        <span class="macro">assert_eq!</span>(
-<a href=#370 id=370 data-nosnippet>370</a>            nerten.targets.get(<span class="string">"den"</span>),
-<a href=#371 id=371 data-nosnippet>371</a>            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">100</span>]),
-<a href=#372 id=372 data-nosnippet>372</a>            <span class="string">"everyone's shows again"
-<a href=#373 id=373 data-nosnippet>373</a>        </span>);
-<a href=#374 id=374 data-nosnippet>374</a>    }
-<a href=#375 id=375 data-nosnippet>375</a>
-<a href=#376 id=376 data-nosnippet>376</a>    <span class="doccomment">/// One room is replaced, several are added to.
-<a href=#377 id=377 data-nosnippet>377</a>    </span><span class="attr">#[test]
-<a href=#378 id=378 data-nosnippet>378</a>    </span><span class="kw">fn </span>several_rooms_gain_and_one_is_replaced() {
-<a href=#379 id=379 data-nosnippet>379</a>        <span class="kw">let </span>dir = dir(<span class="string">"several"</span>);
-<a href=#380 id=380 data-nosnippet>380</a>        save_target(<span class="kw-2">&amp;</span>dir, Whose::Everyone, <span class="string">"bank"</span>, <span class="kw-2">&amp;</span>[<span class="number">1</span>]).expect(<span class="string">"saved"</span>);
-<a href=#381 id=381 data-nosnippet>381</a>        save_target(<span class="kw-2">&amp;</span>dir, Whose::Everyone, <span class="string">"bank"</span>, <span class="kw-2">&amp;</span>[<span class="number">2</span>]).expect(<span class="string">"saved"</span>);
-<a href=#382 id=382 data-nosnippet>382</a>        <span class="macro">assert_eq!</span>(
-<a href=#383 id=383 data-nosnippet>383</a>            load(<span class="kw-2">&amp;</span>dir, <span class="string">"GS3"</span>, <span class="string">"N"</span>).expect(<span class="string">"loads"</span>).targets[<span class="string">"bank"</span>],
-<a href=#384 id=384 data-nosnippet>384</a>            <span class="macro">vec!</span>[<span class="number">2</span>]
-<a href=#385 id=385 data-nosnippet>385</a>        );
-<a href=#386 id=386 data-nosnippet>386</a>        save_target(<span class="kw-2">&amp;</span>dir, Whose::Everyone, <span class="string">"bank"</span>, <span class="kw-2">&amp;</span>[<span class="number">2</span>, <span class="number">3</span>]).expect(<span class="string">"saved"</span>);
-<a href=#387 id=387 data-nosnippet>387</a>        save_target(<span class="kw-2">&amp;</span>dir, Whose::Everyone, <span class="string">"bank"</span>, <span class="kw-2">&amp;</span>[<span class="number">4</span>]).expect(<span class="string">"saved"</span>);
-<a href=#388 id=388 data-nosnippet>388</a>        <span class="macro">assert_eq!</span>(
-<a href=#389 id=389 data-nosnippet>389</a>            load(<span class="kw-2">&amp;</span>dir, <span class="string">"GS3"</span>, <span class="string">"N"</span>).expect(<span class="string">"loads"</span>).targets[<span class="string">"bank"</span>],
-<a href=#390 id=390 data-nosnippet>390</a>            <span class="macro">vec!</span>[<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>]
-<a href=#391 id=391 data-nosnippet>391</a>        );
-<a href=#392 id=392 data-nosnippet>392</a>    }
-<a href=#393 id=393 data-nosnippet>393</a>
-<a href=#394 id=394 data-nosnippet>394</a>    <span class="attr">#[test]
-<a href=#395 id=395 data-nosnippet>395</a>    </span><span class="kw">fn </span>a_file_that_cannot_be_trusted_is_left_alone() {
-<a href=#396 id=396 data-nosnippet>396</a>        <span class="kw">let </span>dir = dir(<span class="string">"refused"</span>);
-<a href=#397 id=397 data-nosnippet>397</a>        fs::write(travel_path(<span class="kw-2">&amp;</span>dir), <span class="string">"{ not json"</span>).expect(<span class="string">"written"</span>);
-<a href=#398 id=398 data-nosnippet>398</a>        <span class="macro">assert!</span>(<span class="macro">matches!</span>(
-<a href=#399 id=399 data-nosnippet>399</a>            load(<span class="kw-2">&amp;</span>dir, <span class="string">"GS3"</span>, <span class="string">"N"</span>),
-<a href=#400 id=400 data-nosnippet>400</a>            <span class="prelude-val">Err</span>(Refused::Unreadable(<span class="kw">_</span>))
-<a href=#401 id=401 data-nosnippet>401</a>        ));
-<a href=#402 id=402 data-nosnippet>402</a>        <span class="macro">assert!</span>(save_last_room(<span class="kw-2">&amp;</span>dir, <span class="string">"GS3"</span>, <span class="string">"N"</span>, <span class="number">5</span>).is_err());
-<a href=#403 id=403 data-nosnippet>403</a>        <span class="macro">assert_eq!</span>(
-<a href=#404 id=404 data-nosnippet>404</a>            fs::read_to_string(travel_path(<span class="kw-2">&amp;</span>dir)).expect(<span class="string">"read"</span>),
-<a href=#405 id=405 data-nosnippet>405</a>            <span class="string">"{ not json"
-<a href=#406 id=406 data-nosnippet>406</a>        </span>);
+<a href=#250 id=250 data-nosnippet>250</a>/// # Errors
+<a href=#251 id=251 data-nosnippet>251</a>///
+<a href=#252 id=252 data-nosnippet>252</a>/// As [`save_last_room`].
+<a href=#253 id=253 data-nosnippet>253</a></span><span class="kw">pub fn </span>take_settings(
+<a href=#254 id=254 data-nosnippet>254</a>    dir: <span class="kw-2">&amp;</span>Path,
+<a href=#255 id=255 data-nosnippet>255</a>    instance: <span class="kw-2">&amp;</span>str,
+<a href=#256 id=256 data-nosnippet>256</a>    character: <span class="kw-2">&amp;</span>str,
+<a href=#257 id=257 data-nosnippet>257</a>) -&gt; io::Result&lt;BTreeMap&lt;String, String&gt;&gt; {
+<a href=#258 id=258 data-nosnippet>258</a>    <span class="kw">let </span><span class="kw-2">mut </span>taken = BTreeMap::new();
+<a href=#259 id=259 data-nosnippet>259</a>    <span class="kw">let </span>name = spot_name(instance, character)<span class="question-mark">?</span>;
+<a href=#260 id=260 data-nosnippet>260</a>    <span class="kw">let </span>shared = read(dir)<span class="question-mark">?</span>;
+<a href=#261 id=261 data-nosnippet>261</a>    <span class="kw">let </span><span class="prelude-val">Some</span>(key) = key_in(<span class="kw-2">&amp;</span>shared.characters, <span class="kw-2">&amp;</span>name) <span class="kw">else </span>{
+<a href=#262 id=262 data-nosnippet>262</a>        <span class="kw">return </span><span class="prelude-val">Ok</span>(taken);
+<a href=#263 id=263 data-nosnippet>263</a>    };
+<a href=#264 id=264 data-nosnippet>264</a>    <span class="kw">if </span>!shared.characters[<span class="kw-2">&amp;</span>key].rest.contains_key(<span class="string">"settings"</span>) {
+<a href=#265 id=265 data-nosnippet>265</a>        <span class="kw">return </span><span class="prelude-val">Ok</span>(taken);
+<a href=#266 id=266 data-nosnippet>266</a>    }
+<a href=#267 id=267 data-nosnippet>267</a>    change(dir, |shared| {
+<a href=#268 id=268 data-nosnippet>268</a>        <span class="kw">let </span>settings = spot_in(shared, instance, character)<span class="question-mark">?
+<a href=#269 id=269 data-nosnippet>269</a>            </span>.rest
+<a href=#270 id=270 data-nosnippet>270</a>            .remove(<span class="string">"settings"</span>);
+<a href=#271 id=271 data-nosnippet>271</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(serde_json::Value::Object(settings)) = settings {
+<a href=#272 id=272 data-nosnippet>272</a>            taken = settings
+<a href=#273 id=273 data-nosnippet>273</a>                .into_iter()
+<a href=#274 id=274 data-nosnippet>274</a>                .filter_map(|(name, value)| <span class="kw">match </span>value {
+<a href=#275 id=275 data-nosnippet>275</a>                    serde_json::Value::String(value) =&gt; <span class="prelude-val">Some</span>((name, value)),
+<a href=#276 id=276 data-nosnippet>276</a>                    serde_json::Value::Bool(on) =&gt; <span class="prelude-val">Some</span>((name, on.to_string())),
+<a href=#277 id=277 data-nosnippet>277</a>                    serde_json::Value::Number(number) =&gt; <span class="prelude-val">Some</span>((name, number.to_string())),
+<a href=#278 id=278 data-nosnippet>278</a>                    <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
+<a href=#279 id=279 data-nosnippet>279</a>                })
+<a href=#280 id=280 data-nosnippet>280</a>                .collect();
+<a href=#281 id=281 data-nosnippet>281</a>        }
+<a href=#282 id=282 data-nosnippet>282</a>        <span class="prelude-val">Ok</span>(())
+<a href=#283 id=283 data-nosnippet>283</a>    })<span class="question-mark">?</span>;
+<a href=#284 id=284 data-nosnippet>284</a>    <span class="prelude-val">Ok</span>(taken)
+<a href=#285 id=285 data-nosnippet>285</a>}
+<a href=#286 id=286 data-nosnippet>286</a>
+<a href=#287 id=287 data-nosnippet>287</a><span class="doccomment">/// The instabilities seen lately on `instance`, as the file keeps them.
+<a href=#288 id=288 data-nosnippet>288</a>///
+<a href=#289 id=289 data-nosnippet>289</a>/// # Errors
+<a href=#290 id=290 data-nosnippet>290</a>///
+<a href=#291 id=291 data-nosnippet>291</a>/// [`Refused`], as [`load`].
+<a href=#292 id=292 data-nosnippet>292</a></span><span class="kw">pub fn </span>instabilities(
+<a href=#293 id=293 data-nosnippet>293</a>    dir: <span class="kw-2">&amp;</span>Path,
+<a href=#294 id=294 data-nosnippet>294</a>    instance: <span class="kw-2">&amp;</span>str,
+<a href=#295 id=295 data-nosnippet>295</a>) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;<span class="kw">crate</span>::walk::instability::Seen&gt;, Refused&gt; {
+<a href=#296 id=296 data-nosnippet>296</a>    <span class="kw">let </span>shared = read(dir)<span class="question-mark">?</span>;
+<a href=#297 id=297 data-nosnippet>297</a>    <span class="prelude-val">Ok</span>(key_in(<span class="kw-2">&amp;</span>shared.instabilities, instance)
+<a href=#298 id=298 data-nosnippet>298</a>        .and_then(|key| shared.instabilities.get(<span class="kw-2">&amp;</span>key).cloned())
+<a href=#299 id=299 data-nosnippet>299</a>        .unwrap_or_default())
+<a href=#300 id=300 data-nosnippet>300</a>}
+<a href=#301 id=301 data-nosnippet>301</a>
+<a href=#302 id=302 data-nosnippet>302</a><span class="doccomment">/// Keep `seen` as the instabilities seen lately on `instance`, in place of
+<a href=#303 id=303 data-nosnippet>303</a>/// what was.
+<a href=#304 id=304 data-nosnippet>304</a>///
+<a href=#305 id=305 data-nosnippet>305</a>/// # Errors
+<a href=#306 id=306 data-nosnippet>306</a>///
+<a href=#307 id=307 data-nosnippet>307</a>/// As [`save_last_room`].
+<a href=#308 id=308 data-nosnippet>308</a></span><span class="kw">pub fn </span>save_instabilities(
+<a href=#309 id=309 data-nosnippet>309</a>    dir: <span class="kw-2">&amp;</span>Path,
+<a href=#310 id=310 data-nosnippet>310</a>    instance: <span class="kw-2">&amp;</span>str,
+<a href=#311 id=311 data-nosnippet>311</a>    seen: <span class="kw-2">&amp;</span>[<span class="kw">crate</span>::walk::instability::Seen],
+<a href=#312 id=312 data-nosnippet>312</a>) -&gt; io::Result&lt;()&gt; {
+<a href=#313 id=313 data-nosnippet>313</a>    change(dir, |shared| {
+<a href=#314 id=314 data-nosnippet>314</a>        <span class="kw">let </span>key = key_in(<span class="kw-2">&amp;</span>shared.instabilities, instance).unwrap_or_else(|| instance.to_owned());
+<a href=#315 id=315 data-nosnippet>315</a>        shared.instabilities.insert(key, seen.to_vec());
+<a href=#316 id=316 data-nosnippet>316</a>        <span class="prelude-val">Ok</span>(())
+<a href=#317 id=317 data-nosnippet>317</a>    })
+<a href=#318 id=318 data-nosnippet>318</a>}
+<a href=#319 id=319 data-nosnippet>319</a>
+<a href=#320 id=320 data-nosnippet>320</a><span class="doccomment">/// Whose a saved name is.
+<a href=#321 id=321 data-nosnippet>321</a></span><span class="attr">#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+<a href=#322 id=322 data-nosnippet>322</a></span><span class="kw">pub enum </span>Whose&lt;<span class="lifetime">'a</span>&gt; {
+<a href=#323 id=323 data-nosnippet>323</a>    <span class="doccomment">/// One character's: its instance and name.
+<a href=#324 id=324 data-nosnippet>324</a>    </span>Own(<span class="kw-2">&amp;</span><span class="lifetime">'a </span>str, <span class="kw-2">&amp;</span><span class="lifetime">'a </span>str),
+<a href=#325 id=325 data-nosnippet>325</a>    <span class="doccomment">/// Everyone's.
+<a href=#326 id=326 data-nosnippet>326</a>    </span>Everyone,
+<a href=#327 id=327 data-nosnippet>327</a>}
+<a href=#328 id=328 data-nosnippet>328</a>
+<a href=#329 id=329 data-nosnippet>329</a><span class="doccomment">/// From now on `name` means `rooms` for `whose`. A name that already means
+<a href=#330 id=330 data-nosnippet>330</a>/// several rooms gains these, so a list of rooms grows one save at a time;
+<a href=#331 id=331 data-nosnippet>331</a>/// a name that means one room is replaced.
+<a href=#332 id=332 data-nosnippet>332</a>///
+<a href=#333 id=333 data-nosnippet>333</a>/// # Errors
+<a href=#334 id=334 data-nosnippet>334</a>///
+<a href=#335 id=335 data-nosnippet>335</a>/// As [`save_last_room`].
+<a href=#336 id=336 data-nosnippet>336</a></span><span class="kw">pub fn </span>save_target(dir: <span class="kw-2">&amp;</span>Path, whose: Whose&lt;<span class="lifetime">'_</span>&gt;, name: <span class="kw-2">&amp;</span>str, rooms: <span class="kw-2">&amp;</span>[u32]) -&gt; io::Result&lt;()&gt; {
+<a href=#337 id=337 data-nosnippet>337</a>    change(dir, |shared| {
+<a href=#338 id=338 data-nosnippet>338</a>        <span class="kw">let </span>targets = <span class="kw">match </span>whose {
+<a href=#339 id=339 data-nosnippet>339</a>            Whose::Own(instance, character) =&gt; <span class="kw-2">&amp;mut </span>spot_in(shared, instance, character)<span class="question-mark">?</span>.targets,
+<a href=#340 id=340 data-nosnippet>340</a>            Whose::Everyone =&gt; <span class="kw-2">&amp;mut </span>shared.targets,
+<a href=#341 id=341 data-nosnippet>341</a>        };
+<a href=#342 id=342 data-nosnippet>342</a>        <span class="kw">let </span>key = key_in(targets, name).unwrap_or_else(|| name.to_owned());
+<a href=#343 id=343 data-nosnippet>343</a>        <span class="kw">let </span>kept = targets.entry(key).or_default();
+<a href=#344 id=344 data-nosnippet>344</a>        <span class="kw">if </span>kept.len() &gt; <span class="number">1 </span>{
+<a href=#345 id=345 data-nosnippet>345</a>            <span class="kw">for </span>room <span class="kw">in </span>rooms {
+<a href=#346 id=346 data-nosnippet>346</a>                <span class="kw">if </span>!kept.contains(room) {
+<a href=#347 id=347 data-nosnippet>347</a>                    kept.push(<span class="kw-2">*</span>room);
+<a href=#348 id=348 data-nosnippet>348</a>                }
+<a href=#349 id=349 data-nosnippet>349</a>            }
+<a href=#350 id=350 data-nosnippet>350</a>        } <span class="kw">else </span>{
+<a href=#351 id=351 data-nosnippet>351</a>            rooms.clone_into(kept);
+<a href=#352 id=352 data-nosnippet>352</a>        }
+<a href=#353 id=353 data-nosnippet>353</a>        <span class="prelude-val">Ok</span>(())
+<a href=#354 id=354 data-nosnippet>354</a>    })
+<a href=#355 id=355 data-nosnippet>355</a>}
+<a href=#356 id=356 data-nosnippet>356</a>
+<a href=#357 id=357 data-nosnippet>357</a><span class="doccomment">/// Forget `name` of `whose`'s. Whether there was one.
+<a href=#358 id=358 data-nosnippet>358</a>///
+<a href=#359 id=359 data-nosnippet>359</a>/// # Errors
+<a href=#360 id=360 data-nosnippet>360</a>///
+<a href=#361 id=361 data-nosnippet>361</a>/// As [`save_last_room`].
+<a href=#362 id=362 data-nosnippet>362</a></span><span class="kw">pub fn </span>forget_target(dir: <span class="kw-2">&amp;</span>Path, whose: Whose&lt;<span class="lifetime">'_</span>&gt;, name: <span class="kw-2">&amp;</span>str) -&gt; io::Result&lt;bool&gt; {
+<a href=#363 id=363 data-nosnippet>363</a>    <span class="kw">let </span><span class="kw-2">mut </span>was = <span class="bool-val">false</span>;
+<a href=#364 id=364 data-nosnippet>364</a>    change(dir, |shared| {
+<a href=#365 id=365 data-nosnippet>365</a>        <span class="kw">let </span>targets = <span class="kw">match </span>whose {
+<a href=#366 id=366 data-nosnippet>366</a>            Whose::Own(instance, character) =&gt; <span class="kw-2">&amp;mut </span>spot_in(shared, instance, character)<span class="question-mark">?</span>.targets,
+<a href=#367 id=367 data-nosnippet>367</a>            Whose::Everyone =&gt; <span class="kw-2">&amp;mut </span>shared.targets,
+<a href=#368 id=368 data-nosnippet>368</a>        };
+<a href=#369 id=369 data-nosnippet>369</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(key) = key_in(targets, name) {
+<a href=#370 id=370 data-nosnippet>370</a>            was = targets.remove(<span class="kw-2">&amp;</span>key).is_some();
+<a href=#371 id=371 data-nosnippet>371</a>        }
+<a href=#372 id=372 data-nosnippet>372</a>        <span class="prelude-val">Ok</span>(())
+<a href=#373 id=373 data-nosnippet>373</a>    })<span class="question-mark">?</span>;
+<a href=#374 id=374 data-nosnippet>374</a>    <span class="prelude-val">Ok</span>(was)
+<a href=#375 id=375 data-nosnippet>375</a>}
+<a href=#376 id=376 data-nosnippet>376</a>
+<a href=#377 id=377 data-nosnippet>377</a><span class="attr">#[cfg(test)]
+<a href=#378 id=378 data-nosnippet>378</a></span><span class="kw">mod </span>tests {
+<a href=#379 id=379 data-nosnippet>379</a>    <span class="kw">use </span>super::<span class="kw-2">*</span>;
+<a href=#380 id=380 data-nosnippet>380</a>
+<a href=#381 id=381 data-nosnippet>381</a>    <span class="kw">fn </span>dir(name: <span class="kw-2">&amp;</span>str) -&gt; PathBuf {
+<a href=#382 id=382 data-nosnippet>382</a>        <span class="kw">let </span>dir = std::env::temp_dir().join(<span class="macro">format!</span>(<span class="string">"hydra-travel-{name}-{}"</span>, std::process::id()));
+<a href=#383 id=383 data-nosnippet>383</a>        <span class="kw">let _ </span>= fs::remove_dir_all(<span class="kw-2">&amp;</span>dir);
+<a href=#384 id=384 data-nosnippet>384</a>        fs::create_dir_all(<span class="kw-2">&amp;</span>dir).expect(<span class="string">"a test folder"</span>);
+<a href=#385 id=385 data-nosnippet>385</a>        dir
+<a href=#386 id=386 data-nosnippet>386</a>    }
+<a href=#387 id=387 data-nosnippet>387</a>
+<a href=#388 id=388 data-nosnippet>388</a>    <span class="attr">#[test]
+<a href=#389 id=389 data-nosnippet>389</a>    </span><span class="kw">fn </span>nobody_has_travelled_yet() {
+<a href=#390 id=390 data-nosnippet>390</a>        <span class="kw">let </span>dir = dir(<span class="string">"empty"</span>);
+<a href=#391 id=391 data-nosnippet>391</a>        <span class="macro">assert_eq!</span>(load(<span class="kw-2">&amp;</span>dir, <span class="string">"GS3"</span>, <span class="string">"Nerten"</span>), <span class="prelude-val">Ok</span>(Notes::default()));
+<a href=#392 id=392 data-nosnippet>392</a>        <span class="macro">assert!</span>(!travel_path(<span class="kw-2">&amp;</span>dir).exists(), <span class="string">"loading writes nothing"</span>);
+<a href=#393 id=393 data-nosnippet>393</a>    }
+<a href=#394 id=394 data-nosnippet>394</a>
+<a href=#395 id=395 data-nosnippet>395</a>    <span class="attr">#[test]
+<a href=#396 id=396 data-nosnippet>396</a>    </span><span class="kw">fn </span>a_name_is_one_characters_unless_everyones_and_its_own_comes_first() {
+<a href=#397 id=397 data-nosnippet>397</a>        <span class="kw">let </span>dir = dir(<span class="string">"targets"</span>);
+<a href=#398 id=398 data-nosnippet>398</a>        save_target(<span class="kw-2">&amp;</span>dir, Whose::Everyone, <span class="string">"den"</span>, <span class="kw-2">&amp;</span>[<span class="number">100</span>]).expect(<span class="string">"saved"</span>);
+<a href=#399 id=399 data-nosnippet>399</a>        save_target(<span class="kw-2">&amp;</span>dir, Whose::Own(<span class="string">"GS3"</span>, <span class="string">"Nerten"</span>), <span class="string">"den"</span>, <span class="kw-2">&amp;</span>[<span class="number">228</span>]).expect(<span class="string">"saved"</span>);
+<a href=#400 id=400 data-nosnippet>400</a>        save_target(<span class="kw-2">&amp;</span>dir, Whose::Own(<span class="string">"GS3"</span>, <span class="string">"Nerten"</span>), <span class="string">"shop"</span>, <span class="kw-2">&amp;</span>[<span class="number">7</span>]).expect(<span class="string">"saved"</span>);
+<a href=#401 id=401 data-nosnippet>401</a>        <span class="kw">let </span>nerten = load(<span class="kw-2">&amp;</span>dir, <span class="string">"GS3"</span>, <span class="string">"nerten"</span>).expect(<span class="string">"loads"</span>);
+<a href=#402 id=402 data-nosnippet>402</a>        <span class="macro">assert_eq!</span>(nerten.targets.get(<span class="string">"den"</span>), <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">228</span>]));
+<a href=#403 id=403 data-nosnippet>403</a>        <span class="macro">assert_eq!</span>(nerten.targets.get(<span class="string">"shop"</span>), <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">7</span>]));
+<a href=#404 id=404 data-nosnippet>404</a>        <span class="kw">let </span>other = load(<span class="kw-2">&amp;</span>dir, <span class="string">"GS3"</span>, <span class="string">"Ashryn"</span>).expect(<span class="string">"loads"</span>);
+<a href=#405 id=405 data-nosnippet>405</a>        <span class="macro">assert_eq!</span>(other.targets.get(<span class="string">"den"</span>), <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">100</span>]));
+<a href=#406 id=406 data-nosnippet>406</a>        <span class="macro">assert_eq!</span>(other.targets.get(<span class="string">"shop"</span>), <span class="prelude-val">None</span>);
 <a href=#407 id=407 data-nosnippet>407</a>
-<a href=#408 id=408 data-nosnippet>408</a>        fs::write(travel_path(<span class="kw-2">&amp;</span>dir), <span class="string">r#"{"schema_version": 9}"#</span>).expect(<span class="string">"written"</span>);
-<a href=#409 id=409 data-nosnippet>409</a>        <span class="macro">assert_eq!</span>(load(<span class="kw-2">&amp;</span>dir, <span class="string">"GS3"</span>, <span class="string">"N"</span>), <span class="prelude-val">Err</span>(Refused::Newer(<span class="number">9</span>)));
-<a href=#410 id=410 data-nosnippet>410</a>        <span class="macro">assert!</span>(save_target(<span class="kw-2">&amp;</span>dir, Whose::Everyone, <span class="string">"x"</span>, <span class="kw-2">&amp;</span>[<span class="number">1</span>]).is_err());
-<a href=#411 id=411 data-nosnippet>411</a>    }
-<a href=#412 id=412 data-nosnippet>412</a>
-<a href=#413 id=413 data-nosnippet>413</a>    <span class="doccomment">/// Two characters each save what they hold, and neither loses the
-<a href=#414 id=414 data-nosnippet>414</a>    /// other's; and what a later Hydra keeps in a spot is kept.
-<a href=#415 id=415 data-nosnippet>415</a>    </span><span class="attr">#[test]
-<a href=#416 id=416 data-nosnippet>416</a>    </span><span class="kw">fn </span>a_save_changes_one_thing_and_keeps_the_rest() {
-<a href=#417 id=417 data-nosnippet>417</a>        <span class="kw">let </span>dir = dir(<span class="string">"one-thing"</span>);
-<a href=#418 id=418 data-nosnippet>418</a>        fs::write(
-<a href=#419 id=419 data-nosnippet>419</a>            travel_path(<span class="kw-2">&amp;</span>dir),
-<a href=#420 id=420 data-nosnippet>420</a>            <span class="string">r#"{"schema_version":3,"characters":{"GS3_A":{"memories":{"duskruin_origin":"228"},"later":1}}}"#</span>,
-<a href=#421 id=421 data-nosnippet>421</a>        )
-<a href=#422 id=422 data-nosnippet>422</a>        .expect(<span class="string">"written"</span>);
-<a href=#423 id=423 data-nosnippet>423</a>        save_last_room(<span class="kw-2">&amp;</span>dir, <span class="string">"GS3"</span>, <span class="string">"A"</span>, <span class="number">10</span>).expect(<span class="string">"saved"</span>);
-<a href=#424 id=424 data-nosnippet>424</a>        save_last_room(<span class="kw-2">&amp;</span>dir, <span class="string">"GS3"</span>, <span class="string">"B"</span>, <span class="number">20</span>).expect(<span class="string">"saved"</span>);
-<a href=#425 id=425 data-nosnippet>425</a>        <span class="kw">let </span>a = load(<span class="kw-2">&amp;</span>dir, <span class="string">"GS3"</span>, <span class="string">"A"</span>).expect(<span class="string">"loads"</span>);
-<a href=#426 id=426 data-nosnippet>426</a>        <span class="macro">assert_eq!</span>(
-<a href=#427 id=427 data-nosnippet>427</a>            a.memories.get(<span class="string">"duskruin_origin"</span>).map(String::as_str),
-<a href=#428 id=428 data-nosnippet>428</a>            <span class="prelude-val">Some</span>(<span class="string">"228"</span>)
-<a href=#429 id=429 data-nosnippet>429</a>        );
-<a href=#430 id=430 data-nosnippet>430</a>        <span class="macro">assert_eq!</span>(a.last_room, <span class="prelude-val">Some</span>(<span class="number">10</span>));
-<a href=#431 id=431 data-nosnippet>431</a>        <span class="macro">assert_eq!</span>(load(<span class="kw-2">&amp;</span>dir, <span class="string">"GS3"</span>, <span class="string">"B"</span>).expect(<span class="string">"loads"</span>).last_room, <span class="prelude-val">Some</span>(<span class="number">20</span>));
-<a href=#432 id=432 data-nosnippet>432</a>        <span class="macro">assert!</span>(
-<a href=#433 id=433 data-nosnippet>433</a>            fs::read_to_string(travel_path(<span class="kw-2">&amp;</span>dir))
-<a href=#434 id=434 data-nosnippet>434</a>                .expect(<span class="string">"read"</span>)
-<a href=#435 id=435 data-nosnippet>435</a>                .contains(<span class="string">"\"later\""</span>)
-<a href=#436 id=436 data-nosnippet>436</a>        );
-<a href=#437 id=437 data-nosnippet>437</a>    }
-<a href=#438 id=438 data-nosnippet>438</a>}
+<a href=#408 id=408 data-nosnippet>408</a>        <span class="macro">assert!</span>(forget_target(<span class="kw-2">&amp;</span>dir, Whose::Own(<span class="string">"GS3"</span>, <span class="string">"Nerten"</span>), <span class="string">"DEN"</span>).expect(<span class="string">"saved"</span>));
+<a href=#409 id=409 data-nosnippet>409</a>        <span class="kw">let </span>nerten = load(<span class="kw-2">&amp;</span>dir, <span class="string">"GS3"</span>, <span class="string">"Nerten"</span>).expect(<span class="string">"loads"</span>);
+<a href=#410 id=410 data-nosnippet>410</a>        <span class="macro">assert_eq!</span>(
+<a href=#411 id=411 data-nosnippet>411</a>            nerten.targets.get(<span class="string">"den"</span>),
+<a href=#412 id=412 data-nosnippet>412</a>            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">100</span>]),
+<a href=#413 id=413 data-nosnippet>413</a>            <span class="string">"everyone's shows again"
+<a href=#414 id=414 data-nosnippet>414</a>        </span>);
+<a href=#415 id=415 data-nosnippet>415</a>    }
+<a href=#416 id=416 data-nosnippet>416</a>
+<a href=#417 id=417 data-nosnippet>417</a>    <span class="doccomment">/// Settings an earlier Hydra kept in the spot come out once, and the
+<a href=#418 id=418 data-nosnippet>418</a>    /// rest of the spot stays.
+<a href=#419 id=419 data-nosnippet>419</a>    </span><span class="attr">#[test]
+<a href=#420 id=420 data-nosnippet>420</a>    </span><span class="kw">fn </span>old_settings_are_taken_out_of_the_spot_once() {
+<a href=#421 id=421 data-nosnippet>421</a>        <span class="kw">let </span>dir = dir(<span class="string">"old-settings"</span>);
+<a href=#422 id=422 data-nosnippet>422</a>        fs::write(
+<a href=#423 id=423 data-nosnippet>423</a>            travel_path(<span class="kw-2">&amp;</span>dir),
+<a href=#424 id=424 data-nosnippet>424</a>            <span class="string">r#"{"schema_version":3,"targets":{},"characters":{"GS3_Nerten":{
+<a href=#425 id=425 data-nosnippet>425</a>                "settings":{"fwi_trinket":"scarab","get_silvers":"true","delay":2},
+<a href=#426 id=426 data-nosnippet>426</a>                "memories":{"duskruin_origin":"228"},"last_room":228}}}"#</span>,
+<a href=#427 id=427 data-nosnippet>427</a>        )
+<a href=#428 id=428 data-nosnippet>428</a>        .expect(<span class="string">"written"</span>);
+<a href=#429 id=429 data-nosnippet>429</a>        <span class="kw">let </span>taken = take_settings(<span class="kw-2">&amp;</span>dir, <span class="string">"GS3"</span>, <span class="string">"nerten"</span>).expect(<span class="string">"taken"</span>);
+<a href=#430 id=430 data-nosnippet>430</a>        <span class="macro">assert_eq!</span>(taken.get(<span class="string">"fwi_trinket"</span>).map(String::as_str), <span class="prelude-val">Some</span>(<span class="string">"scarab"</span>));
+<a href=#431 id=431 data-nosnippet>431</a>        <span class="macro">assert_eq!</span>(taken.get(<span class="string">"get_silvers"</span>).map(String::as_str), <span class="prelude-val">Some</span>(<span class="string">"true"</span>));
+<a href=#432 id=432 data-nosnippet>432</a>        <span class="macro">assert_eq!</span>(taken.get(<span class="string">"delay"</span>).map(String::as_str), <span class="prelude-val">Some</span>(<span class="string">"2"</span>));
+<a href=#433 id=433 data-nosnippet>433</a>        <span class="kw">let </span>kept = load(<span class="kw-2">&amp;</span>dir, <span class="string">"GS3"</span>, <span class="string">"Nerten"</span>).expect(<span class="string">"loads"</span>);
+<a href=#434 id=434 data-nosnippet>434</a>        <span class="macro">assert_eq!</span>(kept.last_room, <span class="prelude-val">Some</span>(<span class="number">228</span>));
+<a href=#435 id=435 data-nosnippet>435</a>        <span class="macro">assert_eq!</span>(
+<a href=#436 id=436 data-nosnippet>436</a>            kept.memories.get(<span class="string">"duskruin_origin"</span>).map(String::as_str),
+<a href=#437 id=437 data-nosnippet>437</a>            <span class="prelude-val">Some</span>(<span class="string">"228"</span>)
+<a href=#438 id=438 data-nosnippet>438</a>        );
+<a href=#439 id=439 data-nosnippet>439</a>        <span class="macro">assert!</span>(
+<a href=#440 id=440 data-nosnippet>440</a>            take_settings(<span class="kw-2">&amp;</span>dir, <span class="string">"GS3"</span>, <span class="string">"Nerten"</span>)
+<a href=#441 id=441 data-nosnippet>441</a>                .expect(<span class="string">"taken"</span>)
+<a href=#442 id=442 data-nosnippet>442</a>                .is_empty()
+<a href=#443 id=443 data-nosnippet>443</a>        );
+<a href=#444 id=444 data-nosnippet>444</a>        <span class="macro">assert!</span>(
+<a href=#445 id=445 data-nosnippet>445</a>            !fs::read_to_string(travel_path(<span class="kw-2">&amp;</span>dir))
+<a href=#446 id=446 data-nosnippet>446</a>                .expect(<span class="string">"read"</span>)
+<a href=#447 id=447 data-nosnippet>447</a>                .contains(<span class="string">"settings"</span>)
+<a href=#448 id=448 data-nosnippet>448</a>        );
+<a href=#449 id=449 data-nosnippet>449</a>        <span class="macro">assert!</span>(
+<a href=#450 id=450 data-nosnippet>450</a>            take_settings(<span class="kw-2">&amp;</span>dir, <span class="string">"GS3"</span>, <span class="string">"Ashryn"</span>)
+<a href=#451 id=451 data-nosnippet>451</a>                .expect(<span class="string">"taken"</span>)
+<a href=#452 id=452 data-nosnippet>452</a>                .is_empty()
+<a href=#453 id=453 data-nosnippet>453</a>        );
+<a href=#454 id=454 data-nosnippet>454</a>    }
+<a href=#455 id=455 data-nosnippet>455</a>
+<a href=#456 id=456 data-nosnippet>456</a>    <span class="doccomment">/// One room is replaced, several are added to.
+<a href=#457 id=457 data-nosnippet>457</a>    </span><span class="attr">#[test]
+<a href=#458 id=458 data-nosnippet>458</a>    </span><span class="kw">fn </span>several_rooms_gain_and_one_is_replaced() {
+<a href=#459 id=459 data-nosnippet>459</a>        <span class="kw">let </span>dir = dir(<span class="string">"several"</span>);
+<a href=#460 id=460 data-nosnippet>460</a>        save_target(<span class="kw-2">&amp;</span>dir, Whose::Everyone, <span class="string">"bank"</span>, <span class="kw-2">&amp;</span>[<span class="number">1</span>]).expect(<span class="string">"saved"</span>);
+<a href=#461 id=461 data-nosnippet>461</a>        save_target(<span class="kw-2">&amp;</span>dir, Whose::Everyone, <span class="string">"bank"</span>, <span class="kw-2">&amp;</span>[<span class="number">2</span>]).expect(<span class="string">"saved"</span>);
+<a href=#462 id=462 data-nosnippet>462</a>        <span class="macro">assert_eq!</span>(
+<a href=#463 id=463 data-nosnippet>463</a>            load(<span class="kw-2">&amp;</span>dir, <span class="string">"GS3"</span>, <span class="string">"N"</span>).expect(<span class="string">"loads"</span>).targets[<span class="string">"bank"</span>],
+<a href=#464 id=464 data-nosnippet>464</a>            <span class="macro">vec!</span>[<span class="number">2</span>]
+<a href=#465 id=465 data-nosnippet>465</a>        );
+<a href=#466 id=466 data-nosnippet>466</a>        save_target(<span class="kw-2">&amp;</span>dir, Whose::Everyone, <span class="string">"bank"</span>, <span class="kw-2">&amp;</span>[<span class="number">2</span>, <span class="number">3</span>]).expect(<span class="string">"saved"</span>);
+<a href=#467 id=467 data-nosnippet>467</a>        save_target(<span class="kw-2">&amp;</span>dir, Whose::Everyone, <span class="string">"bank"</span>, <span class="kw-2">&amp;</span>[<span class="number">4</span>]).expect(<span class="string">"saved"</span>);
+<a href=#468 id=468 data-nosnippet>468</a>        <span class="macro">assert_eq!</span>(
+<a href=#469 id=469 data-nosnippet>469</a>            load(<span class="kw-2">&amp;</span>dir, <span class="string">"GS3"</span>, <span class="string">"N"</span>).expect(<span class="string">"loads"</span>).targets[<span class="string">"bank"</span>],
+<a href=#470 id=470 data-nosnippet>470</a>            <span class="macro">vec!</span>[<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>]
+<a href=#471 id=471 data-nosnippet>471</a>        );
+<a href=#472 id=472 data-nosnippet>472</a>    }
+<a href=#473 id=473 data-nosnippet>473</a>
+<a href=#474 id=474 data-nosnippet>474</a>    <span class="attr">#[test]
+<a href=#475 id=475 data-nosnippet>475</a>    </span><span class="kw">fn </span>a_file_that_cannot_be_trusted_is_left_alone() {
+<a href=#476 id=476 data-nosnippet>476</a>        <span class="kw">let </span>dir = dir(<span class="string">"refused"</span>);
+<a href=#477 id=477 data-nosnippet>477</a>        fs::write(travel_path(<span class="kw-2">&amp;</span>dir), <span class="string">"{ not json"</span>).expect(<span class="string">"written"</span>);
+<a href=#478 id=478 data-nosnippet>478</a>        <span class="macro">assert!</span>(<span class="macro">matches!</span>(
+<a href=#479 id=479 data-nosnippet>479</a>            load(<span class="kw-2">&amp;</span>dir, <span class="string">"GS3"</span>, <span class="string">"N"</span>),
+<a href=#480 id=480 data-nosnippet>480</a>            <span class="prelude-val">Err</span>(Refused::Unreadable(<span class="kw">_</span>))
+<a href=#481 id=481 data-nosnippet>481</a>        ));
+<a href=#482 id=482 data-nosnippet>482</a>        <span class="macro">assert!</span>(save_last_room(<span class="kw-2">&amp;</span>dir, <span class="string">"GS3"</span>, <span class="string">"N"</span>, <span class="number">5</span>).is_err());
+<a href=#483 id=483 data-nosnippet>483</a>        <span class="macro">assert_eq!</span>(
+<a href=#484 id=484 data-nosnippet>484</a>            fs::read_to_string(travel_path(<span class="kw-2">&amp;</span>dir)).expect(<span class="string">"read"</span>),
+<a href=#485 id=485 data-nosnippet>485</a>            <span class="string">"{ not json"
+<a href=#486 id=486 data-nosnippet>486</a>        </span>);
+<a href=#487 id=487 data-nosnippet>487</a>
+<a href=#488 id=488 data-nosnippet>488</a>        fs::write(travel_path(<span class="kw-2">&amp;</span>dir), <span class="string">r#"{"schema_version": 9}"#</span>).expect(<span class="string">"written"</span>);
+<a href=#489 id=489 data-nosnippet>489</a>        <span class="macro">assert_eq!</span>(load(<span class="kw-2">&amp;</span>dir, <span class="string">"GS3"</span>, <span class="string">"N"</span>), <span class="prelude-val">Err</span>(Refused::Newer(<span class="number">9</span>)));
+<a href=#490 id=490 data-nosnippet>490</a>        <span class="macro">assert!</span>(save_target(<span class="kw-2">&amp;</span>dir, Whose::Everyone, <span class="string">"x"</span>, <span class="kw-2">&amp;</span>[<span class="number">1</span>]).is_err());
+<a href=#491 id=491 data-nosnippet>491</a>    }
+<a href=#492 id=492 data-nosnippet>492</a>
+<a href=#493 id=493 data-nosnippet>493</a>    <span class="doccomment">/// Two characters each save what they hold, and neither loses the
+<a href=#494 id=494 data-nosnippet>494</a>    /// other's; and what a later Hydra keeps in a spot is kept.
+<a href=#495 id=495 data-nosnippet>495</a>    </span><span class="attr">#[test]
+<a href=#496 id=496 data-nosnippet>496</a>    </span><span class="kw">fn </span>a_save_changes_one_thing_and_keeps_the_rest() {
+<a href=#497 id=497 data-nosnippet>497</a>        <span class="kw">let </span>dir = dir(<span class="string">"one-thing"</span>);
+<a href=#498 id=498 data-nosnippet>498</a>        fs::write(
+<a href=#499 id=499 data-nosnippet>499</a>            travel_path(<span class="kw-2">&amp;</span>dir),
+<a href=#500 id=500 data-nosnippet>500</a>            <span class="string">r#"{"schema_version":3,"characters":{"GS3_A":{"memories":{"duskruin_origin":"228"},"later":1}}}"#</span>,
+<a href=#501 id=501 data-nosnippet>501</a>        )
+<a href=#502 id=502 data-nosnippet>502</a>        .expect(<span class="string">"written"</span>);
+<a href=#503 id=503 data-nosnippet>503</a>        save_last_room(<span class="kw-2">&amp;</span>dir, <span class="string">"GS3"</span>, <span class="string">"A"</span>, <span class="number">10</span>).expect(<span class="string">"saved"</span>);
+<a href=#504 id=504 data-nosnippet>504</a>        save_last_room(<span class="kw-2">&amp;</span>dir, <span class="string">"GS3"</span>, <span class="string">"B"</span>, <span class="number">20</span>).expect(<span class="string">"saved"</span>);
+<a href=#505 id=505 data-nosnippet>505</a>        <span class="kw">let </span>a = load(<span class="kw-2">&amp;</span>dir, <span class="string">"GS3"</span>, <span class="string">"A"</span>).expect(<span class="string">"loads"</span>);
+<a href=#506 id=506 data-nosnippet>506</a>        <span class="macro">assert_eq!</span>(
+<a href=#507 id=507 data-nosnippet>507</a>            a.memories.get(<span class="string">"duskruin_origin"</span>).map(String::as_str),
+<a href=#508 id=508 data-nosnippet>508</a>            <span class="prelude-val">Some</span>(<span class="string">"228"</span>)
+<a href=#509 id=509 data-nosnippet>509</a>        );
+<a href=#510 id=510 data-nosnippet>510</a>        <span class="macro">assert_eq!</span>(a.last_room, <span class="prelude-val">Some</span>(<span class="number">10</span>));
+<a href=#511 id=511 data-nosnippet>511</a>        <span class="macro">assert_eq!</span>(load(<span class="kw-2">&amp;</span>dir, <span class="string">"GS3"</span>, <span class="string">"B"</span>).expect(<span class="string">"loads"</span>).last_room, <span class="prelude-val">Some</span>(<span class="number">20</span>));
+<a href=#512 id=512 data-nosnippet>512</a>        <span class="macro">assert!</span>(
+<a href=#513 id=513 data-nosnippet>513</a>            fs::read_to_string(travel_path(<span class="kw-2">&amp;</span>dir))
+<a href=#514 id=514 data-nosnippet>514</a>                .expect(<span class="string">"read"</span>)
+<a href=#515 id=515 data-nosnippet>515</a>                .contains(<span class="string">"\"later\""</span>)
+<a href=#516 id=516 data-nosnippet>516</a>        );
+<a href=#517 id=517 data-nosnippet>517</a>    }
+<a href=#518 id=518 data-nosnippet>518</a>}
 </code></pre></div></section></main></body></html>

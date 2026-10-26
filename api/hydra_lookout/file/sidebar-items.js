@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Unread"],"fn":["decode","encode","path","read","write"],"struct":["Learning"],"type":["Read"]};

@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-a56a457a.js";
+            window.path_to_searchindex_js = "../searchindex-50dd7f95.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-6d2367c3.js"></script>
+        <script src="../toc-b5471689.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -211,11 +211,16 @@ are boxed unless it says otherwise. A cell can choose its own, under
 <code>tab</code> and <code>tab_shown</code> <a href="pins.html">pins</a>.</li>
 </ul>
 <h2 id="frame"><a class="header" href="#frame">Frame</a></h2>
-<p><strong>Frame</strong> draws a picture frame round every window and card: a recipe
-from the <code>frames</code> folder in Hydra’s <code>data</code> folder, or from a pack. <em>The
-base’s</em> keeps the frame of the theme it is laid over; <em>none</em> draws none.
-The window’s own edge is drawn outside a frame: <strong>Hide it</strong> takes it
-away.</p>
+<p><strong>Frame</strong> draws a picture frame round every window and card: a frame kit
+from an installed pack, named by its pack and style. Frame kits come from
+<strong>Packs</strong> in the Editors window, under <em>Frame kits</em>. <em>The base’s</em> keeps the frame of
+the theme it is laid over; <em>none</em> draws none.</p>
+<p><strong>Thickness</strong> is how far in from a window’s edge its title and content
+keep; the whole frame is drawn at that scale. The frame is each window’s
+border, in place of its own edge, flush with it. Some kits’ decoration
+reaches further in, over the content – honey drips, thorns – but only
+in a window’s top half: below its middle nothing is drawn deeper than
+the thickness.</p>
 <h2 id="type"><a class="header" href="#type">Type</a></h2>
 <ul>
 <li><strong>UI font</strong> and <strong>UI size</strong>: everything but the game’s words.</li>

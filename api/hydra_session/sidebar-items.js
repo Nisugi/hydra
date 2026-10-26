@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["actor","alias","ask","bestiary","character_store","claimant","command","event","lich","lifecycle","menu_store","notice","player_log","settings_store","steps","store","supervisor"]};
+window.SIDEBAR_ITEMS = {"mod":["actor","alias","ask","behaviour","bestiary","character_store","claimant","command","event","lich","lifecycle","lookout_seed","menu_store","notes","notice","player_log","settings_store","steps","store","stream_rules","supervisor"]};

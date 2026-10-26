@@ -29,10 +29,10 @@
 <a href=#29 id=29 data-nosnippet>29</a>                hydra_exp::answer(ledger, <span class="kw-2">&amp;</span>writer, <span class="kw-2">&amp;</span>who, <span class="kw-2">&amp;</span>asked, now)
 <a href=#30 id=30 data-nosnippet>30</a>            });
 <a href=#31 id=31 data-nosnippet>31</a>            <span class="kw">let </span>notice = <span class="kw">match </span>said {
-<a href=#32 id=32 data-nosnippet>32</a>                <span class="prelude-val">Ok</span>(lines) =&gt; Notice::table(NoticeKind::Info, lines),
+<a href=#32 id=32 data-nosnippet>32</a>                <span class="prelude-val">Ok</span>(lines) =&gt; <span class="kw">crate</span>::commands::table_or_help(lines, hydra_exp::HELP),
 <a href=#33 id=33 data-nosnippet>33</a>                <span class="prelude-val">Err</span>(why) =&gt; Notice::line(NoticeKind::Error, <span class="macro">format!</span>(<span class="string">"Exp: {why}"</span>)),
 <a href=#34 id=34 data-nosnippet>34</a>            };
-<a href=#35 id=35 data-nosnippet>35</a>            handle.say_unlogged(notice.answering());
+<a href=#35 id=35 data-nosnippet>35</a>            handle.say(notice.answering());
 <a href=#36 id=36 data-nosnippet>36</a>        });
 <a href=#37 id=37 data-nosnippet>37</a>        <span class="prelude-val">Some</span>(Claimed::Done)
 <a href=#38 id=38 data-nosnippet>38</a>    })

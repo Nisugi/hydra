@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["OBJECT","PLACEHOLDER","SENTENCE"],"fn":["hash","object","sentence"]};

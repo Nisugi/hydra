@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["GENERAL","LOG","THEME","TRAVEL"],"fn":["apply","chosen","log_settings","pages","sorting","symbols","targetid","travel_settings","who"],"struct":["Done"]};
+window.SIDEBAR_ITEMS = {"constant":["GENERAL","LOG","MACROS","REWARDS","THEME","TRAVEL"],"fn":["apply","chosen","log_settings","pages","sorting","symbols","targetid","travel_settings","who"],"struct":["Done"]};

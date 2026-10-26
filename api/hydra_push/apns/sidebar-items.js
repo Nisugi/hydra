@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["PAYLOAD_MOST","PRODUCTION","SANDBOX"],"enum":["Sent"],"fn":["answered","payload"],"struct":["Apple","Note"],"trait":["Apns"]};

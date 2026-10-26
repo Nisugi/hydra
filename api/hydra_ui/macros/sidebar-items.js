@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["FILE"],"fn":["button_look"],"struct":["MacroDef","MacroFile","MacroState","Runs"]};

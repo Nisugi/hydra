@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["character_path","keep","macro_chain","macros_for","macros_paths","remove"]};

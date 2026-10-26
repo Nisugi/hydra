@@ -192,110 +192,118 @@
 <a href=#192 id=192 data-nosnippet>192</a>    (day_of(<span class="kw-2">&amp;</span>then), time_of(<span class="kw-2">&amp;</span>then))
 <a href=#193 id=193 data-nosnippet>193</a>}
 <a href=#194 id=194 data-nosnippet>194</a>
-<a href=#195 id=195 data-nosnippet>195</a><span class="kw">fn </span>day_of(at: <span class="kw-2">&amp;</span>jiff::Zoned) -&gt; String {
-<a href=#196 id=196 data-nosnippet>196</a>    <span class="macro">format!</span>(<span class="string">"{:04}-{:02}-{:02}"</span>, at.year(), at.month(), at.day())
-<a href=#197 id=197 data-nosnippet>197</a>}
-<a href=#198 id=198 data-nosnippet>198</a>
-<a href=#199 id=199 data-nosnippet>199</a><span class="kw">fn </span>time_of(at: <span class="kw-2">&amp;</span>jiff::Zoned) -&gt; String {
-<a href=#200 id=200 data-nosnippet>200</a>    <span class="macro">format!</span>(
-<a href=#201 id=201 data-nosnippet>201</a>        <span class="string">"{:02}:{:02}:{:02}.{:03}"</span>,
-<a href=#202 id=202 data-nosnippet>202</a>        at.hour(),
-<a href=#203 id=203 data-nosnippet>203</a>        at.minute(),
-<a href=#204 id=204 data-nosnippet>204</a>        at.second(),
-<a href=#205 id=205 data-nosnippet>205</a>        at.millisecond()
-<a href=#206 id=206 data-nosnippet>206</a>    )
-<a href=#207 id=207 data-nosnippet>207</a>}
-<a href=#208 id=208 data-nosnippet>208</a>
-<a href=#209 id=209 data-nosnippet>209</a><span class="attr">#[cfg(test)]
-<a href=#210 id=210 data-nosnippet>210</a></span><span class="kw">mod </span>tests {
-<a href=#211 id=211 data-nosnippet>211</a>    <span class="kw">use </span>super::<span class="kw-2">*</span>;
-<a href=#212 id=212 data-nosnippet>212</a>
-<a href=#213 id=213 data-nosnippet>213</a>    <span class="doccomment">/// [`stamp_ago`] gives the same two shapes the player log is written
-<a href=#214 id=214 data-nosnippet>214</a>    /// in, so a reader can compare them as text; and it goes back.
-<a href=#215 id=215 data-nosnippet>215</a>    </span><span class="attr">#[test]
-<a href=#216 id=216 data-nosnippet>216</a>    </span><span class="kw">fn </span>a_stamp_ago_is_in_the_logs_shapes_and_in_the_past() {
-<a href=#217 id=217 data-nosnippet>217</a>        <span class="kw">let </span>(day, at) = stamp_ago(std::time::Duration::from_hours(<span class="number">48</span>));
-<a href=#218 id=218 data-nosnippet>218</a>        <span class="macro">assert_eq!</span>(day.len(), date_dir().len(), <span class="string">"{day}"</span>);
-<a href=#219 id=219 data-nosnippet>219</a>        <span class="macro">assert_eq!</span>(at.len(), line_time().len(), <span class="string">"{at}"</span>);
-<a href=#220 id=220 data-nosnippet>220</a>        <span class="macro">assert!</span>(day &lt; date_dir(), <span class="string">"two days ago is an earlier day: {day}"</span>);
-<a href=#221 id=221 data-nosnippet>221</a>    }
-<a href=#222 id=222 data-nosnippet>222</a>
-<a href=#223 id=223 data-nosnippet>223</a>    <span class="doccomment">/// [`TIME_FORMAT`] and [`line_time`] describe the same shape.
-<a href=#224 id=224 data-nosnippet>224</a>    ///
-<a href=#225 id=225 data-nosnippet>225</a>    /// `line_time` formats by hand, so the constant is documentation that
-<a href=#226 id=226 data-nosnippet>226</a>    /// nothing executes -- exactly the kind that goes stale silently. Unchecked
-<a href=#227 id=227 data-nosnippet>227</a>    /// looks the same as dead from outside; this test is the check.
-<a href=#228 id=228 data-nosnippet>228</a>    ///
-<a href=#229 id=229 data-nosnippet>229</a>    /// This walks the strftime string and asserts the output matches it field
-<a href=#230 id=230 data-nosnippet>230</a>    /// for field, so editing either one alone fails here.
-<a href=#231 id=231 data-nosnippet>231</a>    </span><span class="attr">#[test]
-<a href=#232 id=232 data-nosnippet>232</a>    </span><span class="kw">fn </span>line_time_matches_the_format_it_documents() {
-<a href=#233 id=233 data-nosnippet>233</a>        <span class="macro">assert_eq!</span>(
-<a href=#234 id=234 data-nosnippet>234</a>            TIME_FORMAT, <span class="string">"%H:%M:%S%.3f"</span>,
-<a href=#235 id=235 data-nosnippet>235</a>            <span class="string">"if the format changes, the expectations below must change with it"
-<a href=#236 id=236 data-nosnippet>236</a>        </span>);
-<a href=#237 id=237 data-nosnippet>237</a>        <span class="kw">let </span>t = line_time();
-<a href=#238 id=238 data-nosnippet>238</a>        <span class="kw">let </span>(hms, millis) = t.split_once(<span class="string">'.'</span>).expect(<span class="string">"%.3f means a `.` separator"</span>);
-<a href=#239 id=239 data-nosnippet>239</a>        <span class="kw">let </span>fields: Vec&lt;<span class="kw-2">&amp;</span>str&gt; = hms.split(<span class="string">':'</span>).collect();
-<a href=#240 id=240 data-nosnippet>240</a>        <span class="macro">assert_eq!</span>(fields.len(), <span class="number">3</span>, <span class="string">"%H:%M:%S is three fields: {t:?}"</span>);
-<a href=#241 id=241 data-nosnippet>241</a>        <span class="kw">for </span>(field, name) <span class="kw">in </span>fields.iter().zip([<span class="string">"%H"</span>, <span class="string">"%M"</span>, <span class="string">"%S"</span>]) {
-<a href=#242 id=242 data-nosnippet>242</a>            <span class="macro">assert_eq!</span>(field.len(), <span class="number">2</span>, <span class="string">"{name} is zero-padded to 2 digits: {t:?}"</span>);
-<a href=#243 id=243 data-nosnippet>243</a>            <span class="macro">assert!</span>(
-<a href=#244 id=244 data-nosnippet>244</a>                field.bytes().all(|b| b.is_ascii_digit()),
-<a href=#245 id=245 data-nosnippet>245</a>                <span class="string">"{name} is digits: {t:?}"
-<a href=#246 id=246 data-nosnippet>246</a>            </span>);
-<a href=#247 id=247 data-nosnippet>247</a>        }
-<a href=#248 id=248 data-nosnippet>248</a>        <span class="macro">assert_eq!</span>(millis.len(), <span class="number">3</span>, <span class="string">"%.3f is exactly 3 digits: {t:?}"</span>);
-<a href=#249 id=249 data-nosnippet>249</a>        <span class="macro">assert!</span>(
-<a href=#250 id=250 data-nosnippet>250</a>            millis.bytes().all(|b| b.is_ascii_digit()),
-<a href=#251 id=251 data-nosnippet>251</a>            <span class="string">"%.3f is digits: {t:?}"
-<a href=#252 id=252 data-nosnippet>252</a>        </span>);
-<a href=#253 id=253 data-nosnippet>253</a>        <span class="macro">assert!</span>(
-<a href=#254 id=254 data-nosnippet>254</a>            !t.contains(<span class="string">'-'</span>) &amp;&amp; !t.contains(<span class="string">'Z'</span>) &amp;&amp; !t.contains(<span class="string">'+'</span>),
-<a href=#255 id=255 data-nosnippet>255</a>            <span class="string">"the format is TIME ONLY -- no date, no zone: {t:?}"
-<a href=#256 id=256 data-nosnippet>256</a>        </span>);
-<a href=#257 id=257 data-nosnippet>257</a>    }
-<a href=#258 id=258 data-nosnippet>258</a>
-<a href=#259 id=259 data-nosnippet>259</a>    <span class="doccomment">/// The date really is in the directory and the filename, as [`TIME_FORMAT`]
-<a href=#260 id=260 data-nosnippet>260</a>    /// justifies omitting it on the grounds that it is.
-<a href=#261 id=261 data-nosnippet>261</a>    ///
-<a href=#262 id=262 data-nosnippet>262</a>    /// [`date_dir`] is one flat level. A doc that reasons from the wrong
-<a href=#263 id=263 data-nosnippet>263</a>    /// layout goes stale silently, so the shapes are pinned rather than
-<a href=#264 id=264 data-nosnippet>264</a>    /// described.
-<a href=#265 id=265 data-nosnippet>265</a>    </span><span class="attr">#[test]
-<a href=#266 id=266 data-nosnippet>266</a>    </span><span class="kw">fn </span>the_date_is_where_the_time_format_says_it_is() {
-<a href=#267 id=267 data-nosnippet>267</a>        <span class="kw">let </span>dir = date_dir();
-<a href=#268 id=268 data-nosnippet>268</a>        <span class="kw">let </span>parts: Vec&lt;<span class="kw-2">&amp;</span>str&gt; = dir.split(<span class="string">'-'</span>).collect();
-<a href=#269 id=269 data-nosnippet>269</a>        <span class="macro">assert_eq!</span>(
-<a href=#270 id=270 data-nosnippet>270</a>            parts.len(),
-<a href=#271 id=271 data-nosnippet>271</a>            <span class="number">3</span>,
-<a href=#272 id=272 data-nosnippet>272</a>            <span class="string">"date_dir is flat YYYY-MM-DD, not nested: {dir:?}"
-<a href=#273 id=273 data-nosnippet>273</a>        </span>);
-<a href=#274 id=274 data-nosnippet>274</a>        <span class="macro">assert!</span>(
-<a href=#275 id=275 data-nosnippet>275</a>            !dir.contains(<span class="string">'/'</span>) &amp;&amp; !dir.contains(<span class="string">'\\'</span>),
-<a href=#276 id=276 data-nosnippet>276</a>            <span class="string">"one level, so a day's captures list in one listing: {dir:?}"
-<a href=#277 id=277 data-nosnippet>277</a>        </span>);
-<a href=#278 id=278 data-nosnippet>278</a>        <span class="macro">assert_eq!</span>(parts[<span class="number">0</span>].len(), <span class="number">4</span>, <span class="string">"YYYY: {dir:?}"</span>);
-<a href=#279 id=279 data-nosnippet>279</a>        <span class="macro">assert_eq!</span>(parts[<span class="number">1</span>].len(), <span class="number">2</span>, <span class="string">"MM: {dir:?}"</span>);
-<a href=#280 id=280 data-nosnippet>280</a>        <span class="macro">assert_eq!</span>(parts[<span class="number">2</span>].len(), <span class="number">2</span>, <span class="string">"DD: {dir:?}"</span>);
-<a href=#281 id=281 data-nosnippet>281</a>
-<a href=#282 id=282 data-nosnippet>282</a>        <span class="kw">let </span>stamp = file_stamp();
-<a href=#283 id=283 data-nosnippet>283</a>        <span class="kw">let </span>(date, time) = stamp
-<a href=#284 id=284 data-nosnippet>284</a>            .split_once(<span class="string">'_'</span>)
-<a href=#285 id=285 data-nosnippet>285</a>            .unwrap_or_else(|| <span class="macro">panic!</span>(<span class="string">"file_stamp is YYYY-MM-DD_HH-MM-SS: {stamp:?}"</span>));
-<a href=#286 id=286 data-nosnippet>286</a>        <span class="macro">assert_eq!</span>(
-<a href=#287 id=287 data-nosnippet>287</a>            date, dir,
-<a href=#288 id=288 data-nosnippet>288</a>            <span class="string">"the filename's date must agree with the directory"
-<a href=#289 id=289 data-nosnippet>289</a>        </span>);
-<a href=#290 id=290 data-nosnippet>290</a>        <span class="macro">assert_eq!</span>(
-<a href=#291 id=291 data-nosnippet>291</a>            time.split(<span class="string">'-'</span>).count(),
-<a href=#292 id=292 data-nosnippet>292</a>            <span class="number">3</span>,
-<a href=#293 id=293 data-nosnippet>293</a>            <span class="string">"HH-MM-SS, `-` because `:` is illegal on Windows: {stamp:?}"
-<a href=#294 id=294 data-nosnippet>294</a>        </span>);
-<a href=#295 id=295 data-nosnippet>295</a>        <span class="macro">assert!</span>(
-<a href=#296 id=296 data-nosnippet>296</a>            !time.contains(<span class="string">':'</span>),
-<a href=#297 id=297 data-nosnippet>297</a>            <span class="string">"`:` is not a legal Windows filename character: {stamp:?}"
-<a href=#298 id=298 data-nosnippet>298</a>        </span>);
-<a href=#299 id=299 data-nosnippet>299</a>    }
-<a href=#300 id=300 data-nosnippet>300</a>}
+<a href=#195 id=195 data-nosnippet>195</a><span class="doccomment">/// The wall clock as a person reads it, to the minute: `2026-10-15 14:02`.
+<a href=#196 id=196 data-nosnippet>196</a>/// What a note is stamped with.
+<a href=#197 id=197 data-nosnippet>197</a></span><span class="attr">#[must_use]
+<a href=#198 id=198 data-nosnippet>198</a></span><span class="kw">pub fn </span>moment() -&gt; String {
+<a href=#199 id=199 data-nosnippet>199</a>    <span class="kw">let </span>at = jiff::Zoned::now();
+<a href=#200 id=200 data-nosnippet>200</a>    <span class="macro">format!</span>(<span class="string">"{} {:02}:{:02}"</span>, day_of(<span class="kw-2">&amp;</span>at), at.hour(), at.minute())
+<a href=#201 id=201 data-nosnippet>201</a>}
+<a href=#202 id=202 data-nosnippet>202</a>
+<a href=#203 id=203 data-nosnippet>203</a><span class="kw">fn </span>day_of(at: <span class="kw-2">&amp;</span>jiff::Zoned) -&gt; String {
+<a href=#204 id=204 data-nosnippet>204</a>    <span class="macro">format!</span>(<span class="string">"{:04}-{:02}-{:02}"</span>, at.year(), at.month(), at.day())
+<a href=#205 id=205 data-nosnippet>205</a>}
+<a href=#206 id=206 data-nosnippet>206</a>
+<a href=#207 id=207 data-nosnippet>207</a><span class="kw">fn </span>time_of(at: <span class="kw-2">&amp;</span>jiff::Zoned) -&gt; String {
+<a href=#208 id=208 data-nosnippet>208</a>    <span class="macro">format!</span>(
+<a href=#209 id=209 data-nosnippet>209</a>        <span class="string">"{:02}:{:02}:{:02}.{:03}"</span>,
+<a href=#210 id=210 data-nosnippet>210</a>        at.hour(),
+<a href=#211 id=211 data-nosnippet>211</a>        at.minute(),
+<a href=#212 id=212 data-nosnippet>212</a>        at.second(),
+<a href=#213 id=213 data-nosnippet>213</a>        at.millisecond()
+<a href=#214 id=214 data-nosnippet>214</a>    )
+<a href=#215 id=215 data-nosnippet>215</a>}
+<a href=#216 id=216 data-nosnippet>216</a>
+<a href=#217 id=217 data-nosnippet>217</a><span class="attr">#[cfg(test)]
+<a href=#218 id=218 data-nosnippet>218</a></span><span class="kw">mod </span>tests {
+<a href=#219 id=219 data-nosnippet>219</a>    <span class="kw">use </span>super::<span class="kw-2">*</span>;
+<a href=#220 id=220 data-nosnippet>220</a>
+<a href=#221 id=221 data-nosnippet>221</a>    <span class="doccomment">/// [`stamp_ago`] gives the same two shapes the player log is written
+<a href=#222 id=222 data-nosnippet>222</a>    /// in, so a reader can compare them as text; and it goes back.
+<a href=#223 id=223 data-nosnippet>223</a>    </span><span class="attr">#[test]
+<a href=#224 id=224 data-nosnippet>224</a>    </span><span class="kw">fn </span>a_stamp_ago_is_in_the_logs_shapes_and_in_the_past() {
+<a href=#225 id=225 data-nosnippet>225</a>        <span class="kw">let </span>(day, at) = stamp_ago(std::time::Duration::from_hours(<span class="number">48</span>));
+<a href=#226 id=226 data-nosnippet>226</a>        <span class="macro">assert_eq!</span>(day.len(), date_dir().len(), <span class="string">"{day}"</span>);
+<a href=#227 id=227 data-nosnippet>227</a>        <span class="macro">assert_eq!</span>(at.len(), line_time().len(), <span class="string">"{at}"</span>);
+<a href=#228 id=228 data-nosnippet>228</a>        <span class="macro">assert!</span>(day &lt; date_dir(), <span class="string">"two days ago is an earlier day: {day}"</span>);
+<a href=#229 id=229 data-nosnippet>229</a>    }
+<a href=#230 id=230 data-nosnippet>230</a>
+<a href=#231 id=231 data-nosnippet>231</a>    <span class="doccomment">/// [`TIME_FORMAT`] and [`line_time`] describe the same shape.
+<a href=#232 id=232 data-nosnippet>232</a>    ///
+<a href=#233 id=233 data-nosnippet>233</a>    /// `line_time` formats by hand, so the constant is documentation that
+<a href=#234 id=234 data-nosnippet>234</a>    /// nothing executes -- exactly the kind that goes stale silently. Unchecked
+<a href=#235 id=235 data-nosnippet>235</a>    /// looks the same as dead from outside; this test is the check.
+<a href=#236 id=236 data-nosnippet>236</a>    ///
+<a href=#237 id=237 data-nosnippet>237</a>    /// This walks the strftime string and asserts the output matches it field
+<a href=#238 id=238 data-nosnippet>238</a>    /// for field, so editing either one alone fails here.
+<a href=#239 id=239 data-nosnippet>239</a>    </span><span class="attr">#[test]
+<a href=#240 id=240 data-nosnippet>240</a>    </span><span class="kw">fn </span>line_time_matches_the_format_it_documents() {
+<a href=#241 id=241 data-nosnippet>241</a>        <span class="macro">assert_eq!</span>(
+<a href=#242 id=242 data-nosnippet>242</a>            TIME_FORMAT, <span class="string">"%H:%M:%S%.3f"</span>,
+<a href=#243 id=243 data-nosnippet>243</a>            <span class="string">"if the format changes, the expectations below must change with it"
+<a href=#244 id=244 data-nosnippet>244</a>        </span>);
+<a href=#245 id=245 data-nosnippet>245</a>        <span class="kw">let </span>t = line_time();
+<a href=#246 id=246 data-nosnippet>246</a>        <span class="kw">let </span>(hms, millis) = t.split_once(<span class="string">'.'</span>).expect(<span class="string">"%.3f means a `.` separator"</span>);
+<a href=#247 id=247 data-nosnippet>247</a>        <span class="kw">let </span>fields: Vec&lt;<span class="kw-2">&amp;</span>str&gt; = hms.split(<span class="string">':'</span>).collect();
+<a href=#248 id=248 data-nosnippet>248</a>        <span class="macro">assert_eq!</span>(fields.len(), <span class="number">3</span>, <span class="string">"%H:%M:%S is three fields: {t:?}"</span>);
+<a href=#249 id=249 data-nosnippet>249</a>        <span class="kw">for </span>(field, name) <span class="kw">in </span>fields.iter().zip([<span class="string">"%H"</span>, <span class="string">"%M"</span>, <span class="string">"%S"</span>]) {
+<a href=#250 id=250 data-nosnippet>250</a>            <span class="macro">assert_eq!</span>(field.len(), <span class="number">2</span>, <span class="string">"{name} is zero-padded to 2 digits: {t:?}"</span>);
+<a href=#251 id=251 data-nosnippet>251</a>            <span class="macro">assert!</span>(
+<a href=#252 id=252 data-nosnippet>252</a>                field.bytes().all(|b| b.is_ascii_digit()),
+<a href=#253 id=253 data-nosnippet>253</a>                <span class="string">"{name} is digits: {t:?}"
+<a href=#254 id=254 data-nosnippet>254</a>            </span>);
+<a href=#255 id=255 data-nosnippet>255</a>        }
+<a href=#256 id=256 data-nosnippet>256</a>        <span class="macro">assert_eq!</span>(millis.len(), <span class="number">3</span>, <span class="string">"%.3f is exactly 3 digits: {t:?}"</span>);
+<a href=#257 id=257 data-nosnippet>257</a>        <span class="macro">assert!</span>(
+<a href=#258 id=258 data-nosnippet>258</a>            millis.bytes().all(|b| b.is_ascii_digit()),
+<a href=#259 id=259 data-nosnippet>259</a>            <span class="string">"%.3f is digits: {t:?}"
+<a href=#260 id=260 data-nosnippet>260</a>        </span>);
+<a href=#261 id=261 data-nosnippet>261</a>        <span class="macro">assert!</span>(
+<a href=#262 id=262 data-nosnippet>262</a>            !t.contains(<span class="string">'-'</span>) &amp;&amp; !t.contains(<span class="string">'Z'</span>) &amp;&amp; !t.contains(<span class="string">'+'</span>),
+<a href=#263 id=263 data-nosnippet>263</a>            <span class="string">"the format is TIME ONLY -- no date, no zone: {t:?}"
+<a href=#264 id=264 data-nosnippet>264</a>        </span>);
+<a href=#265 id=265 data-nosnippet>265</a>    }
+<a href=#266 id=266 data-nosnippet>266</a>
+<a href=#267 id=267 data-nosnippet>267</a>    <span class="doccomment">/// The date really is in the directory and the filename, as [`TIME_FORMAT`]
+<a href=#268 id=268 data-nosnippet>268</a>    /// justifies omitting it on the grounds that it is.
+<a href=#269 id=269 data-nosnippet>269</a>    ///
+<a href=#270 id=270 data-nosnippet>270</a>    /// [`date_dir`] is one flat level. A doc that reasons from the wrong
+<a href=#271 id=271 data-nosnippet>271</a>    /// layout goes stale silently, so the shapes are pinned rather than
+<a href=#272 id=272 data-nosnippet>272</a>    /// described.
+<a href=#273 id=273 data-nosnippet>273</a>    </span><span class="attr">#[test]
+<a href=#274 id=274 data-nosnippet>274</a>    </span><span class="kw">fn </span>the_date_is_where_the_time_format_says_it_is() {
+<a href=#275 id=275 data-nosnippet>275</a>        <span class="kw">let </span>dir = date_dir();
+<a href=#276 id=276 data-nosnippet>276</a>        <span class="kw">let </span>parts: Vec&lt;<span class="kw-2">&amp;</span>str&gt; = dir.split(<span class="string">'-'</span>).collect();
+<a href=#277 id=277 data-nosnippet>277</a>        <span class="macro">assert_eq!</span>(
+<a href=#278 id=278 data-nosnippet>278</a>            parts.len(),
+<a href=#279 id=279 data-nosnippet>279</a>            <span class="number">3</span>,
+<a href=#280 id=280 data-nosnippet>280</a>            <span class="string">"date_dir is flat YYYY-MM-DD, not nested: {dir:?}"
+<a href=#281 id=281 data-nosnippet>281</a>        </span>);
+<a href=#282 id=282 data-nosnippet>282</a>        <span class="macro">assert!</span>(
+<a href=#283 id=283 data-nosnippet>283</a>            !dir.contains(<span class="string">'/'</span>) &amp;&amp; !dir.contains(<span class="string">'\\'</span>),
+<a href=#284 id=284 data-nosnippet>284</a>            <span class="string">"one level, so a day's captures list in one listing: {dir:?}"
+<a href=#285 id=285 data-nosnippet>285</a>        </span>);
+<a href=#286 id=286 data-nosnippet>286</a>        <span class="macro">assert_eq!</span>(parts[<span class="number">0</span>].len(), <span class="number">4</span>, <span class="string">"YYYY: {dir:?}"</span>);
+<a href=#287 id=287 data-nosnippet>287</a>        <span class="macro">assert_eq!</span>(parts[<span class="number">1</span>].len(), <span class="number">2</span>, <span class="string">"MM: {dir:?}"</span>);
+<a href=#288 id=288 data-nosnippet>288</a>        <span class="macro">assert_eq!</span>(parts[<span class="number">2</span>].len(), <span class="number">2</span>, <span class="string">"DD: {dir:?}"</span>);
+<a href=#289 id=289 data-nosnippet>289</a>
+<a href=#290 id=290 data-nosnippet>290</a>        <span class="kw">let </span>stamp = file_stamp();
+<a href=#291 id=291 data-nosnippet>291</a>        <span class="kw">let </span>(date, time) = stamp
+<a href=#292 id=292 data-nosnippet>292</a>            .split_once(<span class="string">'_'</span>)
+<a href=#293 id=293 data-nosnippet>293</a>            .unwrap_or_else(|| <span class="macro">panic!</span>(<span class="string">"file_stamp is YYYY-MM-DD_HH-MM-SS: {stamp:?}"</span>));
+<a href=#294 id=294 data-nosnippet>294</a>        <span class="macro">assert_eq!</span>(
+<a href=#295 id=295 data-nosnippet>295</a>            date, dir,
+<a href=#296 id=296 data-nosnippet>296</a>            <span class="string">"the filename's date must agree with the directory"
+<a href=#297 id=297 data-nosnippet>297</a>        </span>);
+<a href=#298 id=298 data-nosnippet>298</a>        <span class="macro">assert_eq!</span>(
+<a href=#299 id=299 data-nosnippet>299</a>            time.split(<span class="string">'-'</span>).count(),
+<a href=#300 id=300 data-nosnippet>300</a>            <span class="number">3</span>,
+<a href=#301 id=301 data-nosnippet>301</a>            <span class="string">"HH-MM-SS, `-` because `:` is illegal on Windows: {stamp:?}"
+<a href=#302 id=302 data-nosnippet>302</a>        </span>);
+<a href=#303 id=303 data-nosnippet>303</a>        <span class="macro">assert!</span>(
+<a href=#304 id=304 data-nosnippet>304</a>            !time.contains(<span class="string">':'</span>),
+<a href=#305 id=305 data-nosnippet>305</a>            <span class="string">"`:` is not a legal Windows filename character: {stamp:?}"
+<a href=#306 id=306 data-nosnippet>306</a>        </span>);
+<a href=#307 id=307 data-nosnippet>307</a>    }
+<a href=#308 id=308 data-nosnippet>308</a>}
 </code></pre></div></section></main></body></html>

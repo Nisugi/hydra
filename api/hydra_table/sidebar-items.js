@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["VERSION"],"mod":["account","commands","connector","lich_command","pages","relay","roster","session","table","teams"]};
+window.SIDEBAR_ITEMS = {"constant":["VERSION"],"mod":["account","commands","connector","lich_command","pages","relay","reward_claim","roster","session","store_claim","table","teams"]};

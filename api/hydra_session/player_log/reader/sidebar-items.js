@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["MAX_DAYS","MAX_HITS"],"fn":["days","export","export_path","read_day","search","tail","window"],"struct":["Entry","Exported","Found","Moment","Pattern","Streams"]};
+window.SIDEBAR_ITEMS = {"constant":["MAX_DAYS","MAX_HITS"],"fn":["around","days","export","export_path","read_day","read_day_from","search","search_days","sort_again","tagged","tail","window"],"struct":["Entry","Exported","Found","Moment","Page","Parts","Pattern","Resume","Streams","Tail"]};

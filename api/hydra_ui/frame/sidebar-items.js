@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FOLDER","MAX_GLOW","MAX_THICKNESS","PACKS","PARTS"],"enum":["Junction","Part","Place","Run","Side","SlotFile","Turning"],"struct":["EdgeFile","Emissive","EmissiveFile","Frame","FrameFile","Glow","GlowFile","Image","Look","Ornament","OrnamentFile","Piece","Rect","Size","SlotTable","StickersFile","Turn"]};
+window.SIDEBAR_ITEMS = {"constant":["FOLDER","KITS","LEAST_THICKNESS","MOST_THICKNESS"],"enum":["Piece"],"fn":["folder","lay","list"],"struct":["Listed","Measures","Quad","Rect"]};

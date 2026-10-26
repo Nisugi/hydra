@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["CONNECT_DEADLINE"],"enum":["Ended"],"fn":["run"],"struct":["Launch"]};
+window.SIDEBAR_ITEMS = {"constant":["CONNECT_DEADLINE","NAMED_TOLD","STOP_DEADLINE"],"enum":["Ended"],"fn":["run"],"struct":["Launch"]};

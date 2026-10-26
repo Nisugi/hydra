@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["COMMANDS","MAIN","NOTICES","READOUTS"],"mod":["archive","channel","feed","links","reader","retention","writer"]};
+window.SIDEBAR_ITEMS = {"constant":["COMMANDS","MAIN","NOTICES","READOUTS"],"fn":["class","command_tag","sender"],"mod":["archive","channel","feed","links","reader","retention","writer"]};

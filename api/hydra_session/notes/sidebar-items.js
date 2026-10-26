@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["SCHEMA_VERSION"],"enum":["Refused"],"fn":["add","add_lines","character_of","forget","key_for","load","notes_path","remove","rewrite","stamp","write"],"struct":["Clip","Clipped","Found","Note","Notes"],"type":["Named"]};

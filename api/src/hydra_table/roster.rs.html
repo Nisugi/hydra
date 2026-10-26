@@ -269,200 +269,197 @@
 <a href=#269 id=269 data-nosnippet>269</a>    std::fs::create_dir_all(dir)<span class="question-mark">?</span>;
 <a href=#270 id=270 data-nosnippet>270</a>    <span class="kw">let </span>text = serde_json::to_string_pretty(<span class="kw-2">&amp;</span>file)
 <a href=#271 id=271 data-nosnippet>271</a>        .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))<span class="question-mark">?</span>;
-<a href=#272 id=272 data-nosnippet>272</a>    <span class="kw">let </span>path = dir.join(FILENAME);
-<a href=#273 id=273 data-nosnippet>273</a>    <span class="kw">let </span>temp = path.with_extension(<span class="macro">format!</span>(<span class="string">"json.{}.tmp"</span>, std::process::id()));
-<a href=#274 id=274 data-nosnippet>274</a>    std::fs::write(<span class="kw-2">&amp;</span>temp, text)<span class="question-mark">?</span>;
-<a href=#275 id=275 data-nosnippet>275</a>    std::fs::rename(<span class="kw-2">&amp;</span>temp, <span class="kw-2">&amp;</span>path).inspect_err(|<span class="kw">_</span>| {
-<a href=#276 id=276 data-nosnippet>276</a>        <span class="kw">let _ </span>= std::fs::remove_file(<span class="kw-2">&amp;</span>temp);
-<a href=#277 id=277 data-nosnippet>277</a>    })
-<a href=#278 id=278 data-nosnippet>278</a>}
-<a href=#279 id=279 data-nosnippet>279</a>
-<a href=#280 id=280 data-nosnippet>280</a><span class="attr">#[cfg(test)]
-<a href=#281 id=281 data-nosnippet>281</a></span><span class="kw">mod </span>tests {
-<a href=#282 id=282 data-nosnippet>282</a>    <span class="kw">use </span>super::<span class="kw-2">*</span>;
-<a href=#283 id=283 data-nosnippet>283</a>
-<a href=#284 id=284 data-nosnippet>284</a>    <span class="kw">fn </span>entry(game: <span class="kw-2">&amp;</span>str, character: <span class="kw-2">&amp;</span>str, account: <span class="kw-2">&amp;</span>str) -&gt; Entry {
-<a href=#285 id=285 data-nosnippet>285</a>        Entry {
-<a href=#286 id=286 data-nosnippet>286</a>            character: character.to_owned(),
-<a href=#287 id=287 data-nosnippet>287</a>            account: account.to_owned(),
-<a href=#288 id=288 data-nosnippet>288</a>            game_code: game.to_owned(),
-<a href=#289 id=289 data-nosnippet>289</a>            favourite: <span class="bool-val">false</span>,
-<a href=#290 id=290 data-nosnippet>290</a>            nickname: <span class="prelude-val">None</span>,
-<a href=#291 id=291 data-nosnippet>291</a>        }
-<a href=#292 id=292 data-nosnippet>292</a>    }
-<a href=#293 id=293 data-nosnippet>293</a>
-<a href=#294 id=294 data-nosnippet>294</a>    <span class="kw">fn </span>scratch(test: <span class="kw-2">&amp;</span>str) -&gt; std::path::PathBuf {
-<a href=#295 id=295 data-nosnippet>295</a>        <span class="kw">let </span>dir = std::env::temp_dir().join(<span class="macro">format!</span>(<span class="string">"hydra-roster-{test}-{}"</span>, std::process::id()));
-<a href=#296 id=296 data-nosnippet>296</a>        <span class="kw">let _ </span>= std::fs::remove_dir_all(<span class="kw-2">&amp;</span>dir);
-<a href=#297 id=297 data-nosnippet>297</a>        dir
-<a href=#298 id=298 data-nosnippet>298</a>    }
-<a href=#299 id=299 data-nosnippet>299</a>
-<a href=#300 id=300 data-nosnippet>300</a>    <span class="attr">#[test]
-<a href=#301 id=301 data-nosnippet>301</a>    </span><span class="kw">fn </span>a_recorded_character_is_found_by_name_whatever_the_case() {
-<a href=#302 id=302 data-nosnippet>302</a>        <span class="kw">let </span>dir = scratch(<span class="string">"found"</span>);
-<a href=#303 id=303 data-nosnippet>303</a>        <span class="macro">assert_eq!</span>(find(<span class="kw-2">&amp;</span>dir, <span class="string">"Nisugi"</span>).ok(), <span class="prelude-val">Some</span>(<span class="prelude-val">None</span>), <span class="string">"no file is no entry"</span>);
-<a href=#304 id=304 data-nosnippet>304</a>        record(<span class="kw-2">&amp;</span>dir, entry(<span class="string">"GS3"</span>, <span class="string">"Nisugi"</span>, <span class="string">"ACCT1"</span>)).expect(<span class="string">"recorded"</span>);
-<a href=#305 id=305 data-nosnippet>305</a>        record(<span class="kw-2">&amp;</span>dir, entry(<span class="string">"GS3"</span>, <span class="string">"Nerten"</span>, <span class="string">"ACCT2"</span>)).expect(<span class="string">"recorded"</span>);
-<a href=#306 id=306 data-nosnippet>306</a>        <span class="macro">assert_eq!</span>(
-<a href=#307 id=307 data-nosnippet>307</a>            find(<span class="kw-2">&amp;</span>dir, <span class="string">"nisugi"</span>).ok().flatten(),
-<a href=#308 id=308 data-nosnippet>308</a>            <span class="prelude-val">Some</span>(entry(<span class="string">"GS3"</span>, <span class="string">"Nisugi"</span>, <span class="string">"ACCT1"</span>))
-<a href=#309 id=309 data-nosnippet>309</a>        );
-<a href=#310 id=310 data-nosnippet>310</a>        <span class="comment">// Recording again replaces, rather than adding a second.
-<a href=#311 id=311 data-nosnippet>311</a>        </span>record(<span class="kw-2">&amp;</span>dir, entry(<span class="string">"GS3"</span>, <span class="string">"Nisugi"</span>, <span class="string">"ACCT9"</span>)).expect(<span class="string">"recorded"</span>);
-<a href=#312 id=312 data-nosnippet>312</a>        <span class="macro">assert_eq!</span>(
-<a href=#313 id=313 data-nosnippet>313</a>            find(<span class="kw-2">&amp;</span>dir, <span class="string">"Nisugi"</span>).ok().flatten().map(|e| e.account),
-<a href=#314 id=314 data-nosnippet>314</a>            <span class="prelude-val">Some</span>(<span class="string">"ACCT9"</span>.to_owned())
-<a href=#315 id=315 data-nosnippet>315</a>        );
-<a href=#316 id=316 data-nosnippet>316</a>        <span class="kw">let _ </span>= std::fs::remove_dir_all(<span class="kw-2">&amp;</span>dir);
-<a href=#317 id=317 data-nosnippet>317</a>    }
-<a href=#318 id=318 data-nosnippet>318</a>
-<a href=#319 id=319 data-nosnippet>319</a>    <span class="attr">#[test]
-<a href=#320 id=320 data-nosnippet>320</a>    </span><span class="kw">fn </span>one_name_on_two_games_must_say_which() {
-<a href=#321 id=321 data-nosnippet>321</a>        <span class="kw">let </span>dir = scratch(<span class="string">"two-games"</span>);
-<a href=#322 id=322 data-nosnippet>322</a>        record(<span class="kw-2">&amp;</span>dir, entry(<span class="string">"GS3"</span>, <span class="string">"Nisugi"</span>, <span class="string">"ACCT1"</span>)).expect(<span class="string">"recorded"</span>);
-<a href=#323 id=323 data-nosnippet>323</a>        record(<span class="kw-2">&amp;</span>dir, entry(<span class="string">"GSX"</span>, <span class="string">"Nisugi"</span>, <span class="string">"ACCT2"</span>)).expect(<span class="string">"recorded"</span>);
-<a href=#324 id=324 data-nosnippet>324</a>        <span class="kw">let </span><span class="prelude-val">Err</span>(e) = find(<span class="kw-2">&amp;</span>dir, <span class="string">"Nisugi"</span>) <span class="kw">else </span>{
-<a href=#325 id=325 data-nosnippet>325</a>            <span class="macro">panic!</span>(<span class="string">"an ambiguous name picked a game"</span>);
-<a href=#326 id=326 data-nosnippet>326</a>        };
-<a href=#327 id=327 data-nosnippet>327</a>        <span class="macro">assert!</span>(e.to_string().contains(<span class="string">"GAME:Nisugi"</span>), <span class="string">"{e}"</span>);
-<a href=#328 id=328 data-nosnippet>328</a>        <span class="macro">assert_eq!</span>(
-<a href=#329 id=329 data-nosnippet>329</a>            find(<span class="kw-2">&amp;</span>dir, <span class="string">"gsx:nisugi"</span>).ok().flatten().map(|e| e.account),
-<a href=#330 id=330 data-nosnippet>330</a>            <span class="prelude-val">Some</span>(<span class="string">"ACCT2"</span>.to_owned())
-<a href=#331 id=331 data-nosnippet>331</a>        );
-<a href=#332 id=332 data-nosnippet>332</a>        <span class="kw">let _ </span>= std::fs::remove_dir_all(<span class="kw-2">&amp;</span>dir);
-<a href=#333 id=333 data-nosnippet>333</a>    }
-<a href=#334 id=334 data-nosnippet>334</a>
-<a href=#335 id=335 data-nosnippet>335</a>    <span class="doccomment">/// A star outlives the next login, which does not know of it; one
-<a href=#336 id=336 data-nosnippet>336</a>    /// character of a name shared across games is starred or forgotten
-<a href=#337 id=337 data-nosnippet>337</a>    /// alone; and a name the roster has not is said to be absent.
-<a href=#338 id=338 data-nosnippet>338</a>    </span><span class="attr">#[test]
-<a href=#339 id=339 data-nosnippet>339</a>    </span><span class="kw">fn </span>a_star_outlives_a_login_and_forgetting_takes_one() {
-<a href=#340 id=340 data-nosnippet>340</a>        <span class="kw">let </span>dir = scratch(<span class="string">"stars"</span>);
-<a href=#341 id=341 data-nosnippet>341</a>        record(<span class="kw-2">&amp;</span>dir, entry(<span class="string">"GS3"</span>, <span class="string">"Nisugi"</span>, <span class="string">"ACCT1"</span>)).expect(<span class="string">"recorded"</span>);
-<a href=#342 id=342 data-nosnippet>342</a>        record(<span class="kw-2">&amp;</span>dir, entry(<span class="string">"GSX"</span>, <span class="string">"Nisugi"</span>, <span class="string">"ACCT2"</span>)).expect(<span class="string">"recorded"</span>);
-<a href=#343 id=343 data-nosnippet>343</a>        <span class="kw">let </span>starred = favourite(<span class="kw-2">&amp;</span>dir, <span class="string">"gs3:nisugi"</span>, <span class="bool-val">true</span>).expect(<span class="string">"starred"</span>);
-<a href=#344 id=344 data-nosnippet>344</a>        <span class="macro">assert_eq!</span>(starred.map(|e| e.character), <span class="prelude-val">Some</span>(<span class="string">"Nisugi"</span>.to_owned()));
-<a href=#345 id=345 data-nosnippet>345</a>        record(<span class="kw-2">&amp;</span>dir, entry(<span class="string">"GS3"</span>, <span class="string">"Nisugi"</span>, <span class="string">"ACCT1"</span>)).expect(<span class="string">"logged in again"</span>);
-<a href=#346 id=346 data-nosnippet>346</a>        <span class="kw">let </span>starred = |name| find(<span class="kw-2">&amp;</span>dir, name).ok().flatten().map(|e| e.favourite);
-<a href=#347 id=347 data-nosnippet>347</a>        <span class="macro">assert_eq!</span>(starred(<span class="string">"GS3:Nisugi"</span>), <span class="prelude-val">Some</span>(<span class="bool-val">true</span>), <span class="string">"the login kept the star"</span>);
-<a href=#348 id=348 data-nosnippet>348</a>        <span class="macro">assert_eq!</span>(
-<a href=#349 id=349 data-nosnippet>349</a>            starred(<span class="string">"GSX:Nisugi"</span>),
-<a href=#350 id=350 data-nosnippet>350</a>            <span class="prelude-val">Some</span>(<span class="bool-val">false</span>),
-<a href=#351 id=351 data-nosnippet>351</a>            <span class="string">"the other game's is apart"
-<a href=#352 id=352 data-nosnippet>352</a>        </span>);
+<a href=#272 id=272 data-nosnippet>272</a>    <span class="comment">// Synced before it is renamed in: a power loss cannot leave an empty
+<a href=#273 id=273 data-nosnippet>273</a>    // file under the name.
+<a href=#274 id=274 data-nosnippet>274</a>    </span>hydra_session::store::save_bytes(dir, <span class="kw-2">&amp;</span>dir.join(FILENAME), text.as_bytes())
+<a href=#275 id=275 data-nosnippet>275</a>}
+<a href=#276 id=276 data-nosnippet>276</a>
+<a href=#277 id=277 data-nosnippet>277</a><span class="attr">#[cfg(test)]
+<a href=#278 id=278 data-nosnippet>278</a></span><span class="kw">mod </span>tests {
+<a href=#279 id=279 data-nosnippet>279</a>    <span class="kw">use </span>super::<span class="kw-2">*</span>;
+<a href=#280 id=280 data-nosnippet>280</a>
+<a href=#281 id=281 data-nosnippet>281</a>    <span class="kw">fn </span>entry(game: <span class="kw-2">&amp;</span>str, character: <span class="kw-2">&amp;</span>str, account: <span class="kw-2">&amp;</span>str) -&gt; Entry {
+<a href=#282 id=282 data-nosnippet>282</a>        Entry {
+<a href=#283 id=283 data-nosnippet>283</a>            character: character.to_owned(),
+<a href=#284 id=284 data-nosnippet>284</a>            account: account.to_owned(),
+<a href=#285 id=285 data-nosnippet>285</a>            game_code: game.to_owned(),
+<a href=#286 id=286 data-nosnippet>286</a>            favourite: <span class="bool-val">false</span>,
+<a href=#287 id=287 data-nosnippet>287</a>            nickname: <span class="prelude-val">None</span>,
+<a href=#288 id=288 data-nosnippet>288</a>        }
+<a href=#289 id=289 data-nosnippet>289</a>    }
+<a href=#290 id=290 data-nosnippet>290</a>
+<a href=#291 id=291 data-nosnippet>291</a>    <span class="kw">fn </span>scratch(test: <span class="kw-2">&amp;</span>str) -&gt; std::path::PathBuf {
+<a href=#292 id=292 data-nosnippet>292</a>        <span class="kw">let </span>dir = std::env::temp_dir().join(<span class="macro">format!</span>(<span class="string">"hydra-roster-{test}-{}"</span>, std::process::id()));
+<a href=#293 id=293 data-nosnippet>293</a>        <span class="kw">let _ </span>= std::fs::remove_dir_all(<span class="kw-2">&amp;</span>dir);
+<a href=#294 id=294 data-nosnippet>294</a>        dir
+<a href=#295 id=295 data-nosnippet>295</a>    }
+<a href=#296 id=296 data-nosnippet>296</a>
+<a href=#297 id=297 data-nosnippet>297</a>    <span class="attr">#[test]
+<a href=#298 id=298 data-nosnippet>298</a>    </span><span class="kw">fn </span>a_recorded_character_is_found_by_name_whatever_the_case() {
+<a href=#299 id=299 data-nosnippet>299</a>        <span class="kw">let </span>dir = scratch(<span class="string">"found"</span>);
+<a href=#300 id=300 data-nosnippet>300</a>        <span class="macro">assert_eq!</span>(find(<span class="kw-2">&amp;</span>dir, <span class="string">"Nisugi"</span>).ok(), <span class="prelude-val">Some</span>(<span class="prelude-val">None</span>), <span class="string">"no file is no entry"</span>);
+<a href=#301 id=301 data-nosnippet>301</a>        record(<span class="kw-2">&amp;</span>dir, entry(<span class="string">"GS3"</span>, <span class="string">"Nisugi"</span>, <span class="string">"ACCT1"</span>)).expect(<span class="string">"recorded"</span>);
+<a href=#302 id=302 data-nosnippet>302</a>        record(<span class="kw-2">&amp;</span>dir, entry(<span class="string">"GS3"</span>, <span class="string">"Nerten"</span>, <span class="string">"ACCT2"</span>)).expect(<span class="string">"recorded"</span>);
+<a href=#303 id=303 data-nosnippet>303</a>        <span class="macro">assert_eq!</span>(
+<a href=#304 id=304 data-nosnippet>304</a>            find(<span class="kw-2">&amp;</span>dir, <span class="string">"nisugi"</span>).ok().flatten(),
+<a href=#305 id=305 data-nosnippet>305</a>            <span class="prelude-val">Some</span>(entry(<span class="string">"GS3"</span>, <span class="string">"Nisugi"</span>, <span class="string">"ACCT1"</span>))
+<a href=#306 id=306 data-nosnippet>306</a>        );
+<a href=#307 id=307 data-nosnippet>307</a>        <span class="comment">// Recording again replaces, rather than adding a second.
+<a href=#308 id=308 data-nosnippet>308</a>        </span>record(<span class="kw-2">&amp;</span>dir, entry(<span class="string">"GS3"</span>, <span class="string">"Nisugi"</span>, <span class="string">"ACCT9"</span>)).expect(<span class="string">"recorded"</span>);
+<a href=#309 id=309 data-nosnippet>309</a>        <span class="macro">assert_eq!</span>(
+<a href=#310 id=310 data-nosnippet>310</a>            find(<span class="kw-2">&amp;</span>dir, <span class="string">"Nisugi"</span>).ok().flatten().map(|e| e.account),
+<a href=#311 id=311 data-nosnippet>311</a>            <span class="prelude-val">Some</span>(<span class="string">"ACCT9"</span>.to_owned())
+<a href=#312 id=312 data-nosnippet>312</a>        );
+<a href=#313 id=313 data-nosnippet>313</a>        <span class="kw">let _ </span>= std::fs::remove_dir_all(<span class="kw-2">&amp;</span>dir);
+<a href=#314 id=314 data-nosnippet>314</a>    }
+<a href=#315 id=315 data-nosnippet>315</a>
+<a href=#316 id=316 data-nosnippet>316</a>    <span class="attr">#[test]
+<a href=#317 id=317 data-nosnippet>317</a>    </span><span class="kw">fn </span>one_name_on_two_games_must_say_which() {
+<a href=#318 id=318 data-nosnippet>318</a>        <span class="kw">let </span>dir = scratch(<span class="string">"two-games"</span>);
+<a href=#319 id=319 data-nosnippet>319</a>        record(<span class="kw-2">&amp;</span>dir, entry(<span class="string">"GS3"</span>, <span class="string">"Nisugi"</span>, <span class="string">"ACCT1"</span>)).expect(<span class="string">"recorded"</span>);
+<a href=#320 id=320 data-nosnippet>320</a>        record(<span class="kw-2">&amp;</span>dir, entry(<span class="string">"GSX"</span>, <span class="string">"Nisugi"</span>, <span class="string">"ACCT2"</span>)).expect(<span class="string">"recorded"</span>);
+<a href=#321 id=321 data-nosnippet>321</a>        <span class="kw">let </span><span class="prelude-val">Err</span>(e) = find(<span class="kw-2">&amp;</span>dir, <span class="string">"Nisugi"</span>) <span class="kw">else </span>{
+<a href=#322 id=322 data-nosnippet>322</a>            <span class="macro">panic!</span>(<span class="string">"an ambiguous name picked a game"</span>);
+<a href=#323 id=323 data-nosnippet>323</a>        };
+<a href=#324 id=324 data-nosnippet>324</a>        <span class="macro">assert!</span>(e.to_string().contains(<span class="string">"GAME:Nisugi"</span>), <span class="string">"{e}"</span>);
+<a href=#325 id=325 data-nosnippet>325</a>        <span class="macro">assert_eq!</span>(
+<a href=#326 id=326 data-nosnippet>326</a>            find(<span class="kw-2">&amp;</span>dir, <span class="string">"gsx:nisugi"</span>).ok().flatten().map(|e| e.account),
+<a href=#327 id=327 data-nosnippet>327</a>            <span class="prelude-val">Some</span>(<span class="string">"ACCT2"</span>.to_owned())
+<a href=#328 id=328 data-nosnippet>328</a>        );
+<a href=#329 id=329 data-nosnippet>329</a>        <span class="kw">let _ </span>= std::fs::remove_dir_all(<span class="kw-2">&amp;</span>dir);
+<a href=#330 id=330 data-nosnippet>330</a>    }
+<a href=#331 id=331 data-nosnippet>331</a>
+<a href=#332 id=332 data-nosnippet>332</a>    <span class="doccomment">/// A star outlives the next login, which does not know of it; one
+<a href=#333 id=333 data-nosnippet>333</a>    /// character of a name shared across games is starred or forgotten
+<a href=#334 id=334 data-nosnippet>334</a>    /// alone; and a name the roster has not is said to be absent.
+<a href=#335 id=335 data-nosnippet>335</a>    </span><span class="attr">#[test]
+<a href=#336 id=336 data-nosnippet>336</a>    </span><span class="kw">fn </span>a_star_outlives_a_login_and_forgetting_takes_one() {
+<a href=#337 id=337 data-nosnippet>337</a>        <span class="kw">let </span>dir = scratch(<span class="string">"stars"</span>);
+<a href=#338 id=338 data-nosnippet>338</a>        record(<span class="kw-2">&amp;</span>dir, entry(<span class="string">"GS3"</span>, <span class="string">"Nisugi"</span>, <span class="string">"ACCT1"</span>)).expect(<span class="string">"recorded"</span>);
+<a href=#339 id=339 data-nosnippet>339</a>        record(<span class="kw-2">&amp;</span>dir, entry(<span class="string">"GSX"</span>, <span class="string">"Nisugi"</span>, <span class="string">"ACCT2"</span>)).expect(<span class="string">"recorded"</span>);
+<a href=#340 id=340 data-nosnippet>340</a>        <span class="kw">let </span>starred = favourite(<span class="kw-2">&amp;</span>dir, <span class="string">"gs3:nisugi"</span>, <span class="bool-val">true</span>).expect(<span class="string">"starred"</span>);
+<a href=#341 id=341 data-nosnippet>341</a>        <span class="macro">assert_eq!</span>(starred.map(|e| e.character), <span class="prelude-val">Some</span>(<span class="string">"Nisugi"</span>.to_owned()));
+<a href=#342 id=342 data-nosnippet>342</a>        record(<span class="kw-2">&amp;</span>dir, entry(<span class="string">"GS3"</span>, <span class="string">"Nisugi"</span>, <span class="string">"ACCT1"</span>)).expect(<span class="string">"logged in again"</span>);
+<a href=#343 id=343 data-nosnippet>343</a>        <span class="kw">let </span>starred = |name| find(<span class="kw-2">&amp;</span>dir, name).ok().flatten().map(|e| e.favourite);
+<a href=#344 id=344 data-nosnippet>344</a>        <span class="macro">assert_eq!</span>(starred(<span class="string">"GS3:Nisugi"</span>), <span class="prelude-val">Some</span>(<span class="bool-val">true</span>), <span class="string">"the login kept the star"</span>);
+<a href=#345 id=345 data-nosnippet>345</a>        <span class="macro">assert_eq!</span>(
+<a href=#346 id=346 data-nosnippet>346</a>            starred(<span class="string">"GSX:Nisugi"</span>),
+<a href=#347 id=347 data-nosnippet>347</a>            <span class="prelude-val">Some</span>(<span class="bool-val">false</span>),
+<a href=#348 id=348 data-nosnippet>348</a>            <span class="string">"the other game's is apart"
+<a href=#349 id=349 data-nosnippet>349</a>        </span>);
+<a href=#350 id=350 data-nosnippet>350</a>
+<a href=#351 id=351 data-nosnippet>351</a>        favourite(<span class="kw-2">&amp;</span>dir, <span class="string">"GS3:Nisugi"</span>, <span class="bool-val">false</span>).expect(<span class="string">"unstarred"</span>);
+<a href=#352 id=352 data-nosnippet>352</a>        <span class="macro">assert_eq!</span>(starred(<span class="string">"GS3:Nisugi"</span>), <span class="prelude-val">Some</span>(<span class="bool-val">false</span>));
 <a href=#353 id=353 data-nosnippet>353</a>
-<a href=#354 id=354 data-nosnippet>354</a>        favourite(<span class="kw-2">&amp;</span>dir, <span class="string">"GS3:Nisugi"</span>, <span class="bool-val">false</span>).expect(<span class="string">"unstarred"</span>);
-<a href=#355 id=355 data-nosnippet>355</a>        <span class="macro">assert_eq!</span>(starred(<span class="string">"GS3:Nisugi"</span>), <span class="prelude-val">Some</span>(<span class="bool-val">false</span>));
-<a href=#356 id=356 data-nosnippet>356</a>
-<a href=#357 id=357 data-nosnippet>357</a>        <span class="kw">let </span>gone = forget(<span class="kw-2">&amp;</span>dir, <span class="string">"GSX:Nisugi"</span>).expect(<span class="string">"forgotten"</span>);
-<a href=#358 id=358 data-nosnippet>358</a>        <span class="macro">assert_eq!</span>(gone.map(|e| e.account), <span class="prelude-val">Some</span>(<span class="string">"ACCT2"</span>.to_owned()));
-<a href=#359 id=359 data-nosnippet>359</a>        <span class="macro">assert_eq!</span>(all(<span class="kw-2">&amp;</span>dir).map(|all| all.len()).ok(), <span class="prelude-val">Some</span>(<span class="number">1</span>));
-<a href=#360 id=360 data-nosnippet>360</a>        <span class="macro">assert_eq!</span>(forget(<span class="kw-2">&amp;</span>dir, <span class="string">"GSX:Nisugi"</span>).ok(), <span class="prelude-val">Some</span>(<span class="prelude-val">None</span>), <span class="string">"not there"</span>);
-<a href=#361 id=361 data-nosnippet>361</a>        <span class="macro">assert_eq!</span>(favourite(<span class="kw-2">&amp;</span>dir, <span class="string">"Stranger"</span>, <span class="bool-val">true</span>).ok(), <span class="prelude-val">Some</span>(<span class="prelude-val">None</span>));
-<a href=#362 id=362 data-nosnippet>362</a>        <span class="kw">let _ </span>= std::fs::remove_dir_all(<span class="kw-2">&amp;</span>dir);
-<a href=#363 id=363 data-nosnippet>363</a>    }
-<a href=#364 id=364 data-nosnippet>364</a>
-<a href=#365 id=365 data-nosnippet>365</a>    <span class="doccomment">/// A nickname outlives the next login, which does not know of it, and
-<a href=#366 id=366 data-nosnippet>366</a>    /// is taken off by clearing it alone.
-<a href=#367 id=367 data-nosnippet>367</a>    </span><span class="attr">#[test]
-<a href=#368 id=368 data-nosnippet>368</a>    </span><span class="kw">fn </span>a_nickname_outlives_a_login() {
-<a href=#369 id=369 data-nosnippet>369</a>        <span class="kw">let </span>dir = scratch(<span class="string">"nickname"</span>);
-<a href=#370 id=370 data-nosnippet>370</a>        record(<span class="kw-2">&amp;</span>dir, entry(<span class="string">"GS3"</span>, <span class="string">"Nisugi"</span>, <span class="string">"ACCT1"</span>)).expect(<span class="string">"recorded"</span>);
-<a href=#371 id=371 data-nosnippet>371</a>        nickname(<span class="kw-2">&amp;</span>dir, <span class="string">"Nisugi"</span>, <span class="prelude-val">Some</span>(<span class="string">"Nis"</span>.to_owned())).expect(<span class="string">"named"</span>);
-<a href=#372 id=372 data-nosnippet>372</a>        record(<span class="kw-2">&amp;</span>dir, entry(<span class="string">"GS3"</span>, <span class="string">"Nisugi"</span>, <span class="string">"ACCT1"</span>)).expect(<span class="string">"logged in again"</span>);
-<a href=#373 id=373 data-nosnippet>373</a>        <span class="kw">let </span>called = || find(<span class="kw-2">&amp;</span>dir, <span class="string">"Nisugi"</span>).ok().flatten().and_then(|e| e.nickname);
-<a href=#374 id=374 data-nosnippet>374</a>        <span class="macro">assert_eq!</span>(called(), <span class="prelude-val">Some</span>(<span class="string">"Nis"</span>.to_owned()), <span class="string">"the login kept it"</span>);
-<a href=#375 id=375 data-nosnippet>375</a>
-<a href=#376 id=376 data-nosnippet>376</a>        nickname(<span class="kw-2">&amp;</span>dir, <span class="string">"Nisugi"</span>, <span class="prelude-val">None</span>).expect(<span class="string">"cleared"</span>);
-<a href=#377 id=377 data-nosnippet>377</a>        record(<span class="kw-2">&amp;</span>dir, entry(<span class="string">"GS3"</span>, <span class="string">"Nisugi"</span>, <span class="string">"ACCT1"</span>)).expect(<span class="string">"logged in again"</span>);
-<a href=#378 id=378 data-nosnippet>378</a>        <span class="macro">assert_eq!</span>(called(), <span class="prelude-val">None</span>, <span class="string">"cleared stays cleared"</span>);
-<a href=#379 id=379 data-nosnippet>379</a>        <span class="kw">let _ </span>= std::fs::remove_dir_all(<span class="kw-2">&amp;</span>dir);
-<a href=#380 id=380 data-nosnippet>380</a>    }
-<a href=#381 id=381 data-nosnippet>381</a>
-<a href=#382 id=382 data-nosnippet>382</a>    <span class="doccomment">/// A launcher's card says each of the entry's facts, and whether the
-<a href=#383 id=383 data-nosnippet>383</a>    /// password is kept as it was told.
-<a href=#384 id=384 data-nosnippet>384</a>    </span><span class="attr">#[test]
-<a href=#385 id=385 data-nosnippet>385</a>    </span><span class="kw">fn </span>a_card_is_the_entry_and_whether_it_is_kept() {
-<a href=#386 id=386 data-nosnippet>386</a>        <span class="kw">let </span><span class="kw-2">mut </span>starred = entry(<span class="string">"GSX"</span>, <span class="string">"Nisugi"</span>, <span class="string">"ACCT2"</span>);
-<a href=#387 id=387 data-nosnippet>387</a>        starred.favourite = <span class="bool-val">true</span>;
-<a href=#388 id=388 data-nosnippet>388</a>        <span class="macro">assert_eq!</span>(
-<a href=#389 id=389 data-nosnippet>389</a>            starred.card(<span class="bool-val">true</span>),
-<a href=#390 id=390 data-nosnippet>390</a>            hydra_ui::RosterCard {
-<a href=#391 id=391 data-nosnippet>391</a>                character: <span class="string">"Nisugi"</span>.to_owned(),
-<a href=#392 id=392 data-nosnippet>392</a>                account: <span class="string">"ACCT2"</span>.to_owned(),
-<a href=#393 id=393 data-nosnippet>393</a>                game: <span class="string">"GSX"</span>.to_owned(),
-<a href=#394 id=394 data-nosnippet>394</a>                kept: <span class="bool-val">true</span>,
-<a href=#395 id=395 data-nosnippet>395</a>                favourite: <span class="bool-val">true</span>,
-<a href=#396 id=396 data-nosnippet>396</a>                nickname: <span class="prelude-val">None</span>,
-<a href=#397 id=397 data-nosnippet>397</a>            }
-<a href=#398 id=398 data-nosnippet>398</a>        );
-<a href=#399 id=399 data-nosnippet>399</a>        <span class="macro">assert!</span>(!entry(<span class="string">"GS3"</span>, <span class="string">"Nerten"</span>, <span class="string">"ACCT1"</span>).card(<span class="bool-val">false</span>).kept);
-<a href=#400 id=400 data-nosnippet>400</a>    }
-<a href=#401 id=401 data-nosnippet>401</a>
-<a href=#402 id=402 data-nosnippet>402</a>    <span class="doccomment">/// Run `meanwhile` on another thread while a change to the roster is
-<a href=#403 id=403 data-nosnippet>403</a>    /// being made -- the file read, and written 200 ms later with Nisugi
-<a href=#404 id=404 data-nosnippet>404</a>    /// starred -- and wait for both.
-<a href=#405 id=405 data-nosnippet>405</a>    </span><span class="kw">fn </span>during_a_star(
-<a href=#406 id=406 data-nosnippet>406</a>        dir: <span class="kw-2">&amp;</span>Path,
-<a href=#407 id=407 data-nosnippet>407</a>        meanwhile: <span class="kw">impl </span>FnOnce(std::path::PathBuf) -&gt; io::Result&lt;()&gt; + Send + <span class="lifetime">'static</span>,
-<a href=#408 id=408 data-nosnippet>408</a>    ) -&gt; io::Result&lt;()&gt; {
-<a href=#409 id=409 data-nosnippet>409</a>        <span class="kw">let </span>other = changing(dir, || {
-<a href=#410 id=410 data-nosnippet>410</a>            <span class="kw">let </span><span class="kw-2">mut </span>file = load(dir)<span class="question-mark">?</span>;
-<a href=#411 id=411 data-nosnippet>411</a>            <span class="kw">let </span>other = {
-<a href=#412 id=412 data-nosnippet>412</a>                <span class="kw">let </span>dir = dir.to_owned();
-<a href=#413 id=413 data-nosnippet>413</a>                std::thread::spawn(<span class="kw">move </span>|| meanwhile(dir))
-<a href=#414 id=414 data-nosnippet>414</a>            };
-<a href=#415 id=415 data-nosnippet>415</a>            std::thread::sleep(std::time::Duration::from_millis(<span class="number">200</span>));
-<a href=#416 id=416 data-nosnippet>416</a>            <span class="kw">if let </span><span class="prelude-val">Some</span>(nisugi) = file.characters.get_mut(<span class="string">"gs3:nisugi"</span>) {
-<a href=#417 id=417 data-nosnippet>417</a>                nisugi.favourite = <span class="bool-val">true</span>;
-<a href=#418 id=418 data-nosnippet>418</a>            }
-<a href=#419 id=419 data-nosnippet>419</a>            save(dir, file)<span class="question-mark">?</span>;
-<a href=#420 id=420 data-nosnippet>420</a>            Ok::&lt;<span class="kw">_</span>, io::Error&gt;(other)
-<a href=#421 id=421 data-nosnippet>421</a>        })<span class="question-mark">?</span>;
-<a href=#422 id=422 data-nosnippet>422</a>        other
-<a href=#423 id=423 data-nosnippet>423</a>            .join()
-<a href=#424 id=424 data-nosnippet>424</a>            .map_err(|<span class="kw">_</span>| io::Error::other(<span class="string">"its thread panicked"</span>))<span class="question-mark">?
-<a href=#425 id=425 data-nosnippet>425</a>    </span>}
-<a href=#426 id=426 data-nosnippet>426</a>
-<a href=#427 id=427 data-nosnippet>427</a>    <span class="doccomment">/// A login's entry, a star and a forgetting, each made while another
-<a href=#428 id=428 data-nosnippet>428</a>    /// change to the roster is being made, wait for it, and every change is
-<a href=#429 id=429 data-nosnippet>429</a>    /// kept.
-<a href=#430 id=430 data-nosnippet>430</a>    </span><span class="attr">#[test]
-<a href=#431 id=431 data-nosnippet>431</a>    </span><span class="kw">fn </span>a_change_made_meanwhile_waits_and_both_are_kept() -&gt; io::Result&lt;()&gt; {
-<a href=#432 id=432 data-nosnippet>432</a>        <span class="kw">let </span>dir = scratch(<span class="string">"meanwhile"</span>);
-<a href=#433 id=433 data-nosnippet>433</a>        record(<span class="kw-2">&amp;</span>dir, entry(<span class="string">"GS3"</span>, <span class="string">"Nisugi"</span>, <span class="string">"ACCT1"</span>))<span class="question-mark">?</span>;
-<a href=#434 id=434 data-nosnippet>434</a>        record(<span class="kw-2">&amp;</span>dir, entry(<span class="string">"GS3"</span>, <span class="string">"Nerten"</span>, <span class="string">"ACCT2"</span>))<span class="question-mark">?</span>;
-<a href=#435 id=435 data-nosnippet>435</a>        during_a_star(<span class="kw-2">&amp;</span>dir, |dir| record(<span class="kw-2">&amp;</span>dir, entry(<span class="string">"GS3"</span>, <span class="string">"Dicate"</span>, <span class="string">"ACCT3"</span>)))<span class="question-mark">?</span>;
-<a href=#436 id=436 data-nosnippet>436</a>        <span class="macro">assert!</span>(find(<span class="kw-2">&amp;</span>dir, <span class="string">"Dicate"</span>)<span class="question-mark">?</span>.is_some(), <span class="string">"the login's entry"</span>);
-<a href=#437 id=437 data-nosnippet>437</a>        during_a_star(<span class="kw-2">&amp;</span>dir, |dir| favourite(<span class="kw-2">&amp;</span>dir, <span class="string">"Nerten"</span>, <span class="bool-val">true</span>).map(drop))<span class="question-mark">?</span>;
-<a href=#438 id=438 data-nosnippet>438</a>        <span class="macro">assert!</span>(
-<a href=#439 id=439 data-nosnippet>439</a>            find(<span class="kw-2">&amp;</span>dir, <span class="string">"Nerten"</span>)<span class="question-mark">?</span>.is_some_and(|e| e.favourite),
-<a href=#440 id=440 data-nosnippet>440</a>            <span class="string">"the star"
-<a href=#441 id=441 data-nosnippet>441</a>        </span>);
-<a href=#442 id=442 data-nosnippet>442</a>        during_a_star(<span class="kw-2">&amp;</span>dir, |dir| forget(<span class="kw-2">&amp;</span>dir, <span class="string">"Dicate"</span>).map(drop))<span class="question-mark">?</span>;
-<a href=#443 id=443 data-nosnippet>443</a>        <span class="macro">assert_eq!</span>(find(<span class="kw-2">&amp;</span>dir, <span class="string">"Dicate"</span>)<span class="question-mark">?</span>, <span class="prelude-val">None</span>, <span class="string">"the forgetting"</span>);
-<a href=#444 id=444 data-nosnippet>444</a>        <span class="macro">assert!</span>(
-<a href=#445 id=445 data-nosnippet>445</a>            find(<span class="kw-2">&amp;</span>dir, <span class="string">"Nisugi"</span>)<span class="question-mark">?</span>.is_some_and(|e| e.favourite),
-<a href=#446 id=446 data-nosnippet>446</a>            <span class="string">"and the first"
-<a href=#447 id=447 data-nosnippet>447</a>        </span>);
-<a href=#448 id=448 data-nosnippet>448</a>        std::fs::remove_dir_all(<span class="kw-2">&amp;</span>dir)
-<a href=#449 id=449 data-nosnippet>449</a>    }
-<a href=#450 id=450 data-nosnippet>450</a>
-<a href=#451 id=451 data-nosnippet>451</a>    <span class="doccomment">/// A character of one name on two games: the one playing is not
-<a href=#452 id=452 data-nosnippet>452</a>    /// offered, the other is, by its game.
-<a href=#453 id=453 data-nosnippet>453</a>    </span><span class="attr">#[test]
-<a href=#454 id=454 data-nosnippet>454</a>    </span><span class="kw">fn </span>one_name_on_two_games_is_two_characters() {
-<a href=#455 id=455 data-nosnippet>455</a>        <span class="kw">let </span>roster = [
-<a href=#456 id=456 data-nosnippet>456</a>            entry(<span class="string">"GS3"</span>, <span class="string">"Nisugi"</span>, <span class="string">"ACCT1"</span>),
-<a href=#457 id=457 data-nosnippet>457</a>            entry(<span class="string">"GSF"</span>, <span class="string">"Nisugi"</span>, <span class="string">"ACCT2"</span>),
-<a href=#458 id=458 data-nosnippet>458</a>            entry(<span class="string">"GS3"</span>, <span class="string">"Nerten"</span>, <span class="string">"ACCT3"</span>),
-<a href=#459 id=459 data-nosnippet>459</a>            entry(<span class="string">"GS3"</span>, <span class="string">"Dicate"</span>, <span class="string">"LOCKED"</span>),
-<a href=#460 id=460 data-nosnippet>460</a>        ];
-<a href=#461 id=461 data-nosnippet>461</a>        <span class="kw">let </span>running = [(<span class="string">"GS3"</span>.to_owned(), <span class="string">"nisugi"</span>.to_owned())];
-<a href=#462 id=462 data-nosnippet>462</a>        <span class="macro">assert_eq!</span>(
-<a href=#463 id=463 data-nosnippet>463</a>            available(<span class="kw-2">&amp;</span>roster, <span class="kw-2">&amp;</span>running, |account| account != <span class="string">"LOCKED"</span>),
-<a href=#464 id=464 data-nosnippet>464</a>            [<span class="string">"GSF:Nisugi"</span>, <span class="string">"Nerten"</span>]
-<a href=#465 id=465 data-nosnippet>465</a>        );
-<a href=#466 id=466 data-nosnippet>466</a>    }
-<a href=#467 id=467 data-nosnippet>467</a>}
+<a href=#354 id=354 data-nosnippet>354</a>        <span class="kw">let </span>gone = forget(<span class="kw-2">&amp;</span>dir, <span class="string">"GSX:Nisugi"</span>).expect(<span class="string">"forgotten"</span>);
+<a href=#355 id=355 data-nosnippet>355</a>        <span class="macro">assert_eq!</span>(gone.map(|e| e.account), <span class="prelude-val">Some</span>(<span class="string">"ACCT2"</span>.to_owned()));
+<a href=#356 id=356 data-nosnippet>356</a>        <span class="macro">assert_eq!</span>(all(<span class="kw-2">&amp;</span>dir).map(|all| all.len()).ok(), <span class="prelude-val">Some</span>(<span class="number">1</span>));
+<a href=#357 id=357 data-nosnippet>357</a>        <span class="macro">assert_eq!</span>(forget(<span class="kw-2">&amp;</span>dir, <span class="string">"GSX:Nisugi"</span>).ok(), <span class="prelude-val">Some</span>(<span class="prelude-val">None</span>), <span class="string">"not there"</span>);
+<a href=#358 id=358 data-nosnippet>358</a>        <span class="macro">assert_eq!</span>(favourite(<span class="kw-2">&amp;</span>dir, <span class="string">"Stranger"</span>, <span class="bool-val">true</span>).ok(), <span class="prelude-val">Some</span>(<span class="prelude-val">None</span>));
+<a href=#359 id=359 data-nosnippet>359</a>        <span class="kw">let _ </span>= std::fs::remove_dir_all(<span class="kw-2">&amp;</span>dir);
+<a href=#360 id=360 data-nosnippet>360</a>    }
+<a href=#361 id=361 data-nosnippet>361</a>
+<a href=#362 id=362 data-nosnippet>362</a>    <span class="doccomment">/// A nickname outlives the next login, which does not know of it, and
+<a href=#363 id=363 data-nosnippet>363</a>    /// is taken off by clearing it alone.
+<a href=#364 id=364 data-nosnippet>364</a>    </span><span class="attr">#[test]
+<a href=#365 id=365 data-nosnippet>365</a>    </span><span class="kw">fn </span>a_nickname_outlives_a_login() {
+<a href=#366 id=366 data-nosnippet>366</a>        <span class="kw">let </span>dir = scratch(<span class="string">"nickname"</span>);
+<a href=#367 id=367 data-nosnippet>367</a>        record(<span class="kw-2">&amp;</span>dir, entry(<span class="string">"GS3"</span>, <span class="string">"Nisugi"</span>, <span class="string">"ACCT1"</span>)).expect(<span class="string">"recorded"</span>);
+<a href=#368 id=368 data-nosnippet>368</a>        nickname(<span class="kw-2">&amp;</span>dir, <span class="string">"Nisugi"</span>, <span class="prelude-val">Some</span>(<span class="string">"Nis"</span>.to_owned())).expect(<span class="string">"named"</span>);
+<a href=#369 id=369 data-nosnippet>369</a>        record(<span class="kw-2">&amp;</span>dir, entry(<span class="string">"GS3"</span>, <span class="string">"Nisugi"</span>, <span class="string">"ACCT1"</span>)).expect(<span class="string">"logged in again"</span>);
+<a href=#370 id=370 data-nosnippet>370</a>        <span class="kw">let </span>called = || find(<span class="kw-2">&amp;</span>dir, <span class="string">"Nisugi"</span>).ok().flatten().and_then(|e| e.nickname);
+<a href=#371 id=371 data-nosnippet>371</a>        <span class="macro">assert_eq!</span>(called(), <span class="prelude-val">Some</span>(<span class="string">"Nis"</span>.to_owned()), <span class="string">"the login kept it"</span>);
+<a href=#372 id=372 data-nosnippet>372</a>
+<a href=#373 id=373 data-nosnippet>373</a>        nickname(<span class="kw-2">&amp;</span>dir, <span class="string">"Nisugi"</span>, <span class="prelude-val">None</span>).expect(<span class="string">"cleared"</span>);
+<a href=#374 id=374 data-nosnippet>374</a>        record(<span class="kw-2">&amp;</span>dir, entry(<span class="string">"GS3"</span>, <span class="string">"Nisugi"</span>, <span class="string">"ACCT1"</span>)).expect(<span class="string">"logged in again"</span>);
+<a href=#375 id=375 data-nosnippet>375</a>        <span class="macro">assert_eq!</span>(called(), <span class="prelude-val">None</span>, <span class="string">"cleared stays cleared"</span>);
+<a href=#376 id=376 data-nosnippet>376</a>        <span class="kw">let _ </span>= std::fs::remove_dir_all(<span class="kw-2">&amp;</span>dir);
+<a href=#377 id=377 data-nosnippet>377</a>    }
+<a href=#378 id=378 data-nosnippet>378</a>
+<a href=#379 id=379 data-nosnippet>379</a>    <span class="doccomment">/// A launcher's card says each of the entry's facts, and whether the
+<a href=#380 id=380 data-nosnippet>380</a>    /// password is kept as it was told.
+<a href=#381 id=381 data-nosnippet>381</a>    </span><span class="attr">#[test]
+<a href=#382 id=382 data-nosnippet>382</a>    </span><span class="kw">fn </span>a_card_is_the_entry_and_whether_it_is_kept() {
+<a href=#383 id=383 data-nosnippet>383</a>        <span class="kw">let </span><span class="kw-2">mut </span>starred = entry(<span class="string">"GSX"</span>, <span class="string">"Nisugi"</span>, <span class="string">"ACCT2"</span>);
+<a href=#384 id=384 data-nosnippet>384</a>        starred.favourite = <span class="bool-val">true</span>;
+<a href=#385 id=385 data-nosnippet>385</a>        <span class="macro">assert_eq!</span>(
+<a href=#386 id=386 data-nosnippet>386</a>            starred.card(<span class="bool-val">true</span>),
+<a href=#387 id=387 data-nosnippet>387</a>            hydra_ui::RosterCard {
+<a href=#388 id=388 data-nosnippet>388</a>                character: <span class="string">"Nisugi"</span>.to_owned(),
+<a href=#389 id=389 data-nosnippet>389</a>                account: <span class="string">"ACCT2"</span>.to_owned(),
+<a href=#390 id=390 data-nosnippet>390</a>                game: <span class="string">"GSX"</span>.to_owned(),
+<a href=#391 id=391 data-nosnippet>391</a>                kept: <span class="bool-val">true</span>,
+<a href=#392 id=392 data-nosnippet>392</a>                favourite: <span class="bool-val">true</span>,
+<a href=#393 id=393 data-nosnippet>393</a>                nickname: <span class="prelude-val">None</span>,
+<a href=#394 id=394 data-nosnippet>394</a>            }
+<a href=#395 id=395 data-nosnippet>395</a>        );
+<a href=#396 id=396 data-nosnippet>396</a>        <span class="macro">assert!</span>(!entry(<span class="string">"GS3"</span>, <span class="string">"Nerten"</span>, <span class="string">"ACCT1"</span>).card(<span class="bool-val">false</span>).kept);
+<a href=#397 id=397 data-nosnippet>397</a>    }
+<a href=#398 id=398 data-nosnippet>398</a>
+<a href=#399 id=399 data-nosnippet>399</a>    <span class="doccomment">/// Run `meanwhile` on another thread while a change to the roster is
+<a href=#400 id=400 data-nosnippet>400</a>    /// being made -- the file read, and written 200 ms later with Nisugi
+<a href=#401 id=401 data-nosnippet>401</a>    /// starred -- and wait for both.
+<a href=#402 id=402 data-nosnippet>402</a>    </span><span class="kw">fn </span>during_a_star(
+<a href=#403 id=403 data-nosnippet>403</a>        dir: <span class="kw-2">&amp;</span>Path,
+<a href=#404 id=404 data-nosnippet>404</a>        meanwhile: <span class="kw">impl </span>FnOnce(std::path::PathBuf) -&gt; io::Result&lt;()&gt; + Send + <span class="lifetime">'static</span>,
+<a href=#405 id=405 data-nosnippet>405</a>    ) -&gt; io::Result&lt;()&gt; {
+<a href=#406 id=406 data-nosnippet>406</a>        <span class="kw">let </span>other = changing(dir, || {
+<a href=#407 id=407 data-nosnippet>407</a>            <span class="kw">let </span><span class="kw-2">mut </span>file = load(dir)<span class="question-mark">?</span>;
+<a href=#408 id=408 data-nosnippet>408</a>            <span class="kw">let </span>other = {
+<a href=#409 id=409 data-nosnippet>409</a>                <span class="kw">let </span>dir = dir.to_owned();
+<a href=#410 id=410 data-nosnippet>410</a>                std::thread::spawn(<span class="kw">move </span>|| meanwhile(dir))
+<a href=#411 id=411 data-nosnippet>411</a>            };
+<a href=#412 id=412 data-nosnippet>412</a>            std::thread::sleep(std::time::Duration::from_millis(<span class="number">200</span>));
+<a href=#413 id=413 data-nosnippet>413</a>            <span class="kw">if let </span><span class="prelude-val">Some</span>(nisugi) = file.characters.get_mut(<span class="string">"gs3:nisugi"</span>) {
+<a href=#414 id=414 data-nosnippet>414</a>                nisugi.favourite = <span class="bool-val">true</span>;
+<a href=#415 id=415 data-nosnippet>415</a>            }
+<a href=#416 id=416 data-nosnippet>416</a>            save(dir, file)<span class="question-mark">?</span>;
+<a href=#417 id=417 data-nosnippet>417</a>            Ok::&lt;<span class="kw">_</span>, io::Error&gt;(other)
+<a href=#418 id=418 data-nosnippet>418</a>        })<span class="question-mark">?</span>;
+<a href=#419 id=419 data-nosnippet>419</a>        other
+<a href=#420 id=420 data-nosnippet>420</a>            .join()
+<a href=#421 id=421 data-nosnippet>421</a>            .map_err(|<span class="kw">_</span>| io::Error::other(<span class="string">"its thread panicked"</span>))<span class="question-mark">?
+<a href=#422 id=422 data-nosnippet>422</a>    </span>}
+<a href=#423 id=423 data-nosnippet>423</a>
+<a href=#424 id=424 data-nosnippet>424</a>    <span class="doccomment">/// A login's entry, a star and a forgetting, each made while another
+<a href=#425 id=425 data-nosnippet>425</a>    /// change to the roster is being made, wait for it, and every change is
+<a href=#426 id=426 data-nosnippet>426</a>    /// kept.
+<a href=#427 id=427 data-nosnippet>427</a>    </span><span class="attr">#[test]
+<a href=#428 id=428 data-nosnippet>428</a>    </span><span class="kw">fn </span>a_change_made_meanwhile_waits_and_both_are_kept() -&gt; io::Result&lt;()&gt; {
+<a href=#429 id=429 data-nosnippet>429</a>        <span class="kw">let </span>dir = scratch(<span class="string">"meanwhile"</span>);
+<a href=#430 id=430 data-nosnippet>430</a>        record(<span class="kw-2">&amp;</span>dir, entry(<span class="string">"GS3"</span>, <span class="string">"Nisugi"</span>, <span class="string">"ACCT1"</span>))<span class="question-mark">?</span>;
+<a href=#431 id=431 data-nosnippet>431</a>        record(<span class="kw-2">&amp;</span>dir, entry(<span class="string">"GS3"</span>, <span class="string">"Nerten"</span>, <span class="string">"ACCT2"</span>))<span class="question-mark">?</span>;
+<a href=#432 id=432 data-nosnippet>432</a>        during_a_star(<span class="kw-2">&amp;</span>dir, |dir| record(<span class="kw-2">&amp;</span>dir, entry(<span class="string">"GS3"</span>, <span class="string">"Dicate"</span>, <span class="string">"ACCT3"</span>)))<span class="question-mark">?</span>;
+<a href=#433 id=433 data-nosnippet>433</a>        <span class="macro">assert!</span>(find(<span class="kw-2">&amp;</span>dir, <span class="string">"Dicate"</span>)<span class="question-mark">?</span>.is_some(), <span class="string">"the login's entry"</span>);
+<a href=#434 id=434 data-nosnippet>434</a>        during_a_star(<span class="kw-2">&amp;</span>dir, |dir| favourite(<span class="kw-2">&amp;</span>dir, <span class="string">"Nerten"</span>, <span class="bool-val">true</span>).map(drop))<span class="question-mark">?</span>;
+<a href=#435 id=435 data-nosnippet>435</a>        <span class="macro">assert!</span>(
+<a href=#436 id=436 data-nosnippet>436</a>            find(<span class="kw-2">&amp;</span>dir, <span class="string">"Nerten"</span>)<span class="question-mark">?</span>.is_some_and(|e| e.favourite),
+<a href=#437 id=437 data-nosnippet>437</a>            <span class="string">"the star"
+<a href=#438 id=438 data-nosnippet>438</a>        </span>);
+<a href=#439 id=439 data-nosnippet>439</a>        during_a_star(<span class="kw-2">&amp;</span>dir, |dir| forget(<span class="kw-2">&amp;</span>dir, <span class="string">"Dicate"</span>).map(drop))<span class="question-mark">?</span>;
+<a href=#440 id=440 data-nosnippet>440</a>        <span class="macro">assert_eq!</span>(find(<span class="kw-2">&amp;</span>dir, <span class="string">"Dicate"</span>)<span class="question-mark">?</span>, <span class="prelude-val">None</span>, <span class="string">"the forgetting"</span>);
+<a href=#441 id=441 data-nosnippet>441</a>        <span class="macro">assert!</span>(
+<a href=#442 id=442 data-nosnippet>442</a>            find(<span class="kw-2">&amp;</span>dir, <span class="string">"Nisugi"</span>)<span class="question-mark">?</span>.is_some_and(|e| e.favourite),
+<a href=#443 id=443 data-nosnippet>443</a>            <span class="string">"and the first"
+<a href=#444 id=444 data-nosnippet>444</a>        </span>);
+<a href=#445 id=445 data-nosnippet>445</a>        std::fs::remove_dir_all(<span class="kw-2">&amp;</span>dir)
+<a href=#446 id=446 data-nosnippet>446</a>    }
+<a href=#447 id=447 data-nosnippet>447</a>
+<a href=#448 id=448 data-nosnippet>448</a>    <span class="doccomment">/// A character of one name on two games: the one playing is not
+<a href=#449 id=449 data-nosnippet>449</a>    /// offered, the other is, by its game.
+<a href=#450 id=450 data-nosnippet>450</a>    </span><span class="attr">#[test]
+<a href=#451 id=451 data-nosnippet>451</a>    </span><span class="kw">fn </span>one_name_on_two_games_is_two_characters() {
+<a href=#452 id=452 data-nosnippet>452</a>        <span class="kw">let </span>roster = [
+<a href=#453 id=453 data-nosnippet>453</a>            entry(<span class="string">"GS3"</span>, <span class="string">"Nisugi"</span>, <span class="string">"ACCT1"</span>),
+<a href=#454 id=454 data-nosnippet>454</a>            entry(<span class="string">"GSF"</span>, <span class="string">"Nisugi"</span>, <span class="string">"ACCT2"</span>),
+<a href=#455 id=455 data-nosnippet>455</a>            entry(<span class="string">"GS3"</span>, <span class="string">"Nerten"</span>, <span class="string">"ACCT3"</span>),
+<a href=#456 id=456 data-nosnippet>456</a>            entry(<span class="string">"GS3"</span>, <span class="string">"Dicate"</span>, <span class="string">"LOCKED"</span>),
+<a href=#457 id=457 data-nosnippet>457</a>        ];
+<a href=#458 id=458 data-nosnippet>458</a>        <span class="kw">let </span>running = [(<span class="string">"GS3"</span>.to_owned(), <span class="string">"nisugi"</span>.to_owned())];
+<a href=#459 id=459 data-nosnippet>459</a>        <span class="macro">assert_eq!</span>(
+<a href=#460 id=460 data-nosnippet>460</a>            available(<span class="kw-2">&amp;</span>roster, <span class="kw-2">&amp;</span>running, |account| account != <span class="string">"LOCKED"</span>),
+<a href=#461 id=461 data-nosnippet>461</a>            [<span class="string">"GSF:Nisugi"</span>, <span class="string">"Nerten"</span>]
+<a href=#462 id=462 data-nosnippet>462</a>        );
+<a href=#463 id=463 data-nosnippet>463</a>    }
+<a href=#464 id=464 data-nosnippet>464</a>}
 </code></pre></div></section></main></body></html>

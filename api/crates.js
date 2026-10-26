@@ -1,2 +1,2 @@
-window.ALL_CRATES = ["hydra","hydra_board","hydra_cast","hydra_combat_log","hydra_exp","hydra_gui","hydra_host","hydra_import","hydra_ios","hydra_ledger","hydra_lich","hydra_map","hydra_mem","hydra_model","hydra_net","hydra_protocol","hydra_session","hydra_survey","hydra_table","hydra_travel","hydra_ui","hydra_update","hydra_web"];
-//{"start":21,"fragment_lengths":[7,14,13,19,12,12,13,15,12,15,13,12,12,14,12,17,16,15,14,15,11,15,12]}
+window.ALL_CRATES = ["hydra","hydra_board","hydra_cast","hydra_combat_log","hydra_exp","hydra_gui","hydra_host","hydra_import","hydra_ios","hydra_ledger","hydra_lich","hydra_lookout","hydra_map","hydra_mem","hydra_model","hydra_net","hydra_protocol","hydra_push","hydra_rewards","hydra_session","hydra_survey","hydra_table","hydra_travel","hydra_ui","hydra_update","hydra_web"];
+//{"start":21,"fragment_lengths":[7,14,13,19,12,12,13,15,12,15,13,16,12,12,14,12,17,13,16,16,15,14,15,11,15,12]}

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["QUIT_DEADLINE"],"fn":["run","supervised"]};
+window.SIDEBAR_ITEMS = {"constant":["FILES_SETTLE","QUIT_DEADLINE"],"fn":["run","settle_files","supervised"]};

@@ -77,196 +77,228 @@
 <a href=#77 id=77 data-nosnippet>77</a>    flushes: tokio::sync::mpsc::Sender&lt;tokio::sync::oneshot::Sender&lt;()&gt;&gt;,
 <a href=#78 id=78 data-nosnippet>78</a>    dropped: Arc&lt;AtomicU64&gt;,
 <a href=#79 id=79 data-nosnippet>79</a>    redactions: Shared,
-<a href=#80 id=80 data-nosnippet>80</a>}
-<a href=#81 id=81 data-nosnippet>81</a>
-<a href=#82 id=82 data-nosnippet>82</a><span class="doccomment">/// The secrets the writer strips, shared by the log and its writer: a
-<a href=#83 id=83 data-nosnippet>83</a>/// reconnect brings a new launch key after the file is open.
-<a href=#84 id=84 data-nosnippet>84</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">type </span>Shared = Arc&lt;Mutex&lt;Redactions&gt;&gt;;
-<a href=#85 id=85 data-nosnippet>85</a>
-<a href=#86 id=86 data-nosnippet>86</a><span class="doccomment">/// The writer's end: where lines arrive.
-<a href=#87 id=87 data-nosnippet>87</a>///
-<a href=#88 id=88 data-nosnippet>88</a>/// Held by the writer task ([`super::writer`]), which is the only thing that
-<a href=#89 id=89 data-nosnippet>89</a>/// should own one.
-<a href=#90 id=90 data-nosnippet>90</a></span><span class="attr">#[derive(Debug)]
-<a href=#91 id=91 data-nosnippet>91</a></span><span class="kw">pub struct </span>LogSink {
-<a href=#92 id=92 data-nosnippet>92</a>    rx: tokio::sync::mpsc::Receiver&lt;LogLine&gt;,
-<a href=#93 id=93 data-nosnippet>93</a>    flushes: tokio::sync::mpsc::Receiver&lt;tokio::sync::oneshot::Sender&lt;()&gt;&gt;,
-<a href=#94 id=94 data-nosnippet>94</a>    dropped: Arc&lt;AtomicU64&gt;,
-<a href=#95 id=95 data-nosnippet>95</a>    redactions: Shared,
-<a href=#96 id=96 data-nosnippet>96</a>}
-<a href=#97 id=97 data-nosnippet>97</a>
-<a href=#98 id=98 data-nosnippet>98</a><span class="doccomment">/// What reaches the writer: a line, or a reader asking for everything so far
-<a href=#99 id=99 data-nosnippet>99</a>/// to be on disk: reads flush the writer's buffer first.
-<a href=#100 id=100 data-nosnippet>100</a></span><span class="attr">#[derive(Debug)]
-<a href=#101 id=101 data-nosnippet>101</a></span><span class="kw">pub enum </span>Arrival {
-<a href=#102 id=102 data-nosnippet>102</a>    <span class="doccomment">/// A line to write.
-<a href=#103 id=103 data-nosnippet>103</a>    </span>Line(LogLine),
-<a href=#104 id=104 data-nosnippet>104</a>    <span class="doccomment">/// Write what is queued, flush, then answer here.
-<a href=#105 id=105 data-nosnippet>105</a>    </span>Flush(tokio::sync::oneshot::Sender&lt;()&gt;),
-<a href=#106 id=106 data-nosnippet>106</a>}
-<a href=#107 id=107 data-nosnippet>107</a>
-<a href=#108 id=108 data-nosnippet>108</a><span class="kw">impl </span>PlayerLog {
-<a href=#109 id=109 data-nosnippet>109</a>    <span class="doccomment">/// A log and its sink, joined by a bounded channel of [`CAPACITY`].
-<a href=#110 id=110 data-nosnippet>110</a>    </span><span class="attr">#[must_use]
-<a href=#111 id=111 data-nosnippet>111</a>    </span><span class="kw">pub fn </span>new() -&gt; (<span class="self">Self</span>, LogSink) {
-<a href=#112 id=112 data-nosnippet>112</a>        <span class="self">Self</span>::with_capacity(CAPACITY)
-<a href=#113 id=113 data-nosnippet>113</a>    }
-<a href=#114 id=114 data-nosnippet>114</a>
-<a href=#115 id=115 data-nosnippet>115</a>    <span class="doccomment">/// [`Self::new`], with the capacity given rather than taken from the
-<a href=#116 id=116 data-nosnippet>116</a>    /// constant. For tests that need to reach the drop path without queueing
-<a href=#117 id=117 data-nosnippet>117</a>    /// four thousand lines.
-<a href=#118 id=118 data-nosnippet>118</a>    ///
-<a href=#119 id=119 data-nosnippet>119</a>    /// A capacity of zero is taken as one: `tokio`'s bounded channel needs
-<a href=#120 id=120 data-nosnippet>120</a>    /// a slot, and a log with no room would drop every line.
-<a href=#121 id=121 data-nosnippet>121</a>    </span><span class="attr">#[must_use]
-<a href=#122 id=122 data-nosnippet>122</a>    </span><span class="kw">pub fn </span>with_capacity(capacity: usize) -&gt; (<span class="self">Self</span>, LogSink) {
-<a href=#123 id=123 data-nosnippet>123</a>        <span class="kw">let </span>(tx, rx) = tokio::sync::mpsc::channel(capacity.max(<span class="number">1</span>));
-<a href=#124 id=124 data-nosnippet>124</a>        <span class="kw">let </span>(flush_tx, flush_rx) = tokio::sync::mpsc::channel(FLUSHES_WAITING);
-<a href=#125 id=125 data-nosnippet>125</a>        <span class="kw">let </span>dropped = Arc::new(AtomicU64::new(<span class="number">0</span>));
-<a href=#126 id=126 data-nosnippet>126</a>        <span class="kw">let </span>redactions = Shared::default();
-<a href=#127 id=127 data-nosnippet>127</a>        (
-<a href=#128 id=128 data-nosnippet>128</a>            <span class="self">Self </span>{
-<a href=#129 id=129 data-nosnippet>129</a>                tx,
-<a href=#130 id=130 data-nosnippet>130</a>                flushes: flush_tx,
-<a href=#131 id=131 data-nosnippet>131</a>                dropped: Arc::clone(<span class="kw-2">&amp;</span>dropped),
-<a href=#132 id=132 data-nosnippet>132</a>                redactions: Arc::clone(<span class="kw-2">&amp;</span>redactions),
-<a href=#133 id=133 data-nosnippet>133</a>            },
-<a href=#134 id=134 data-nosnippet>134</a>            LogSink {
-<a href=#135 id=135 data-nosnippet>135</a>                rx,
-<a href=#136 id=136 data-nosnippet>136</a>                flushes: flush_rx,
-<a href=#137 id=137 data-nosnippet>137</a>                dropped,
-<a href=#138 id=138 data-nosnippet>138</a>                redactions,
+<a href=#80 id=80 data-nosnippet>80</a>    <span class="doccomment">/// Its session is over: the writer writes what is queued and ends,
+<a href=#81 id=81 data-nosnippet>81</a>    /// whoever still holds a clone ([`Self::close`]).
+<a href=#82 id=82 data-nosnippet>82</a>    </span>closed: tokio_util::sync::CancellationToken,
+<a href=#83 id=83 data-nosnippet>83</a>}
+<a href=#84 id=84 data-nosnippet>84</a>
+<a href=#85 id=85 data-nosnippet>85</a><span class="doccomment">/// The secrets the writer strips, shared by the log and its writer: a
+<a href=#86 id=86 data-nosnippet>86</a>/// reconnect brings a new launch key after the file is open.
+<a href=#87 id=87 data-nosnippet>87</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">type </span>Shared = Arc&lt;Mutex&lt;Redactions&gt;&gt;;
+<a href=#88 id=88 data-nosnippet>88</a>
+<a href=#89 id=89 data-nosnippet>89</a><span class="doccomment">/// The writer's end: where lines arrive.
+<a href=#90 id=90 data-nosnippet>90</a>///
+<a href=#91 id=91 data-nosnippet>91</a>/// Held by the writer task ([`super::writer`]), which is the only thing that
+<a href=#92 id=92 data-nosnippet>92</a>/// should own one.
+<a href=#93 id=93 data-nosnippet>93</a></span><span class="attr">#[derive(Debug)]
+<a href=#94 id=94 data-nosnippet>94</a></span><span class="kw">pub struct </span>LogSink {
+<a href=#95 id=95 data-nosnippet>95</a>    rx: tokio::sync::mpsc::Receiver&lt;LogLine&gt;,
+<a href=#96 id=96 data-nosnippet>96</a>    flushes: tokio::sync::mpsc::Receiver&lt;tokio::sync::oneshot::Sender&lt;()&gt;&gt;,
+<a href=#97 id=97 data-nosnippet>97</a>    dropped: Arc&lt;AtomicU64&gt;,
+<a href=#98 id=98 data-nosnippet>98</a>    redactions: Shared,
+<a href=#99 id=99 data-nosnippet>99</a>    closed: tokio_util::sync::CancellationToken,
+<a href=#100 id=100 data-nosnippet>100</a>}
+<a href=#101 id=101 data-nosnippet>101</a>
+<a href=#102 id=102 data-nosnippet>102</a><span class="doccomment">/// What reaches the writer: a line, or a reader asking for everything so far
+<a href=#103 id=103 data-nosnippet>103</a>/// to be on disk: reads flush the writer's buffer first.
+<a href=#104 id=104 data-nosnippet>104</a></span><span class="attr">#[derive(Debug)]
+<a href=#105 id=105 data-nosnippet>105</a></span><span class="kw">pub enum </span>Arrival {
+<a href=#106 id=106 data-nosnippet>106</a>    <span class="doccomment">/// A line to write.
+<a href=#107 id=107 data-nosnippet>107</a>    </span>Line(LogLine),
+<a href=#108 id=108 data-nosnippet>108</a>    <span class="doccomment">/// Write what is queued, flush, then answer here.
+<a href=#109 id=109 data-nosnippet>109</a>    </span>Flush(tokio::sync::oneshot::Sender&lt;()&gt;),
+<a href=#110 id=110 data-nosnippet>110</a>}
+<a href=#111 id=111 data-nosnippet>111</a>
+<a href=#112 id=112 data-nosnippet>112</a><span class="kw">impl </span>PlayerLog {
+<a href=#113 id=113 data-nosnippet>113</a>    <span class="doccomment">/// A log and its sink, joined by a bounded channel of [`CAPACITY`].
+<a href=#114 id=114 data-nosnippet>114</a>    </span><span class="attr">#[must_use]
+<a href=#115 id=115 data-nosnippet>115</a>    </span><span class="kw">pub fn </span>new() -&gt; (<span class="self">Self</span>, LogSink) {
+<a href=#116 id=116 data-nosnippet>116</a>        <span class="self">Self</span>::with_capacity(CAPACITY)
+<a href=#117 id=117 data-nosnippet>117</a>    }
+<a href=#118 id=118 data-nosnippet>118</a>
+<a href=#119 id=119 data-nosnippet>119</a>    <span class="doccomment">/// [`Self::new`], with the capacity given rather than taken from the
+<a href=#120 id=120 data-nosnippet>120</a>    /// constant. For tests that need to reach the drop path without queueing
+<a href=#121 id=121 data-nosnippet>121</a>    /// four thousand lines.
+<a href=#122 id=122 data-nosnippet>122</a>    ///
+<a href=#123 id=123 data-nosnippet>123</a>    /// A capacity of zero is taken as one: `tokio`'s bounded channel needs
+<a href=#124 id=124 data-nosnippet>124</a>    /// a slot, and a log with no room would drop every line.
+<a href=#125 id=125 data-nosnippet>125</a>    </span><span class="attr">#[must_use]
+<a href=#126 id=126 data-nosnippet>126</a>    </span><span class="kw">pub fn </span>with_capacity(capacity: usize) -&gt; (<span class="self">Self</span>, LogSink) {
+<a href=#127 id=127 data-nosnippet>127</a>        <span class="kw">let </span>(tx, rx) = tokio::sync::mpsc::channel(capacity.max(<span class="number">1</span>));
+<a href=#128 id=128 data-nosnippet>128</a>        <span class="kw">let </span>(flush_tx, flush_rx) = tokio::sync::mpsc::channel(FLUSHES_WAITING);
+<a href=#129 id=129 data-nosnippet>129</a>        <span class="kw">let </span>dropped = Arc::new(AtomicU64::new(<span class="number">0</span>));
+<a href=#130 id=130 data-nosnippet>130</a>        <span class="kw">let </span>redactions = Shared::default();
+<a href=#131 id=131 data-nosnippet>131</a>        <span class="kw">let </span>closed = tokio_util::sync::CancellationToken::new();
+<a href=#132 id=132 data-nosnippet>132</a>        (
+<a href=#133 id=133 data-nosnippet>133</a>            <span class="self">Self </span>{
+<a href=#134 id=134 data-nosnippet>134</a>                tx,
+<a href=#135 id=135 data-nosnippet>135</a>                flushes: flush_tx,
+<a href=#136 id=136 data-nosnippet>136</a>                dropped: Arc::clone(<span class="kw-2">&amp;</span>dropped),
+<a href=#137 id=137 data-nosnippet>137</a>                redactions: Arc::clone(<span class="kw-2">&amp;</span>redactions),
+<a href=#138 id=138 data-nosnippet>138</a>                closed: closed.clone(),
 <a href=#139 id=139 data-nosnippet>139</a>            },
-<a href=#140 id=140 data-nosnippet>140</a>        )
-<a href=#141 id=141 data-nosnippet>141</a>    }
-<a href=#142 id=142 data-nosnippet>142</a>
-<a href=#143 id=143 data-nosnippet>143</a>    <span class="doccomment">/// Ask the writer to put every line recorded so far on disk, and wait
-<a href=#144 id=144 data-nosnippet>144</a>    /// until it has: what a read does first, or a search of the live session
-<a href=#145 id=145 data-nosnippet>145</a>    /// misses what is still buffered.
-<a href=#146 id=146 data-nosnippet>146</a>    ///
-<a href=#147 id=147 data-nosnippet>147</a>    /// **Never call this from the actor.** It waits, up to two seconds;
-<a href=#148 id=148 data-nosnippet>148</a>    /// [`Self::record`] is the actor's, and never does.
-<a href=#149 id=149 data-nosnippet>149</a>    ///
-<a href=#150 id=150 data-nosnippet>150</a>    /// `true` when the writer answered; `false` when there is no writer or it
-<a href=#151 id=151 data-nosnippet>151</a>    /// did not answer in time. Either way the read goes ahead: the file holds
-<a href=#152 id=152 data-nosnippet>152</a>    /// what it holds.
-<a href=#153 id=153 data-nosnippet>153</a>    </span><span class="kw">pub async fn </span>flush(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-<a href=#154 id=154 data-nosnippet>154</a>        <span class="kw">let </span>(ack, done) = tokio::sync::oneshot::channel();
-<a href=#155 id=155 data-nosnippet>155</a>        <span class="kw">let </span>asked = <span class="kw">async </span>{
-<a href=#156 id=156 data-nosnippet>156</a>            <span class="self">self</span>.flushes.send(ack).<span class="kw">await</span>.ok()<span class="question-mark">?</span>;
-<a href=#157 id=157 data-nosnippet>157</a>            done.<span class="kw">await</span>.ok()
-<a href=#158 id=158 data-nosnippet>158</a>        };
-<a href=#159 id=159 data-nosnippet>159</a>        <span class="macro">matches!</span>(tokio::time::timeout(FLUSH_WAIT, asked).<span class="kw">await</span>, <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(())))
-<a href=#160 id=160 data-nosnippet>160</a>    }
-<a href=#161 id=161 data-nosnippet>161</a>
-<a href=#162 id=162 data-nosnippet>162</a>    <span class="doccomment">/// Hand one line to the writer, or count it dropped.
-<a href=#163 id=163 data-nosnippet>163</a>    ///
-<a href=#164 id=164 data-nosnippet>164</a>    /// **Never blocks, never awaits, never fails.** This is called from the
-<a href=#165 id=165 data-nosnippet>165</a>    /// actor, which owns the game socket; anything that can wait here can stall
-<a href=#166 id=166 data-nosnippet>166</a>    /// the character it is logging -- and, in a multi-session process, every
-<a href=#167 id=167 data-nosnippet>167</a>    /// other character too.
-<a href=#168 id=168 data-nosnippet>168</a>    ///
-<a href=#169 id=169 data-nosnippet>169</a>    /// Returns whether the line was accepted. Callers may ignore it: the drop
-<a href=#170 id=170 data-nosnippet>170</a>    /// is already counted, and the counter rather than the return value is what
-<a href=#171 id=171 data-nosnippet>171</a>    /// a frontend reads.
-<a href=#172 id=172 data-nosnippet>172</a>    </span><span class="comment">// NOT `#[must_use]`, though clippy::pedantic asks for it. The drop is
-<a href=#173 id=173 data-nosnippet>173</a>    // already counted by the time this returns, so a caller ignoring the bool
-<a href=#174 id=174 data-nosnippet>174</a>    // loses nothing -- and the actor, which is the main caller, has nothing
-<a href=#175 id=175 data-nosnippet>175</a>    // useful to do with it. The counter is the reporting channel.
-<a href=#176 id=176 data-nosnippet>176</a>    </span><span class="attr">#[allow(clippy::must_use_candidate)]
-<a href=#177 id=177 data-nosnippet>177</a>    </span><span class="kw">pub fn </span>record(<span class="kw-2">&amp;</span><span class="self">self</span>, line: LogLine) -&gt; bool {
-<a href=#178 id=178 data-nosnippet>178</a>        <span class="kw">if </span><span class="self">self</span>.tx.try_send(line).is_ok() {
-<a href=#179 id=179 data-nosnippet>179</a>            <span class="kw">return </span><span class="bool-val">true</span>;
-<a href=#180 id=180 data-nosnippet>180</a>        }
-<a href=#181 id=181 data-nosnippet>181</a>        <span class="comment">// Both failure modes are a loss the reader must be able to see: a full
-<a href=#182 id=182 data-nosnippet>182</a>        // channel means the writer is behind, and a closed one means it is
-<a href=#183 id=183 data-nosnippet>183</a>        // gone. Neither is worth distinguishing HERE -- what a reader needs is
-<a href=#184 id=184 data-nosnippet>184</a>        // "your history has a hole in it", and the count says that either way.
-<a href=#185 id=185 data-nosnippet>185</a>        </span><span class="self">self</span>.dropped.fetch_add(<span class="number">1</span>, Ordering::Relaxed);
-<a href=#186 id=186 data-nosnippet>186</a>        <span class="bool-val">false
-<a href=#187 id=187 data-nosnippet>187</a>    </span>}
-<a href=#188 id=188 data-nosnippet>188</a>
-<a href=#189 id=189 data-nosnippet>189</a>    <span class="doccomment">/// Strip `secret` from every line written from now, as `replacement`:
-<a href=#190 id=190 data-nosnippet>190</a>    /// a launch key, which can come back as game text, or the account name.
-<a href=#191 id=191 data-nosnippet>191</a>    </span><span class="kw">pub fn </span>redact(<span class="kw-2">&amp;</span><span class="self">self</span>, secret: <span class="kw-2">&amp;</span>str, replacement: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str) {
-<a href=#192 id=192 data-nosnippet>192</a>        <span class="self">self</span>.redactions
-<a href=#193 id=193 data-nosnippet>193</a>            .lock()
-<a href=#194 id=194 data-nosnippet>194</a>            .unwrap_or_else(PoisonError::into_inner)
-<a href=#195 id=195 data-nosnippet>195</a>            .add(secret, replacement);
-<a href=#196 id=196 data-nosnippet>196</a>    }
-<a href=#197 id=197 data-nosnippet>197</a>
-<a href=#198 id=198 data-nosnippet>198</a>    <span class="doccomment">/// Record one of Hydra's own lines, `[hydra]`, now: a connection lost or
-<a href=#199 id=199 data-nosnippet>199</a>    /// made. Its own tag, so neither a reader nor a parser mistakes Hydra's
-<a href=#200 id=200 data-nosnippet>200</a>    /// voice for the game's.
-<a href=#201 id=201 data-nosnippet>201</a>    </span><span class="kw">pub fn </span>notice(<span class="kw-2">&amp;</span><span class="self">self</span>, text: <span class="kw-2">&amp;</span>str) {
-<a href=#202 id=202 data-nosnippet>202</a>        <span class="self">self</span>.record(LogLine {
-<a href=#203 id=203 data-nosnippet>203</a>            at: hydra_net::line_time(),
-<a href=#204 id=204 data-nosnippet>204</a>            stream: <span class="kw">super</span>::NOTICES.to_owned(),
-<a href=#205 id=205 data-nosnippet>205</a>            text: text.to_owned(),
-<a href=#206 id=206 data-nosnippet>206</a>            links: Vec::new(),
-<a href=#207 id=207 data-nosnippet>207</a>        });
-<a href=#208 id=208 data-nosnippet>208</a>    }
-<a href=#209 id=209 data-nosnippet>209</a>
-<a href=#210 id=210 data-nosnippet>210</a>    <span class="doccomment">/// How many lines this log has failed to record.
-<a href=#211 id=211 data-nosnippet>211</a>    ///
-<a href=#212 id=212 data-nosnippet>212</a>    /// **Non-zero means the archive has a hole**, and a frontend should say so.
-<a href=#213 id=213 data-nosnippet>213</a>    /// The alternative -- a log that quietly skips lines under load -- produces
-<a href=#214 id=214 data-nosnippet>214</a>    /// a file that reads as complete and is not, which is the one outcome
-<a href=#215 id=215 data-nosnippet>215</a>    /// the count exists to prevent.
-<a href=#216 id=216 data-nosnippet>216</a>    </span><span class="attr">#[must_use]
-<a href=#217 id=217 data-nosnippet>217</a>    </span><span class="kw">pub fn </span>dropped(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u64 {
-<a href=#218 id=218 data-nosnippet>218</a>        <span class="self">self</span>.dropped.load(Ordering::Relaxed)
-<a href=#219 id=219 data-nosnippet>219</a>    }
-<a href=#220 id=220 data-nosnippet>220</a>}
-<a href=#221 id=221 data-nosnippet>221</a>
-<a href=#222 id=222 data-nosnippet>222</a><span class="kw">impl </span>LogSink {
-<a href=#223 id=223 data-nosnippet>223</a>    <span class="doccomment">/// The next line, or `None` once every [`PlayerLog`] is gone.
-<a href=#224 id=224 data-nosnippet>224</a>    </span><span class="kw">pub async fn </span>recv(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;LogLine&gt; {
-<a href=#225 id=225 data-nosnippet>225</a>        <span class="self">self</span>.rx.recv().<span class="kw">await
-<a href=#226 id=226 data-nosnippet>226</a>    </span>}
-<a href=#227 id=227 data-nosnippet>227</a>
-<a href=#228 id=228 data-nosnippet>228</a>    <span class="doccomment">/// The next line or flush request, or `None` once every [`PlayerLog`] is
-<a href=#229 id=229 data-nosnippet>229</a>    /// gone. What the writer waits on.
-<a href=#230 id=230 data-nosnippet>230</a>    </span><span class="kw">pub async fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Arrival&gt; {
-<a href=#231 id=231 data-nosnippet>231</a>        <span class="macro">tokio::select!</span> {
-<a href=#232 id=232 data-nosnippet>232</a>            line = <span class="self">self</span>.rx.recv() =&gt; line.map(Arrival::Line),
-<a href=#233 id=233 data-nosnippet>233</a>            <span class="prelude-val">Some</span>(ack) = <span class="self">self</span>.flushes.recv() =&gt; <span class="prelude-val">Some</span>(Arrival::Flush(ack)),
-<a href=#234 id=234 data-nosnippet>234</a>        }
-<a href=#235 id=235 data-nosnippet>235</a>    }
-<a href=#236 id=236 data-nosnippet>236</a>
-<a href=#237 id=237 data-nosnippet>237</a>    <span class="doccomment">/// The next line if one is already waiting, without awaiting.
-<a href=#238 id=238 data-nosnippet>238</a>    ///
-<a href=#239 id=239 data-nosnippet>239</a>    /// For tests that assert a line arrived, and for a writer draining what is
-<a href=#240 id=240 data-nosnippet>240</a>    /// queued before it flushes. Returns `None` both when the channel is empty
-<a href=#241 id=241 data-nosnippet>241</a>    /// and when it has ended -- a caller that needs to tell those apart wants
-<a href=#242 id=242 data-nosnippet>242</a>    /// [`Self::recv`].
-<a href=#243 id=243 data-nosnippet>243</a>    </span><span class="kw">pub fn </span>try_recv(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;LogLine&gt; {
-<a href=#244 id=244 data-nosnippet>244</a>        <span class="self">self</span>.rx.try_recv().ok()
-<a href=#245 id=245 data-nosnippet>245</a>    }
-<a href=#246 id=246 data-nosnippet>246</a>
-<a href=#247 id=247 data-nosnippet>247</a>    <span class="doccomment">/// The shared drop count, so the writer can report it alongside its own
-<a href=#248 id=248 data-nosnippet>248</a>    /// failures. The writer adds write errors to this same counter: from a
-<a href=#249 id=249 data-nosnippet>249</a>    /// reader's side, a line lost to a full channel and one lost to a full
-<a href=#250 id=250 data-nosnippet>250</a>    /// disk are the same hole.
-<a href=#251 id=251 data-nosnippet>251</a>    </span><span class="attr">#[must_use]
-<a href=#252 id=252 data-nosnippet>252</a>    </span><span class="kw">pub fn </span>dropped(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u64 {
-<a href=#253 id=253 data-nosnippet>253</a>        <span class="self">self</span>.dropped.load(Ordering::Relaxed)
-<a href=#254 id=254 data-nosnippet>254</a>    }
-<a href=#255 id=255 data-nosnippet>255</a>
-<a href=#256 id=256 data-nosnippet>256</a>    <span class="doccomment">/// Count a line lost after it left the channel.
-<a href=#257 id=257 data-nosnippet>257</a>    ///
-<a href=#258 id=258 data-nosnippet>258</a>    /// For the writer, whose failures are the other half of what
-<a href=#259 id=259 data-nosnippet>259</a>    /// [`PlayerLog::dropped`] reports.
-<a href=#260 id=260 data-nosnippet>260</a>    </span><span class="kw">pub fn </span>note_dropped(<span class="kw-2">&amp;</span><span class="self">self</span>) {
-<a href=#261 id=261 data-nosnippet>261</a>        <span class="self">self</span>.dropped.fetch_add(<span class="number">1</span>, Ordering::Relaxed);
-<a href=#262 id=262 data-nosnippet>262</a>    }
-<a href=#263 id=263 data-nosnippet>263</a>
-<a href=#264 id=264 data-nosnippet>264</a>    <span class="doccomment">/// `text` with every secret the log was given stripped.
-<a href=#265 id=265 data-nosnippet>265</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>redacted(<span class="kw-2">&amp;</span><span class="self">self</span>, text: <span class="kw-2">&amp;</span>str) -&gt; String {
-<a href=#266 id=266 data-nosnippet>266</a>        <span class="self">self</span>.redactions
-<a href=#267 id=267 data-nosnippet>267</a>            .lock()
-<a href=#268 id=268 data-nosnippet>268</a>            .unwrap_or_else(PoisonError::into_inner)
-<a href=#269 id=269 data-nosnippet>269</a>            .apply(text)
-<a href=#270 id=270 data-nosnippet>270</a>    }
-<a href=#271 id=271 data-nosnippet>271</a>}
+<a href=#140 id=140 data-nosnippet>140</a>            LogSink {
+<a href=#141 id=141 data-nosnippet>141</a>                rx,
+<a href=#142 id=142 data-nosnippet>142</a>                flushes: flush_rx,
+<a href=#143 id=143 data-nosnippet>143</a>                dropped,
+<a href=#144 id=144 data-nosnippet>144</a>                redactions,
+<a href=#145 id=145 data-nosnippet>145</a>                closed,
+<a href=#146 id=146 data-nosnippet>146</a>            },
+<a href=#147 id=147 data-nosnippet>147</a>        )
+<a href=#148 id=148 data-nosnippet>148</a>    }
+<a href=#149 id=149 data-nosnippet>149</a>
+<a href=#150 id=150 data-nosnippet>150</a>    <span class="doccomment">/// Ask the writer to put every line recorded so far on disk, and wait
+<a href=#151 id=151 data-nosnippet>151</a>    /// until it has: what a read does first, or a search of the live session
+<a href=#152 id=152 data-nosnippet>152</a>    /// misses what is still buffered.
+<a href=#153 id=153 data-nosnippet>153</a>    ///
+<a href=#154 id=154 data-nosnippet>154</a>    /// **Never call this from the actor.** It waits, up to two seconds;
+<a href=#155 id=155 data-nosnippet>155</a>    /// [`Self::record`] is the actor's, and never does.
+<a href=#156 id=156 data-nosnippet>156</a>    ///
+<a href=#157 id=157 data-nosnippet>157</a>    /// `true` when the writer answered; `false` when there is no writer or it
+<a href=#158 id=158 data-nosnippet>158</a>    /// did not answer in time. Either way the read goes ahead: the file holds
+<a href=#159 id=159 data-nosnippet>159</a>    /// what it holds.
+<a href=#160 id=160 data-nosnippet>160</a>    </span><span class="kw">pub async fn </span>flush(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+<a href=#161 id=161 data-nosnippet>161</a>        <span class="kw">let </span>(ack, done) = tokio::sync::oneshot::channel();
+<a href=#162 id=162 data-nosnippet>162</a>        <span class="kw">let </span>asked = <span class="kw">async </span>{
+<a href=#163 id=163 data-nosnippet>163</a>            <span class="self">self</span>.flushes.send(ack).<span class="kw">await</span>.ok()<span class="question-mark">?</span>;
+<a href=#164 id=164 data-nosnippet>164</a>            done.<span class="kw">await</span>.ok()
+<a href=#165 id=165 data-nosnippet>165</a>        };
+<a href=#166 id=166 data-nosnippet>166</a>        <span class="macro">matches!</span>(tokio::time::timeout(FLUSH_WAIT, asked).<span class="kw">await</span>, <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(())))
+<a href=#167 id=167 data-nosnippet>167</a>    }
+<a href=#168 id=168 data-nosnippet>168</a>
+<a href=#169 id=169 data-nosnippet>169</a>    <span class="doccomment">/// Hand one line to the writer, or count it dropped.
+<a href=#170 id=170 data-nosnippet>170</a>    ///
+<a href=#171 id=171 data-nosnippet>171</a>    /// **Never blocks, never awaits, never fails.** This is called from the
+<a href=#172 id=172 data-nosnippet>172</a>    /// actor, which owns the game socket; anything that can wait here can stall
+<a href=#173 id=173 data-nosnippet>173</a>    /// the character it is logging -- and, in a multi-session process, every
+<a href=#174 id=174 data-nosnippet>174</a>    /// other character too.
+<a href=#175 id=175 data-nosnippet>175</a>    ///
+<a href=#176 id=176 data-nosnippet>176</a>    /// Returns whether the line was accepted. Callers may ignore it: the drop
+<a href=#177 id=177 data-nosnippet>177</a>    /// is already counted, and the counter rather than the return value is what
+<a href=#178 id=178 data-nosnippet>178</a>    /// a frontend reads.
+<a href=#179 id=179 data-nosnippet>179</a>    </span><span class="comment">// NOT `#[must_use]`, though clippy::pedantic asks for it. The drop is
+<a href=#180 id=180 data-nosnippet>180</a>    // already counted by the time this returns, so a caller ignoring the bool
+<a href=#181 id=181 data-nosnippet>181</a>    // loses nothing -- and the actor, which is the main caller, has nothing
+<a href=#182 id=182 data-nosnippet>182</a>    // useful to do with it. The counter is the reporting channel.
+<a href=#183 id=183 data-nosnippet>183</a>    </span><span class="attr">#[allow(clippy::must_use_candidate)]
+<a href=#184 id=184 data-nosnippet>184</a>    </span><span class="kw">pub fn </span>record(<span class="kw-2">&amp;</span><span class="self">self</span>, line: LogLine) -&gt; bool {
+<a href=#185 id=185 data-nosnippet>185</a>        <span class="kw">if </span><span class="self">self</span>.tx.try_send(line).is_ok() {
+<a href=#186 id=186 data-nosnippet>186</a>            <span class="kw">return </span><span class="bool-val">true</span>;
+<a href=#187 id=187 data-nosnippet>187</a>        }
+<a href=#188 id=188 data-nosnippet>188</a>        <span class="comment">// Both failure modes are a loss the reader must be able to see: a full
+<a href=#189 id=189 data-nosnippet>189</a>        // channel means the writer is behind, and a closed one means it is
+<a href=#190 id=190 data-nosnippet>190</a>        // gone. Neither is worth distinguishing HERE -- what a reader needs is
+<a href=#191 id=191 data-nosnippet>191</a>        // "your history has a hole in it", and the count says that either way.
+<a href=#192 id=192 data-nosnippet>192</a>        </span><span class="self">self</span>.dropped.fetch_add(<span class="number">1</span>, Ordering::Relaxed);
+<a href=#193 id=193 data-nosnippet>193</a>        <span class="bool-val">false
+<a href=#194 id=194 data-nosnippet>194</a>    </span>}
+<a href=#195 id=195 data-nosnippet>195</a>
+<a href=#196 id=196 data-nosnippet>196</a>    <span class="doccomment">/// Strip `secret` from every line written from now, as `replacement`:
+<a href=#197 id=197 data-nosnippet>197</a>    /// a launch key, which can come back as game text, or the account name.
+<a href=#198 id=198 data-nosnippet>198</a>    </span><span class="kw">pub fn </span>redact(<span class="kw-2">&amp;</span><span class="self">self</span>, secret: <span class="kw-2">&amp;</span>str, replacement: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str) {
+<a href=#199 id=199 data-nosnippet>199</a>        <span class="self">self</span>.redactions
+<a href=#200 id=200 data-nosnippet>200</a>            .lock()
+<a href=#201 id=201 data-nosnippet>201</a>            .unwrap_or_else(PoisonError::into_inner)
+<a href=#202 id=202 data-nosnippet>202</a>            .add(secret, replacement);
+<a href=#203 id=203 data-nosnippet>203</a>    }
+<a href=#204 id=204 data-nosnippet>204</a>
+<a href=#205 id=205 data-nosnippet>205</a>    <span class="doccomment">/// Record one of Hydra's own lines, `[hydra]`, now: a connection lost or
+<a href=#206 id=206 data-nosnippet>206</a>    /// made. Its own tag, so neither a reader nor a parser mistakes Hydra's
+<a href=#207 id=207 data-nosnippet>207</a>    /// voice for the game's.
+<a href=#208 id=208 data-nosnippet>208</a>    </span><span class="kw">pub fn </span>notice(<span class="kw-2">&amp;</span><span class="self">self</span>, text: <span class="kw-2">&amp;</span>str) {
+<a href=#209 id=209 data-nosnippet>209</a>        <span class="self">self</span>.record(LogLine {
+<a href=#210 id=210 data-nosnippet>210</a>            at: hydra_net::line_time(),
+<a href=#211 id=211 data-nosnippet>211</a>            stream: <span class="kw">super</span>::NOTICES.to_owned(),
+<a href=#212 id=212 data-nosnippet>212</a>            text: text.to_owned(),
+<a href=#213 id=213 data-nosnippet>213</a>            links: Vec::new(),
+<a href=#214 id=214 data-nosnippet>214</a>        });
+<a href=#215 id=215 data-nosnippet>215</a>    }
+<a href=#216 id=216 data-nosnippet>216</a>
+<a href=#217 id=217 data-nosnippet>217</a>    <span class="doccomment">/// Record a command that goes to Hydra or to Lich, not the game, under
+<a href=#218 id=218 data-nosnippet>218</a>    /// who sent it (`cmd/player`, `cmd/trigger`), now: among the commands
+<a href=#219 id=219 data-nosnippet>219</a>    /// sent to the game, so a log shows what was asked of Hydra and Lich as
+<a href=#220 id=220 data-nosnippet>220</a>    /// well as what went to the game.
+<a href=#221 id=221 data-nosnippet>221</a>    </span><span class="kw">pub fn </span>typed(<span class="kw-2">&amp;</span><span class="self">self</span>, line: <span class="kw-2">&amp;</span>str, origin: <span class="kw">crate</span>::Origin) {
+<a href=#222 id=222 data-nosnippet>222</a>        <span class="self">self</span>.record(LogLine {
+<a href=#223 id=223 data-nosnippet>223</a>            at: hydra_net::line_time(),
+<a href=#224 id=224 data-nosnippet>224</a>            stream: <span class="kw">super</span>::command_tag(origin),
+<a href=#225 id=225 data-nosnippet>225</a>            text: line.trim_end_matches([<span class="string">'\r'</span>, <span class="string">'\n'</span>]).to_owned(),
+<a href=#226 id=226 data-nosnippet>226</a>            links: Vec::new(),
+<a href=#227 id=227 data-nosnippet>227</a>        });
+<a href=#228 id=228 data-nosnippet>228</a>    }
+<a href=#229 id=229 data-nosnippet>229</a>
+<a href=#230 id=230 data-nosnippet>230</a>    <span class="doccomment">/// How many lines this log has failed to record.
+<a href=#231 id=231 data-nosnippet>231</a>    ///
+<a href=#232 id=232 data-nosnippet>232</a>    /// **Non-zero means the archive has a hole**, and a frontend should say so.
+<a href=#233 id=233 data-nosnippet>233</a>    /// The alternative -- a log that quietly skips lines under load -- produces
+<a href=#234 id=234 data-nosnippet>234</a>    /// a file that reads as complete and is not, which is the one outcome
+<a href=#235 id=235 data-nosnippet>235</a>    /// the count exists to prevent.
+<a href=#236 id=236 data-nosnippet>236</a>    </span><span class="attr">#[must_use]
+<a href=#237 id=237 data-nosnippet>237</a>    </span><span class="kw">pub fn </span>dropped(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u64 {
+<a href=#238 id=238 data-nosnippet>238</a>        <span class="self">self</span>.dropped.load(Ordering::Relaxed)
+<a href=#239 id=239 data-nosnippet>239</a>    }
+<a href=#240 id=240 data-nosnippet>240</a>
+<a href=#241 id=241 data-nosnippet>241</a>    <span class="doccomment">/// The session is over: the writer writes what is already queued,
+<a href=#242 id=242 data-nosnippet>242</a>    /// flushes, and ends, though a window, a page or a task still holds a
+<a href=#243 id=243 data-nosnippet>243</a>    /// clone of this. Hydra waits for every writer before it exits, so one
+<a href=#244 id=244 data-nosnippet>244</a>    /// held open by a clone would hold Hydra up. What is recorded after is
+<a href=#245 id=245 data-nosnippet>245</a>    /// not written.
+<a href=#246 id=246 data-nosnippet>246</a>    </span><span class="kw">pub fn </span>close(<span class="kw-2">&amp;</span><span class="self">self</span>) {
+<a href=#247 id=247 data-nosnippet>247</a>        <span class="self">self</span>.closed.cancel();
+<a href=#248 id=248 data-nosnippet>248</a>    }
+<a href=#249 id=249 data-nosnippet>249</a>}
+<a href=#250 id=250 data-nosnippet>250</a>
+<a href=#251 id=251 data-nosnippet>251</a><span class="kw">impl </span>LogSink {
+<a href=#252 id=252 data-nosnippet>252</a>    <span class="doccomment">/// The next line, or `None` once every [`PlayerLog`] is gone.
+<a href=#253 id=253 data-nosnippet>253</a>    </span><span class="kw">pub async fn </span>recv(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;LogLine&gt; {
+<a href=#254 id=254 data-nosnippet>254</a>        <span class="self">self</span>.rx.recv().<span class="kw">await
+<a href=#255 id=255 data-nosnippet>255</a>    </span>}
+<a href=#256 id=256 data-nosnippet>256</a>
+<a href=#257 id=257 data-nosnippet>257</a>    <span class="doccomment">/// The next line or flush request, or `None` once every [`PlayerLog`] is
+<a href=#258 id=258 data-nosnippet>258</a>    /// gone, or once one is closed ([`PlayerLog::close`]) and every line
+<a href=#259 id=259 data-nosnippet>259</a>    /// already queued has been taken. What the writer waits on.
+<a href=#260 id=260 data-nosnippet>260</a>    </span><span class="kw">pub async fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Arrival&gt; {
+<a href=#261 id=261 data-nosnippet>261</a>        <span class="macro">tokio::select!</span> {
+<a href=#262 id=262 data-nosnippet>262</a>            biased;
+<a href=#263 id=263 data-nosnippet>263</a>            line = <span class="self">self</span>.rx.recv() =&gt; line.map(Arrival::Line),
+<a href=#264 id=264 data-nosnippet>264</a>            <span class="prelude-val">Some</span>(ack) = <span class="self">self</span>.flushes.recv() =&gt; <span class="prelude-val">Some</span>(Arrival::Flush(ack)),
+<a href=#265 id=265 data-nosnippet>265</a>            () = <span class="self">self</span>.closed.cancelled() =&gt; <span class="self">self</span>.rx.try_recv().ok().map(Arrival::Line),
+<a href=#266 id=266 data-nosnippet>266</a>        }
+<a href=#267 id=267 data-nosnippet>267</a>    }
+<a href=#268 id=268 data-nosnippet>268</a>
+<a href=#269 id=269 data-nosnippet>269</a>    <span class="doccomment">/// The next line if one is already waiting, without awaiting.
+<a href=#270 id=270 data-nosnippet>270</a>    ///
+<a href=#271 id=271 data-nosnippet>271</a>    /// For tests that assert a line arrived, and for a writer draining what is
+<a href=#272 id=272 data-nosnippet>272</a>    /// queued before it flushes. Returns `None` both when the channel is empty
+<a href=#273 id=273 data-nosnippet>273</a>    /// and when it has ended -- a caller that needs to tell those apart wants
+<a href=#274 id=274 data-nosnippet>274</a>    /// [`Self::recv`].
+<a href=#275 id=275 data-nosnippet>275</a>    </span><span class="kw">pub fn </span>try_recv(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;LogLine&gt; {
+<a href=#276 id=276 data-nosnippet>276</a>        <span class="self">self</span>.rx.try_recv().ok()
+<a href=#277 id=277 data-nosnippet>277</a>    }
+<a href=#278 id=278 data-nosnippet>278</a>
+<a href=#279 id=279 data-nosnippet>279</a>    <span class="doccomment">/// The shared drop count, so the writer can report it alongside its own
+<a href=#280 id=280 data-nosnippet>280</a>    /// failures. The writer adds write errors to this same counter: from a
+<a href=#281 id=281 data-nosnippet>281</a>    /// reader's side, a line lost to a full channel and one lost to a full
+<a href=#282 id=282 data-nosnippet>282</a>    /// disk are the same hole.
+<a href=#283 id=283 data-nosnippet>283</a>    </span><span class="attr">#[must_use]
+<a href=#284 id=284 data-nosnippet>284</a>    </span><span class="kw">pub fn </span>dropped(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u64 {
+<a href=#285 id=285 data-nosnippet>285</a>        <span class="self">self</span>.dropped.load(Ordering::Relaxed)
+<a href=#286 id=286 data-nosnippet>286</a>    }
+<a href=#287 id=287 data-nosnippet>287</a>
+<a href=#288 id=288 data-nosnippet>288</a>    <span class="doccomment">/// Count a line lost after it left the channel.
+<a href=#289 id=289 data-nosnippet>289</a>    ///
+<a href=#290 id=290 data-nosnippet>290</a>    /// For the writer, whose failures are the other half of what
+<a href=#291 id=291 data-nosnippet>291</a>    /// [`PlayerLog::dropped`] reports.
+<a href=#292 id=292 data-nosnippet>292</a>    </span><span class="kw">pub fn </span>note_dropped(<span class="kw-2">&amp;</span><span class="self">self</span>) {
+<a href=#293 id=293 data-nosnippet>293</a>        <span class="self">self</span>.dropped.fetch_add(<span class="number">1</span>, Ordering::Relaxed);
+<a href=#294 id=294 data-nosnippet>294</a>    }
+<a href=#295 id=295 data-nosnippet>295</a>
+<a href=#296 id=296 data-nosnippet>296</a>    <span class="doccomment">/// `text` with every secret the log was given stripped.
+<a href=#297 id=297 data-nosnippet>297</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>redacted(<span class="kw-2">&amp;</span><span class="self">self</span>, text: <span class="kw-2">&amp;</span>str) -&gt; String {
+<a href=#298 id=298 data-nosnippet>298</a>        <span class="self">self</span>.redactions
+<a href=#299 id=299 data-nosnippet>299</a>            .lock()
+<a href=#300 id=300 data-nosnippet>300</a>            .unwrap_or_else(PoisonError::into_inner)
+<a href=#301 id=301 data-nosnippet>301</a>            .apply(text)
+<a href=#302 id=302 data-nosnippet>302</a>    }
+<a href=#303 id=303 data-nosnippet>303</a>}
 </code></pre></div></section></main></body></html>

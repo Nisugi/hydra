@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["BUY_DAY_PASS","CALL_WIND","DAY_PASS_SACK","FWI_TRINKET","GET_SILVERS","ICE_MODES","SECTION","TABLE"],"enum":["KeyKind"],"fn":["key","on"],"struct":["Key","TravelSettings"]};
+window.SIDEBAR_ITEMS = {"constant":["BUY_DAY_PASS","CALL_WIND","DAY_PASS_SACK","FWI_TRINKET","GET_SILVERS","GROUPS","ICE_MODES","MEMORIES","SECTION","TABLE"],"enum":["KeyKind","MemoryKind"],"fn":["key","memory","on"],"struct":["Group","Key","Memory","TravelSettings"]};

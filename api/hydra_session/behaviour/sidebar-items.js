@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Move"],"fn":["current","next_move","stance"]};

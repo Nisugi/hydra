@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["keep_copied","of_story"]};

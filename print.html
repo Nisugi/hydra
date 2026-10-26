@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-a56a457a.js";
+            window.path_to_searchindex_js = "searchindex-50dd7f95.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-6d2367c3.js"></script>
+        <script src="toc-b5471689.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -230,7 +230,7 @@ quits the game in turn, and then Hydra closes.</p>
 minute and then starts itself again in the background. That gives back the
 memory that playing and the windows took, which a program can only hand
 back by ending. You do not see it happen. The wait is <strong>Start fresh after</strong>,
-on the Window page of the settings; 0 turns it off. An update Hydra has
+in seconds, on Hydra’s <strong>General</strong> page of Settings; 0 turns it off. An update Hydra has
 downloaded takes over at this point too.</p>
 <h2 id="hydras-commands-and-the-games"><a class="header" href="#hydras-commands-and-the-games">Hydra’s commands and the game’s</a></h2>
 <p>Anything you type goes to the game, except lines that start with Hydra’s
@@ -245,7 +245,8 @@ password.</p>
 <h2 id="the-web-page-and-the-phone"><a class="header" href="#the-web-page-and-the-phone">The web page and the phone</a></h2>
 <p>Hydra can serve a web page to your home network. A phone, a tablet or
 another computer opens it in a browser and plays the same characters, from
-the same sessions, as the play windows show them.</p>
+the same sessions, as the play windows show them. <strong>Menu › Pair</strong> shows its
+address and a code to scan, and serves it if it is not served yet.</p>
 <p>HydraFE, the app for iPhone and iPad, does that too: it finds Hydra on your
 home network by itself. It can also run Hydra on the phone alone, with no
 computer, for when you are away from home. Lich does not run on a phone.</p>
@@ -284,6 +285,13 @@ choose <strong>More info</strong>, then <strong>Run anyway</strong>.</li>
 <p>The hub opens, and Hydra’s icon appears in the tray.</p>
 <p>A shortcut to <code>hydra.exe</code> works as well: it starts Hydra in the folder
 <code>hydra.exe</code> is in, unless you change its <em>Start in</em>.</p>
+<p>Hydra draws its windows with Vulkan where your graphics card has it, and
+with DirectX 12 otherwise. If Hydra crashes to the desktop while it plays,
+and Windows names your graphics driver, choose <strong>DirectX 12</strong> under
+<strong>Graphics</strong> on Hydra’s <strong>General</strong> page of Settings and start Hydra again. An
+overlay such as Overwolf’s, or a recorder’s game capture, hooks into both,
+and leaving <code>hydra.exe</code> out of them helps too. DirectX 12 can take half a
+minute to open on some computers; that is the other reason to switch.</p>
 <h2 id="macos"><a class="header" href="#macos">macOS</a></h2>
 <p>Hydra for macOS runs on Macs with Apple silicon (M1 and later).</p>
 <ol>
@@ -349,7 +357,7 @@ not logged back in: start it from the hub.</li>
 when you start it yourself, or when it starts fresh after a minute with
 nothing playing (see <a href="#how-hydra-works">How Hydra works</a>).</li>
 </ul>
-<p>Two switches on the <strong>Window</strong> page of the settings control this. <strong>Check
+<p>Two switches on Hydra’s <strong>General</strong> page of Settings control this. <strong>Check
 for updates</strong> is on unless you turn it off. <strong>Update on its own</strong> is off
 unless you turn it on; with it on, Hydra downloads a new release as soon as
 it is out, without asking, and it runs from the next start.</p>
@@ -423,30 +431,47 @@ the front. <strong>Log</strong> opens what the character has read. <strong>Quit<
 game.</p>
 <p><img src="images/hub_offline.png" alt="The hub’s Offline tab: Nisugi, starred, with Start; Nerten, with a password box"></p>
 <h2 id="the-menu"><a class="header" href="#the-menu">The Menu</a></h2>
-<p><img src="images/hub_menu.png" alt="The hub’s Menu open: Cards, Hotbars, Map, Packs, Performance, Reports, Settings, Survey, Themes, Triggers and Web page"></p>
-<p>Every play window has the same Menu on its title bar, so either one
-reaches everything with the other closed.</p>
+<p><img src="images/hub_menu.png" alt="The hub’s Menu open: Editors, Explorer, Reports, Settings, Pair and Performance"></p>
+<p>Every play window has a Menu on its title bar too, so either one reaches
+everything with the other closed.</p>
 <ul>
-<li><strong>Cards</strong>, <strong>Hotbars</strong>, <strong>Packs</strong>, <strong>Themes</strong> and <strong>Triggers</strong>: the
-editors, each a page of Settings. <strong>Cards</strong> is the design every
-character’s card is drawn from, which parts it shows and where. A
-trigger answers what the game says: it colours or hides a line, plays a
-sound, shows a banner, starts a timer or sends a command. <strong>Packs</strong> are
-pictures to fetch: frames, the Injuries doll, compasses.</li>
-<li><strong>Map</strong>: the Map Explorer, the whole map and where every character
-stands.</li>
-<li><strong>Performance</strong>: each live card’s timings, for when something feels slow.</li>
+<li><strong>Editors</strong>: a list of every editor, each a page of the <strong>Editors</strong>
+window: Keybinds, Macros, Hotbars, Themes, Triggers, the Controller,
+Packs, Icons and Cards. <strong>Cards</strong> is the design every character’s card
+is drawn from, which parts it shows and where. A trigger answers what
+the game says: it colours or hides a line, plays a sound, shows a
+banner, starts a timer or sends a command. <strong>Packs</strong> are pictures to
+fetch: frames, the Injuries doll, compasses. From a play window, an
+editor works for its character.</li>
+<li><strong>Layout</strong>, on a play window: add a widget or a custom window, lay the
+windows out afresh, switch <strong>Arrange</strong> and <strong>Lock</strong>, set the <strong>Grid</strong>
+windows snap to, how strongly its <strong>Grid lines</strong> show and the <strong>Veil</strong>
+over a custom window’s cells while arranging, and <strong>Title bar
+settings</strong>, Settings at the window’s title bar.</li>
+<li><strong>Logs</strong>, on a play window: what its character has read.</li>
+<li><strong>Explorer</strong>: the Map Explorer, the whole map and where every character
+stands, and the bestiary.</li>
+<li><strong>Reports</strong>: every report the ledger answers.</li>
 <li><strong>Settings</strong>: Hydra’s own settings, and every character’s. From a play
-window, Settings opens on that character, and so does an editor.</li>
-<li><strong>Survey</strong>: the room survey’s map, while one runs.</li>
-<li><strong>Web page</strong>: the web page’s address and a code to scan, once the web
-page is switched on in the settings. From a play window, it is a page of
-Settings.</li>
+window, Settings opens on that character.</li>
+<li><strong>Pair</strong>: a window with the web page’s address and a code for a phone’s
+camera to scan, and <strong>Copy</strong> for the address. While the web page is not
+served, it says so and <strong>Serve it</strong> switches it on, as the <strong>Web page</strong>
+switch on Hydra’s <strong>General</strong> page in Settings does.</li>
+<li><strong>Performance</strong>, on the hub: each live card’s timings, for when
+something feels slow.</li>
 </ul>
-<p>Settings lists them all as well: Triggers, Themes, Cards and Packs under
-<em>Editors</em>, Hotbars among the pages of whoever’s settings are shown, and
-under <em>Tools</em> the web page’s address, the Map, the Survey, the character’s
-Log and the Performance switch.</p>
+<p>A new play window’s title bar shows its character, how it is connected,
+the <strong>Menu</strong> and the zoom’s − and +. Anything the Menu holds can be put
+back on the bar as a button of its own – <strong>Lock</strong>, <strong>Arrange</strong>, the
+<strong>Layout</strong>, <strong>Keys</strong> and <strong>Drawers</strong> menus, <strong>Log</strong>, <strong>Settings</strong> – and so
+can an icon for each drawer, lit while it is open: on the character’s
+<strong>Window</strong> page in Settings.</p>
+<p>Settings chooses how things behave; the Editors window is where things
+are made. Settings lists its pages down its side; the Editors window
+has its editors as tabs along its top. Its <strong>For</strong>, at the end of that
+row, picks whose keys, macros, hotbars and controller its pages work
+on: every character’s, or one character’s own.</p>
 <h2 id="shutting-down"><a class="header" href="#shutting-down">Shutting down</a></h2>
 <p><strong>Shut down</strong> quits every character in turn and closes Hydra. With any
 character playing, it asks first: <em>Shut Hydra down? Every character will
@@ -582,8 +607,8 @@ Find, the tabs, targeting. A key that does something Hydra’s keys have no
 action for is named in the answer, and so is a key that would type a
 letter: a key bound in Hydra holds Ctrl, Alt or Cmd, or is one that types
 nothing, like F5.</p>
-<p>Keys you bring in show on the Keys page of Settings, where you change them
-like any other.</p>
+<p>Keys you bring in show on the <strong>Keybinds</strong> page of the Editors window,
+where you change them like any other.</p>
 <h2 id="triggers"><a class="header" href="#triggers">Triggers</a></h2>
 <p><code>.trigger import &lt;file&gt;</code> brings highlights in as triggers.</p>
 <ul>
@@ -592,7 +617,7 @@ like any other.</p>
 character’s at once.</li>
 </ul>
 <p>Importing the same again replaces what it brought rather than adding a
-second copy. Triggers you bring in show on the Triggers page of Settings:
+second copy. Triggers you bring in show on the <strong>Triggers</strong> page of the Editors window:
 Wrayth’s in the categories <em>Wrayth strings</em>, <em>Wrayth names</em> and <em>Wrayth
 ignores</em>; Vellum’s in their own category, or <em>Vellum</em> when they had none.</p>
 <h2 id="hotbars-and-the-controller"><a class="header" href="#hotbars-and-the-controller">Hotbars and the controller</a></h2>
@@ -626,10 +651,11 @@ you ask it to, with your scripts and their settings. See
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="triggers-1"><a class="header" href="#triggers-1">Triggers</a></h1>
 <p>A trigger watches what the game says. When a line holds the words you
-gave it, it acts: it colours the words, hides the line, writes it another
-way or moves it to a window of its own; it plays a sound, shows a banner
-or a notification, speaks, rumbles the controller or places a picture;
-it starts a timer, sets a flag or a status, or sends commands to the game.
+gave it, it acts: it colours the words, hides the line or writes it
+another way; it plays a sound, shows a banner or a notification, speaks,
+rumbles the controller or places a picture; it starts a timer, sets a flag
+or a status, or sends commands to the game. A line is moved to a window of
+its own by a <a href="#streams">stream rule</a>.
 A trigger can watch your character instead of the text, and act when its
 health falls under half.</p>
 <p>This chapter goes through the editor, then
@@ -638,8 +664,8 @@ health falls under half.</p>
 <a href="#examples">examples of each kind</a>, each with a line from the game to
 try it on.</p>
 <h2 id="where-they-are"><a class="header" href="#where-they-are">Where they are</a></h2>
-<p>Open <strong>Settings</strong> and choose <strong>Triggers</strong>, under <em>Editors</em>. The <strong>Menu</strong>,
-on the hub and on every play window’s title bar, has <strong>Triggers</strong> too.</p>
+<p>Open <strong>Menu › Editors › Triggers</strong>, on the hub or on any play window’s
+title bar: the <strong>Editors</strong> window opens at it.</p>
 <p><img src="images/triggers_editor.png" alt="The trigger editor: the list by category on the left, a trigger open in the form on the right"></p>
 <p>On the left, every trigger, by category:</p>
 <ul>
@@ -796,11 +822,9 @@ notification still come.</li>
 <li><strong>Write instead</strong>: what the trigger found is written as these words.
 The rest of the line stays. <code>$1</code>, <code>$2</code> put in what a pattern’s groups
 caught: <code>$2 to $1: "$3"</code> turns a long line of speech into a short one.</li>
-<li><strong>Move to</strong>: the line goes to a stream of that name instead of the
-story. Once a line has gone there, the play window’s <strong>Layout</strong> menu,
-<strong>Add a widget</strong>, offers a window for that stream, under <em>Other game
-windows</em>. Tick <strong>and keep it here</strong> to copy the line rather than move
-it.</li>
+<li><strong>Move to</strong>: a line goes to another window by a
+<a href="#streams">stream rule</a>, not a trigger; the link opens the Streams
+page.</li>
 </ul>
 <h2 id="tell-me"><a class="header" href="#tell-me">Tell me</a></h2>
 <p>How the trigger gets your attention.</p>
@@ -814,12 +838,17 @@ sound is named.</li>
 seconds: <em>The line</em>, or <em>These words</em> of your own.</li>
 <li><strong>Notification</strong>: a notification from your computer, as other programs
 send: the line, or your own words.</li>
+<li><strong>Push to phone</strong>: a banner on each phone paired with Hydra in the
+HydraFE app, even with the app closed: the line, or your own words.
+Tapping it opens HydraFE on that character (<a href="#push-to-phone">Push to phone</a>).
+<code>.push</code> lists the phones,
+<code>.push test</code> sends one to try it, and <code>.push forget &lt;name&gt;</code> stops one.</li>
 <li><strong>Speech</strong>: your computer’s voice reads the line, or your own words.</li>
 <li><strong>Rumble</strong>: the game controller rumbles: <code>short</code>, <code>long</code>, <code>double</code>, or
 a pattern of your own from the controller’s file.</li>
 <li><strong>Picture</strong>: a picture placed in the story after the line: an
 <code>https://</code> address, or a file in the pictures folder set on the
-<strong>Window</strong> page of Settings.</li>
+Hydra’s <strong>General</strong> page of Settings.</li>
 </ul>
 <p>Several characters hearing the same line within a second, a shout in a
 room they share, make one sound, one notification and one voice, not one
@@ -866,7 +895,7 @@ lights it while it is set, and under <strong>When</strong> the condition <strong
 reads it as it reads the game’s own. Set and clear it as you would a flag.</p>
 <h2 id="cooldown"><a class="header" href="#cooldown">Cooldown</a></h2>
 <p>Under the sections, when the trigger has something to hold back:
-<strong>Cooldown</strong> is how long before its sound, banner, notification, speech,
+<strong>Cooldown</strong> is how long before its sound, banner, notification, push, speech,
 rumble, picture, timer and commands come again. 3 seconds unless you
 change it. A line the trigger finds while it cools down is still
 coloured, hidden, rewritten and moved, and its flag and status are still
@@ -921,11 +950,11 @@ casting lasts. <strong>Down message</strong> ends it when the spell wears off ea
 </div>
 <p><img src="images/trigger_shorten.png" alt="Short speech: Try it shows the three groups caught and the line rewritten"></p>
 <h2 id="give-a-chat-its-own-window"><a class="header" href="#give-a-chat-its-own-window">Give a chat its own window</a></h2>
-<p><strong>New</strong> → <em>Anything</em>. Look for <code>[LNet]</code>, and under <em>Show it</em>, <strong>Move to</strong>
-a stream named <code>lnet</code>. Once a line has gone there, the play window’s
-<strong>Layout</strong> menu, <strong>Add a widget</strong>, offers an <em>Lnet</em> window, under <em>Other
-game windows</em>. Place it where you like.</p>
-<p><img src="images/trigger_move.png" alt="LNet window: Try it says the line goes to the lnet stream"></p>
+<p>That is a <a href="#streams">stream rule</a>, not a trigger: right-click an
+<code>[LNet]</code> line, choose <strong>Send lines like this to…</strong> and <strong>A stream of
+your own…</strong>, and name it <code>lnet</code>. Once the rule is saved, the play
+window’s <strong>Menu › Layout › Add a widget</strong> offers an <em>lnet</em> window, under
+<em>Streams</em>.</p>
 <h2 id="answer-the-game"><a class="header" href="#answer-the-game">Answer the game</a></h2>
 <p><strong>New</strong> → <em>Send a command</em>. When your spell is ready, cast it:</p>
 <p><img src="images/trigger_send.png" alt="Cast when ready: Try it shows it would send cast"></p>
@@ -950,6 +979,231 @@ shows <em>Warded</em> while the spell lasts, and any trigger can ask for it
 under <strong>When</strong>: <em>indicator Warded</em>. A flag works the same way, but shows
 nowhere: it is for other triggers alone.</p>
 <div style="break-before: page; page-break-before: always;"></div>
+<h1 id="streams"><a class="header" href="#streams">Streams</a></h1>
+<p>The game sends each line to a stream: most to the story, some to
+<em>Thoughts</em>, <em>Speech</em>, <em>Arrivals</em> and the rest, each a window you can add.
+Stream rules change where a line goes: a line the game puts in the story
+that belongs with the ambients, or lines you want in a window of their own,
+such as your fights.</p>
+<p>A rule finds its lines and sends them to a stream. It <strong>moves</strong> them, out
+of where the game sent them, or <strong>copies</strong> them, so they show in both. The
+rules are one list for every character, kept in <code>stream_rules.toml</code> in
+Hydra’s <code>data</code> folder, and tried in order: the first that matches a line
+sorts it.</p>
+<p>The log follows the rules too: a line a rule moved is written as
+<code>main/ambients</code>, where the game sent it, then where it went.</p>
+<h2 id="fights-in-a-window-of-their-own"><a class="header" href="#fights-in-a-window-of-their-own">Fights in a window of their own</a></h2>
+<p>One rule is built in: <strong>Combat</strong> copies every line of the story that comes
+while you fight to a stream named <code>combat</code>. Add its window from the play
+window’s <strong>Menu › Layout › Add a widget</strong>, under <em>Streams</em>; the story keeps
+the lines too. Edit the rule, or switch it off, on the Streams page.</p>
+<h2 id="send-a-line-somewhere-else"><a class="header" href="#send-a-line-somewhere-else">Send a line somewhere else</a></h2>
+<p>Right-click the line, in a play window or in the log, and choose <strong>Send
+lines like this to…</strong>, then the stream, or <strong>A stream of your own…</strong>.
+The Streams page opens with a rule made from the line: its words as they
+are, but the names in it and its numbers loosened, so it takes the lines
+like it. <code>A grey warg howls 3 times.</code> becomes a rule for any creature
+howling any number of times.</p>
+<p>The rule is not kept until you <strong>Save</strong> it. Look it over first: <strong>Try it</strong>
+holds the line, and says whether the rule’s words find it.</p>
+<h2 id="the-streams-page"><a class="header" href="#the-streams-page">The Streams page</a></h2>
+<p>Open <strong>Menu › Editors › Streams</strong>.</p>
+<p><img src="images/streams_lnet.png" alt="The Streams page: the rules on the left, a rule open in the form on the right, its line tried"></p>
+<p>On the left, every rule in the order they are tried. The tick switches a
+rule on or off. A rule Hydra cannot use says <strong>not used</strong>; point at it to
+read why.</p>
+<p>On the right, the rule chosen, or a new one from <strong>New</strong>:</p>
+<ul>
+<li><strong>Lines from</strong>: the stream its lines come from: the story, one of the
+game’s, or any.</li>
+<li><strong>Holding</strong>: <strong>Words</strong> anywhere in the line, whatever their case, with
+<code>|</code> between words any of which will do; or <strong>A regex</strong>, a regular
+expression, where capitals count unless it starts <code>(?i)</code>.</li>
+<li><strong>Only when</strong>: there is fighting, or the combat reader marked the line:
+a flare, a status landing on you, a killing blow.</li>
+<li><strong>A creature’s</strong>: a creature’s own messages of the kinds ticked, its
+ambient flavour, its arrival, its death and the rest, as the bestiary has
+them.</li>
+<li><strong>Put in</strong>: the stream: one of the game’s, or a name of your own. A
+stream of your own is offered in <strong>Add a widget</strong>, on the chat card and
+on the phone page as soon as a rule names it.</li>
+<li><strong>Keep it where the game sent it too</strong>: the line is copied, not moved.</li>
+</ul>
+<p>A rule needs everything it asks for to hold. <strong>Move up</strong> and <strong>Move down</strong>
+change the order. A new rule goes first, so it comes before the broad ones.</p>
+<h2 id="past-days-in-the-log"><a class="header" href="#past-days-in-the-log">Past days in the log</a></h2>
+<p>The log keeps each line as it was written. A line written before a rule
+that takes it was made shows in the log window in the rule’s stream all the
+same, in a search and an export too: the rules sort it again by its words
+as it is read. A rule that asks whether there was fighting, or for the
+combat reader’s mark, cannot be tried on a past line, and is passed over.</p>
+<h2 id="triggers-that-moved-lines"><a class="header" href="#triggers-that-moved-lines">Triggers that moved lines</a></h2>
+<p>A trigger does not move its line: the stream rules do. A trigger that did,
+from Hydra before or brought from Vellum, is made a stream rule when Hydra
+reads it, under its own name, and the Streams page tells you so. Its other
+parts stay with the trigger, and a trigger that did nothing but move its
+line goes. A rule made this way is every character’s, whoever the trigger
+was for.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="the-lookout"><a class="header" href="#the-lookout">The lookout</a></h1>
+<p>A script check is something out of the ordinary that asks you to answer:
+proof that someone is at the keyboard. Mid-hunt it is one line among
+hundreds, and no trigger can be written for it, since nobody knows its
+words before it comes.</p>
+<p>The lookout learns what is ordinary instead. Every line your characters
+read is noted, and a line it has seen five times is learned and shown no
+more. Everything it has <strong>not</strong> learned goes to a stream of its own,
+<code>lookout</code>. Once the routine is learned the stream is almost silent, and a
+line that has never come before stands out in it.</p>
+<p>Nothing is ever sent to the game.</p>
+<h2 id="watching-it"><a class="header" href="#watching-it">Watching it</a></h2>
+<p>Add the stream’s window from the play window’s <strong>Menu › Layout › Add a
+widget</strong>, under <em>Streams</em>, or a tab of it beside another window. The story
+keeps every line as it was; the lookout’s window gets a copy.</p>
+<p>The <strong>Lookout</strong> trigger comes with it, switched off: a sound and a banner
+for each line that reaches the stream, at most one every ten seconds.
+Switch it on with <strong>Sound and banner</strong> on the lookout’s settings page, once
+the lookout has learned your routine; its sound and words are changed in
+<strong>Menu › Editors › Triggers</strong>. Any trigger can do the same: give it the
+stream <code>lookout</code> and no words to look for, and it acts on every line put
+there.</p>
+<h2 id="how-a-line-is-judged"><a class="header" href="#how-a-line-is-judged">How a line is judged</a></h2>
+<ul>
+<li><strong>The sentence.</strong> Each thing the game links in the line – a creature, a
+person, an item – stands as a placeholder, and your own characters’
+names are taken out, so <em>Nisugi picks up a gold coin</em> and <em>Dicate picks
+up a bronze ring</em> are one sentence, learned together.</li>
+<li><strong>Each thing in it.</strong> The words the game named it by are learned too,
+apart. A sentence learned long ago still shows when what is in it has
+never been seen: <em>You pick up a softly glowing token</em> comes through.</li>
+<li><strong>The same moment.</strong> A line every character of a group hears at once is
+one occasion, not five: the group does not learn a line the first time it
+comes.</li>
+<li><strong>Left out.</strong> A room’s description, channels, and the lines the ignore
+list takes: the exits, room titles, what a merchant says to a sale.</li>
+<li><strong>The stat floor.</strong> A combat line giving an AS, DS, CS, TD, UAF, UDF,
+AvD or CvA of 1500 or more is always shown, however often its line has
+come, and marked in the lookout’s colour: no character reaches it, and a
+check can hide in one.</li>
+<li><strong>Quiet after login.</strong> For the first minute a character is in the game
+its lines are learned and not shown: the login’s lines come once a day.</li>
+</ul>
+<h2 id="teaching-it-your-routine"><a class="header" href="#teaching-it-your-routine">Teaching it your routine</a></h2>
+<p>A new lookout shows nearly everything for its first days. Teach it from the
+player logs Hydra has already kept: shut Hydra down, then run</p>
+<pre><code class="language-text">hydra lookout seed
+</code></pre>
+<p>in Hydra’s folder. Every day of every character’s log is read, in the
+order the lines came, and learned; today is left for next time, being
+still played. Run it again later and it starts after the last day it read:
+no day is learned twice. Three weeks of a seven-character group’s logs is
+about fifteen seconds’ work.</p>
+<h2 id="its-settings"><a class="header" href="#its-settings">Its settings</a></h2>
+<p><strong>Menu › Settings › Lookout</strong>.</p>
+<p><img src="images/lookout_page.png" alt="The Lookout page of the settings menu"></p>
+<ul>
+<li><strong>Paused</strong>: nothing is read, learned or shown.</li>
+<li><strong>Sound and banner</strong>: the Lookout trigger, on or off. Off unless you
+switch it on.</li>
+<li><strong>Mark in the story</strong>: each new line is coloured in the story as well,
+where it came, in the theme’s <code>lookout</code> colour. Best left off while the
+lookout is still learning most lines.</li>
+<li><strong>Characters not read</strong>: names, apart by commas.</li>
+<li><strong>Occasions to learn a line</strong>: 5 unless you change it.</li>
+<li><strong>Same moment</strong>: the seconds in which one line heard by several of your
+characters is one occasion.</li>
+<li><strong>Forget one still learning after</strong>: a line seen once or twice and never
+again is dropped after this many days, which keeps the file small.</li>
+<li><strong>Quiet after login</strong> and <strong>Stat floor</strong>, as above.</li>
+</ul>
+<p>The lines it leaves out are <strong>Menu › Editors › Lookout</strong>: one pattern a
+line, the commonest first. <strong>The built-in list</strong> brings back the one Hydra
+comes with.</p>
+<h2 id="a-line-you-do-not-want-or-one-you-always-do"><a class="header" href="#a-line-you-do-not-want-or-one-you-always-do">A line you do not want, or one you always do</a></h2>
+<p>Right-click a line in the lookout’s window:</p>
+<ul>
+<li><strong>Forget this line</strong>: learned now, never shown again.</li>
+<li><strong>Always show this line</strong>: shown however often it comes.</li>
+</ul>
+<p>Or type it, with words from the line:</p>
+<pre><code class="language-text">.lookout forget squirrel
+.lookout always town crier
+</code></pre>
+<p><code>.lookout</code> alone says how much it has learned; <code>.lookout help</code> lists the
+rest, including <code>.lookout clear yes</code>, which forgets everything and starts
+again.</p>
+<h2 id="where-it-is-kept"><a class="header" href="#where-it-is-kept">Where it is kept</a></h2>
+<p>What it has learned is in Hydra’s <code>data</code> folder, one file a game:
+<code>lookout_prime.bin</code>. It holds a fingerprint of each learned line, not the
+lines: about 200 KB after three weeks. Its choices are <code>lookout.toml</code>,
+beside it, for every game.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="push-to-phone"><a class="header" href="#push-to-phone">Push to phone</a></h1>
+<p>A trigger can put a banner on your iPhone, even with HydraFE closed and the
+phone in your pocket. Tap the banner and HydraFE opens on that computer,
+with that character in front of you.</p>
+<h2 id="setting-it-up"><a class="header" href="#setting-it-up">Setting it up</a></h2>
+<ol>
+<li>On the computer, turn on Hydra’s web page (the hub’s <strong>Web page</strong>
+setting) and pair HydraFE with it, as for playing from the phone.</li>
+<li>Open that connection in HydraFE. The first time, iOS asks whether Hydra
+may send notifications: <strong>Allow</strong>.</li>
+<li>The page says <em>Push: iPhone is paired</em>. That’s all: the phone pairs
+again by itself each time it connects, so a phone that gets a new
+address from Apple is never lost.</li>
+</ol>
+<p>Then give a trigger <strong>Push to phone</strong>, beside its sound, banner and
+notification (see <a href="#what-a-trigger-does">What a trigger does</a>): the line it
+found, or words of your own. Whenever the trigger fires, every phone paired
+with this computer gets the banner, titled with the character’s name. Like
+the trigger’s other actions, a push comes at most once every cooldown.</p>
+<p>A phone paired with several computers gets each one’s pushes, and a tap
+opens the computer the push came from.</p>
+<h2 id="push"><a class="header" href="#push"><code>.push</code></a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Command</th><th>What it does</th></tr>
+</thead>
+<tbody>
+<tr><td><code>.push</code></td><td>the phones paired with this computer</td></tr>
+<tr><td><code>.push test</code></td><td>a test banner to each of them</td></tr>
+<tr><td><code>.push forget &lt;name&gt;</code></td><td>that phone gets no more pushes, even as it connects again</td></tr>
+<tr><td><code>.push allow &lt;name&gt;</code></td><td>a phone forgotten pairs again the next time it connects</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="what-leaves-your-computer"><a class="header" href="#what-leaves-your-computer">What leaves your computer</a></h2>
+<p>Apple only delivers a push to an app from a server holding the app’s key,
+so Hydra hands each push to a small relay run for HydraFE, and the relay
+hands it to Apple.</p>
+<ul>
+<li>Each push is <strong>sealed</strong> on your computer with a key only your phone
+holds, made by the phone when it first paired. The relay and Apple see
+“Hydra: A trigger fired.” and sealed bytes; the phone opens it and shows
+the real words.</li>
+<li>The relay keeps nothing but a fingerprint of each computer’s own token,
+so that strangers cannot send through it. It never writes a push down.</li>
+<li>What is paired is kept in <code>push.json</code> in Hydra’s data folder.</li>
+</ul>
+<h2 id="when-it-doesnt-come"><a class="header" href="#when-it-doesnt-come">When it doesn’t come</a></h2>
+<ul>
+<li><strong><code>.push</code> says no phone is paired</strong>: open the connection in HydraFE once
+more; it pairs as it connects. In iOS Settings › Hydra › Notifications,
+check notifications are allowed.</li>
+<li><strong><code>.push test</code> says the relay could not be reached</strong>: the computer has no
+internet, or the relay is down for a moment; the next push tries again.</li>
+<li><strong><code>.push test</code> says a phone no longer takes pushes</strong>: HydraFE was removed
+from that phone. It has been forgotten; install and open it again to
+pair.</li>
+<li><strong>The banner says “A trigger fired.” instead of the words</strong>: the phone
+could not open it, usually a phone that was restarted and not yet
+unlocked. Tapping it still opens the character.</li>
+<li><strong>A tap opens the list instead of the character</strong>: the push came from a
+computer this phone has no saved connection for, or its address changed.
+Open that computer’s connection once and later taps find it.</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
 <h1 id="themes"><a class="header" href="#themes">Themes</a></h1>
 <p>A theme is how Hydra looks: its colours, the shape of its windows and
 controls, its fonts, and a frame round its windows if you want one. Hydra
@@ -963,19 +1217,25 @@ it changes from the theme it is laid over.</p>
 <a href="#examples-1">examples</a>.</p>
 <h2 id="wearing-a-theme"><a class="header" href="#wearing-a-theme">Wearing a theme</a></h2>
 <ul>
-<li><strong>Settings › Window › Theme</strong>: the theme every window wears. Tick
+<li><strong>Settings › Hydra › Hub › Theme</strong>: the theme Hydra wears: the hub,
+Settings, the Editors, and every play window whose character has no
+theme of its own. Tick
 <strong>Follow the computer’s dark or light mode</strong> and Hydra wears the
 <strong>Light theme</strong> chosen below it while the computer is in light mode.</li>
 <li><strong>Settings</strong>, a character, its <strong>Theme</strong> page: that character’s window
 can wear a theme of its own, and an <strong>Accent</strong> of its own over it: the
-colour of what is chosen, a guide while arranging, a find’s hit.</li>
+colour of what is chosen, a guide while arranging, a find’s hit.
+<strong>Edit this theme…</strong> under them opens the editor on the theme the
+character wears.</li>
 <li>From a play window: <code>.theme list</code> lists them, <code>.theme mine &lt;name&gt;</code> (or
 <code>off</code>) chooses the character’s own, and <code>.theme accent &lt;#rrggbb&gt;</code> (or
 <code>off</code>) its accent.</li>
 </ul>
 <h2 id="the-editor"><a class="header" href="#the-editor">The editor</a></h2>
-<p>Open <strong>Settings</strong> and choose <strong>Themes</strong>, under <em>Editors</em>. The <strong>Menu</strong>,
-on the hub and on every play window’s title bar, has <strong>Themes</strong> too.</p>
+<p>Open <strong>Menu › Editors › Themes</strong>, on the hub or on any play window’s
+title bar: the <strong>Editors</strong> window opens at it, its draft the theme Hydra
+wears. <strong>Edit this theme…</strong> on a character’s <strong>Theme</strong> page in
+Settings opens it on that character’s theme instead.</p>
 <p><img src="images/theme_editor.png" alt="The theme editor: the sections down the left, Generate open; the draft drawn on the right"></p>
 <p>Along the top:</p>
 <ul>
@@ -1178,11 +1438,16 @@ are boxed unless it says otherwise. A cell can choose its own, under
 <code>tab</code> and <code>tab_shown</code> <a href="#pins">pins</a>.</li>
 </ul>
 <h2 id="frame"><a class="header" href="#frame">Frame</a></h2>
-<p><strong>Frame</strong> draws a picture frame round every window and card: a recipe
-from the <code>frames</code> folder in Hydra’s <code>data</code> folder, or from a pack. <em>The
-base’s</em> keeps the frame of the theme it is laid over; <em>none</em> draws none.
-The window’s own edge is drawn outside a frame: <strong>Hide it</strong> takes it
-away.</p>
+<p><strong>Frame</strong> draws a picture frame round every window and card: a frame kit
+from an installed pack, named by its pack and style. Frame kits come from
+<strong>Packs</strong> in the Editors window, under <em>Frame kits</em>. <em>The base’s</em> keeps the frame of
+the theme it is laid over; <em>none</em> draws none.</p>
+<p><strong>Thickness</strong> is how far in from a window’s edge its title and content
+keep; the whole frame is drawn at that scale. The frame is each window’s
+border, in place of its own edge, flush with it. Some kits’ decoration
+reaches further in, over the content – honey drips, thorns – but only
+in a window’s top half: below its middle nothing is drawn deeper than
+the thickness.</p>
 <h2 id="type"><a class="header" href="#type">Type</a></h2>
 <ul>
 <li><strong>UI font</strong> and <strong>UI size</strong>: everything but the game’s words.</li>
@@ -1204,9 +1469,9 @@ and type part of its name. A font takes a moment to load the first time;
 the window redraws once it has.</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="examples-1"><a class="header" href="#examples-1">Examples</a></h1>
-<p>Each starts from <strong>Settings › Themes</strong>. Tick <strong>Wear while editing</strong> to
+<p>Each starts from <strong>Editors › Themes</strong>. Tick <strong>Wear while editing</strong> to
 see every window change as you go, and <strong>Save</strong> when it is right; then
-choose it on <strong>Settings › Window › Theme</strong>, or on one character’s
+choose it on <strong>Settings › Hydra › Hub › Theme</strong>, or on one character’s
 <strong>Theme</strong> page.</p>
 <h2 id="a-theme-from-one-colour"><a class="header" href="#a-theme-from-one-colour">A theme from one colour</a></h2>
 <p><strong>Start from</strong> <em>Despana</em>, and set <strong>over</strong> to <em>nothing</em>, so every colour
@@ -1218,7 +1483,7 @@ three hues round the wheel, <em>analogous</em> for a calm one. Name it and save.
 <p><strong>Start from</strong> <em>Light</em>: a warm white ground and its blue seed, every
 colour generated to read on it. Change the <strong>Seed</strong> for another accent,
 or the <strong>Background</strong> for another ground. To wear it only by day, tick
-<strong>Follow the computer’s dark or light mode</strong> on <strong>Settings › Window</strong> and
+<strong>Follow the computer’s dark or light mode</strong> on <strong>Settings › Hydra › Hub</strong> and
 choose it as the <strong>Light theme</strong>.</p>
 <p><img src="images/theme_light.png" alt="Light"></p>
 <h2 id="each-channel-its-own-colour"><a class="header" href="#each-channel-its-own-colour">Each channel its own colour</a></h2>
@@ -1248,6 +1513,255 @@ skin’s pictures and fonts are not brought, only its colours.</p>
 <strong>Theme</strong> for its window alone, and an <strong>Accent</strong> over it. Two characters
 side by side are told apart at a glance. From its play window: <code>.theme mine &lt;name&gt;</code> and <code>.theme accent &lt;#rrggbb&gt;</code>.</p>
 <div style="break-before: page; page-break-before: always;"></div>
+<h1 id="keybinds-macros-and-hotbars"><a class="header" href="#keybinds-macros-and-hotbars">Keybinds, macros and hotbars</a></h1>
+<p>One thing with three faces. A <strong>macro</strong> is a chain of commands with the
+logic: it waits for the roundtime, it puts you in a stance only when you
+are not in it, it keeps a reserve back. A <strong>keybind</strong> is a key for your
+hands. A <strong>hotbar</strong> is buttons for your eyes. Both run macros, and a
+macro also answers to a word of its own on the command line. Nothing is
+written twice: the macro holds the chain, and the key, the button and the
+word all point at it.</p>
+<p>Macros are made on the <strong>Macros</strong> page of the Editors window, in an editor with
+every field explained on hover. This chapter goes through <a href="#the-chain-language">the chain
+language</a>, <a href="#macros">macros</a> and what they keep,
+and <a href="#keybinds-and-hotbars">keybinds and hotbars</a>, the faces.</p>
+<h2 id="the-chain-language"><a class="header" href="#the-chain-language">The chain language</a></h2>
+<p>A chain is pieces with a comma between them. Each piece is one of:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Piece</th><th>What it does</th></tr>
+</thead>
+<tbody>
+<tr><td><code>weapon barrage</code></td><td>A command, sent to the game as if you typed it.</td></tr>
+<tr><td><code>s1.5</code></td><td>A wait of so many seconds.</td></tr>
+<tr><td><code>rt</code></td><td>Wait until your roundtime is over.</td></tr>
+<tr><td><code>ct</code></td><td>Wait until your cast roundtime is over.</td></tr>
+<tr><td><code>stance offensive</code></td><td>A behaviour word: Hydra does it with intelligence.</td></tr>
+</tbody>
+</table>
+</div>
+<pre><code class="language-text">stance off, rt, weapon barrage
+</code></pre>
+<p>reads as <em>stance offensive, then wait for roundtime, then weapon
+barrage</em>. Hydra sends nothing for the stance when you already stand in
+it, waits out any roundtime, and only then sends the attack.</p>
+<p>A comma inside quotes or brackets is kept, so a Lich command keeps its
+Ruby: <code>;e cast(901, "a rat"), look</code> is two pieces. A comma in speech is
+cut, so write it <code>'Hello\, friend</code>. A line break or <code>\r</code> cuts as a comma
+does, as the files Wrayth wrote them did.</p>
+<p>Hydra waits on its own clock, which the game keeps: <code>rt</code> ends when the
+roundtime the game stated does, not after a guess. A wait is at most a
+minute. <code>.stop</code> stops a chain wherever it is.</p>
+<h2 id="the-behaviour-words"><a class="header" href="#the-behaviour-words">The behaviour words</a></h2>
+<p>A behaviour word is a command Hydra carries out by reading the game
+first and the game’s answer after. The first is <strong>stance</strong>.</p>
+<p><code>stance &lt;x&gt;</code> takes any of the six stances, or the first letters of one:
+<code>stance off</code>, <code>stance def</code>, <code>stance gua</code>.</p>
+<ol>
+<li>Already in the stance asked for: nothing is sent.</li>
+<li>In roundtime: it is waited for, then the stance asked.</li>
+<li>In cast roundtime and asked for anything beyond guarded: the game
+would refuse it and put you in guarded itself. Hydra sends <code>stance guarded</code> first, sees it taken, waits the cast roundtime out, then asks
+for the stance you wanted. A roundtime begun meanwhile is waited for.</li>
+<li>Sent, the stance bar is the truth. The step is done when the bar shows
+the stance. If the game does not show it within a few seconds, the
+chain stops and the story says why.</li>
+</ol>
+<p>Assault words come next, each with the same shape: read, wait, send,
+confirm, and each knowing its own cost so it never sends with less in the
+tank than the manoeuvre takes.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="macros"><a class="header" href="#macros">Macros</a></h1>
+<p>A macro has a name, its commands, and what it keeps: a key that runs it,
+a word that runs it from the command line, and the condition it runs
+under.</p>
+<h2 id="the-editor-1"><a class="header" href="#the-editor-1">The editor</a></h2>
+<p>Open the <strong>Editors</strong> window at <strong>Macros</strong>: <strong>Menu › Editors › Macros</strong>. Every
+macro is listed on the left, everyone’s and this character’s own; the
+one chosen is in the form on the right. Every field says what it is for
+when you rest the pointer on it.</p>
+<p><img src="images/macros_page.png" alt="The Macros page: a macro’s key, its commands read back, and its condition"></p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Field</th><th>What it is</th></tr>
+</thead>
+<tbody>
+<tr><td>Name</td><td>One word. A key, a button, <code>.macro</code> and the alias run it by this.</td></tr>
+<tr><td>Kept for</td><td>Every character, in <code>macros.toml</code> in the data folder; or this character alone, beside its layout. A character’s own macro replaces everyone’s of the same name.</td></tr>
+<tr><td>Key</td><td>A key that runs it, written as the Keybinds page writes one: <code>F5</code>, <code>Ctrl+Numpad8</code>. <em>Capture</em> takes the next key you press. A keybind on the same key wins over it.</td></tr>
+<tr><td>Set</td><td>The macro set the key is in, 0 to 9, or every set.</td></tr>
+<tr><td>Alias</td><td>A word that runs it from the command line, and from a Lich script. It is kept as one of the character’s aliases; a word already an alias for something else is said when you save, and left as it was.</td></tr>
+<tr><td>Commands</td><td>What it does, a piece per line or with commas between, in <a href="#the-chain-language">the chain language</a>. The syntax is under the box; rest the pointer on it for the whole of it. Under that the commands are read back as a sentence, or refused with why, as you type.</td></tr>
+<tr><td>Runs only when</td><td>The condition. With none, the macro always runs.</td></tr>
+<tr><td>Advanced</td><td>Folded: a tooltip for its button, what its button counts down, how often it may run, and the states.</td></tr>
+</tbody>
+</table>
+</div>
+<p><strong>Save macro</strong> keeps it where <em>Kept for</em> says. <strong>Try</strong> runs the commands
+on the character now, as the form has them, before you save. <strong>Remove
+macro</strong> takes it out of its file.</p>
+<h2 id="the-condition"><a class="header" href="#the-condition">The condition</a></h2>
+<p>A macro runs only when its condition holds. Not holding, the macro is
+<strong>unavailable</strong>: its button greys, and a press, its key or its word sends
+nothing and the story says why. The condition is built as a trigger’s
+<em>When</em> is: tests, any one or every one of which must hold, each marked
+red or green as it holds on the character right now.</p>
+<p>The tests are the triggers’ tests, and the ones a hunting script checks
+before a command. Against a bigshot command check:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Test</th><th>What it reads</th><th>In bigshot</th></tr>
+</thead>
+<tbody>
+<tr><td>vital</td><td>health, mana, stamina or spirit, by percent or points</td><td><code>h50</code>, <code>m20</code>, <code>s30</code>, <code>v10</code></td></tr>
+<tr><td>encumbrance</td><td>the encumbrance percent</td><td><code>e50</code></td></tr>
+<tr><td>resource</td><td>shadow essence, the society’s resource this week or in all, covert arts charges</td><td><code>essence3</code></td></tr>
+<tr><td>effect up, effect not up, effect time left</td><td>a spell, buff, debuff or cooldown by name</td><td><code>ES"..."</code>, <code>EB"..."</code>, <code>EC"..."</code>, <code>ED"..."</code>, <code>barrage</code>, <code>flurry</code>, <code>rapid</code></td></tr>
+<tr><td>indicator</td><td>hidden, poisoned, diseased, kneeling, prone, stunned and the rest</td><td><code>hidden</code>, <code>poison</code>, <code>disease</code>, <code>k</code></td></tr>
+<tr><td>roundtime, casttime</td><td>under way</td><td></td></tr>
+<tr><td>target status</td><td>the target is stunned, prone, webbed, flying, calm, immobilized and the rest</td><td><code>stunned</code>, <code>prone</code>, <code>webbed</code>, <code>flying</code>, <code>frozen</code></td></tr>
+<tr><td>target flag</td><td>the target is hostile, disengaged, dead, sympathetic, ascended, inferior, a boss, challenging, a rider, a mount</td><td><code>ascended</code>, <code>mini_boss</code>, <code>challenging</code></td></tr>
+<tr><td>target kind</td><td>the target is undead, living or noncorporeal, by the bestiary</td><td><code>undead</code>, <code>noncorporeal</code></td></tr>
+<tr><td>target health</td><td>the target’s health, by percent</td><td><code>thp20</code>, <code>wounded</code></td></tr>
+<tr><td>creatures</td><td>how many creatures are in the room, or how many can be attacked</td><td><code>mob2</code>, <code>valid1</code></td></tr>
+<tr><td>hand empty, hand holds, spell prepared, spell affordable, stance, room, time of day, flag</td><td>the rest</td><td></td></tr>
+</tbody>
+</table>
+</div>
+<p>The <strong>target</strong> is the first creature in the room the character may
+attack. With no creature, every target test reads false.</p>
+<p><strong>A reserve</strong> is one test: <code>stamina &gt;= 60 points</code> keeps sixty stamina
+back for something else. Put it in <em>Runs only when</em> and the macro greys
+under it. The manoeuvre’s own cost is the floor underneath: an assault
+word never sends with less than it costs, whatever the condition.</p>
+<h2 id="how-often-it-runs"><a class="header" href="#how-often-it-runs">How often it runs</a></h2>
+<p>Under <em>Advanced</em>, <strong>Again after</strong> holds the macro for so many seconds
+after it ran: pressed sooner, it runs nothing and the story says so.
+<strong>Once per room</strong> runs it once in a room: pressed again there, it runs
+nothing until the character has moved. These are bigshot’s <code>repeatdelay</code>
+and <code>once</code>.</p>
+<h2 id="states"><a class="header" href="#states">States</a></h2>
+<p>Also under <em>Advanced</em>, for the few who want them: more logic, the first
+state whose condition holds deciding. A state can make the macro
+unavailable, or run other commands instead of its own. The condition
+above is enough for most macros.</p>
+<h2 id="in-the-file"><a class="header" href="#in-the-file">In the file</a></h2>
+<pre><code class="language-toml">[[macros]]
+name = "barrage"
+commands = """
+stance off
+rt
+weapon barrage
+"""
+key = "F5"
+set = 1
+alias = "wb"
+when = { type = "vital", vital = "stamina", cmp = "&gt;=", value = 60, unit = "absolute" }
+repeat_after = 3.0
+
+[[macros.states]]
+when = { type = "indicator", id = "stunned" }
+chain = "stance def"
+</code></pre>
+<h2 id="from-the-command-line-1"><a class="header" href="#from-the-command-line-1">From the command line</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Line</th><th>What it does</th></tr>
+</thead>
+<tbody>
+<tr><td><code>.macro barrage</code></td><td>Runs it, when its condition holds.</td></tr>
+<tr><td><code>.macro</code></td><td>Every macro, with its commands, key and word.</td></tr>
+<tr><td><code>.macro show barrage</code></td><td>One macro, whole: its condition and states too.</td></tr>
+<tr><td><code>.macro alias barrage wb</code></td><td>Makes <code>wb</code> an alias that runs it. A word already taken is said, with how to overwrite it.</td></tr>
+</tbody>
+</table>
+</div>
+<p>A Lich script can run a macro the same way, since a <code>.macro</code> line typed
+by a script is a line typed.</p>
+<h2 id="examples-2"><a class="header" href="#examples-2">Examples</a></h2>
+<p><strong>The stance dance.</strong> Two macros on two keys. <code>F5</code>: <code>stance off, rt, weapon barrage</code>. <code>F6</code>: <code>stance def</code>. Press <code>F6</code> straight after <code>F5</code> and
+Hydra waits the attack’s roundtime out before it asks for defensive. Cast
+a spell between and it goes guarded through the cast roundtime, then
+defensive.</p>
+<p><strong>A cast chain.</strong> <code>stance off, prep 901, cast, rt, stance def</code>: the prep
+and the cast go at once, the cast’s roundtime is waited for, then the
+stance comes back.</p>
+<p><strong>A finisher.</strong> <code>weapon barrage</code> that runs only when the target’s health
+is at or under 20%: the button greys until the creature is nearly down.</p>
+<p><strong>A reserve.</strong> <code>barrage</code> that runs only when stamina is at least 60 keeps
+enough for a second manoeuvre you may need more.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="keybinds-and-hotbars"><a class="header" href="#keybinds-and-hotbars">Keybinds and hotbars</a></h1>
+<p>The faces of a macro: a key for the hands, a button for the eyes.</p>
+<h2 id="keybinds"><a class="header" href="#keybinds">Keybinds</a></h2>
+<p>Open the <strong>Editors</strong> window and choose <strong>Keybinds</strong>; a play window’s
+<strong>Keys</strong> menu opens it too, working for that character. <strong>For</strong> at the
+top picks every character’s keys or one character’s own. Every key in
+effect is listed, with what it does and where that came from. A key is
+bound to one of:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Binding</th><th>What it does</th></tr>
+</thead>
+<tbody>
+<tr><td><code>"commands"</code></td><td>Text sent to the game as it is, all at once, with no logic.</td></tr>
+<tr><td><code>{ fill = "text" }</code></td><td>Text put in the command line for you to finish.</td></tr>
+<tr><td><code>{ action = "name" }</code></td><td>One of Hydra’s own actions: switch set, open a drawer, lock.</td></tr>
+<tr><td><code>{ macro = "name" }</code></td><td>Run the macro of that name.</td></tr>
+</tbody>
+</table>
+</div>
+<p>Keys come in sets, 0 to 9, and a key switches which set is in use. A
+macro’s own key, set on the Macros page, is listed among the keybinds as
+<code>macro: &lt;name&gt;</code> in the set it names, or in every set when it names none,
+so a key two things claim is seen. A keybind in the keys file wins over a
+macro’s key on the same chord.</p>
+<p>A send keybind is sent at once as it is written, with no logic. For a
+chain that waits or decides, make a macro and bind the key to it.</p>
+<h2 id="hotbars"><a class="header" href="#hotbars">Hotbars</a></h2>
+<p>A hotbar is a grid of buttons. A button names a macro, or carries
+commands of its own, and the bar gives it a slot, a size, a label, an
+icon and the colours its states show in. A press runs the macro when its
+condition holds. While it does not, the button is drawn dim, and a press
+sends nothing.</p>
+<p>Open the <strong>Editors</strong> window and choose <strong>Hotbars</strong>: <strong>Menu › Editors › Hotbars</strong>.
+Every bar is listed on the left, the character’s own and everyone’s; the
+bar chosen is drawn on the right as its widget draws it, with its buttons
+in a form below. Pictures for buttons are kept on the <strong>Icons</strong> page of
+the same window.</p>
+<p><img src="images/hotbar_macro.png" alt="The hotbar editor: a button that runs a macro"></p>
+<p>In the form, <strong>Macro</strong> picks the macro the button runs, or none. With
+none, <strong>Sends</strong> is the button’s own commands, in the chain language.
+<strong>Lift into a macro</strong> makes a macro of them, named by the button’s id,
+and has the button run it from then on: the commands live once, on the
+Macros page, and the button is only its face.</p>
+<p>A bar need not be on the screen for its keys to work. A macro’s key is
+the macro’s, and a button’s own hotkey is read from the file whether the
+bar is placed or not. The Hotbar widget on a play window shows the bars
+you choose to see.</p>
+<h2 id="the-controller"><a class="header" href="#the-controller">The controller</a></h2>
+<p>A controller’s binds are keybinds too, and may press a button or run a
+macro. The <strong>Controller</strong> page of the Editors window holds them.</p>
+<h2 id="from-the-command-line-2"><a class="header" href="#from-the-command-line-2">From the command line</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Line</th><th>What it does</th></tr>
+</thead>
+<tbody>
+<tr><td><code>.hotbar combat attack</code></td><td>Presses the bar <code>combat</code>’s button <code>attack</code>, as a click would.</td></tr>
+<tr><td><code>.macro barrage</code></td><td>Runs the macro.</td></tr>
+<tr><td><code>.hotbars</code></td><td>Opens the hotbar editor.</td></tr>
+<tr><td><code>.alias</code></td><td>The aliases, where a macro’s word is kept.</td></tr>
+</tbody>
+</table>
+</div>
+<div style="break-before: page; page-break-before: always;"></div>
 <h1 id="reports"><a class="header" href="#reports">Reports</a></h1>
 <p>Hydra keeps a ledger of what each character does: every experience pulse
 as the mind-state bar states it, and every hunt the combat reader saw, with
@@ -1270,7 +1784,7 @@ first that fits. A click on a report runs it.</p>
 for the combat reports that take a scope.</li>
 <li><strong>Between</strong>, with a <em>from</em> and a <em>to</em>: two hunt ids for the combat
 reports, or two times for the experience report over a span. A time is
-<code>13:05</code> for today, <code>07-20 13:05</code> for this year, or <code>2026-07-20 13:05:52</code>.</li>
+<code>13:05</code> for today, <code>07-20 13:05</code> for this year, or <code>2026-07-20  13:05:52</code>.</li>
 <li><strong>Name</strong>, for the reports that take one: a creature’s noun.</li>
 </ul>
 <p><strong>Attacks</strong> and <strong>Creatures</strong> list every one over the scope, by damage, a
@@ -1291,17 +1805,53 @@ a gemstone flare’s report (mirror image, hunter’s afterimage, the shroud)
 says the property it belongs to and its rate at each rank it ran at. The
 set comes from <code>gem list all</code>, read when it passes and kept in the
 character’s file; equipping or unequipping a gemstone keeps it current.</p>
+<h2 id="barriers"><a class="header" href="#barriers">Barriers</a></h2>
+<p>Wall of Thorns blocks an attack before any roll, so a block says nothing
+of whether it would have hit; Barkskin absorbs the next hit, so every
+absorb would have. The reports keep the two apart: Intercepts counts the
+attacks blocked before any roll, then of those past the barriers, the
+ones that would have hit, absorbed or landed. The hunt keeps when each
+barrier was up (see Effects), so the thorns’ report gives blocks over the
+attacks that came while the wall was up, beside the one in five the spell
+says, and the lash that poisons over the blocks, beside its one in four;
+the bark’s, absorbs over what would have hit while it was up.</p>
+<h2 id="gear"><a class="header" href="#gear">Gear</a></h2>
+<p>Every swing of yours is recorded with what the hands held as it was made,
+by the item’s own id, so two bows of one noun are two bows to the reports.
+A volley’s arrows carry their round. A flare the gauntlets lent, told by
+“You feel drained.” before it, is the gauntlets’ and not the bow’s. The
+items worn are kept per hunt as spans: from the second an item was first
+seen worn to the second it was seen gone, so a swap during a hunt is a
+closed span and an open one. An item is one name across logins, where the
+game’s own id for it changes with each. A flare’s report then shows its
+rate by the weapon in hand, by round, and by source; a flare that fires
+on a first flight only leaves a volley’s later rounds out of its base.
+<strong>Gear</strong> lists each item held with the flares seen on it, the gauntlets’
+flares, and the items worn over the hunts.</p>
+<h2 id="effects"><a class="header" href="#effects">Effects</a></h2>
+<p>Every spell, buff, debuff and cooldown the game lists is kept over a hunt
+the same way, as a span from the second it was seen up to the second it
+was seen down; Barkskin, which shows no bar while up, is read off its
+lines. Nothing is copied per attack: an attack’s active set is whatever
+spans cover its time. <strong>Effects</strong> lists what was up over a scope, in how
+many hunts and for how long against the hunting time. A hunt’s report
+says what was up as it opened. A flare’s report ends with the effects that
+were up for some of its swings and not the rest, with the rate each side,
+which is where a buff or a gemstone property shows whether it changes
+anything. Names are kept once, in one table, so the file does not repeat
+them: a flare, a spell, a property, a piece of gear is a number in the
+rows and a name in the table.</p>
 <h2 id="syncing"><a class="header" href="#syncing">Syncing</a></h2>
 <p>The first time a character is seated with nothing stored, Hydra sends the
 reports that teach its facts once: <code>info full</code>, <code>skills full</code>, the PSM
 lists, <code>inventory enhancive totals</code>, <code>gem list all</code>, <code>society</code> and the
 rest. After that, play keeps them current and nothing is sent at login.
-<code>.sync</code> sends them all again, <code>.sync &lt;group&gt;</code> one of them, and <code>.sync reset</code> drops what is stored first.</p>
+<code>.sync</code> sends them all again, <code>.sync &lt;group&gt;</code> one of them, and <code>.sync  reset</code> drops what is stored first.</p>
 <h2 id="typed"><a class="header" href="#typed">Typed</a></h2>
 <p>The same reports answer on the command line, in a character’s play window:
 <code>.exp</code> for the experience reports and <code>.cstats</code> for combat. <code>.exp help</code> and
 <code>.cstats help</code> list every one. Three words change the ledger and are only
-ever typed: <code>.exp addgain &lt;n&gt;</code> for a gain the bar did not state, <code>.exp clean</code> to drop pulses with no gain, and <code>.exp reset</code> to drop every row of
+ever typed: <code>.exp addgain &lt;n&gt;</code> for a gain the bar did not state, <code>.exp  clean</code> to drop pulses with no gain, and <code>.exp reset</code> to drop every row of
 that character’s, which asks first.</p>
 <h2 id="filling-the-ledger-from-recordings"><a class="header" href="#filling-the-ledger-from-recordings">Filling the ledger from recordings</a></h2>
 <p>A session Hydra recorded (its <code>.bytes</code> files, when recording is on) can be
@@ -1313,6 +1863,79 @@ holds is recorded. A file is never read twice, a session that overlaps
 hunts or pulses already on file is refused, and a pulse already on file is
 skipped.</p>
 <div style="break-before: page; page-break-before: always;"></div>
+<h1 id="login-rewards-and-store-simucoins"><a class="header" href="#login-rewards-and-store-simucoins">Login rewards and store Simucoins</a></h1>
+<p>The game gives a free reward the first time a character logs in each day,
+and the store gives each account free Simucoins once a month. Hydra keeps
+track of both, and can collect them for you.</p>
+<h2 id="the-daily-login-reward"><a class="header" href="#the-daily-login-reward">The daily login reward</a></h2>
+<p>The game’s day turns at midnight Eastern. On a character’s first login of
+that day the game says two lines: it thanks you for logging in, with the
+streak of consecutive days, and it names the reward. Hydra reads them
+whenever a character logs in through it and keeps one row a character a day
+in the ledger: the reward, the streak, any login bridge the game spent, and
+both lines whole. Nothing is ever sent to the game to learn this.</p>
+<p>Ask for it on the command line:</p>
+<ul>
+<li><code>.rewards</code> says whether today’s reward is in for this character, at what
+time, and lists the last ten.</li>
+<li><code>.rewards all</code> shows every character’s latest reward and whether today’s
+is in.</li>
+<li><code>.rewards store</code> shows each account’s store Simucoins (below).</li>
+</ul>
+<p>The same three are in <strong>Menu → Reports</strong>, under <strong>Login rewards</strong>.
+<code>hydra import</code> also reads rewards out of old recordings, so the history
+fills in from the days you played before.</p>
+<p>A day marked <em>given before Hydra saw it</em> is one where the character had
+already logged in somewhere else, so the reward came earlier and Hydra did
+not hear it.</p>
+<h2 id="claiming-it-for-you"><a class="header" href="#claiming-it-for-you">Claiming it for you</a></h2>
+<p>Turn on <strong>Claim the login reward</strong> in <strong>Settings → Rewards</strong>, and
+pick the time. Hydra then logs in for the reward alone, for every
+character on the roster whose account has a kept password, and no more than
+that: it connects, hears the reward and disconnects. Nothing is played.</p>
+<p>It is careful about when:</p>
+<ul>
+<li>Only once the time you set has passed today, by your own clock.</li>
+<li>Only if Hydra was running when that time came. A Hydra started later
+waits until nothing has been connected through it for ten minutes, so
+starting Hydra to play is never met by a login of its own.</li>
+<li>Never on an account that has a character connected through Hydra. That
+account is left alone and tried again every few minutes until the reward is
+in or the game’s day turns.</li>
+<li>Only for a character whose reward for today is not already in.</li>
+</ul>
+<p>Hydra cannot see a character played in another program, such as Wrayth.
+A scheduled login on the same account can log that character out. Choose a
+time you are not playing, or list the character under <strong>Never log in for</strong>.</p>
+<p>Each login ends with <code>quit</code>, as you would leave, so the character is not left
+standing in the game. A character the game hangs up on before it says is
+tried three times a day at most.</p>
+<p>A login the game refuses, a wrong password, is not tried again for hours, so
+a bad password cannot lock the account.</p>
+<p>The setting is the file <code>rewards.toml</code> in the data folder, which the page
+writes. The login reward and the store are separate switches: the login
+reward is on when <code>time</code> is set, the store when <code>store = true</code>, and either
+works without the other. With neither there is no file and nothing is
+claimed.</p>
+<pre><code class="language-toml">time = "19:07"                     # your local time of day
+skip = ["GS3:Dicate", "Nerten"]    # never log in for these
+store = true                       # the month's store Simucoins (its own switch)
+</code></pre>
+<h2 id="the-stores-monthly-simucoins"><a class="header" href="#the-stores-monthly-simucoins">The store’s monthly Simucoins</a></h2>
+<p>With <code>store = true</code> (<strong>Claim the store’s Simucoins</strong> on the Rewards page,
+off until you turn it on, and independent of the login reward) Hydra
+signs in to the store at <code>store.play.net</code> and claims the month’s Simucoins
+for each account. Signing in to the store does not disturb a character
+playing, so it does not wait for anyone to be idle.</p>
+<p>The store says when the next one comes, as a countdown on its page: <em>Next
+Subscription Bonus in 3d, 20h</em>. Hydra adds that to the time of its visit,
+and an hour for what the store leaves off, keeps the result in the ledger and
+goes back when it arrives; it does not look every day. If the store says
+nothing Hydra can read, or offers no bonus (an account with no subscription),
+it looks again after a day. The log line
+<code>[store] ...</code> says what was claimed, and <code>.rewards store</code> shows the last
+claim, the balance and the next date for each account.</p>
+<div style="break-before: page; page-break-before: always;"></div>
 <h1 id="for-developers"><a class="header" href="#for-developers">For developers</a></h1>
 <p>Hydra is written in Rust, as a workspace of crates from the game connection
 up to the windows. Every crate’s public items are documented, and the
@@ -1321,6 +1944,62 @@ guide from the source each release.</p>
 <p>Hydra’s source is kept in a private repository. The public repository holds
 what players reach: the <a href="https://github.com/Nisugi/hydra/releases">releases</a>
 and this site.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="hydrafe-privacy-policy"><a class="header" href="#hydrafe-privacy-policy">HydraFE Privacy Policy</a></h1>
+<p>HydraFE is a player-made app for playing GemStone IV, a game run by
+Simutronics. It is not made by or affiliated with Simutronics. This policy
+says what HydraFE does with what you give it.</p>
+<h2 id="what-hydrafe-collects"><a class="header" href="#what-hydrafe-collects">What HydraFE collects</a></h2>
+<p>Nothing. HydraFE has no account of its own, no analytics, no advertising,
+and no tracking. It sends nothing about you to its maker or to anyone else,
+beyond the push relay described below, if you use push.</p>
+<h2 id="what-stays-on-your-phone"><a class="header" href="#what-stays-on-your-phone">What stays on your phone</a></h2>
+<ul>
+<li><strong>Your GemStone IV account name and password</strong>, when you log in on the
+phone and ask HydraFE to keep the password. They are kept in the iPhone’s
+Keychain, on this device only, and are not included in backups.</li>
+<li><strong>The computers you pair with</strong>: each one’s name, address, port and
+pairing code, kept in the Keychain on this device only.</li>
+<li><strong>What your characters play</strong>: the game’s text, your settings and Hydra’s
+logs, kept in the app’s own folder on the phone. Deleting the app deletes
+them.</li>
+</ul>
+<h2 id="where-your-information-goes"><a class="header" href="#where-your-information-goes">Where your information goes</a></h2>
+<ul>
+<li><strong>To Simutronics</strong>, when you log in on the phone: your account name and
+password go to Simutronics’ login service, and your play goes to and from
+its game servers, as with any GemStone IV client. Simutronics’ own terms
+and privacy policy cover what it does with them.</li>
+<li><strong>To your own computer</strong>, when you play through Hydra running on a
+computer on your home network: the app shows that computer’s page, and
+what you type goes to it. Nothing passes through anyone else.</li>
+</ul>
+<h2 id="push-notifications"><a class="header" href="#push-notifications">Push notifications</a></h2>
+<p>Push is optional: it is on only if you allow notifications and give a
+trigger in Hydra a push action. Then your computer’s Hydra sends each alert,
+sealed so that only your phone can read it, to a relay run for HydraFE,
+which hands it to Apple. While it passes an alert along, the relay sees your
+phone’s Apple push address; it stores neither that address nor the alert.
+It keeps only a one-way fingerprint of each computer’s own access token. The
+relay’s web server keeps the usual request log (time, network address, and
+which page was asked for) for about two weeks. Apple’s own privacy policy
+covers what Apple does when it delivers the alert.</p>
+<h2 id="what-the-app-asks-permission-for"><a class="header" href="#what-the-app-asks-permission-for">What the app asks permission for</a></h2>
+<ul>
+<li><strong>Local network</strong>: to find Hydra running on your computers at home, and
+to connect to it.</li>
+<li><strong>Camera</strong>: only to scan the pairing code your computer’s Hydra shows.
+No picture is kept or sent anywhere.</li>
+</ul>
+<h2 id="children"><a class="header" href="#children">Children</a></h2>
+<p>HydraFE is not directed at children under 13 and collects nothing from
+anyone.</p>
+<h2 id="changes"><a class="header" href="#changes">Changes</a></h2>
+<p>If this policy changes, the new version is posted at the same address, with
+the date below.</p>
+<h2 id="contact"><a class="header" href="#contact">Contact</a></h2>
+<p>Questions about this policy: nisugi.gs4@gmail.com</p>
+<p>Last updated: 25 October 2026.</p>
 
                     </main>
 

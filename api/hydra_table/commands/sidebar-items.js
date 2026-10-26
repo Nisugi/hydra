@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["HELP"],"fn":["install","spawn","version_said","words"],"type":["Handler"]};
+window.SIDEBAR_ITEMS = {"constant":["HELP","HELP_FIRST","SURVEY"],"fn":["help_notice","install","spawn","version_said","words"],"type":["Handler"]};

@@ -318,7 +318,7 @@
 <a href=#318 id=318 data-nosnippet>318</a>            .iter()
 <a href=#319 id=319 data-nosnippet>319</a>            .map(|r| <span class="kw">match </span>r {
 <a href=#320 id=320 data-nosnippet>320</a>                Row::Pulse(p) =&gt; p.exp_gained,
-<a href=#321 id=321 data-nosnippet>321</a>                Row::Snapshot(<span class="kw">_</span>) =&gt; <span class="macro">panic!</span>(<span class="string">"no snapshot here"</span>),
+<a href=#321 id=321 data-nosnippet>321</a>                <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">"only pulses here"</span>),
 <a href=#322 id=322 data-nosnippet>322</a>            })
 <a href=#323 id=323 data-nosnippet>323</a>            .collect();
 <a href=#324 id=324 data-nosnippet>324</a>        <span class="macro">assert_eq!</span>(gains, [<span class="number">60</span>, <span class="number">60</span>]);

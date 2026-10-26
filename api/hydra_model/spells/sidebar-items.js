@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["CastType","CooldownKind","CooldownLanding","Duration","Role"],"fn":["all","circle_name","cooldown_landing","cooldown_messages_compiled","spell","spell_named","with_cooldowns"],"mod":["expr","extras"],"struct":["Spell"]};
+window.SIDEBAR_ITEMS = {"enum":["CastType","CooldownKind","CooldownLanding","Duration","Role","TimerChange"],"fn":["all","circle_name","cooldown_landing","cooldown_messages_compiled","spell","spell_named","timer_change","timer_messages","with_cooldowns"],"mod":["expr","extras"],"struct":["Spell"]};

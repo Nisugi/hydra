@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-a56a457a.js";
+            window.path_to_searchindex_js = "../searchindex-50dd7f95.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-6d2367c3.js"></script>
+        <script src="../toc-b5471689.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -201,6 +201,13 @@ choose <strong>More info</strong>, then <strong>Run anyway</strong>.</li>
 <p>The hub opens, and Hydra’s icon appears in the tray.</p>
 <p>A shortcut to <code>hydra.exe</code> works as well: it starts Hydra in the folder
 <code>hydra.exe</code> is in, unless you change its <em>Start in</em>.</p>
+<p>Hydra draws its windows with Vulkan where your graphics card has it, and
+with DirectX 12 otherwise. If Hydra crashes to the desktop while it plays,
+and Windows names your graphics driver, choose <strong>DirectX 12</strong> under
+<strong>Graphics</strong> on Hydra’s <strong>General</strong> page of Settings and start Hydra again. An
+overlay such as Overwolf’s, or a recorder’s game capture, hooks into both,
+and leaving <code>hydra.exe</code> out of them helps too. DirectX 12 can take half a
+minute to open on some computers; that is the other reason to switch.</p>
 <h2 id="macos"><a class="header" href="#macos">macOS</a></h2>
 <p>Hydra for macOS runs on Macs with Apple silicon (M1 and later).</p>
 <ol>
@@ -266,7 +273,7 @@ not logged back in: start it from the hub.</li>
 when you start it yourself, or when it starts fresh after a minute with
 nothing playing (see <a href="../how-it-works.html">How Hydra works</a>).</li>
 </ul>
-<p>Two switches on the <strong>Window</strong> page of the settings control this. <strong>Check
+<p>Two switches on Hydra’s <strong>General</strong> page of Settings control this. <strong>Check
 for updates</strong> is on unless you turn it off. <strong>Update on its own</strong> is off
 unless you turn it on; with it on, Hydra downloads a new release as soon as
 it is out, without asking, and it runs from the next start.</p>

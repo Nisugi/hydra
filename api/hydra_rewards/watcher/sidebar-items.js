@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["given_before"],"struct":["Heard","Watcher"]};

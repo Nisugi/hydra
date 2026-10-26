@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["NOTE_NOUNS"],"fn":["note_line"],"struct":["Account","BankBalance","Note"]};
+window.SIDEBAR_ITEMS = {"constant":["NOTE_NOUNS","TOWN_OF_BANK"],"fn":["note_line"],"struct":["Account","BankBalance","Note"]};

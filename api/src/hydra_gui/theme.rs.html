@@ -209,8 +209,8 @@
 <a href=#209 id=209 data-nosnippet>209</a>}
 <a href=#210 id=210 data-nosnippet>210</a>
 <a href=#211 id=211 data-nosnippet>211</a><span class="doccomment">/// `style`, from egui's own spacing, given `shape`: each kind's corners,
-<a href=#212 id=212 data-nosnippet>212</a>/// the edges' width, the density, the scrollbar, the shadows, and how a
-<a href=#213 id=213 data-nosnippet>213</a>/// button is drawn at rest.
+<a href=#212 id=212 data-nosnippet>212</a>/// the edges' width, the room inside a window's edge, the density, the
+<a href=#213 id=213 data-nosnippet>213</a>/// scrollbar, the shadows, and how a button is drawn at rest.
 <a href=#214 id=214 data-nosnippet>214</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>shaped(style: <span class="kw-2">&amp;mut </span>egui::Style, shape: <span class="kw-2">&amp;</span>Shape) {
 <a href=#215 id=215 data-nosnippet>215</a>    <span class="kw">let </span>factor = shape.density.factor();
 <a href=#216 id=216 data-nosnippet>216</a>    <span class="kw">let </span>plain = egui::style::Spacing::default();
@@ -218,225 +218,230 @@
 <a href=#218 id=218 data-nosnippet>218</a>    spacing.item_spacing = plain.item_spacing * factor;
 <a href=#219 id=219 data-nosnippet>219</a>    spacing.button_padding = plain.button_padding * factor;
 <a href=#220 id=220 data-nosnippet>220</a>    spacing.scroll.bar_width = shape.scrollbar;
-<a href=#221 id=221 data-nosnippet>221</a>    <span class="kw">let </span>visuals = <span class="kw-2">&amp;mut </span>style.visuals;
-<a href=#222 id=222 data-nosnippet>222</a>    <span class="kw">let </span>windows = CornerRadius::same(shape.corners.windows);
-<a href=#223 id=223 data-nosnippet>223</a>    visuals.window_corner_radius = windows;
-<a href=#224 id=224 data-nosnippet>224</a>    visuals.menu_corner_radius = windows;
-<a href=#225 id=225 data-nosnippet>225</a>    visuals.window_stroke.width = shape.stroke;
-<a href=#226 id=226 data-nosnippet>226</a>    <span class="kw">if </span>!shape.shadows {
-<a href=#227 id=227 data-nosnippet>227</a>        visuals.window_shadow = egui::Shadow::NONE;
-<a href=#228 id=228 data-nosnippet>228</a>        visuals.popup_shadow = egui::Shadow::NONE;
-<a href=#229 id=229 data-nosnippet>229</a>    }
-<a href=#230 id=230 data-nosnippet>230</a>    <span class="kw">let </span>controls = CornerRadius::same(shape.corners.controls);
-<a href=#231 id=231 data-nosnippet>231</a>    <span class="kw">for </span>state <span class="kw">in </span>[
-<a href=#232 id=232 data-nosnippet>232</a>        <span class="kw-2">&amp;mut </span>visuals.widgets.noninteractive,
-<a href=#233 id=233 data-nosnippet>233</a>        <span class="kw-2">&amp;mut </span>visuals.widgets.inactive,
-<a href=#234 id=234 data-nosnippet>234</a>        <span class="kw-2">&amp;mut </span>visuals.widgets.hovered,
-<a href=#235 id=235 data-nosnippet>235</a>        <span class="kw-2">&amp;mut </span>visuals.widgets.active,
-<a href=#236 id=236 data-nosnippet>236</a>        <span class="kw-2">&amp;mut </span>visuals.widgets.open,
-<a href=#237 id=237 data-nosnippet>237</a>    ] {
-<a href=#238 id=238 data-nosnippet>238</a>        state.corner_radius = controls;
-<a href=#239 id=239 data-nosnippet>239</a>        state.bg_stroke.width = shape.stroke;
-<a href=#240 id=240 data-nosnippet>240</a>    }
-<a href=#241 id=241 data-nosnippet>241</a>    <span class="comment">// A button's ground at rest is egui's weak fill; under the pointer it
-<a href=#242 id=242 data-nosnippet>242</a>    // fills in every style.
-<a href=#243 id=243 data-nosnippet>243</a>    </span><span class="kw">let </span>rest = <span class="kw-2">&amp;mut </span>visuals.widgets.inactive;
-<a href=#244 id=244 data-nosnippet>244</a>    <span class="kw">match </span>shape.buttons {
-<a href=#245 id=245 data-nosnippet>245</a>        Buttons::Filled =&gt; {}
-<a href=#246 id=246 data-nosnippet>246</a>        Buttons::Outlined =&gt; rest.weak_bg_fill = Color32::TRANSPARENT,
-<a href=#247 id=247 data-nosnippet>247</a>        Buttons::Flat =&gt; {
-<a href=#248 id=248 data-nosnippet>248</a>            rest.weak_bg_fill = Color32::TRANSPARENT;
-<a href=#249 id=249 data-nosnippet>249</a>            rest.bg_stroke = Stroke::NONE;
-<a href=#250 id=250 data-nosnippet>250</a>        }
-<a href=#251 id=251 data-nosnippet>251</a>    }
-<a href=#252 id=252 data-nosnippet>252</a>}
-<a href=#253 id=253 data-nosnippet>253</a>
-<a href=#254 id=254 data-nosnippet>254</a><span class="doccomment">/// egui's visuals from `palette`: dark or light by its canvas, the
-<a href=#255 id=255 data-nosnippet>255</a>/// surfaces on every control, the text and lines, the selection, the
-<a href=#256 id=256 data-nosnippet>256</a>/// link, a warning and a wrong.
-<a href=#257 id=257 data-nosnippet>257</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>visuals(palette: <span class="kw-2">&amp;</span>Palette) -&gt; Visuals {
-<a href=#258 id=258 data-nosnippet>258</a>    <span class="kw">let </span>of = |token| rgb(palette.get(token));
-<a href=#259 id=259 data-nosnippet>259</a>    <span class="kw">let </span>(canvas, surface, raised, inset) =
-<a href=#260 id=260 data-nosnippet>260</a>        (of(T::Canvas), of(T::Surface), of(T::Raised), of(T::Inset));
-<a href=#261 id=261 data-nosnippet>261</a>    <span class="kw">let </span>(line, strong, text, muted) = (of(T::Line), of(T::LineStrong), of(T::Text), of(T::Muted));
-<a href=#262 id=262 data-nosnippet>262</a>    <span class="kw">let </span>dark = readable_on(canvas) == Color32::WHITE;
-<a href=#263 id=263 data-nosnippet>263</a>    <span class="kw">let </span><span class="kw-2">mut </span>visuals = <span class="kw">if </span>dark {
-<a href=#264 id=264 data-nosnippet>264</a>        Visuals::dark()
-<a href=#265 id=265 data-nosnippet>265</a>    } <span class="kw">else </span>{
-<a href=#266 id=266 data-nosnippet>266</a>        Visuals::light()
-<a href=#267 id=267 data-nosnippet>267</a>    };
-<a href=#268 id=268 data-nosnippet>268</a>    visuals.override_text_color = <span class="prelude-val">Some</span>(text);
-<a href=#269 id=269 data-nosnippet>269</a>    visuals.weak_text_color = <span class="prelude-val">Some</span>(muted);
-<a href=#270 id=270 data-nosnippet>270</a>    visuals.window_fill = canvas;
-<a href=#271 id=271 data-nosnippet>271</a>    visuals.panel_fill = canvas;
-<a href=#272 id=272 data-nosnippet>272</a>    visuals.faint_bg_color = surface;
-<a href=#273 id=273 data-nosnippet>273</a>    visuals.extreme_bg_color = inset;
-<a href=#274 id=274 data-nosnippet>274</a>    visuals.code_bg_color = inset;
-<a href=#275 id=275 data-nosnippet>275</a>    visuals.window_stroke = Stroke::new(<span class="number">1.0</span>, strong);
-<a href=#276 id=276 data-nosnippet>276</a>    visuals.hyperlink_color = of(T::Link);
-<a href=#277 id=277 data-nosnippet>277</a>    visuals.warn_fg_color = of(T::Warning);
-<a href=#278 id=278 data-nosnippet>278</a>    visuals.error_fg_color = of(T::Wrong);
-<a href=#279 id=279 data-nosnippet>279</a>    visuals.selection.bg_fill = of(T::Selection);
-<a href=#280 id=280 data-nosnippet>280</a>    visuals.selection.stroke = Stroke::new(<span class="number">1.0</span>, text);
-<a href=#281 id=281 data-nosnippet>281</a>    <span class="kw">let </span>widgets = <span class="kw-2">&amp;mut </span>visuals.widgets;
-<a href=#282 id=282 data-nosnippet>282</a>    <span class="kw">for </span>(state, fill, edge) <span class="kw">in </span>[
-<a href=#283 id=283 data-nosnippet>283</a>        (<span class="kw-2">&amp;mut </span>widgets.noninteractive, canvas, line),
-<a href=#284 id=284 data-nosnippet>284</a>        (<span class="kw-2">&amp;mut </span>widgets.inactive, surface, line),
-<a href=#285 id=285 data-nosnippet>285</a>        (<span class="kw-2">&amp;mut </span>widgets.hovered, raised, strong),
-<a href=#286 id=286 data-nosnippet>286</a>        (<span class="kw-2">&amp;mut </span>widgets.active, raised, strong),
-<a href=#287 id=287 data-nosnippet>287</a>        (<span class="kw-2">&amp;mut </span>widgets.open, surface, line),
-<a href=#288 id=288 data-nosnippet>288</a>    ] {
-<a href=#289 id=289 data-nosnippet>289</a>        state.bg_fill = fill;
-<a href=#290 id=290 data-nosnippet>290</a>        state.weak_bg_fill = fill;
-<a href=#291 id=291 data-nosnippet>291</a>        state.bg_stroke = Stroke::new(state.bg_stroke.width.max(<span class="number">1.0</span>), edge);
-<a href=#292 id=292 data-nosnippet>292</a>        state.fg_stroke = Stroke::new(state.fg_stroke.width, text);
-<a href=#293 id=293 data-nosnippet>293</a>    }
-<a href=#294 id=294 data-nosnippet>294</a>    widgets.noninteractive.fg_stroke.color = muted;
-<a href=#295 id=295 data-nosnippet>295</a>    visuals
-<a href=#296 id=296 data-nosnippet>296</a>}
-<a href=#297 id=297 data-nosnippet>297</a>
-<a href=#298 id=298 data-nosnippet>298</a><span class="doccomment">/// A palette's colour as egui's.
-<a href=#299 id=299 data-nosnippet>299</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>rgb([red, green, blue]: Rgb) -&gt; Color32 {
-<a href=#300 id=300 data-nosnippet>300</a>    Color32::from_rgb(red, green, blue)
-<a href=#301 id=301 data-nosnippet>301</a>}
-<a href=#302 id=302 data-nosnippet>302</a>
-<a href=#303 id=303 data-nosnippet>303</a><span class="doccomment">/// Black or white, whichever reads on `behind`: by its luminance, the ITU
-<a href=#304 id=304 data-nosnippet>304</a>/// weights.
-<a href=#305 id=305 data-nosnippet>305</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>readable_on(behind: Color32) -&gt; Color32 {
-<a href=#306 id=306 data-nosnippet>306</a>    <span class="kw">let </span>[r, g, b, <span class="kw">_</span>] = behind.to_array();
-<a href=#307 id=307 data-nosnippet>307</a>    <span class="kw">let </span>luminance = <span class="number">0.299 </span>* f32::from(r) + <span class="number">0.587 </span>* f32::from(g) + <span class="number">0.114 </span>* f32::from(b);
-<a href=#308 id=308 data-nosnippet>308</a>    <span class="kw">if </span>luminance &gt; <span class="number">140.0 </span>{
-<a href=#309 id=309 data-nosnippet>309</a>        Color32::BLACK
-<a href=#310 id=310 data-nosnippet>310</a>    } <span class="kw">else </span>{
-<a href=#311 id=311 data-nosnippet>311</a>        Color32::WHITE
-<a href=#312 id=312 data-nosnippet>312</a>    }
-<a href=#313 id=313 data-nosnippet>313</a>}
-<a href=#314 id=314 data-nosnippet>314</a>
-<a href=#315 id=315 data-nosnippet>315</a><span class="attr">#[cfg(test)]
-<a href=#316 id=316 data-nosnippet>316</a></span><span class="kw">mod </span>tests {
-<a href=#317 id=317 data-nosnippet>317</a>    <span class="kw">use </span>super::<span class="kw-2">*</span>;
-<a href=#318 id=318 data-nosnippet>318</a>
-<a href=#319 id=319 data-nosnippet>319</a>    <span class="attr">#[test]
-<a href=#320 id=320 data-nosnippet>320</a>    </span><span class="kw">fn </span>a_token_is_its_bare_colour() {
-<a href=#321 id=321 data-nosnippet>321</a>        <span class="kw">let </span>ctx = egui::Context::default();
-<a href=#322 id=322 data-nosnippet>322</a>        <span class="macro">assert_eq!</span>(color(<span class="kw-2">&amp;</span>ctx, T::Health), Color32::from_rgb(<span class="number">0xcd</span>, <span class="number">0x4d</span>, <span class="number">0x4d</span>));
-<a href=#323 id=323 data-nosnippet>323</a>        <span class="macro">assert_eq!</span>(color(<span class="kw-2">&amp;</span>ctx, T::Accent), rgb(T::Accent.bare()));
-<a href=#324 id=324 data-nosnippet>324</a>    }
-<a href=#325 id=325 data-nosnippet>325</a>
-<a href=#326 id=326 data-nosnippet>326</a>    <span class="attr">#[test]
-<a href=#327 id=327 data-nosnippet>327</a>    </span><span class="kw">fn </span>the_bare_palette_is_dark_and_sets_the_visuals() {
-<a href=#328 id=328 data-nosnippet>328</a>        <span class="kw">let </span>visuals = visuals(<span class="kw-2">&amp;</span>Palette::bare());
-<a href=#329 id=329 data-nosnippet>329</a>        <span class="macro">assert!</span>(visuals.dark_mode);
-<a href=#330 id=330 data-nosnippet>330</a>        <span class="macro">assert_eq!</span>(visuals.panel_fill, rgb(T::Canvas.bare()));
-<a href=#331 id=331 data-nosnippet>331</a>        <span class="macro">assert_eq!</span>(visuals.override_text_color, <span class="prelude-val">Some</span>(rgb(T::Text.bare())));
-<a href=#332 id=332 data-nosnippet>332</a>    }
-<a href=#333 id=333 data-nosnippet>333</a>
-<a href=#334 id=334 data-nosnippet>334</a>    <span class="doccomment">/// A theme worn answers every token, and sets egui's visuals light or
-<a href=#335 id=335 data-nosnippet>335</a>    /// dark by its canvas.
-<a href=#336 id=336 data-nosnippet>336</a>    </span><span class="attr">#[test]
-<a href=#337 id=337 data-nosnippet>337</a>    </span><span class="kw">fn </span>a_theme_worn_is_the_palette_in_force() {
-<a href=#338 id=338 data-nosnippet>338</a>        <span class="kw">let </span>ctx = egui::Context::default();
-<a href=#339 id=339 data-nosnippet>339</a>        <span class="kw">let </span>themes = hydra_ui::theme::Themes::built_in();
-<a href=#340 id=340 data-nosnippet>340</a>        <span class="kw">let </span>light = themes
-<a href=#341 id=341 data-nosnippet>341</a>            .outfit(hydra_ui::theme::Theme::LIGHT)
-<a href=#342 id=342 data-nosnippet>342</a>            .expect(<span class="string">"built in"</span>);
-<a href=#343 id=343 data-nosnippet>343</a>        wear(<span class="kw-2">&amp;</span>ctx, <span class="kw-2">&amp;</span>light);
-<a href=#344 id=344 data-nosnippet>344</a>        <span class="macro">assert_eq!</span>(palette(<span class="kw-2">&amp;</span>ctx), light.palette);
-<a href=#345 id=345 data-nosnippet>345</a>        <span class="macro">assert!</span>(!ctx.global_style().visuals.dark_mode);
-<a href=#346 id=346 data-nosnippet>346</a>        <span class="macro">assert_eq!</span>(ctx.theme(), egui::Theme::Light);
-<a href=#347 id=347 data-nosnippet>347</a>    }
-<a href=#348 id=348 data-nosnippet>348</a>
-<a href=#349 id=349 data-nosnippet>349</a>    <span class="doccomment">/// The shape reaches egui's style and Hydra's own corners; its defaults
-<a href=#350 id=350 data-nosnippet>350</a>    /// are what Hydra drew before.
-<a href=#351 id=351 data-nosnippet>351</a>    </span><span class="attr">#[test]
-<a href=#352 id=352 data-nosnippet>352</a>    </span><span class="kw">fn </span>the_shape_reaches_egui_and_hydras_corners() {
-<a href=#353 id=353 data-nosnippet>353</a>        <span class="kw">let </span>ctx = egui::Context::default();
-<a href=#354 id=354 data-nosnippet>354</a>        <span class="macro">assert!</span>((corner(<span class="kw-2">&amp;</span>ctx) - <span class="number">3.0</span>).abs() &lt; f32::EPSILON, <span class="string">"as before"</span>);
-<a href=#355 id=355 data-nosnippet>355</a>        <span class="kw">let </span><span class="kw-2">mut </span>style = egui::Style::default();
-<a href=#356 id=356 data-nosnippet>356</a>        <span class="kw">let </span>before = style.clone();
-<a href=#357 id=357 data-nosnippet>357</a>        shaped(<span class="kw-2">&amp;mut </span>style, <span class="kw-2">&amp;</span>Shape::default());
-<a href=#358 id=358 data-nosnippet>358</a>        <span class="macro">assert_eq!</span>(
-<a href=#359 id=359 data-nosnippet>359</a>            style.visuals.window_corner_radius,
-<a href=#360 id=360 data-nosnippet>360</a>            before.visuals.window_corner_radius
-<a href=#361 id=361 data-nosnippet>361</a>        );
-<a href=#362 id=362 data-nosnippet>362</a>        <span class="macro">assert_eq!</span>(
-<a href=#363 id=363 data-nosnippet>363</a>            style.visuals.widgets.inactive.corner_radius,
-<a href=#364 id=364 data-nosnippet>364</a>            before.visuals.widgets.inactive.corner_radius
-<a href=#365 id=365 data-nosnippet>365</a>        );
-<a href=#366 id=366 data-nosnippet>366</a>        <span class="macro">assert_eq!</span>(style.spacing.item_spacing, before.spacing.item_spacing);
-<a href=#367 id=367 data-nosnippet>367</a>
-<a href=#368 id=368 data-nosnippet>368</a>        <span class="kw">let </span><span class="kw-2">mut </span>outfit = Outfit::default();
-<a href=#369 id=369 data-nosnippet>369</a>        outfit.shape.corners.panes = <span class="number">0</span>;
-<a href=#370 id=370 data-nosnippet>370</a>        outfit.shape.corners.windows = <span class="number">12</span>;
-<a href=#371 id=371 data-nosnippet>371</a>        outfit.shape.density = hydra_ui::theme::Density::Roomy;
-<a href=#372 id=372 data-nosnippet>372</a>        outfit.shape.shadows = <span class="bool-val">false</span>;
-<a href=#373 id=373 data-nosnippet>373</a>        outfit.shape.buttons = Buttons::Flat;
-<a href=#374 id=374 data-nosnippet>374</a>        wear(<span class="kw-2">&amp;</span>ctx, <span class="kw-2">&amp;</span>outfit);
-<a href=#375 id=375 data-nosnippet>375</a>        <span class="macro">assert!</span>(corner(<span class="kw-2">&amp;</span>ctx).abs() &lt; f32::EPSILON);
-<a href=#376 id=376 data-nosnippet>376</a>        <span class="kw">let </span>style = ctx.global_style();
-<a href=#377 id=377 data-nosnippet>377</a>        <span class="macro">assert_eq!</span>(style.visuals.window_corner_radius, CornerRadius::same(<span class="number">12</span>));
-<a href=#378 id=378 data-nosnippet>378</a>        <span class="macro">assert_eq!</span>(style.visuals.popup_shadow, egui::Shadow::NONE);
-<a href=#379 id=379 data-nosnippet>379</a>        <span class="macro">assert_eq!</span>(
-<a href=#380 id=380 data-nosnippet>380</a>            style.visuals.widgets.inactive.weak_bg_fill,
-<a href=#381 id=381 data-nosnippet>381</a>            Color32::TRANSPARENT
-<a href=#382 id=382 data-nosnippet>382</a>        );
-<a href=#383 id=383 data-nosnippet>383</a>        <span class="macro">assert_eq!</span>(style.visuals.widgets.inactive.bg_stroke, Stroke::NONE);
-<a href=#384 id=384 data-nosnippet>384</a>        <span class="macro">assert!</span>(style.spacing.item_spacing.y &gt; before.spacing.item_spacing.y);
-<a href=#385 id=385 data-nosnippet>385</a>    }
-<a href=#386 id=386 data-nosnippet>386</a>
-<a href=#387 id=387 data-nosnippet>387</a>    <span class="doccomment">/// The type sets the text styles, naming only a font egui has; a
-<a href=#388 id=388 data-nosnippet>388</a>    /// widget's face lays its font and size over its kind's.
-<a href=#389 id=389 data-nosnippet>389</a>    </span><span class="attr">#[test]
-<a href=#390 id=390 data-nosnippet>390</a>    </span><span class="kw">fn </span>the_type_sets_the_text_styles_and_a_face_is_laid_over() {
-<a href=#391 id=391 data-nosnippet>391</a>        <span class="kw">let </span><span class="kw-2">mut </span>kind = Type::default();
-<a href=#392 id=392 data-nosnippet>392</a>        <span class="kw">let </span><span class="kw-2">mut </span>plain = egui::Style::default();
-<a href=#393 id=393 data-nosnippet>393</a>        <span class="kw">let </span>before = plain.text_styles.clone();
-<a href=#394 id=394 data-nosnippet>394</a>        typed(<span class="kw-2">&amp;mut </span>plain, <span class="kw-2">&amp;</span>kind, <span class="kw-2">&amp;</span>BTreeSet::new());
-<a href=#395 id=395 data-nosnippet>395</a>        <span class="macro">assert_eq!</span>(
-<a href=#396 id=396 data-nosnippet>396</a>            plain.text_styles.get(<span class="kw-2">&amp;</span>TextStyle::Body),
-<a href=#397 id=397 data-nosnippet>397</a>            before.get(<span class="kw-2">&amp;</span>TextStyle::Body)
-<a href=#398 id=398 data-nosnippet>398</a>        );
-<a href=#399 id=399 data-nosnippet>399</a>        <span class="macro">assert_eq!</span>(
-<a href=#400 id=400 data-nosnippet>400</a>            story_font(<span class="kw-2">&amp;</span>plain),
-<a href=#401 id=401 data-nosnippet>401</a>            TextStyle::Body.resolve(<span class="kw-2">&amp;</span>plain),
-<a href=#402 id=402 data-nosnippet>402</a>            <span class="string">"as before"
-<a href=#403 id=403 data-nosnippet>403</a>        </span>);
-<a href=#404 id=404 data-nosnippet>404</a>
-<a href=#405 id=405 data-nosnippet>405</a>        kind.story_font = <span class="prelude-val">Some</span>(<span class="string">"Hack2"</span>.to_owned());
-<a href=#406 id=406 data-nosnippet>406</a>        kind.story_size = <span class="number">15.0</span>;
-<a href=#407 id=407 data-nosnippet>407</a>        kind.mono_font = <span class="prelude-val">Some</span>(<span class="string">"Gone"</span>.to_owned());
-<a href=#408 id=408 data-nosnippet>408</a>        <span class="kw">let </span>families: BTreeSet&lt;String&gt; = [<span class="string">"Hack2"</span>.to_owned()].into();
-<a href=#409 id=409 data-nosnippet>409</a>        <span class="kw">let </span><span class="kw-2">mut </span>style = egui::Style::default();
-<a href=#410 id=410 data-nosnippet>410</a>        typed(<span class="kw-2">&amp;mut </span>style, <span class="kw-2">&amp;</span>kind, <span class="kw-2">&amp;</span>families);
-<a href=#411 id=411 data-nosnippet>411</a>        <span class="macro">assert_eq!</span>(
-<a href=#412 id=412 data-nosnippet>412</a>            story_font(<span class="kw-2">&amp;</span>style),
-<a href=#413 id=413 data-nosnippet>413</a>            FontId::new(<span class="number">15.0</span>, FontFamily::Name(<span class="string">"Hack2"</span>.into()))
-<a href=#414 id=414 data-nosnippet>414</a>        );
-<a href=#415 id=415 data-nosnippet>415</a>        <span class="macro">assert_eq!</span>(
-<a href=#416 id=416 data-nosnippet>416</a>            TextStyle::Monospace.resolve(<span class="kw-2">&amp;</span>style).family,
-<a href=#417 id=417 data-nosnippet>417</a>            FontFamily::Monospace,
-<a href=#418 id=418 data-nosnippet>418</a>            <span class="string">"a font egui does not have is its own"
-<a href=#419 id=419 data-nosnippet>419</a>        </span>);
-<a href=#420 id=420 data-nosnippet>420</a>        faced(
-<a href=#421 id=421 data-nosnippet>421</a>            <span class="kw-2">&amp;mut </span>style,
-<a href=#422 id=422 data-nosnippet>422</a>            <span class="kw-2">&amp;</span>Face {
-<a href=#423 id=423 data-nosnippet>423</a>                font: <span class="prelude-val">None</span>,
-<a href=#424 id=424 data-nosnippet>424</a>                size: <span class="prelude-val">Some</span>(<span class="number">10.0</span>),
-<a href=#425 id=425 data-nosnippet>425</a>            },
-<a href=#426 id=426 data-nosnippet>426</a>            <span class="kw-2">&amp;</span>families,
-<a href=#427 id=427 data-nosnippet>427</a>        );
-<a href=#428 id=428 data-nosnippet>428</a>        <span class="macro">assert_eq!</span>(
-<a href=#429 id=429 data-nosnippet>429</a>            story_font(<span class="kw-2">&amp;</span>style),
-<a href=#430 id=430 data-nosnippet>430</a>            FontId::new(<span class="number">10.0</span>, FontFamily::Name(<span class="string">"Hack2"</span>.into())),
-<a href=#431 id=431 data-nosnippet>431</a>            <span class="string">"its size, the story's font"
-<a href=#432 id=432 data-nosnippet>432</a>        </span>);
-<a href=#433 id=433 data-nosnippet>433</a>        <span class="macro">assert!</span>((TextStyle::Body.resolve(<span class="kw-2">&amp;</span>style).size - <span class="number">10.0</span>).abs() &lt; f32::EPSILON);
-<a href=#434 id=434 data-nosnippet>434</a>    }
-<a href=#435 id=435 data-nosnippet>435</a>
-<a href=#436 id=436 data-nosnippet>436</a>    <span class="attr">#[test]
-<a href=#437 id=437 data-nosnippet>437</a>    </span><span class="kw">fn </span>text_on_a_colour_is_black_or_white_as_reads() {
-<a href=#438 id=438 data-nosnippet>438</a>        <span class="macro">assert_eq!</span>(readable_on(Color32::WHITE), Color32::BLACK);
-<a href=#439 id=439 data-nosnippet>439</a>        <span class="macro">assert_eq!</span>(readable_on(Color32::BLACK), Color32::WHITE);
-<a href=#440 id=440 data-nosnippet>440</a>    }
-<a href=#441 id=441 data-nosnippet>441</a>}
+<a href=#221 id=221 data-nosnippet>221</a>    spacing.window_margin =
+<a href=#222 id=222 data-nosnippet>222</a>        egui::Margin::same(i8::try_from(shape.window_margin).unwrap_or(i8::MAX));
+<a href=#223 id=223 data-nosnippet>223</a>    <span class="kw">let </span>visuals = <span class="kw-2">&amp;mut </span>style.visuals;
+<a href=#224 id=224 data-nosnippet>224</a>    <span class="kw">let </span>windows = CornerRadius::same(shape.corners.windows);
+<a href=#225 id=225 data-nosnippet>225</a>    visuals.window_corner_radius = windows;
+<a href=#226 id=226 data-nosnippet>226</a>    visuals.menu_corner_radius = windows;
+<a href=#227 id=227 data-nosnippet>227</a>    visuals.window_stroke.width = shape.stroke;
+<a href=#228 id=228 data-nosnippet>228</a>    <span class="kw">if </span>!shape.shadows {
+<a href=#229 id=229 data-nosnippet>229</a>        visuals.window_shadow = egui::Shadow::NONE;
+<a href=#230 id=230 data-nosnippet>230</a>        visuals.popup_shadow = egui::Shadow::NONE;
+<a href=#231 id=231 data-nosnippet>231</a>    }
+<a href=#232 id=232 data-nosnippet>232</a>    <span class="kw">let </span>controls = CornerRadius::same(shape.corners.controls);
+<a href=#233 id=233 data-nosnippet>233</a>    <span class="kw">for </span>state <span class="kw">in </span>[
+<a href=#234 id=234 data-nosnippet>234</a>        <span class="kw-2">&amp;mut </span>visuals.widgets.noninteractive,
+<a href=#235 id=235 data-nosnippet>235</a>        <span class="kw-2">&amp;mut </span>visuals.widgets.inactive,
+<a href=#236 id=236 data-nosnippet>236</a>        <span class="kw-2">&amp;mut </span>visuals.widgets.hovered,
+<a href=#237 id=237 data-nosnippet>237</a>        <span class="kw-2">&amp;mut </span>visuals.widgets.active,
+<a href=#238 id=238 data-nosnippet>238</a>        <span class="kw-2">&amp;mut </span>visuals.widgets.open,
+<a href=#239 id=239 data-nosnippet>239</a>    ] {
+<a href=#240 id=240 data-nosnippet>240</a>        state.corner_radius = controls;
+<a href=#241 id=241 data-nosnippet>241</a>        state.bg_stroke.width = shape.stroke;
+<a href=#242 id=242 data-nosnippet>242</a>    }
+<a href=#243 id=243 data-nosnippet>243</a>    <span class="comment">// A button's ground at rest is egui's weak fill; under the pointer it
+<a href=#244 id=244 data-nosnippet>244</a>    // fills in every style.
+<a href=#245 id=245 data-nosnippet>245</a>    </span><span class="kw">let </span>rest = <span class="kw-2">&amp;mut </span>visuals.widgets.inactive;
+<a href=#246 id=246 data-nosnippet>246</a>    <span class="kw">match </span>shape.buttons {
+<a href=#247 id=247 data-nosnippet>247</a>        Buttons::Filled =&gt; {}
+<a href=#248 id=248 data-nosnippet>248</a>        Buttons::Outlined =&gt; rest.weak_bg_fill = Color32::TRANSPARENT,
+<a href=#249 id=249 data-nosnippet>249</a>        Buttons::Flat =&gt; {
+<a href=#250 id=250 data-nosnippet>250</a>            rest.weak_bg_fill = Color32::TRANSPARENT;
+<a href=#251 id=251 data-nosnippet>251</a>            rest.bg_stroke = Stroke::NONE;
+<a href=#252 id=252 data-nosnippet>252</a>        }
+<a href=#253 id=253 data-nosnippet>253</a>    }
+<a href=#254 id=254 data-nosnippet>254</a>}
+<a href=#255 id=255 data-nosnippet>255</a>
+<a href=#256 id=256 data-nosnippet>256</a><span class="doccomment">/// egui's visuals from `palette`: dark or light by its canvas, the
+<a href=#257 id=257 data-nosnippet>257</a>/// surfaces on every control, the text and lines, the selection, the
+<a href=#258 id=258 data-nosnippet>258</a>/// link, a warning and a wrong.
+<a href=#259 id=259 data-nosnippet>259</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>visuals(palette: <span class="kw-2">&amp;</span>Palette) -&gt; Visuals {
+<a href=#260 id=260 data-nosnippet>260</a>    <span class="kw">let </span>of = |token| rgb(palette.get(token));
+<a href=#261 id=261 data-nosnippet>261</a>    <span class="kw">let </span>(canvas, surface, raised, inset) =
+<a href=#262 id=262 data-nosnippet>262</a>        (of(T::Canvas), of(T::Surface), of(T::Raised), of(T::Inset));
+<a href=#263 id=263 data-nosnippet>263</a>    <span class="kw">let </span>(line, strong, text, muted) = (of(T::Line), of(T::LineStrong), of(T::Text), of(T::Muted));
+<a href=#264 id=264 data-nosnippet>264</a>    <span class="kw">let </span>dark = readable_on(canvas) == Color32::WHITE;
+<a href=#265 id=265 data-nosnippet>265</a>    <span class="kw">let </span><span class="kw-2">mut </span>visuals = <span class="kw">if </span>dark {
+<a href=#266 id=266 data-nosnippet>266</a>        Visuals::dark()
+<a href=#267 id=267 data-nosnippet>267</a>    } <span class="kw">else </span>{
+<a href=#268 id=268 data-nosnippet>268</a>        Visuals::light()
+<a href=#269 id=269 data-nosnippet>269</a>    };
+<a href=#270 id=270 data-nosnippet>270</a>    visuals.override_text_color = <span class="prelude-val">Some</span>(text);
+<a href=#271 id=271 data-nosnippet>271</a>    visuals.weak_text_color = <span class="prelude-val">Some</span>(muted);
+<a href=#272 id=272 data-nosnippet>272</a>    visuals.window_fill = canvas;
+<a href=#273 id=273 data-nosnippet>273</a>    visuals.panel_fill = canvas;
+<a href=#274 id=274 data-nosnippet>274</a>    visuals.faint_bg_color = surface;
+<a href=#275 id=275 data-nosnippet>275</a>    visuals.extreme_bg_color = inset;
+<a href=#276 id=276 data-nosnippet>276</a>    visuals.code_bg_color = inset;
+<a href=#277 id=277 data-nosnippet>277</a>    visuals.window_stroke = Stroke::new(<span class="number">1.0</span>, strong);
+<a href=#278 id=278 data-nosnippet>278</a>    visuals.hyperlink_color = of(T::Link);
+<a href=#279 id=279 data-nosnippet>279</a>    visuals.warn_fg_color = of(T::Warning);
+<a href=#280 id=280 data-nosnippet>280</a>    visuals.error_fg_color = of(T::Wrong);
+<a href=#281 id=281 data-nosnippet>281</a>    visuals.selection.bg_fill = of(T::Selection);
+<a href=#282 id=282 data-nosnippet>282</a>    visuals.selection.stroke = Stroke::new(<span class="number">1.0</span>, text);
+<a href=#283 id=283 data-nosnippet>283</a>    <span class="kw">let </span>widgets = <span class="kw-2">&amp;mut </span>visuals.widgets;
+<a href=#284 id=284 data-nosnippet>284</a>    <span class="kw">for </span>(state, fill, edge) <span class="kw">in </span>[
+<a href=#285 id=285 data-nosnippet>285</a>        (<span class="kw-2">&amp;mut </span>widgets.noninteractive, canvas, line),
+<a href=#286 id=286 data-nosnippet>286</a>        (<span class="kw-2">&amp;mut </span>widgets.inactive, surface, line),
+<a href=#287 id=287 data-nosnippet>287</a>        (<span class="kw-2">&amp;mut </span>widgets.hovered, raised, strong),
+<a href=#288 id=288 data-nosnippet>288</a>        (<span class="kw-2">&amp;mut </span>widgets.active, raised, strong),
+<a href=#289 id=289 data-nosnippet>289</a>        (<span class="kw-2">&amp;mut </span>widgets.open, surface, line),
+<a href=#290 id=290 data-nosnippet>290</a>    ] {
+<a href=#291 id=291 data-nosnippet>291</a>        state.bg_fill = fill;
+<a href=#292 id=292 data-nosnippet>292</a>        state.weak_bg_fill = fill;
+<a href=#293 id=293 data-nosnippet>293</a>        state.bg_stroke = Stroke::new(state.bg_stroke.width.max(<span class="number">1.0</span>), edge);
+<a href=#294 id=294 data-nosnippet>294</a>        state.fg_stroke = Stroke::new(state.fg_stroke.width, text);
+<a href=#295 id=295 data-nosnippet>295</a>    }
+<a href=#296 id=296 data-nosnippet>296</a>    widgets.noninteractive.fg_stroke.color = muted;
+<a href=#297 id=297 data-nosnippet>297</a>    visuals
+<a href=#298 id=298 data-nosnippet>298</a>}
+<a href=#299 id=299 data-nosnippet>299</a>
+<a href=#300 id=300 data-nosnippet>300</a><span class="doccomment">/// A palette's colour as egui's.
+<a href=#301 id=301 data-nosnippet>301</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>rgb([red, green, blue]: Rgb) -&gt; Color32 {
+<a href=#302 id=302 data-nosnippet>302</a>    Color32::from_rgb(red, green, blue)
+<a href=#303 id=303 data-nosnippet>303</a>}
+<a href=#304 id=304 data-nosnippet>304</a>
+<a href=#305 id=305 data-nosnippet>305</a><span class="doccomment">/// Black or white, whichever reads on `behind`: by its luminance, the ITU
+<a href=#306 id=306 data-nosnippet>306</a>/// weights.
+<a href=#307 id=307 data-nosnippet>307</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>readable_on(behind: Color32) -&gt; Color32 {
+<a href=#308 id=308 data-nosnippet>308</a>    <span class="kw">let </span>[r, g, b, <span class="kw">_</span>] = behind.to_array();
+<a href=#309 id=309 data-nosnippet>309</a>    <span class="kw">let </span>luminance = <span class="number">0.299 </span>* f32::from(r) + <span class="number">0.587 </span>* f32::from(g) + <span class="number">0.114 </span>* f32::from(b);
+<a href=#310 id=310 data-nosnippet>310</a>    <span class="kw">if </span>luminance &gt; <span class="number">140.0 </span>{
+<a href=#311 id=311 data-nosnippet>311</a>        Color32::BLACK
+<a href=#312 id=312 data-nosnippet>312</a>    } <span class="kw">else </span>{
+<a href=#313 id=313 data-nosnippet>313</a>        Color32::WHITE
+<a href=#314 id=314 data-nosnippet>314</a>    }
+<a href=#315 id=315 data-nosnippet>315</a>}
+<a href=#316 id=316 data-nosnippet>316</a>
+<a href=#317 id=317 data-nosnippet>317</a><span class="attr">#[cfg(test)]
+<a href=#318 id=318 data-nosnippet>318</a></span><span class="kw">mod </span>tests {
+<a href=#319 id=319 data-nosnippet>319</a>    <span class="kw">use </span>super::<span class="kw-2">*</span>;
+<a href=#320 id=320 data-nosnippet>320</a>
+<a href=#321 id=321 data-nosnippet>321</a>    <span class="attr">#[test]
+<a href=#322 id=322 data-nosnippet>322</a>    </span><span class="kw">fn </span>a_token_is_its_bare_colour() {
+<a href=#323 id=323 data-nosnippet>323</a>        <span class="kw">let </span>ctx = egui::Context::default();
+<a href=#324 id=324 data-nosnippet>324</a>        <span class="macro">assert_eq!</span>(color(<span class="kw-2">&amp;</span>ctx, T::Health), Color32::from_rgb(<span class="number">0xcd</span>, <span class="number">0x4d</span>, <span class="number">0x4d</span>));
+<a href=#325 id=325 data-nosnippet>325</a>        <span class="macro">assert_eq!</span>(color(<span class="kw-2">&amp;</span>ctx, T::Accent), rgb(T::Accent.bare()));
+<a href=#326 id=326 data-nosnippet>326</a>    }
+<a href=#327 id=327 data-nosnippet>327</a>
+<a href=#328 id=328 data-nosnippet>328</a>    <span class="attr">#[test]
+<a href=#329 id=329 data-nosnippet>329</a>    </span><span class="kw">fn </span>the_bare_palette_is_dark_and_sets_the_visuals() {
+<a href=#330 id=330 data-nosnippet>330</a>        <span class="kw">let </span>visuals = visuals(<span class="kw-2">&amp;</span>Palette::bare());
+<a href=#331 id=331 data-nosnippet>331</a>        <span class="macro">assert!</span>(visuals.dark_mode);
+<a href=#332 id=332 data-nosnippet>332</a>        <span class="macro">assert_eq!</span>(visuals.panel_fill, rgb(T::Canvas.bare()));
+<a href=#333 id=333 data-nosnippet>333</a>        <span class="macro">assert_eq!</span>(visuals.override_text_color, <span class="prelude-val">Some</span>(rgb(T::Text.bare())));
+<a href=#334 id=334 data-nosnippet>334</a>    }
+<a href=#335 id=335 data-nosnippet>335</a>
+<a href=#336 id=336 data-nosnippet>336</a>    <span class="doccomment">/// A theme worn answers every token, and sets egui's visuals light or
+<a href=#337 id=337 data-nosnippet>337</a>    /// dark by its canvas.
+<a href=#338 id=338 data-nosnippet>338</a>    </span><span class="attr">#[test]
+<a href=#339 id=339 data-nosnippet>339</a>    </span><span class="kw">fn </span>a_theme_worn_is_the_palette_in_force() {
+<a href=#340 id=340 data-nosnippet>340</a>        <span class="kw">let </span>ctx = egui::Context::default();
+<a href=#341 id=341 data-nosnippet>341</a>        <span class="kw">let </span>themes = hydra_ui::theme::Themes::built_in();
+<a href=#342 id=342 data-nosnippet>342</a>        <span class="kw">let </span>light = themes
+<a href=#343 id=343 data-nosnippet>343</a>            .outfit(hydra_ui::theme::Theme::LIGHT)
+<a href=#344 id=344 data-nosnippet>344</a>            .expect(<span class="string">"built in"</span>);
+<a href=#345 id=345 data-nosnippet>345</a>        wear(<span class="kw-2">&amp;</span>ctx, <span class="kw-2">&amp;</span>light);
+<a href=#346 id=346 data-nosnippet>346</a>        <span class="macro">assert_eq!</span>(palette(<span class="kw-2">&amp;</span>ctx), light.palette);
+<a href=#347 id=347 data-nosnippet>347</a>        <span class="macro">assert!</span>(!ctx.global_style().visuals.dark_mode);
+<a href=#348 id=348 data-nosnippet>348</a>        <span class="macro">assert_eq!</span>(ctx.theme(), egui::Theme::Light);
+<a href=#349 id=349 data-nosnippet>349</a>    }
+<a href=#350 id=350 data-nosnippet>350</a>
+<a href=#351 id=351 data-nosnippet>351</a>    <span class="doccomment">/// The shape reaches egui's style and Hydra's own corners; its defaults
+<a href=#352 id=352 data-nosnippet>352</a>    /// are what Hydra drew before.
+<a href=#353 id=353 data-nosnippet>353</a>    </span><span class="attr">#[test]
+<a href=#354 id=354 data-nosnippet>354</a>    </span><span class="kw">fn </span>the_shape_reaches_egui_and_hydras_corners() {
+<a href=#355 id=355 data-nosnippet>355</a>        <span class="kw">let </span>ctx = egui::Context::default();
+<a href=#356 id=356 data-nosnippet>356</a>        <span class="macro">assert!</span>((corner(<span class="kw-2">&amp;</span>ctx) - <span class="number">3.0</span>).abs() &lt; f32::EPSILON, <span class="string">"as before"</span>);
+<a href=#357 id=357 data-nosnippet>357</a>        <span class="kw">let </span><span class="kw-2">mut </span>style = egui::Style::default();
+<a href=#358 id=358 data-nosnippet>358</a>        <span class="kw">let </span>before = style.clone();
+<a href=#359 id=359 data-nosnippet>359</a>        shaped(<span class="kw-2">&amp;mut </span>style, <span class="kw-2">&amp;</span>Shape::default());
+<a href=#360 id=360 data-nosnippet>360</a>        <span class="macro">assert_eq!</span>(
+<a href=#361 id=361 data-nosnippet>361</a>            style.visuals.window_corner_radius,
+<a href=#362 id=362 data-nosnippet>362</a>            before.visuals.window_corner_radius
+<a href=#363 id=363 data-nosnippet>363</a>        );
+<a href=#364 id=364 data-nosnippet>364</a>        <span class="macro">assert_eq!</span>(
+<a href=#365 id=365 data-nosnippet>365</a>            style.visuals.widgets.inactive.corner_radius,
+<a href=#366 id=366 data-nosnippet>366</a>            before.visuals.widgets.inactive.corner_radius
+<a href=#367 id=367 data-nosnippet>367</a>        );
+<a href=#368 id=368 data-nosnippet>368</a>        <span class="macro">assert_eq!</span>(style.spacing.item_spacing, before.spacing.item_spacing);
+<a href=#369 id=369 data-nosnippet>369</a>        <span class="macro">assert_eq!</span>(style.spacing.window_margin, before.spacing.window_margin);
+<a href=#370 id=370 data-nosnippet>370</a>
+<a href=#371 id=371 data-nosnippet>371</a>        <span class="kw">let </span><span class="kw-2">mut </span>outfit = Outfit::default();
+<a href=#372 id=372 data-nosnippet>372</a>        outfit.shape.window_margin = <span class="number">0</span>;
+<a href=#373 id=373 data-nosnippet>373</a>        outfit.shape.corners.panes = <span class="number">0</span>;
+<a href=#374 id=374 data-nosnippet>374</a>        outfit.shape.corners.windows = <span class="number">12</span>;
+<a href=#375 id=375 data-nosnippet>375</a>        outfit.shape.density = hydra_ui::theme::Density::Roomy;
+<a href=#376 id=376 data-nosnippet>376</a>        outfit.shape.shadows = <span class="bool-val">false</span>;
+<a href=#377 id=377 data-nosnippet>377</a>        outfit.shape.buttons = Buttons::Flat;
+<a href=#378 id=378 data-nosnippet>378</a>        wear(<span class="kw-2">&amp;</span>ctx, <span class="kw-2">&amp;</span>outfit);
+<a href=#379 id=379 data-nosnippet>379</a>        <span class="macro">assert!</span>(corner(<span class="kw-2">&amp;</span>ctx).abs() &lt; f32::EPSILON);
+<a href=#380 id=380 data-nosnippet>380</a>        <span class="kw">let </span>style = ctx.global_style();
+<a href=#381 id=381 data-nosnippet>381</a>        <span class="macro">assert_eq!</span>(style.visuals.window_corner_radius, CornerRadius::same(<span class="number">12</span>));
+<a href=#382 id=382 data-nosnippet>382</a>        <span class="macro">assert_eq!</span>(style.spacing.window_margin, egui::Margin::ZERO);
+<a href=#383 id=383 data-nosnippet>383</a>        <span class="macro">assert_eq!</span>(style.visuals.popup_shadow, egui::Shadow::NONE);
+<a href=#384 id=384 data-nosnippet>384</a>        <span class="macro">assert_eq!</span>(
+<a href=#385 id=385 data-nosnippet>385</a>            style.visuals.widgets.inactive.weak_bg_fill,
+<a href=#386 id=386 data-nosnippet>386</a>            Color32::TRANSPARENT
+<a href=#387 id=387 data-nosnippet>387</a>        );
+<a href=#388 id=388 data-nosnippet>388</a>        <span class="macro">assert_eq!</span>(style.visuals.widgets.inactive.bg_stroke, Stroke::NONE);
+<a href=#389 id=389 data-nosnippet>389</a>        <span class="macro">assert!</span>(style.spacing.item_spacing.y &gt; before.spacing.item_spacing.y);
+<a href=#390 id=390 data-nosnippet>390</a>    }
+<a href=#391 id=391 data-nosnippet>391</a>
+<a href=#392 id=392 data-nosnippet>392</a>    <span class="doccomment">/// The type sets the text styles, naming only a font egui has; a
+<a href=#393 id=393 data-nosnippet>393</a>    /// widget's face lays its font and size over its kind's.
+<a href=#394 id=394 data-nosnippet>394</a>    </span><span class="attr">#[test]
+<a href=#395 id=395 data-nosnippet>395</a>    </span><span class="kw">fn </span>the_type_sets_the_text_styles_and_a_face_is_laid_over() {
+<a href=#396 id=396 data-nosnippet>396</a>        <span class="kw">let </span><span class="kw-2">mut </span>kind = Type::default();
+<a href=#397 id=397 data-nosnippet>397</a>        <span class="kw">let </span><span class="kw-2">mut </span>plain = egui::Style::default();
+<a href=#398 id=398 data-nosnippet>398</a>        <span class="kw">let </span>before = plain.text_styles.clone();
+<a href=#399 id=399 data-nosnippet>399</a>        typed(<span class="kw-2">&amp;mut </span>plain, <span class="kw-2">&amp;</span>kind, <span class="kw-2">&amp;</span>BTreeSet::new());
+<a href=#400 id=400 data-nosnippet>400</a>        <span class="macro">assert_eq!</span>(
+<a href=#401 id=401 data-nosnippet>401</a>            plain.text_styles.get(<span class="kw-2">&amp;</span>TextStyle::Body),
+<a href=#402 id=402 data-nosnippet>402</a>            before.get(<span class="kw-2">&amp;</span>TextStyle::Body)
+<a href=#403 id=403 data-nosnippet>403</a>        );
+<a href=#404 id=404 data-nosnippet>404</a>        <span class="macro">assert_eq!</span>(
+<a href=#405 id=405 data-nosnippet>405</a>            story_font(<span class="kw-2">&amp;</span>plain),
+<a href=#406 id=406 data-nosnippet>406</a>            TextStyle::Body.resolve(<span class="kw-2">&amp;</span>plain),
+<a href=#407 id=407 data-nosnippet>407</a>            <span class="string">"as before"
+<a href=#408 id=408 data-nosnippet>408</a>        </span>);
+<a href=#409 id=409 data-nosnippet>409</a>
+<a href=#410 id=410 data-nosnippet>410</a>        kind.story_font = <span class="prelude-val">Some</span>(<span class="string">"Hack2"</span>.to_owned());
+<a href=#411 id=411 data-nosnippet>411</a>        kind.story_size = <span class="number">15.0</span>;
+<a href=#412 id=412 data-nosnippet>412</a>        kind.mono_font = <span class="prelude-val">Some</span>(<span class="string">"Gone"</span>.to_owned());
+<a href=#413 id=413 data-nosnippet>413</a>        <span class="kw">let </span>families: BTreeSet&lt;String&gt; = [<span class="string">"Hack2"</span>.to_owned()].into();
+<a href=#414 id=414 data-nosnippet>414</a>        <span class="kw">let </span><span class="kw-2">mut </span>style = egui::Style::default();
+<a href=#415 id=415 data-nosnippet>415</a>        typed(<span class="kw-2">&amp;mut </span>style, <span class="kw-2">&amp;</span>kind, <span class="kw-2">&amp;</span>families);
+<a href=#416 id=416 data-nosnippet>416</a>        <span class="macro">assert_eq!</span>(
+<a href=#417 id=417 data-nosnippet>417</a>            story_font(<span class="kw-2">&amp;</span>style),
+<a href=#418 id=418 data-nosnippet>418</a>            FontId::new(<span class="number">15.0</span>, FontFamily::Name(<span class="string">"Hack2"</span>.into()))
+<a href=#419 id=419 data-nosnippet>419</a>        );
+<a href=#420 id=420 data-nosnippet>420</a>        <span class="macro">assert_eq!</span>(
+<a href=#421 id=421 data-nosnippet>421</a>            TextStyle::Monospace.resolve(<span class="kw-2">&amp;</span>style).family,
+<a href=#422 id=422 data-nosnippet>422</a>            FontFamily::Monospace,
+<a href=#423 id=423 data-nosnippet>423</a>            <span class="string">"a font egui does not have is its own"
+<a href=#424 id=424 data-nosnippet>424</a>        </span>);
+<a href=#425 id=425 data-nosnippet>425</a>        faced(
+<a href=#426 id=426 data-nosnippet>426</a>            <span class="kw-2">&amp;mut </span>style,
+<a href=#427 id=427 data-nosnippet>427</a>            <span class="kw-2">&amp;</span>Face {
+<a href=#428 id=428 data-nosnippet>428</a>                font: <span class="prelude-val">None</span>,
+<a href=#429 id=429 data-nosnippet>429</a>                size: <span class="prelude-val">Some</span>(<span class="number">10.0</span>),
+<a href=#430 id=430 data-nosnippet>430</a>            },
+<a href=#431 id=431 data-nosnippet>431</a>            <span class="kw-2">&amp;</span>families,
+<a href=#432 id=432 data-nosnippet>432</a>        );
+<a href=#433 id=433 data-nosnippet>433</a>        <span class="macro">assert_eq!</span>(
+<a href=#434 id=434 data-nosnippet>434</a>            story_font(<span class="kw-2">&amp;</span>style),
+<a href=#435 id=435 data-nosnippet>435</a>            FontId::new(<span class="number">10.0</span>, FontFamily::Name(<span class="string">"Hack2"</span>.into())),
+<a href=#436 id=436 data-nosnippet>436</a>            <span class="string">"its size, the story's font"
+<a href=#437 id=437 data-nosnippet>437</a>        </span>);
+<a href=#438 id=438 data-nosnippet>438</a>        <span class="macro">assert!</span>((TextStyle::Body.resolve(<span class="kw-2">&amp;</span>style).size - <span class="number">10.0</span>).abs() &lt; f32::EPSILON);
+<a href=#439 id=439 data-nosnippet>439</a>    }
+<a href=#440 id=440 data-nosnippet>440</a>
+<a href=#441 id=441 data-nosnippet>441</a>    <span class="attr">#[test]
+<a href=#442 id=442 data-nosnippet>442</a>    </span><span class="kw">fn </span>text_on_a_colour_is_black_or_white_as_reads() {
+<a href=#443 id=443 data-nosnippet>443</a>        <span class="macro">assert_eq!</span>(readable_on(Color32::WHITE), Color32::BLACK);
+<a href=#444 id=444 data-nosnippet>444</a>        <span class="macro">assert_eq!</span>(readable_on(Color32::BLACK), Color32::WHITE);
+<a href=#445 id=445 data-nosnippet>445</a>    }
+<a href=#446 id=446 data-nosnippet>446</a>}
 </code></pre></div></section></main></body></html>

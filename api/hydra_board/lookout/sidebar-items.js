@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["KEY","PAGE","SOUND","TRIGGER","TRIGGER_KEY"],"fn":["add_trigger","change","chime","page","set_trigger","trigger","with_trigger_row"]};

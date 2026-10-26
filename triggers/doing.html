@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-a56a457a.js";
+            window.path_to_searchindex_js = "../searchindex-50dd7f95.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-6d2367c3.js"></script>
+        <script src="../toc-b5471689.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -189,11 +189,9 @@ notification still come.</li>
 <li><strong>Write instead</strong>: what the trigger found is written as these words.
 The rest of the line stays. <code>$1</code>, <code>$2</code> put in what a pattern’s groups
 caught: <code>$2 to $1: "$3"</code> turns a long line of speech into a short one.</li>
-<li><strong>Move to</strong>: the line goes to a stream of that name instead of the
-story. Once a line has gone there, the play window’s <strong>Layout</strong> menu,
-<strong>Add a widget</strong>, offers a window for that stream, under <em>Other game
-windows</em>. Tick <strong>and keep it here</strong> to copy the line rather than move
-it.</li>
+<li><strong>Move to</strong>: a line goes to another window by a
+<a href="../streams.html">stream rule</a>, not a trigger; the link opens the Streams
+page.</li>
 </ul>
 <h2 id="tell-me"><a class="header" href="#tell-me">Tell me</a></h2>
 <p>How the trigger gets your attention.</p>
@@ -207,12 +205,17 @@ sound is named.</li>
 seconds: <em>The line</em>, or <em>These words</em> of your own.</li>
 <li><strong>Notification</strong>: a notification from your computer, as other programs
 send: the line, or your own words.</li>
+<li><strong>Push to phone</strong>: a banner on each phone paired with Hydra in the
+HydraFE app, even with the app closed: the line, or your own words.
+Tapping it opens HydraFE on that character (<a href="../push.html">Push to phone</a>).
+<code>.push</code> lists the phones,
+<code>.push test</code> sends one to try it, and <code>.push forget &lt;name&gt;</code> stops one.</li>
 <li><strong>Speech</strong>: your computer’s voice reads the line, or your own words.</li>
 <li><strong>Rumble</strong>: the game controller rumbles: <code>short</code>, <code>long</code>, <code>double</code>, or
 a pattern of your own from the controller’s file.</li>
 <li><strong>Picture</strong>: a picture placed in the story after the line: an
 <code>https://</code> address, or a file in the pictures folder set on the
-<strong>Window</strong> page of Settings.</li>
+Hydra’s <strong>General</strong> page of Settings.</li>
 </ul>
 <p>Several characters hearing the same line within a second, a shout in a
 room they share, make one sound, one notification and one voice, not one
@@ -259,7 +262,7 @@ lights it while it is set, and under <strong>When</strong> the condition <strong
 reads it as it reads the game’s own. Set and clear it as you would a flag.</p>
 <h2 id="cooldown"><a class="header" href="#cooldown">Cooldown</a></h2>
 <p>Under the sections, when the trigger has something to hold back:
-<strong>Cooldown</strong> is how long before its sound, banner, notification, speech,
+<strong>Cooldown</strong> is how long before its sound, banner, notification, push, speech,
 rumble, picture, timer and commands come again. 3 seconds unless you
 change it. A line the trigger finds while it cools down is still
 coloured, hidden, rewritten and moved, and its flag and status are still

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FILE","FRESH_AFTER","PAGE","RECORD_ENV","WEB_PORT","ZOOM_LEAST","ZOOM_MOST","ZOOM_STEP"],"fn":["keeps_player_log","records_sessions","starts_fresh_after","updates","web_page","web_page_port"],"struct":["Own"]};
+window.SIDEBAR_ITEMS = {"constant":["FILE","FRESH_AFTER","HUB_PAGE","PAGE","RECORD_ENV","WEB_PORT","ZOOM_LEAST","ZOOM_MOST","ZOOM_STEP"],"enum":["Graphics"],"fn":["graphics","keeps_player_log","records_sessions","starts_fresh_after","updates","web_page","web_page_port"],"struct":["Own"]};

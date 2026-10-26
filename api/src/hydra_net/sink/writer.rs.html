@@ -12,655 +12,722 @@
 <a href=#12 id=12 data-nosnippet>12</a>    CLIENT_CLOSE, CLIENT_OPEN, bytes_timestamps_enabled, line_time, rotate_after_lines,
 <a href=#13 id=13 data-nosnippet>13</a>};
 <a href=#14 id=14 data-nosnippet>14</a><span class="kw">use </span><span class="kw">super</span>::redactions::Redactions;
-<a href=#15 id=15 data-nosnippet>15</a><span class="kw">use </span>std::fs::{<span class="self">self</span>, File};
-<a href=#16 id=16 data-nosnippet>16</a><span class="kw">use </span>std::io::{<span class="self">self</span>, BufWriter, Write};
-<a href=#17 id=17 data-nosnippet>17</a><span class="kw">use </span>std::path::{Path, PathBuf};
-<a href=#18 id=18 data-nosnippet>18</a>
-<a href=#19 id=19 data-nosnippet>19</a><span class="doccomment">/// Two files for one session: the raw wire, and what we did.
-<a href=#20 id=20 data-nosnippet>20</a>///
-<a href=#21 id=21 data-nosnippet>21</a>/// Holds its own handles rather than reaching a global: there are no process
-<a href=#22 id=22 data-nosnippet>22</a>/// globals, and 25 sessions must write 25 independent transcripts without
-<a href=#23 id=23 data-nosnippet>23</a>/// contending on one logger.
-<a href=#24 id=24 data-nosnippet>24</a></span><span class="attr">#[derive(Debug)]
-<a href=#25 id=25 data-nosnippet>25</a></span><span class="kw">pub struct </span>SessionSink {
-<a href=#26 id=26 data-nosnippet>26</a>    bytes: BufWriter&lt;File&gt;,
-<a href=#27 id=27 data-nosnippet>27</a>    events: BufWriter&lt;File&gt;,
-<a href=#28 id=28 data-nosnippet>28</a>    redactions: Redactions,
-<a href=#29 id=29 data-nosnippet>29</a>    bytes_path: PathBuf,
-<a href=#30 id=30 data-nosnippet>30</a>    events_path: PathBuf,
-<a href=#31 id=31 data-nosnippet>31</a>    lines_written: u64,
-<a href=#32 id=32 data-nosnippet>32</a>    <span class="doccomment">/// `&lt;dir&gt;/&lt;char&gt;-&lt;stamp&gt;`, shared by every part of this session.
-<a href=#33 id=33 data-nosnippet>33</a>    </span>stem: PathBuf,
-<a href=#34 id=34 data-nosnippet>34</a>    <span class="doccomment">/// Which part is open. 0 is the first file.
-<a href=#35 id=35 data-nosnippet>35</a>    </span>part: u32,
-<a href=#36 id=36 data-nosnippet>36</a>    <span class="doccomment">/// Lines before rolling. Read once at creation, for the same reason
-<a href=#37 id=37 data-nosnippet>37</a>    /// `stamp_bytes` is: a threshold that changed mid-session would produce
-<a href=#38 id=38 data-nosnippet>38</a>    /// parts of inconsistent size.
-<a href=#39 id=39 data-nosnippet>39</a>    </span>rotate_after: u64,
-<a href=#40 id=40 data-nosnippet>40</a>    <span class="doccomment">/// The last inbound byte redacted: what the next inbound bytes follow,
-<a href=#41 id=41 data-nosnippet>41</a>    /// so a name at their start is judged with the byte before it.
-<a href=#42 id=42 data-nosnippet>42</a>    </span>inbound_before: <span class="prelude-ty">Option</span>&lt;u8&gt;,
-<a href=#43 id=43 data-nosnippet>43</a>    <span class="doccomment">/// Inbound bytes held back so a secret cannot hide in a chunk boundary.
-<a href=#44 id=44 data-nosnippet>44</a>    ///
-<a href=#45 id=45 data-nosnippet>45</a>    /// Bounded by `longest_secret - 1`, and empty whenever nothing is
-<a href=#46 id=46 data-nosnippet>46</a>    /// registered. See `redact_across_chunks`; `drain_pending` is what
-<a href=#47 id=47 data-nosnippet>47</a>    /// guarantees these bytes still reach the file.
-<a href=#48 id=48 data-nosnippet>48</a>    </span>pending: Vec&lt;u8&gt;,
-<a href=#49 id=49 data-nosnippet>49</a>    <span class="doccomment">/// Whether the last inbound byte seen left a line unfinished.
-<a href=#50 id=50 data-nosnippet>50</a>    </span>line_open: bool,
-<a href=#51 id=51 data-nosnippet>51</a>    <span class="doccomment">/// Framed commands waiting for that line to end. See [`Self::wire`].
-<a href=#52 id=52 data-nosnippet>52</a>    </span>awaiting_line_end: Vec&lt;Vec&lt;u8&gt;&gt;,
-<a href=#53 id=53 data-nosnippet>53</a>    <span class="doccomment">/// Whether the bytes file carries per-line times. Read once at creation
-<a href=#54 id=54 data-nosnippet>54</a>    /// rather than per line: an env var that changed mid-session would produce
-<a href=#55 id=55 data-nosnippet>55</a>    /// a file that is half one format.
-<a href=#56 id=56 data-nosnippet>56</a>    </span>stamp_bytes: bool,
-<a href=#57 id=57 data-nosnippet>57</a>    <span class="doccomment">/// Whether the next byte written to the bytes file begins a line: the
-<a href=#58 id=58 data-nosnippet>58</a>    /// last written was a newline, or nothing has been. A stamp goes only
-<a href=#59 id=59 data-nosnippet>59</a>    /// there: stamped before every inbound chunk, a read boundary inside a tag
-<a href=#60 id=60 data-nosnippet>60</a>    /// would put `HH:MM:SS.mmm: ` between `id=` and `'room'`.
-<a href=#61 id=61 data-nosnippet>61</a>    </span>at_line_start: bool,
-<a href=#62 id=62 data-nosnippet>62</a>}
-<a href=#63 id=63 data-nosnippet>63</a>
-<a href=#64 id=64 data-nosnippet>64</a><span class="doccomment">/// Flush on drop, so a sink that is simply dropped still leaves a complete
-<a href=#65 id=65 data-nosnippet>65</a>/// file.
-<a href=#66 id=66 data-nosnippet>66</a>///
-<a href=#67 id=67 data-nosnippet>67</a>/// `BufWriter` already does this for its own buffer, but the straddle tail
-<a href=#68 id=68 data-nosnippet>68</a>/// (`redact_across_chunks`) is OURS: bytes the wire really carried, held back
-<a href=#69 id=69 data-nosnippet>69</a>/// deliberately. Losing them would make the `.bytes` file silently short --
-<a href=#70 id=70 data-nosnippet>70</a>/// exactly the failure mode the file exists to prevent, since it is what
-<a href=#71 id=71 data-nosnippet>71</a>/// fixtures are cut from.
-<a href=#72 id=72 data-nosnippet>72</a>///
-<a href=#73 id=73 data-nosnippet>73</a>/// Errors are swallowed, as they must be in `Drop`. Callers that need to KNOW
-<a href=#74 id=74 data-nosnippet>74</a>/// the write succeeded call [`SessionSink::flush`], which returns the error.
-<a href=#75 id=75 data-nosnippet>75</a></span><span class="kw">impl </span>Drop <span class="kw">for </span>SessionSink {
-<a href=#76 id=76 data-nosnippet>76</a>    <span class="kw">fn </span>drop(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
-<a href=#77 id=77 data-nosnippet>77</a>        <span class="kw">let _ </span>= <span class="self">self</span>.drain_pending();
-<a href=#78 id=78 data-nosnippet>78</a>        <span class="kw">let _ </span>= <span class="self">self</span>.bytes.flush();
-<a href=#79 id=79 data-nosnippet>79</a>        <span class="kw">let _ </span>= <span class="self">self</span>.events.flush();
-<a href=#80 id=80 data-nosnippet>80</a>    }
-<a href=#81 id=81 data-nosnippet>81</a>}
-<a href=#82 id=82 data-nosnippet>82</a>
-<a href=#83 id=83 data-nosnippet>83</a><span class="kw">impl </span>SessionSink {
-<a href=#84 id=84 data-nosnippet>84</a>    <span class="doccomment">/// Create both files under `dir`, named for the character and a stamp.
-<a href=#85 id=85 data-nosnippet>85</a>    ///
-<a href=#86 id=86 data-nosnippet>86</a>    /// The stamp is the caller's, not read from a clock here: this crate's
-<a href=#87 id=87 data-nosnippet>87</a>    /// [`record`](crate::record) module explains why a wall clock inside the
-<a href=#88 id=88 data-nosnippet>88</a>    /// recording path is the easiest way to make a replay non-deterministic.
-<a href=#89 id=89 data-nosnippet>89</a>    /// The same reasoning applies to a filename a test might assert on.
-<a href=#90 id=90 data-nosnippet>90</a>    ///
-<a href=#91 id=91 data-nosnippet>91</a>    /// # Errors
-<a href=#92 id=92 data-nosnippet>92</a>    ///
-<a href=#93 id=93 data-nosnippet>93</a>    /// Any failure to create the directory or either file.
-<a href=#94 id=94 data-nosnippet>94</a>    </span><span class="kw">pub fn </span>create(
-<a href=#95 id=95 data-nosnippet>95</a>        dir: <span class="kw-2">&amp;</span>Path,
-<a href=#96 id=96 data-nosnippet>96</a>        character: <span class="kw-2">&amp;</span>str,
-<a href=#97 id=97 data-nosnippet>97</a>        stamp: <span class="kw-2">&amp;</span>str,
-<a href=#98 id=98 data-nosnippet>98</a>        redactions: Redactions,
-<a href=#99 id=99 data-nosnippet>99</a>    ) -&gt; io::Result&lt;<span class="self">Self</span>&gt; {
-<a href=#100 id=100 data-nosnippet>100</a>        <span class="self">Self</span>::create_with_rotation(dir, character, stamp, redactions, rotate_after_lines())
-<a href=#101 id=101 data-nosnippet>101</a>    }
-<a href=#102 id=102 data-nosnippet>102</a>
-<a href=#103 id=103 data-nosnippet>103</a>    <span class="doccomment">/// [`Self::create`], with the rotation threshold given rather than read
-<a href=#104 id=104 data-nosnippet>104</a>    /// from the environment.
-<a href=#105 id=105 data-nosnippet>105</a>    ///
-<a href=#106 id=106 data-nosnippet>106</a>    /// Exists because a test must be able to roll a file without setting a
-<a href=#107 id=107 data-nosnippet>107</a>    /// process-wide environment variable: `unsafe_code = "deny"` makes
-<a href=#108 id=108 data-nosnippet>108</a>    /// `set_var` unavailable (it is `unsafe` since Rust 2024), and a test that
-<a href=#109 id=109 data-nosnippet>109</a>    /// mutated global state would race every other test in the binary anyway.
-<a href=#110 id=110 data-nosnippet>110</a>    ///
-<a href=#111 id=111 data-nosnippet>111</a>    /// Taking the value is also simply better design -- the threshold is a
-<a href=#112 id=112 data-nosnippet>112</a>    /// property of this sink, and reading it from the environment at the point
-<a href=#113 id=113 data-nosnippet>113</a>    /// of use would be a hidden input.
-<a href=#114 id=114 data-nosnippet>114</a>    ///
-<a href=#115 id=115 data-nosnippet>115</a>    /// # Errors
+<a href=#15 id=15 data-nosnippet>15</a><span class="kw">use </span><span class="kw">crate</span>::behind::{Behind, Gap};
+<a href=#16 id=16 data-nosnippet>16</a><span class="kw">use </span>std::fs::{<span class="self">self</span>, File};
+<a href=#17 id=17 data-nosnippet>17</a><span class="kw">use </span>std::io::{<span class="self">self</span>, Write};
+<a href=#18 id=18 data-nosnippet>18</a><span class="kw">use </span>std::time::Duration;
+<a href=#19 id=19 data-nosnippet>19</a>
+<a href=#20 id=20 data-nosnippet>20</a><span class="doccomment">/// How long finishing a session's files waits for the disk: written by
+<a href=#21 id=21 data-nosnippet>21</a>/// threads of their own ([`Behind`]), so a stalled disk holds them, not the
+<a href=#22 id=22 data-nosnippet>22</a>/// session, and what is still waiting after this is written all the same,
+<a href=#23 id=23 data-nosnippet>23</a>/// before Hydra exits.
+<a href=#24 id=24 data-nosnippet>24</a></span><span class="kw">const </span>SETTLE: Duration = Duration::from_secs(<span class="number">5</span>);
+<a href=#25 id=25 data-nosnippet>25</a><span class="kw">use </span>std::path::{Path, PathBuf};
+<a href=#26 id=26 data-nosnippet>26</a>
+<a href=#27 id=27 data-nosnippet>27</a><span class="doccomment">/// Two files for one session: the raw wire, and what we did.
+<a href=#28 id=28 data-nosnippet>28</a>///
+<a href=#29 id=29 data-nosnippet>29</a>/// Holds its own handles rather than reaching a global: there are no process
+<a href=#30 id=30 data-nosnippet>30</a>/// globals, and 25 sessions must write 25 independent transcripts without
+<a href=#31 id=31 data-nosnippet>31</a>/// contending on one logger.
+<a href=#32 id=32 data-nosnippet>32</a></span><span class="attr">#[derive(Debug)]
+<a href=#33 id=33 data-nosnippet>33</a></span><span class="kw">pub struct </span>SessionSink {
+<a href=#34 id=34 data-nosnippet>34</a>    <span class="doccomment">/// Written behind the session: the disk never holds up the game.
+<a href=#35 id=35 data-nosnippet>35</a>    </span>bytes: Behind,
+<a href=#36 id=36 data-nosnippet>36</a>    events: Behind,
+<a href=#37 id=37 data-nosnippet>37</a>    redactions: Redactions,
+<a href=#38 id=38 data-nosnippet>38</a>    bytes_path: PathBuf,
+<a href=#39 id=39 data-nosnippet>39</a>    events_path: PathBuf,
+<a href=#40 id=40 data-nosnippet>40</a>    lines_written: u64,
+<a href=#41 id=41 data-nosnippet>41</a>    <span class="doccomment">/// `&lt;dir&gt;/&lt;char&gt;-&lt;stamp&gt;`, shared by every part of this session.
+<a href=#42 id=42 data-nosnippet>42</a>    </span>stem: PathBuf,
+<a href=#43 id=43 data-nosnippet>43</a>    <span class="doccomment">/// Which part is open. 0 is the first file.
+<a href=#44 id=44 data-nosnippet>44</a>    </span>part: u32,
+<a href=#45 id=45 data-nosnippet>45</a>    <span class="doccomment">/// Lines before rolling. Read once at creation, for the same reason
+<a href=#46 id=46 data-nosnippet>46</a>    /// `stamp_bytes` is: a threshold that changed mid-session would produce
+<a href=#47 id=47 data-nosnippet>47</a>    /// parts of inconsistent size.
+<a href=#48 id=48 data-nosnippet>48</a>    </span>rotate_after: u64,
+<a href=#49 id=49 data-nosnippet>49</a>    <span class="doccomment">/// The last inbound byte redacted: what the next inbound bytes follow,
+<a href=#50 id=50 data-nosnippet>50</a>    /// so a name at their start is judged with the byte before it.
+<a href=#51 id=51 data-nosnippet>51</a>    </span>inbound_before: <span class="prelude-ty">Option</span>&lt;u8&gt;,
+<a href=#52 id=52 data-nosnippet>52</a>    <span class="doccomment">/// Inbound bytes held back so a secret cannot hide in a chunk boundary.
+<a href=#53 id=53 data-nosnippet>53</a>    ///
+<a href=#54 id=54 data-nosnippet>54</a>    /// Bounded by `longest_secret - 1`, and empty whenever nothing is
+<a href=#55 id=55 data-nosnippet>55</a>    /// registered. See `redact_across_chunks`; `drain_pending` is what
+<a href=#56 id=56 data-nosnippet>56</a>    /// guarantees these bytes still reach the file.
+<a href=#57 id=57 data-nosnippet>57</a>    </span>pending: Vec&lt;u8&gt;,
+<a href=#58 id=58 data-nosnippet>58</a>    <span class="doccomment">/// Whether the last inbound byte seen left a line unfinished.
+<a href=#59 id=59 data-nosnippet>59</a>    </span>line_open: bool,
+<a href=#60 id=60 data-nosnippet>60</a>    <span class="doccomment">/// Framed commands waiting for that line to end. See [`Self::wire`].
+<a href=#61 id=61 data-nosnippet>61</a>    </span>awaiting_line_end: Vec&lt;Vec&lt;u8&gt;&gt;,
+<a href=#62 id=62 data-nosnippet>62</a>    <span class="doccomment">/// Whether the bytes file carries per-line times. Read once at creation
+<a href=#63 id=63 data-nosnippet>63</a>    /// rather than per line: an env var that changed mid-session would produce
+<a href=#64 id=64 data-nosnippet>64</a>    /// a file that is half one format.
+<a href=#65 id=65 data-nosnippet>65</a>    </span>stamp_bytes: bool,
+<a href=#66 id=66 data-nosnippet>66</a>    <span class="doccomment">/// Whether the next byte written to the bytes file begins a line: the
+<a href=#67 id=67 data-nosnippet>67</a>    /// last written was a newline, or nothing has been. A stamp goes only
+<a href=#68 id=68 data-nosnippet>68</a>    /// there: stamped before every inbound chunk, a read boundary inside a tag
+<a href=#69 id=69 data-nosnippet>69</a>    /// would put `HH:MM:SS.mmm: ` between `id=` and `'room'`.
+<a href=#70 id=70 data-nosnippet>70</a>    </span>at_line_start: bool,
+<a href=#71 id=71 data-nosnippet>71</a>}
+<a href=#72 id=72 data-nosnippet>72</a>
+<a href=#73 id=73 data-nosnippet>73</a><span class="doccomment">/// Flush on drop, so a sink that is simply dropped still leaves a complete
+<a href=#74 id=74 data-nosnippet>74</a>/// file.
+<a href=#75 id=75 data-nosnippet>75</a>///
+<a href=#76 id=76 data-nosnippet>76</a>/// Each file's [`Behind`] hands over what it has gathered as it goes, and
+<a href=#77 id=77 data-nosnippet>77</a>/// waits a bounded time for its thread to write it; but the straddle tail
+<a href=#78 id=78 data-nosnippet>78</a>/// (`redact_across_chunks`) is OURS: bytes the wire really carried, held back
+<a href=#79 id=79 data-nosnippet>79</a>/// deliberately. Losing them would make the `.bytes` file silently short --
+<a href=#80 id=80 data-nosnippet>80</a>/// exactly the failure mode the file exists to prevent, since it is what
+<a href=#81 id=81 data-nosnippet>81</a>/// fixtures are cut from.
+<a href=#82 id=82 data-nosnippet>82</a>///
+<a href=#83 id=83 data-nosnippet>83</a>/// Errors are swallowed, as they must be in `Drop`. Callers that need to KNOW
+<a href=#84 id=84 data-nosnippet>84</a>/// the write succeeded call [`SessionSink::flush`], which returns the error.
+<a href=#85 id=85 data-nosnippet>85</a></span><span class="kw">impl </span>Drop <span class="kw">for </span>SessionSink {
+<a href=#86 id=86 data-nosnippet>86</a>    <span class="kw">fn </span>drop(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+<a href=#87 id=87 data-nosnippet>87</a>        <span class="kw">let _ </span>= <span class="self">self</span>.drain_pending();
+<a href=#88 id=88 data-nosnippet>88</a>        <span class="self">self</span>.note_gap();
+<a href=#89 id=89 data-nosnippet>89</a>        <span class="self">self</span>.bytes.settle(SETTLE);
+<a href=#90 id=90 data-nosnippet>90</a>        <span class="self">self</span>.events.settle(SETTLE);
+<a href=#91 id=91 data-nosnippet>91</a>    }
+<a href=#92 id=92 data-nosnippet>92</a>}
+<a href=#93 id=93 data-nosnippet>93</a>
+<a href=#94 id=94 data-nosnippet>94</a><span class="kw">impl </span>SessionSink {
+<a href=#95 id=95 data-nosnippet>95</a>    <span class="doccomment">/// Create both files under `dir`, named for the character and a stamp.
+<a href=#96 id=96 data-nosnippet>96</a>    ///
+<a href=#97 id=97 data-nosnippet>97</a>    /// The stamp is the caller's, not read from a clock here: this crate's
+<a href=#98 id=98 data-nosnippet>98</a>    /// [`record`](crate::record) module explains why a wall clock inside the
+<a href=#99 id=99 data-nosnippet>99</a>    /// recording path is the easiest way to make a replay non-deterministic.
+<a href=#100 id=100 data-nosnippet>100</a>    /// The same reasoning applies to a filename a test might assert on.
+<a href=#101 id=101 data-nosnippet>101</a>    ///
+<a href=#102 id=102 data-nosnippet>102</a>    /// # Errors
+<a href=#103 id=103 data-nosnippet>103</a>    ///
+<a href=#104 id=104 data-nosnippet>104</a>    /// Any failure to create the directory or either file.
+<a href=#105 id=105 data-nosnippet>105</a>    </span><span class="kw">pub fn </span>create(
+<a href=#106 id=106 data-nosnippet>106</a>        dir: <span class="kw-2">&amp;</span>Path,
+<a href=#107 id=107 data-nosnippet>107</a>        character: <span class="kw-2">&amp;</span>str,
+<a href=#108 id=108 data-nosnippet>108</a>        stamp: <span class="kw-2">&amp;</span>str,
+<a href=#109 id=109 data-nosnippet>109</a>        redactions: Redactions,
+<a href=#110 id=110 data-nosnippet>110</a>    ) -&gt; io::Result&lt;<span class="self">Self</span>&gt; {
+<a href=#111 id=111 data-nosnippet>111</a>        <span class="self">Self</span>::create_with_rotation(dir, character, stamp, redactions, rotate_after_lines())
+<a href=#112 id=112 data-nosnippet>112</a>    }
+<a href=#113 id=113 data-nosnippet>113</a>
+<a href=#114 id=114 data-nosnippet>114</a>    <span class="doccomment">/// [`Self::create`], with the rotation threshold given rather than read
+<a href=#115 id=115 data-nosnippet>115</a>    /// from the environment.
 <a href=#116 id=116 data-nosnippet>116</a>    ///
-<a href=#117 id=117 data-nosnippet>117</a>    /// Any failure to create the directory or either file.
-<a href=#118 id=118 data-nosnippet>118</a>    </span><span class="kw">pub fn </span>create_with_rotation(
-<a href=#119 id=119 data-nosnippet>119</a>        dir: <span class="kw-2">&amp;</span>Path,
-<a href=#120 id=120 data-nosnippet>120</a>        character: <span class="kw-2">&amp;</span>str,
-<a href=#121 id=121 data-nosnippet>121</a>        stamp: <span class="kw-2">&amp;</span>str,
-<a href=#122 id=122 data-nosnippet>122</a>        redactions: Redactions,
-<a href=#123 id=123 data-nosnippet>123</a>        rotate_after: u64,
-<a href=#124 id=124 data-nosnippet>124</a>    ) -&gt; io::Result&lt;<span class="self">Self</span>&gt; {
-<a href=#125 id=125 data-nosnippet>125</a>        fs::create_dir_all(dir)<span class="question-mark">?</span>;
-<a href=#126 id=126 data-nosnippet>126</a>        <span class="comment">// The character name is a filename component, so it must not be able
-<a href=#127 id=127 data-nosnippet>127</a>        // to escape the directory or name a device. Characters are
-<a href=#128 id=128 data-nosnippet>128</a>        // alphabetical in practice, with `_` between a game and a name;
-<a href=#129 id=129 data-nosnippet>129</a>        // anything else is dropped rather than substituted, so two names
-<a href=#130 id=130 data-nosnippet>130</a>        // cannot collide through substitution.
-<a href=#131 id=131 data-nosnippet>131</a>        </span><span class="kw">let </span>safe: String = character
-<a href=#132 id=132 data-nosnippet>132</a>            .chars()
-<a href=#133 id=133 data-nosnippet>133</a>            .filter(|c| c.is_ascii_alphanumeric() || <span class="kw-2">*</span>c == <span class="string">'_'</span>)
-<a href=#134 id=134 data-nosnippet>134</a>            .collect();
-<a href=#135 id=135 data-nosnippet>135</a>        <span class="kw">let </span>safe = <span class="kw">if </span>safe.is_empty() {
-<a href=#136 id=136 data-nosnippet>136</a>            <span class="string">"session"</span>.to_owned()
-<a href=#137 id=137 data-nosnippet>137</a>        } <span class="kw">else </span>{
-<a href=#138 id=138 data-nosnippet>138</a>            safe
-<a href=#139 id=139 data-nosnippet>139</a>        };
-<a href=#140 id=140 data-nosnippet>140</a>
-<a href=#141 id=141 data-nosnippet>141</a>        <span class="comment">// `&lt;char&gt;-&lt;stamp&gt;` is the stem every part of this session shares, and
-<a href=#142 id=142 data-nosnippet>142</a>        // **every part is numbered, including the first**.
-<a href=#143 id=143 data-nosnippet>143</a>        //
-<a href=#144 id=144 data-nosnippet>144</a>        // An unnumbered first part -- `Tester-stamp.bytes`, then
-<a href=#145 id=145 data-nosnippet>145</a>        // `Tester-stamp-001.bytes` -- sorts WRONG: lexicographically `-`
-<a href=#146 id=146 data-nosnippet>146</a>        // (0x2D) precedes `.` (0x2E), so it would sort AFTER every numbered
-<a href=#147 id=147 data-nosnippet>147</a>        // one, and reading a directory in name order would replay the session
-<a href=#148 id=148 data-nosnippet>148</a>        // out of order. The reassembly assertion in `sink_redaction.rs` pins
-<a href=#149 id=149 data-nosnippet>149</a>        // this.
-<a href=#150 id=150 data-nosnippet>150</a>        //
-<a href=#151 id=151 data-nosnippet>151</a>        // Files are made new, never opened over: a second recording with the
-<a href=#152 id=152 data-nosnippet>152</a>        // same stem -- begun the same second -- takes the next, `_2`.
-<a href=#153 id=153 data-nosnippet>153</a>        </span><span class="kw">let </span>(safe_stem, bytes_path, events_path, bytes, events) = {
-<a href=#154 id=154 data-nosnippet>154</a>            <span class="kw">let </span><span class="kw-2">mut </span>n = <span class="number">1u32</span>;
-<a href=#155 id=155 data-nosnippet>155</a>            <span class="kw">loop </span>{
-<a href=#156 id=156 data-nosnippet>156</a>                <span class="kw">let </span>stem = <span class="kw">if </span>n == <span class="number">1 </span>{
-<a href=#157 id=157 data-nosnippet>157</a>                    <span class="macro">format!</span>(<span class="string">"{safe}-{stamp}"</span>)
-<a href=#158 id=158 data-nosnippet>158</a>                } <span class="kw">else </span>{
-<a href=#159 id=159 data-nosnippet>159</a>                    <span class="macro">format!</span>(<span class="string">"{safe}-{stamp}_{n}"</span>)
-<a href=#160 id=160 data-nosnippet>160</a>                };
-<a href=#161 id=161 data-nosnippet>161</a>                <span class="kw">let </span>bytes_path = dir.join(<span class="macro">format!</span>(<span class="string">"{stem}-000.bytes"</span>));
-<a href=#162 id=162 data-nosnippet>162</a>                <span class="kw">let </span>events_path = dir.join(<span class="macro">format!</span>(<span class="string">"{stem}.log"</span>));
-<a href=#163 id=163 data-nosnippet>163</a>                <span class="kw">let </span>new = |path: <span class="kw-2">&amp;</span>Path| File::options().write(<span class="bool-val">true</span>).create_new(<span class="bool-val">true</span>).open(path);
-<a href=#164 id=164 data-nosnippet>164</a>                <span class="kw">match </span>new(<span class="kw-2">&amp;</span>bytes_path) {
-<a href=#165 id=165 data-nosnippet>165</a>                    <span class="prelude-val">Ok</span>(bytes) =&gt; {
-<a href=#166 id=166 data-nosnippet>166</a>                        <span class="kw">let </span>events = new(<span class="kw-2">&amp;</span>events_path)<span class="question-mark">?</span>;
-<a href=#167 id=167 data-nosnippet>167</a>                        <span class="kw">break </span>(stem, bytes_path, events_path, bytes, events);
-<a href=#168 id=168 data-nosnippet>168</a>                    }
-<a href=#169 id=169 data-nosnippet>169</a>                    <span class="prelude-val">Err</span>(e) <span class="kw">if </span>e.kind() == io::ErrorKind::AlreadyExists &amp;&amp; n &lt; <span class="number">100 </span>=&gt; n += <span class="number">1</span>,
-<a href=#170 id=170 data-nosnippet>170</a>                    <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(e),
-<a href=#171 id=171 data-nosnippet>171</a>                }
-<a href=#172 id=172 data-nosnippet>172</a>            }
-<a href=#173 id=173 data-nosnippet>173</a>        };
-<a href=#174 id=174 data-nosnippet>174</a>        <span class="kw">let </span>bytes = BufWriter::new(bytes);
-<a href=#175 id=175 data-nosnippet>175</a>        <span class="kw">let </span><span class="kw-2">mut </span>events = BufWriter::new(events);
-<a href=#176 id=176 data-nosnippet>176</a>
-<a href=#177 id=177 data-nosnippet>177</a>        <span class="comment">// Say what this file is and what it is not, in the file itself. A log
-<a href=#178 id=178 data-nosnippet>178</a>        // read six months from now must not have to guess whether it was
-<a href=#179 id=179 data-nosnippet>179</a>        // scrubbed.
-<a href=#180 id=180 data-nosnippet>180</a>        // The set GROWS after this line: the launch key is minted by the
-<a href=#181 id=181 data-nosnippet>181</a>        // connect and registered afterwards (`redact_key`), because it does not
-<a href=#182 id=182 data-nosnippet>182</a>        // exist when the file is created. So this header must describe what was
-<a href=#183 id=183 data-nosnippet>183</a>        // registered AT CREATION and point at the in-band marker for the rest.
-<a href=#184 id=184 data-nosnippet>184</a>        //
-<a href=#185 id=185 data-nosnippet>185</a>        // A header claiming "nothing was registered, treat this file as raw"
-<a href=#186 id=186 data-nosnippet>186</a>        // whenever the creation-time set is empty would be wrong for EVERY
-<a href=#187 id=187 data-nosnippet>187</a>        // live session, since the key arrives later: the body of that same
-<a href=#188 id=188 data-nosnippet>188</a>        // file would then show `redaction registered (session key)`, and the
-<a href=#189 id=189 data-nosnippet>189</a>        // header would contradict its own contents in the dangerous direction.
-<a href=#190 id=190 data-nosnippet>190</a>        </span><span class="macro">writeln!</span>(
-<a href=#191 id=191 data-nosnippet>191</a>            events,
-<a href=#192 id=192 data-nosnippet>192</a>            <span class="string">"# Hydra session log -- PRIVATE DEVELOPMENT LOG, not automatically shareable.\n\
-<a href=#193 id=193 data-nosnippet>193</a>             # Credentials registered BEFORE the first byte: {}.\n\
-<a href=#194 id=194 data-nosnippet>194</a>             # The session key is registered LATER, when the connect mints it --\n\
-<a href=#195 id=195 data-nosnippet>195</a>             # look for `redaction registered (session key)` below. Everything\n\
-<a href=#196 id=196 data-nosnippet>196</a>             # before that line predates its redaction.\n\
-<a href=#197 id=197 data-nosnippet>197</a>             # OTHER PLAYERS' NAMES ARE NOT REDACTED. Cut fixtures through\n\
-<a href=#198 id=198 data-nosnippet>198</a>             # hydra_protocol::scrub::Scrubber with the names named."</span>,
-<a href=#199 id=199 data-nosnippet>199</a>            <span class="kw">if </span>redactions.is_empty() {
-<a href=#200 id=200 data-nosnippet>200</a>                <span class="string">"none -- no account was registered"</span>.to_owned()
-<a href=#201 id=201 data-nosnippet>201</a>            } <span class="kw">else </span>{
-<a href=#202 id=202 data-nosnippet>202</a>                redactions.kinds()
-<a href=#203 id=203 data-nosnippet>203</a>            }
-<a href=#204 id=204 data-nosnippet>204</a>        )<span class="question-mark">?</span>;
-<a href=#205 id=205 data-nosnippet>205</a>
-<a href=#206 id=206 data-nosnippet>206</a>        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
-<a href=#207 id=207 data-nosnippet>207</a>            bytes,
-<a href=#208 id=208 data-nosnippet>208</a>            events,
-<a href=#209 id=209 data-nosnippet>209</a>            redactions,
-<a href=#210 id=210 data-nosnippet>210</a>            bytes_path,
-<a href=#211 id=211 data-nosnippet>211</a>            events_path,
-<a href=#212 id=212 data-nosnippet>212</a>            lines_written: <span class="number">0</span>,
-<a href=#213 id=213 data-nosnippet>213</a>            inbound_before: <span class="prelude-val">None</span>,
-<a href=#214 id=214 data-nosnippet>214</a>            pending: Vec::new(),
-<a href=#215 id=215 data-nosnippet>215</a>            line_open: <span class="bool-val">false</span>,
-<a href=#216 id=216 data-nosnippet>216</a>            awaiting_line_end: Vec::new(),
-<a href=#217 id=217 data-nosnippet>217</a>            stamp_bytes: bytes_timestamps_enabled(),
-<a href=#218 id=218 data-nosnippet>218</a>            at_line_start: <span class="bool-val">true</span>,
-<a href=#219 id=219 data-nosnippet>219</a>            stem: dir.join(safe_stem),
-<a href=#220 id=220 data-nosnippet>220</a>            part: <span class="number">0</span>,
-<a href=#221 id=221 data-nosnippet>221</a>            rotate_after,
-<a href=#222 id=222 data-nosnippet>222</a>        })
-<a href=#223 id=223 data-nosnippet>223</a>    }
-<a href=#224 id=224 data-nosnippet>224</a>
-<a href=#225 id=225 data-nosnippet>225</a>    <span class="doccomment">/// Append raw wire bytes, redacted, marking the direction.
-<a href=#226 id=226 data-nosnippet>226</a>    ///
-<a href=#227 id=227 data-nosnippet>227</a>    /// **The framing is the usual `GemStone` XML log's, not a new one.** Inbound
-<a href=#228 id=228 data-nosnippet>228</a>    /// bytes are written verbatim; client input is wrapped in `&lt;!-- CLIENT --&gt;` /
-<a href=#229 id=229 data-nosnippet>229</a>    /// `&lt;!-- ENDCLIENT --&gt;`. No sequence number: that format carries none, and
-<a href=#230 id=230 data-nosnippet>230</a>    /// [`Recorder`](crate::record::Recorder) already owns ordering, so writing
-<a href=#231 id=231 data-nosnippet>231</a>    /// one here would be a second source of truth for the same fact.
-<a href=#232 id=232 data-nosnippet>232</a>    ///
-<a href=#233 id=233 data-nosnippet>233</a>    /// Chunk boundaries are preserved because
-<a href=#234 id=234 data-nosnippet>234</a>    /// [`Recorder`](crate::record::Recorder)'s own docs explain that replaying
-<a href=#235 id=235 data-nosnippet>235</a>    /// the split that happened live is what drives `Parser::push_bytes`'s
-<a href=#236 id=236 data-nosnippet>236</a>    /// partial-line path with a real boundary rather than an invented one.
+<a href=#117 id=117 data-nosnippet>117</a>    /// Exists because a test must be able to roll a file without setting a
+<a href=#118 id=118 data-nosnippet>118</a>    /// process-wide environment variable: `unsafe_code = "deny"` makes
+<a href=#119 id=119 data-nosnippet>119</a>    /// `set_var` unavailable (it is `unsafe` since Rust 2024), and a test that
+<a href=#120 id=120 data-nosnippet>120</a>    /// mutated global state would race every other test in the binary anyway.
+<a href=#121 id=121 data-nosnippet>121</a>    ///
+<a href=#122 id=122 data-nosnippet>122</a>    /// Taking the value is also simply better design -- the threshold is a
+<a href=#123 id=123 data-nosnippet>123</a>    /// property of this sink, and reading it from the environment at the point
+<a href=#124 id=124 data-nosnippet>124</a>    /// of use would be a hidden input.
+<a href=#125 id=125 data-nosnippet>125</a>    ///
+<a href=#126 id=126 data-nosnippet>126</a>    /// # Errors
+<a href=#127 id=127 data-nosnippet>127</a>    ///
+<a href=#128 id=128 data-nosnippet>128</a>    /// Any failure to create the directory or either file.
+<a href=#129 id=129 data-nosnippet>129</a>    </span><span class="kw">pub fn </span>create_with_rotation(
+<a href=#130 id=130 data-nosnippet>130</a>        dir: <span class="kw-2">&amp;</span>Path,
+<a href=#131 id=131 data-nosnippet>131</a>        character: <span class="kw-2">&amp;</span>str,
+<a href=#132 id=132 data-nosnippet>132</a>        stamp: <span class="kw-2">&amp;</span>str,
+<a href=#133 id=133 data-nosnippet>133</a>        redactions: Redactions,
+<a href=#134 id=134 data-nosnippet>134</a>        rotate_after: u64,
+<a href=#135 id=135 data-nosnippet>135</a>    ) -&gt; io::Result&lt;<span class="self">Self</span>&gt; {
+<a href=#136 id=136 data-nosnippet>136</a>        fs::create_dir_all(dir)<span class="question-mark">?</span>;
+<a href=#137 id=137 data-nosnippet>137</a>        <span class="comment">// The character name is a filename component, so it must not be able
+<a href=#138 id=138 data-nosnippet>138</a>        // to escape the directory or name a device. Characters are
+<a href=#139 id=139 data-nosnippet>139</a>        // alphabetical in practice, with `_` between a game and a name;
+<a href=#140 id=140 data-nosnippet>140</a>        // anything else is dropped rather than substituted, so two names
+<a href=#141 id=141 data-nosnippet>141</a>        // cannot collide through substitution.
+<a href=#142 id=142 data-nosnippet>142</a>        </span><span class="kw">let </span>safe: String = character
+<a href=#143 id=143 data-nosnippet>143</a>            .chars()
+<a href=#144 id=144 data-nosnippet>144</a>            .filter(|c| c.is_ascii_alphanumeric() || <span class="kw-2">*</span>c == <span class="string">'_'</span>)
+<a href=#145 id=145 data-nosnippet>145</a>            .collect();
+<a href=#146 id=146 data-nosnippet>146</a>        <span class="kw">let </span>safe = <span class="kw">if </span>safe.is_empty() {
+<a href=#147 id=147 data-nosnippet>147</a>            <span class="string">"session"</span>.to_owned()
+<a href=#148 id=148 data-nosnippet>148</a>        } <span class="kw">else </span>{
+<a href=#149 id=149 data-nosnippet>149</a>            safe
+<a href=#150 id=150 data-nosnippet>150</a>        };
+<a href=#151 id=151 data-nosnippet>151</a>
+<a href=#152 id=152 data-nosnippet>152</a>        <span class="comment">// `&lt;char&gt;-&lt;stamp&gt;` is the stem every part of this session shares, and
+<a href=#153 id=153 data-nosnippet>153</a>        // **every part is numbered, including the first**.
+<a href=#154 id=154 data-nosnippet>154</a>        //
+<a href=#155 id=155 data-nosnippet>155</a>        // An unnumbered first part -- `Tester-stamp.bytes`, then
+<a href=#156 id=156 data-nosnippet>156</a>        // `Tester-stamp-001.bytes` -- sorts WRONG: lexicographically `-`
+<a href=#157 id=157 data-nosnippet>157</a>        // (0x2D) precedes `.` (0x2E), so it would sort AFTER every numbered
+<a href=#158 id=158 data-nosnippet>158</a>        // one, and reading a directory in name order would replay the session
+<a href=#159 id=159 data-nosnippet>159</a>        // out of order. The reassembly assertion in `sink_redaction.rs` pins
+<a href=#160 id=160 data-nosnippet>160</a>        // this.
+<a href=#161 id=161 data-nosnippet>161</a>        //
+<a href=#162 id=162 data-nosnippet>162</a>        // Files are made new, never opened over: a second recording with the
+<a href=#163 id=163 data-nosnippet>163</a>        // same stem -- begun the same second -- takes the next, `_2`.
+<a href=#164 id=164 data-nosnippet>164</a>        </span><span class="kw">let </span>(safe_stem, bytes_path, events_path, bytes, events) = {
+<a href=#165 id=165 data-nosnippet>165</a>            <span class="kw">let </span><span class="kw-2">mut </span>n = <span class="number">1u32</span>;
+<a href=#166 id=166 data-nosnippet>166</a>            <span class="kw">loop </span>{
+<a href=#167 id=167 data-nosnippet>167</a>                <span class="kw">let </span>stem = <span class="kw">if </span>n == <span class="number">1 </span>{
+<a href=#168 id=168 data-nosnippet>168</a>                    <span class="macro">format!</span>(<span class="string">"{safe}-{stamp}"</span>)
+<a href=#169 id=169 data-nosnippet>169</a>                } <span class="kw">else </span>{
+<a href=#170 id=170 data-nosnippet>170</a>                    <span class="macro">format!</span>(<span class="string">"{safe}-{stamp}_{n}"</span>)
+<a href=#171 id=171 data-nosnippet>171</a>                };
+<a href=#172 id=172 data-nosnippet>172</a>                <span class="kw">let </span>bytes_path = dir.join(<span class="macro">format!</span>(<span class="string">"{stem}-000.bytes"</span>));
+<a href=#173 id=173 data-nosnippet>173</a>                <span class="kw">let </span>events_path = dir.join(<span class="macro">format!</span>(<span class="string">"{stem}.log"</span>));
+<a href=#174 id=174 data-nosnippet>174</a>                <span class="kw">let </span>new = |path: <span class="kw-2">&amp;</span>Path| File::options().write(<span class="bool-val">true</span>).create_new(<span class="bool-val">true</span>).open(path);
+<a href=#175 id=175 data-nosnippet>175</a>                <span class="kw">match </span>new(<span class="kw-2">&amp;</span>bytes_path) {
+<a href=#176 id=176 data-nosnippet>176</a>                    <span class="prelude-val">Ok</span>(bytes) =&gt; {
+<a href=#177 id=177 data-nosnippet>177</a>                        <span class="kw">let </span>events = new(<span class="kw-2">&amp;</span>events_path)<span class="question-mark">?</span>;
+<a href=#178 id=178 data-nosnippet>178</a>                        <span class="kw">break </span>(stem, bytes_path, events_path, bytes, events);
+<a href=#179 id=179 data-nosnippet>179</a>                    }
+<a href=#180 id=180 data-nosnippet>180</a>                    <span class="prelude-val">Err</span>(e) <span class="kw">if </span>e.kind() == io::ErrorKind::AlreadyExists &amp;&amp; n &lt; <span class="number">100 </span>=&gt; n += <span class="number">1</span>,
+<a href=#181 id=181 data-nosnippet>181</a>                    <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(e),
+<a href=#182 id=182 data-nosnippet>182</a>                }
+<a href=#183 id=183 data-nosnippet>183</a>            }
+<a href=#184 id=184 data-nosnippet>184</a>        };
+<a href=#185 id=185 data-nosnippet>185</a>        <span class="kw">let </span>bytes = Behind::new(bytes, bytes_path.display().to_string());
+<a href=#186 id=186 data-nosnippet>186</a>        <span class="kw">let </span><span class="kw-2">mut </span>events = Behind::new(events, events_path.display().to_string());
+<a href=#187 id=187 data-nosnippet>187</a>
+<a href=#188 id=188 data-nosnippet>188</a>        <span class="comment">// Say what this file is and what it is not, in the file itself. A log
+<a href=#189 id=189 data-nosnippet>189</a>        // read six months from now must not have to guess whether it was
+<a href=#190 id=190 data-nosnippet>190</a>        // scrubbed.
+<a href=#191 id=191 data-nosnippet>191</a>        // The set GROWS after this line: the launch key is minted by the
+<a href=#192 id=192 data-nosnippet>192</a>        // connect and registered afterwards (`redact_key`), because it does not
+<a href=#193 id=193 data-nosnippet>193</a>        // exist when the file is created. So this header must describe what was
+<a href=#194 id=194 data-nosnippet>194</a>        // registered AT CREATION and point at the in-band marker for the rest.
+<a href=#195 id=195 data-nosnippet>195</a>        //
+<a href=#196 id=196 data-nosnippet>196</a>        // A header claiming "nothing was registered, treat this file as raw"
+<a href=#197 id=197 data-nosnippet>197</a>        // whenever the creation-time set is empty would be wrong for EVERY
+<a href=#198 id=198 data-nosnippet>198</a>        // live session, since the key arrives later: the body of that same
+<a href=#199 id=199 data-nosnippet>199</a>        // file would then show `redaction registered (session key)`, and the
+<a href=#200 id=200 data-nosnippet>200</a>        // header would contradict its own contents in the dangerous direction.
+<a href=#201 id=201 data-nosnippet>201</a>        </span><span class="macro">writeln!</span>(
+<a href=#202 id=202 data-nosnippet>202</a>            events,
+<a href=#203 id=203 data-nosnippet>203</a>            <span class="string">"# Hydra session log -- PRIVATE DEVELOPMENT LOG, not automatically shareable.\n\
+<a href=#204 id=204 data-nosnippet>204</a>             # Credentials registered BEFORE the first byte: {}.\n\
+<a href=#205 id=205 data-nosnippet>205</a>             # The session key is registered LATER, when the connect mints it --\n\
+<a href=#206 id=206 data-nosnippet>206</a>             # look for `redaction registered (session key)` below. Everything\n\
+<a href=#207 id=207 data-nosnippet>207</a>             # before that line predates its redaction.\n\
+<a href=#208 id=208 data-nosnippet>208</a>             # OTHER PLAYERS' NAMES ARE NOT REDACTED. Cut fixtures through\n\
+<a href=#209 id=209 data-nosnippet>209</a>             # hydra_protocol::scrub::Scrubber with the names named."</span>,
+<a href=#210 id=210 data-nosnippet>210</a>            <span class="kw">if </span>redactions.is_empty() {
+<a href=#211 id=211 data-nosnippet>211</a>                <span class="string">"none -- no account was registered"</span>.to_owned()
+<a href=#212 id=212 data-nosnippet>212</a>            } <span class="kw">else </span>{
+<a href=#213 id=213 data-nosnippet>213</a>                redactions.kinds()
+<a href=#214 id=214 data-nosnippet>214</a>            }
+<a href=#215 id=215 data-nosnippet>215</a>        )<span class="question-mark">?</span>;
+<a href=#216 id=216 data-nosnippet>216</a>
+<a href=#217 id=217 data-nosnippet>217</a>        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+<a href=#218 id=218 data-nosnippet>218</a>            bytes,
+<a href=#219 id=219 data-nosnippet>219</a>            events,
+<a href=#220 id=220 data-nosnippet>220</a>            redactions,
+<a href=#221 id=221 data-nosnippet>221</a>            bytes_path,
+<a href=#222 id=222 data-nosnippet>222</a>            events_path,
+<a href=#223 id=223 data-nosnippet>223</a>            lines_written: <span class="number">0</span>,
+<a href=#224 id=224 data-nosnippet>224</a>            inbound_before: <span class="prelude-val">None</span>,
+<a href=#225 id=225 data-nosnippet>225</a>            pending: Vec::new(),
+<a href=#226 id=226 data-nosnippet>226</a>            line_open: <span class="bool-val">false</span>,
+<a href=#227 id=227 data-nosnippet>227</a>            awaiting_line_end: Vec::new(),
+<a href=#228 id=228 data-nosnippet>228</a>            stamp_bytes: bytes_timestamps_enabled(),
+<a href=#229 id=229 data-nosnippet>229</a>            at_line_start: <span class="bool-val">true</span>,
+<a href=#230 id=230 data-nosnippet>230</a>            stem: dir.join(safe_stem),
+<a href=#231 id=231 data-nosnippet>231</a>            part: <span class="number">0</span>,
+<a href=#232 id=232 data-nosnippet>232</a>            rotate_after,
+<a href=#233 id=233 data-nosnippet>233</a>        })
+<a href=#234 id=234 data-nosnippet>234</a>    }
+<a href=#235 id=235 data-nosnippet>235</a>
+<a href=#236 id=236 data-nosnippet>236</a>    <span class="doccomment">/// Append raw wire bytes, redacted, marking the direction.
 <a href=#237 id=237 data-nosnippet>237</a>    ///
-<a href=#238 id=238 data-nosnippet>238</a>    /// # Errors
-<a href=#239 id=239 data-nosnippet>239</a>    ///
-<a href=#240 id=240 data-nosnippet>240</a>    /// Any write failure.
-<a href=#241 id=241 data-nosnippet>241</a>    </span><span class="kw">pub fn </span>wire(<span class="kw-2">&amp;mut </span><span class="self">self</span>, inbound: bool, bytes: <span class="kw-2">&amp;</span>[u8]) -&gt; io::Result&lt;()&gt; {
-<a href=#242 id=242 data-nosnippet>242</a>        <span class="kw">if </span>inbound {
-<a href=#243 id=243 data-nosnippet>243</a>            <span class="comment">// `false` means every byte is still held back waiting for more:
-<a href=#244 id=244 data-nosnippet>244</a>            // nothing was written, so there is no line to count.
-<a href=#245 id=245 data-nosnippet>245</a>            </span><span class="kw">if </span>!<span class="self">self</span>.inbound(bytes)<span class="question-mark">? </span>{
-<a href=#246 id=246 data-nosnippet>246</a>                <span class="kw">return </span><span class="prelude-val">Ok</span>(());
-<a href=#247 id=247 data-nosnippet>247</a>            }
-<a href=#248 id=248 data-nosnippet>248</a>        } <span class="kw">else </span>{
-<a href=#249 id=249 data-nosnippet>249</a>            <span class="kw">let </span>record = <span class="self">self</span>.client_record(bytes);
-<a href=#250 id=250 data-nosnippet>250</a>            <span class="comment">// **A command waits for the inbound line in progress to end.**
-<a href=#251 id=251 data-nosnippet>251</a>            //
-<a href=#252 id=252 data-nosnippet>252</a>            // The server's bytes before the command reached this file split
-<a href=#253 id=253 data-nosnippet>253</a>            // wherever a TCP read ended -- or wherever the redaction hold cut
-<a href=#254 id=254 data-nosnippet>254</a>            // them, which with any secret registered is every chunk. Writing
-<a href=#255 id=255 data-nosnippet>255</a>            // the command at once would splice it into the middle of a line,
-<a href=#256 id=256 data-nosnippet>256</a>            // even a tag:
-<a href=#257 id=257 data-nosnippet>257</a>            //
-<a href=#258 id=258 data-nosnippet>258</a>            // ```text
-<a href=#259 id=259 data-nosnippet>259</a>            // &lt;prompt ti&lt;!-- CLIENT --&gt;look&lt;!-- ENDCLIENT --&gt;
-<a href=#260 id=260 data-nosnippet>260</a>            // me="1758600000"&gt;&amp;gt;&lt;/prompt&gt;
-<a href=#261 id=261 data-nosnippet>261</a>            // ```
+<a href=#238 id=238 data-nosnippet>238</a>    /// **The framing is the usual `GemStone` XML log's, not a new one.** Inbound
+<a href=#239 id=239 data-nosnippet>239</a>    /// bytes are written verbatim; client input is wrapped in `&lt;!-- CLIENT --&gt;` /
+<a href=#240 id=240 data-nosnippet>240</a>    /// `&lt;!-- ENDCLIENT --&gt;`. No sequence number: that format carries none, and
+<a href=#241 id=241 data-nosnippet>241</a>    /// [`Recorder`](crate::record::Recorder) already owns ordering, so writing
+<a href=#242 id=242 data-nosnippet>242</a>    /// one here would be a second source of truth for the same fact.
+<a href=#243 id=243 data-nosnippet>243</a>    ///
+<a href=#244 id=244 data-nosnippet>244</a>    /// Chunk boundaries are preserved because
+<a href=#245 id=245 data-nosnippet>245</a>    /// [`Recorder`](crate::record::Recorder)'s own docs explain that replaying
+<a href=#246 id=246 data-nosnippet>246</a>    /// the split that happened live is what drives `Parser::push_bytes`'s
+<a href=#247 id=247 data-nosnippet>247</a>    /// partial-line path with a real boundary rather than an invented one.
+<a href=#248 id=248 data-nosnippet>248</a>    ///
+<a href=#249 id=249 data-nosnippet>249</a>    /// # Errors
+<a href=#250 id=250 data-nosnippet>250</a>    ///
+<a href=#251 id=251 data-nosnippet>251</a>    /// Any write failure.
+<a href=#252 id=252 data-nosnippet>252</a>    </span><span class="kw">pub fn </span>wire(<span class="kw-2">&amp;mut </span><span class="self">self</span>, inbound: bool, bytes: <span class="kw-2">&amp;</span>[u8]) -&gt; io::Result&lt;()&gt; {
+<a href=#253 id=253 data-nosnippet>253</a>        <span class="kw">if </span>inbound {
+<a href=#254 id=254 data-nosnippet>254</a>            <span class="comment">// `false` means every byte is still held back waiting for more:
+<a href=#255 id=255 data-nosnippet>255</a>            // nothing was written, so there is no line to count.
+<a href=#256 id=256 data-nosnippet>256</a>            </span><span class="kw">if </span>!<span class="self">self</span>.inbound(bytes)<span class="question-mark">? </span>{
+<a href=#257 id=257 data-nosnippet>257</a>                <span class="kw">return </span><span class="prelude-val">Ok</span>(());
+<a href=#258 id=258 data-nosnippet>258</a>            }
+<a href=#259 id=259 data-nosnippet>259</a>        } <span class="kw">else </span>{
+<a href=#260 id=260 data-nosnippet>260</a>            <span class="kw">let </span>record = <span class="self">self</span>.client_record(bytes);
+<a href=#261 id=261 data-nosnippet>261</a>            <span class="comment">// **A command waits for the inbound line in progress to end.**
 <a href=#262 id=262 data-nosnippet>262</a>            //
-<a href=#263 id=263 data-nosnippet>263</a>            // That is not a parseable file, and this is the file fixtures are
-<a href=#264 id=264 data-nosnippet>264</a>            // cut from. Interleaving at the next line end keeps every line
-<a href=#265 id=265 data-nosnippet>265</a>            // whole. The command moves by at most the rest of one line, and
-<a href=#266 id=266 data-nosnippet>266</a>            // `Recorder` keeps the exact order for replay.
-<a href=#267 id=267 data-nosnippet>267</a>            //
-<a href=#268 id=268 data-nosnippet>268</a>            // It also makes the flush below safe for redaction: the held-back
-<a href=#269 id=269 data-nosnippet>269</a>            // tail ends in a newline, and no secret spans one.
-<a href=#270 id=270 data-nosnippet>270</a>            </span><span class="kw">if </span><span class="self">self</span>.line_open {
-<a href=#271 id=271 data-nosnippet>271</a>                <span class="self">self</span>.awaiting_line_end.push(record);
-<a href=#272 id=272 data-nosnippet>272</a>            } <span class="kw">else </span>{
-<a href=#273 id=273 data-nosnippet>273</a>                <span class="self">self</span>.drain_pending()<span class="question-mark">?</span>;
-<a href=#274 id=274 data-nosnippet>274</a>                <span class="self">self</span>.write_bytes(<span class="kw-2">&amp;</span>record)<span class="question-mark">?</span>;
-<a href=#275 id=275 data-nosnippet>275</a>            }
-<a href=#276 id=276 data-nosnippet>276</a>        }
-<a href=#277 id=277 data-nosnippet>277</a>        <span class="comment">// **NOTHING is appended to inbound bytes**, and that fidelity is this
-<a href=#278 id=278 data-nosnippet>278</a>        // file's whole purpose. Adding a newline to a chunk that did not end in
-<a href=#279 id=279 data-nosnippet>279</a>        // one would split a tag straddling a read: a boundary inside
-<a href=#280 id=280 data-nosnippet>280</a>        // `&lt;pushStream id='room'/&gt;` would be written with a newline in the
-<a href=#281 id=281 data-nosnippet>281</a>        // middle of the attribute, so a replay would parse something the live
-<a href=#282 id=282 data-nosnippet>282</a>        // session never saw.
-<a href=#283 id=283 data-nosnippet>283</a>        //
-<a href=#284 id=284 data-nosnippet>284</a>        // The `.bytes` file is what golden fixtures are cut from and what
-<a href=#285 id=285 data-nosnippet>285</a>        // replay tests replay, so a byte invented here is inherited by every
-<a href=#286 id=286 data-nosnippet>286</a>        // future fixture.
-<a href=#287 id=287 data-nosnippet>287</a>        </span><span class="self">self</span>.lines_written += <span class="number">1</span>;
-<a href=#288 id=288 data-nosnippet>288</a>        <span class="kw">if </span><span class="self">self</span>.lines_written &gt;= <span class="self">self</span>.rotate_after {
-<a href=#289 id=289 data-nosnippet>289</a>            <span class="self">self</span>.roll()<span class="question-mark">?</span>;
-<a href=#290 id=290 data-nosnippet>290</a>        }
-<a href=#291 id=291 data-nosnippet>291</a>        <span class="prelude-val">Ok</span>(())
-<a href=#292 id=292 data-nosnippet>292</a>    }
-<a href=#293 id=293 data-nosnippet>293</a>
-<a href=#294 id=294 data-nosnippet>294</a>    <span class="doccomment">/// The same sink with the bytes file stamped, whatever the environment
-<a href=#295 id=295 data-nosnippet>295</a>    /// says: for a test of the stamped file, which cannot set the variable
-<a href=#296 id=296 data-nosnippet>296</a>    /// without every other test's sink seeing it.
-<a href=#297 id=297 data-nosnippet>297</a>    </span><span class="attr">#[must_use]
-<a href=#298 id=298 data-nosnippet>298</a>    </span><span class="kw">pub fn </span>stamped(<span class="kw-2">mut </span><span class="self">self</span>) -&gt; <span class="self">Self </span>{
-<a href=#299 id=299 data-nosnippet>299</a>        <span class="self">self</span>.stamp_bytes = <span class="bool-val">true</span>;
-<a href=#300 id=300 data-nosnippet>300</a>        <span class="self">self
-<a href=#301 id=301 data-nosnippet>301</a>    </span>}
-<a href=#302 id=302 data-nosnippet>302</a>
-<a href=#303 id=303 data-nosnippet>303</a>    <span class="doccomment">/// Write inbound bytes, releasing any command that was waiting for the
-<a href=#304 id=304 data-nosnippet>304</a>    /// line they finish. Returns whether anything reached the file.
-<a href=#305 id=305 data-nosnippet>305</a>    </span><span class="kw">fn </span>inbound(<span class="kw-2">&amp;mut </span><span class="self">self</span>, bytes: <span class="kw-2">&amp;</span>[u8]) -&gt; io::Result&lt;bool&gt; {
-<a href=#306 id=306 data-nosnippet>306</a>        <span class="kw">let </span><span class="prelude-val">Some</span>(last) = bytes.last() <span class="kw">else </span>{
-<a href=#307 id=307 data-nosnippet>307</a>            <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="bool-val">false</span>);
-<a href=#308 id=308 data-nosnippet>308</a>        };
-<a href=#309 id=309 data-nosnippet>309</a>        <span class="kw">let </span><span class="kw-2">mut </span>wrote = <span class="bool-val">false</span>;
-<a href=#310 id=310 data-nosnippet>310</a>        <span class="kw">let </span><span class="kw-2">mut </span>rest = bytes;
-<a href=#311 id=311 data-nosnippet>311</a>        <span class="kw">if </span>!<span class="self">self</span>.awaiting_line_end.is_empty()
-<a href=#312 id=312 data-nosnippet>312</a>            &amp;&amp; <span class="kw">let </span><span class="prelude-val">Some</span>(at) = rest.iter().position(|<span class="kw-2">&amp;</span>b| b == <span class="string">b'\n'</span>)
-<a href=#313 id=313 data-nosnippet>313</a>        {
-<a href=#314 id=314 data-nosnippet>314</a>            <span class="kw">let </span>(line_end, after) = rest.split_at(at + <span class="number">1</span>);
-<a href=#315 id=315 data-nosnippet>315</a>            <span class="self">self</span>.inbound_chunk(line_end)<span class="question-mark">?</span>;
-<a href=#316 id=316 data-nosnippet>316</a>            <span class="comment">// The tail now ends in a newline, so draining it cannot cut a
-<a href=#317 id=317 data-nosnippet>317</a>            // secret in two -- and the drain releases the waiting commands.
-<a href=#318 id=318 data-nosnippet>318</a>            </span><span class="self">self</span>.drain_pending()<span class="question-mark">?</span>;
-<a href=#319 id=319 data-nosnippet>319</a>            wrote = <span class="bool-val">true</span>;
-<a href=#320 id=320 data-nosnippet>320</a>            rest = after;
-<a href=#321 id=321 data-nosnippet>321</a>        }
-<a href=#322 id=322 data-nosnippet>322</a>        <span class="kw">if </span>!rest.is_empty() {
-<a href=#323 id=323 data-nosnippet>323</a>            wrote |= <span class="self">self</span>.inbound_chunk(rest)<span class="question-mark">?</span>;
-<a href=#324 id=324 data-nosnippet>324</a>        }
-<a href=#325 id=325 data-nosnippet>325</a>        <span class="self">self</span>.line_open = <span class="kw-2">*</span>last != <span class="string">b'\n'</span>;
-<a href=#326 id=326 data-nosnippet>326</a>        <span class="prelude-val">Ok</span>(wrote)
-<a href=#327 id=327 data-nosnippet>327</a>    }
-<a href=#328 id=328 data-nosnippet>328</a>
-<a href=#329 id=329 data-nosnippet>329</a>    <span class="doccomment">/// One inbound chunk through the redaction hold.
-<a href=#330 id=330 data-nosnippet>330</a>    </span><span class="kw">fn </span>inbound_chunk(<span class="kw-2">&amp;mut </span><span class="self">self</span>, bytes: <span class="kw-2">&amp;</span>[u8]) -&gt; io::Result&lt;bool&gt; {
-<a href=#331 id=331 data-nosnippet>331</a>        <span class="comment">// `None` means every byte is still held back waiting for more: nothing
-<a href=#332 id=332 data-nosnippet>332</a>        // to write yet, and writing a stamp for it would invent a line.
-<a href=#333 id=333 data-nosnippet>333</a>        </span><span class="kw">let </span><span class="prelude-val">Some</span>(redacted) = <span class="self">self</span>.redact_across_chunks(bytes) <span class="kw">else </span>{
-<a href=#334 id=334 data-nosnippet>334</a>            <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="bool-val">false</span>);
-<a href=#335 id=335 data-nosnippet>335</a>        };
-<a href=#336 id=336 data-nosnippet>336</a>        <span class="kw">if </span><span class="self">self</span>.stamp_bytes {
-<a href=#337 id=337 data-nosnippet>337</a>            <span class="comment">// Each line the chunk begins, stamped where it begins; a line
-<a href=#338 id=338 data-nosnippet>338</a>            // the chunk continues, not.
-<a href=#339 id=339 data-nosnippet>339</a>            </span><span class="kw">for </span>piece <span class="kw">in </span>redacted.split_inclusive(|byte| <span class="kw-2">*</span>byte == <span class="string">b'\n'</span>) {
-<a href=#340 id=340 data-nosnippet>340</a>                <span class="kw">if </span><span class="self">self</span>.at_line_start {
-<a href=#341 id=341 data-nosnippet>341</a>                    <span class="macro">write!</span>(<span class="self">self</span>.bytes, <span class="string">"{}: "</span>, line_time())<span class="question-mark">?</span>;
-<a href=#342 id=342 data-nosnippet>342</a>                }
-<a href=#343 id=343 data-nosnippet>343</a>                <span class="self">self</span>.write_bytes(piece)<span class="question-mark">?</span>;
-<a href=#344 id=344 data-nosnippet>344</a>            }
-<a href=#345 id=345 data-nosnippet>345</a>        } <span class="kw">else </span>{
-<a href=#346 id=346 data-nosnippet>346</a>            <span class="self">self</span>.write_bytes(<span class="kw-2">&amp;</span>redacted)<span class="question-mark">?</span>;
-<a href=#347 id=347 data-nosnippet>347</a>        }
-<a href=#348 id=348 data-nosnippet>348</a>        <span class="prelude-val">Ok</span>(<span class="bool-val">true</span>)
-<a href=#349 id=349 data-nosnippet>349</a>    }
-<a href=#350 id=350 data-nosnippet>350</a>
-<a href=#351 id=351 data-nosnippet>351</a>    <span class="doccomment">/// `bytes` to the bytes file, noting whether they end a line.
-<a href=#352 id=352 data-nosnippet>352</a>    </span><span class="kw">fn </span>write_bytes(<span class="kw-2">&amp;mut </span><span class="self">self</span>, bytes: <span class="kw-2">&amp;</span>[u8]) -&gt; io::Result&lt;()&gt; {
-<a href=#353 id=353 data-nosnippet>353</a>        <span class="self">self</span>.bytes.write_all(bytes)<span class="question-mark">?</span>;
-<a href=#354 id=354 data-nosnippet>354</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(last) = bytes.last() {
-<a href=#355 id=355 data-nosnippet>355</a>            <span class="self">self</span>.at_line_start = <span class="kw-2">*</span>last == <span class="string">b'\n'</span>;
-<a href=#356 id=356 data-nosnippet>356</a>        }
-<a href=#357 id=357 data-nosnippet>357</a>        <span class="prelude-val">Ok</span>(())
-<a href=#358 id=358 data-nosnippet>358</a>    }
-<a href=#359 id=359 data-nosnippet>359</a>
-<a href=#360 id=360 data-nosnippet>360</a>    <span class="doccomment">/// One outbound command, redacted and framed, ready to write.
-<a href=#361 id=361 data-nosnippet>361</a>    </span><span class="kw">fn </span>client_record(<span class="kw-2">&amp;</span><span class="self">self</span>, bytes: <span class="kw-2">&amp;</span>[u8]) -&gt; Vec&lt;u8&gt; {
-<a href=#362 id=362 data-nosnippet>362</a>        <span class="kw">let </span>redacted = <span class="self">self</span>.redactions.apply_bytes(bytes);
-<a href=#363 id=363 data-nosnippet>363</a>        <span class="kw">let </span><span class="kw-2">mut </span>record = Vec::with_capacity(redacted.len() + <span class="number">64</span>);
-<a href=#364 id=364 data-nosnippet>364</a>        <span class="kw">if </span><span class="self">self</span>.stamp_bytes {
-<a href=#365 id=365 data-nosnippet>365</a>            record.extend_from_slice(<span class="macro">format!</span>(<span class="string">"{}: "</span>, line_time()).as_bytes());
-<a href=#366 id=366 data-nosnippet>366</a>        }
-<a href=#367 id=367 data-nosnippet>367</a>        <span class="comment">// Client input is WRAPPED, not prefixed -- the same
-<a href=#368 id=368 data-nosnippet>368</a>        // `&lt;!-- CLIENT --&gt;...&lt;!-- ENDCLIENT --&gt;` markers GemStone XML logs
-<a href=#369 id=369 data-nosnippet>369</a>        // conventionally use, so a Hydra capture can be read by anything that
-<a href=#370 id=370 data-nosnippet>370</a>        // already reads those, and vice versa. A private framing would make
-<a href=#371 id=371 data-nosnippet>371</a>        // Hydra's logs the odd ones out.
-<a href=#372 id=372 data-nosnippet>372</a>        </span>record.extend_from_slice(CLIENT_OPEN);
-<a href=#373 id=373 data-nosnippet>373</a>        record.extend_from_slice(redacted.trim_ascii_end());
-<a href=#374 id=374 data-nosnippet>374</a>        record.extend_from_slice(CLIENT_CLOSE);
-<a href=#375 id=375 data-nosnippet>375</a>        <span class="comment">// **The wrapper gets its own terminator, unconditionally**, because
-<a href=#376 id=376 data-nosnippet>376</a>        // the command's own newline was just trimmed off. Without it the
-<a href=#377 id=377 data-nosnippet>377</a>        // next inbound line is glued to `ENDCLIENT --&gt;` and a reader
-<a href=#378 id=378 data-nosnippet>378</a>        // splitting on lines sees one line where there were two. (Testing
-<a href=#379 id=379 data-nosnippet>379</a>        // whether the UNTRIMMED buffer ends in a newline would be wrong: the
-<a href=#380 id=380 data-nosnippet>380</a>        // trimmed one is what is written.)
-<a href=#381 id=381 data-nosnippet>381</a>        </span>record.push(<span class="string">b'\n'</span>);
-<a href=#382 id=382 data-nosnippet>382</a>        record
-<a href=#383 id=383 data-nosnippet>383</a>    }
-<a href=#384 id=384 data-nosnippet>384</a>
-<a href=#385 id=385 data-nosnippet>385</a>    <span class="doccomment">/// Redact `bytes`, carrying a tail forward so a secret cannot hide in a
-<a href=#386 id=386 data-nosnippet>386</a>    /// chunk boundary.
-<a href=#387 id=387 data-nosnippet>387</a>    ///
-<a href=#388 id=388 data-nosnippet>388</a>    /// # The failure this exists for
-<a href=#389 id=389 data-nosnippet>389</a>    ///
-<a href=#390 id=390 data-nosnippet>390</a>    /// `apply_bytes` sees one `read` at a time, and a TCP read boundary falls
-<a href=#391 id=391 data-nosnippet>391</a>    /// wherever the network puts it. A launch key split across two reads would
-<a href=#392 id=392 data-nosnippet>392</a>    /// match neither half and be **written in the clear** -- the live
-<a href=#393 id=393 data-nosnippet>393</a>    /// credential, in a file on disk.
-<a href=#394 id=394 data-nosnippet>394</a>    ///
-<a href=#395 id=395 data-nosnippet>395</a>    /// # How the tail works, and why it is bounded
-<a href=#396 id=396 data-nosnippet>396</a>    ///
-<a href=#397 id=397 data-nosnippet>397</a>    /// Holding back `longest_secret - 1` bytes guarantees that any secret is
-<a href=#398 id=398 data-nosnippet>398</a>    /// wholly inside some chunk: a secret of length `n` cannot span more than
-<a href=#399 id=399 data-nosnippet>399</a>    /// `n - 1` bytes of held-back tail plus the new chunk. The tail is bounded
-<a href=#400 id=400 data-nosnippet>400</a>    /// by the longest registered secret, so it cannot grow with the session.
-<a href=#401 id=401 data-nosnippet>401</a>    ///
-<a href=#402 id=402 data-nosnippet>402</a>    /// # What this costs, stated plainly
-<a href=#403 id=403 data-nosnippet>403</a>    ///
-<a href=#404 id=404 data-nosnippet>404</a>    /// **Chunk boundaries shift** by up to `longest_secret - 1` bytes while
-<a href=#405 id=405 data-nosnippet>405</a>    /// secrets are registered, and this function's own doc says boundaries are
-<a href=#406 id=406 data-nosnippet>406</a>    /// preserved so a replay drives the parser's partial-line path with a real
-<a href=#407 id=407 data-nosnippet>407</a>    /// split. That guarantee is weakened here, deliberately:
-<a href=#408 id=408 data-nosnippet>408</a>    ///
-<a href=#409 id=409 data-nosnippet>409</a>    /// - the boundary is still a boundary the wire *could* have produced -- no
-<a href=#410 id=410 data-nosnippet>410</a>    ///   byte is invented, reordered or dropped, only deferred;
-<a href=#411 id=411 data-nosnippet>411</a>    /// - [`Recorder`](crate::record::Recorder) keeps its own in-memory copy and
-<a href=#412 id=412 data-nosnippet>412</a>    ///   is unaffected, so live replay fidelity is untouched;
-<a href=#413 id=413 data-nosnippet>413</a>    /// - a credential in a log is a worse outcome than a shifted split in a
-<a href=#414 id=414 data-nosnippet>414</a>    ///   fixture.
-<a href=#415 id=415 data-nosnippet>415</a>    ///
-<a href=#416 id=416 data-nosnippet>416</a>    /// Inbound only. Outbound commands are whole, so there is nothing to
-<a href=#417 id=417 data-nosnippet>417</a>    /// straddle; they are placed at line ends instead (see [`Self::wire`]).
-<a href=#418 id=418 data-nosnippet>418</a>    </span><span class="kw">fn </span>redact_across_chunks(<span class="kw-2">&amp;mut </span><span class="self">self</span>, bytes: <span class="kw-2">&amp;</span>[u8]) -&gt; <span class="prelude-ty">Option</span>&lt;Vec&lt;u8&gt;&gt; {
-<a href=#419 id=419 data-nosnippet>419</a>        <span class="kw">let </span>hold = <span class="self">self</span>.redactions.longest_secret().saturating_sub(<span class="number">1</span>);
-<a href=#420 id=420 data-nosnippet>420</a>        <span class="kw">if </span>hold == <span class="number">0 </span>{
-<a href=#421 id=421 data-nosnippet>421</a>            <span class="comment">// Nothing registered: redact in place.
-<a href=#422 id=422 data-nosnippet>422</a>            </span><span class="kw">return </span><span class="prelude-val">Some</span>(<span class="self">self</span>.redact_inbound(bytes));
-<a href=#423 id=423 data-nosnippet>423</a>        }
-<a href=#424 id=424 data-nosnippet>424</a>
-<a href=#425 id=425 data-nosnippet>425</a>        <span class="self">self</span>.pending.extend_from_slice(bytes);
-<a href=#426 id=426 data-nosnippet>426</a>        <span class="comment">// Keep back the last `hold` bytes: a secret could still be completed by
-<a href=#427 id=427 data-nosnippet>427</a>        // the next chunk.
-<a href=#428 id=428 data-nosnippet>428</a>        </span><span class="kw">let </span><span class="kw-2">mut </span>safe = <span class="self">self</span>.pending.len().saturating_sub(hold);
-<a href=#429 id=429 data-nosnippet>429</a>        <span class="kw">if </span>safe == <span class="number">0 </span>{
-<a href=#430 id=430 data-nosnippet>430</a>            <span class="kw">return </span><span class="prelude-val">None</span>;
-<a href=#431 id=431 data-nosnippet>431</a>        }
-<a href=#432 id=432 data-nosnippet>432</a>
-<a href=#433 id=433 data-nosnippet>433</a>        <span class="comment">// **And do not cut through a secret that is ALREADY whole.** Holding
-<a href=#434 id=434 data-nosnippet>434</a>        // back `hold` bytes stops an INCOMING boundary from splitting a secret,
-<a href=#435 id=435 data-nosnippet>435</a>        // but the cut made here is a second boundary, and a naive one lands
-<a href=#436 id=436 data-nosnippet>436</a>        // mid-secret just as easily: a key whole in `pending` sliced at byte
-<a href=#437 id=437 data-nosnippet>437</a>        // 17 of 48 leaves neither piece matching. Walk the cut backwards past
-<a href=#438 id=438 data-nosnippet>438</a>        // any secret that spans it.
-<a href=#439 id=439 data-nosnippet>439</a>        </span>safe = <span class="self">self</span>.cut_clear_of_secrets(safe);
-<a href=#440 id=440 data-nosnippet>440</a>        <span class="kw">if </span>safe == <span class="number">0 </span>{
-<a href=#441 id=441 data-nosnippet>441</a>            <span class="kw">return </span><span class="prelude-val">None</span>;
-<a href=#442 id=442 data-nosnippet>442</a>        }
-<a href=#443 id=443 data-nosnippet>443</a>        <span class="kw">let </span>head: Vec&lt;u8&gt; = <span class="self">self</span>.pending.drain(..safe).collect();
-<a href=#444 id=444 data-nosnippet>444</a>        <span class="prelude-val">Some</span>(<span class="self">self</span>.redact_inbound(<span class="kw-2">&amp;</span>head))
-<a href=#445 id=445 data-nosnippet>445</a>    }
-<a href=#446 id=446 data-nosnippet>446</a>
-<a href=#447 id=447 data-nosnippet>447</a>    <span class="doccomment">/// Redact the next inbound bytes, after those redacted before them.
-<a href=#448 id=448 data-nosnippet>448</a>    </span><span class="kw">fn </span>redact_inbound(<span class="kw-2">&amp;mut </span><span class="self">self</span>, bytes: <span class="kw-2">&amp;</span>[u8]) -&gt; Vec&lt;u8&gt; {
-<a href=#449 id=449 data-nosnippet>449</a>        <span class="kw">let </span>redacted = <span class="self">self
-<a href=#450 id=450 data-nosnippet>450</a>            </span>.redactions
-<a href=#451 id=451 data-nosnippet>451</a>            .apply_bytes_after(<span class="self">self</span>.inbound_before, bytes);
-<a href=#452 id=452 data-nosnippet>452</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(last) = bytes.last() {
-<a href=#453 id=453 data-nosnippet>453</a>            <span class="self">self</span>.inbound_before = <span class="prelude-val">Some</span>(<span class="kw-2">*</span>last);
-<a href=#454 id=454 data-nosnippet>454</a>        }
-<a href=#455 id=455 data-nosnippet>455</a>        redacted
-<a href=#456 id=456 data-nosnippet>456</a>    }
-<a href=#457 id=457 data-nosnippet>457</a>
-<a href=#458 id=458 data-nosnippet>458</a>    <span class="doccomment">/// Move a proposed cut back until no registered secret spans it or ends
-<a href=#459 id=459 data-nosnippet>459</a>    /// at it.
-<a href=#460 id=460 data-nosnippet>460</a>    ///
-<a href=#461 id=461 data-nosnippet>461</a>    /// A secret occupying `[start, start + len)` spans the cut when
-<a href=#462 id=462 data-nosnippet>462</a>    /// `start &lt; cut &lt;= start + len`. Moving the cut to `start` puts the whole
-<a href=#463 id=463 data-nosnippet>463</a>    /// secret in the held-back tail, where the next chunk -- or
-<a href=#464 id=464 data-nosnippet>464</a>    /// `drain_pending` -- redacts it intact. One that ends at the cut is held
-<a href=#465 id=465 data-nosnippet>465</a>    /// too: a name is replaced only as a whole word, which the byte after it
-<a href=#466 id=466 data-nosnippet>466</a>    /// decides.
-<a href=#467 id=467 data-nosnippet>467</a>    ///
-<a href=#468 id=468 data-nosnippet>468</a>    /// Bounded: only secrets beginning within `longest_secret` bytes before the
-<a href=#469 id=469 data-nosnippet>469</a>    /// cut can span it, so the scan is over a fixed-size window and the cut
-<a href=#470 id=470 data-nosnippet>470</a>    /// moves back at most `longest_secret - 1` bytes.
-<a href=#471 id=471 data-nosnippet>471</a>    </span><span class="kw">fn </span>cut_clear_of_secrets(<span class="kw-2">&amp;</span><span class="self">self</span>, cut: usize) -&gt; usize {
-<a href=#472 id=472 data-nosnippet>472</a>        <span class="kw">let </span>window = <span class="self">self</span>.redactions.longest_secret();
-<a href=#473 id=473 data-nosnippet>473</a>        <span class="kw">let </span>from = cut.saturating_sub(window);
-<a href=#474 id=474 data-nosnippet>474</a>        <span class="kw">let </span><span class="kw-2">mut </span>earliest = cut;
-<a href=#475 id=475 data-nosnippet>475</a>        <span class="kw">for </span>(secret, <span class="kw">_</span>) <span class="kw">in </span><span class="self">self</span>.redactions.secrets() {
-<a href=#476 id=476 data-nosnippet>476</a>            <span class="kw">let </span>needle = secret.as_bytes();
-<a href=#477 id=477 data-nosnippet>477</a>            <span class="kw">for </span>start <span class="kw">in </span>from..cut {
-<a href=#478 id=478 data-nosnippet>478</a>                <span class="kw">if </span>start + needle.len() &gt;= cut
-<a href=#479 id=479 data-nosnippet>479</a>                    &amp;&amp; <span class="self">self</span>.pending.len() &gt;= start + needle.len()
-<a href=#480 id=480 data-nosnippet>480</a>                    &amp;&amp; <span class="self">self</span>.pending[start..].starts_with(needle)
-<a href=#481 id=481 data-nosnippet>481</a>                {
-<a href=#482 id=482 data-nosnippet>482</a>                    earliest = earliest.min(start);
-<a href=#483 id=483 data-nosnippet>483</a>                }
-<a href=#484 id=484 data-nosnippet>484</a>            }
-<a href=#485 id=485 data-nosnippet>485</a>        }
-<a href=#486 id=486 data-nosnippet>486</a>        earliest
-<a href=#487 id=487 data-nosnippet>487</a>    }
-<a href=#488 id=488 data-nosnippet>488</a>
-<a href=#489 id=489 data-nosnippet>489</a>    <span class="doccomment">/// Write out whatever the straddle tail is still holding.
-<a href=#490 id=490 data-nosnippet>490</a>    ///
-<a href=#491 id=491 data-nosnippet>491</a>    /// Called before a flush, a roll and a close: a tail left in memory is
-<a href=#492 id=492 data-nosnippet>492</a>    /// bytes the wire really carried, and losing them would make the `.bytes`
-<a href=#493 id=493 data-nosnippet>493</a>    /// file an incomplete record -- the opposite of its purpose. It is redacted
-<a href=#494 id=494 data-nosnippet>494</a>    /// on the way out like any other chunk.
-<a href=#495 id=495 data-nosnippet>495</a>    ///
-<a href=#496 id=496 data-nosnippet>496</a>    /// # Errors
-<a href=#497 id=497 data-nosnippet>497</a>    ///
-<a href=#498 id=498 data-nosnippet>498</a>    /// Any write failure.
+<a href=#263 id=263 data-nosnippet>263</a>            // The server's bytes before the command reached this file split
+<a href=#264 id=264 data-nosnippet>264</a>            // wherever a TCP read ended -- or wherever the redaction hold cut
+<a href=#265 id=265 data-nosnippet>265</a>            // them, which with any secret registered is every chunk. Writing
+<a href=#266 id=266 data-nosnippet>266</a>            // the command at once would splice it into the middle of a line,
+<a href=#267 id=267 data-nosnippet>267</a>            // even a tag:
+<a href=#268 id=268 data-nosnippet>268</a>            //
+<a href=#269 id=269 data-nosnippet>269</a>            // ```text
+<a href=#270 id=270 data-nosnippet>270</a>            // &lt;prompt ti&lt;!-- CLIENT --&gt;look&lt;!-- ENDCLIENT --&gt;
+<a href=#271 id=271 data-nosnippet>271</a>            // me="1758600000"&gt;&amp;gt;&lt;/prompt&gt;
+<a href=#272 id=272 data-nosnippet>272</a>            // ```
+<a href=#273 id=273 data-nosnippet>273</a>            //
+<a href=#274 id=274 data-nosnippet>274</a>            // That is not a parseable file, and this is the file fixtures are
+<a href=#275 id=275 data-nosnippet>275</a>            // cut from. Interleaving at the next line end keeps every line
+<a href=#276 id=276 data-nosnippet>276</a>            // whole. The command moves by at most the rest of one line, and
+<a href=#277 id=277 data-nosnippet>277</a>            // `Recorder` keeps the exact order for replay.
+<a href=#278 id=278 data-nosnippet>278</a>            //
+<a href=#279 id=279 data-nosnippet>279</a>            // It also makes the flush below safe for redaction: the held-back
+<a href=#280 id=280 data-nosnippet>280</a>            // tail ends in a newline, and no secret spans one.
+<a href=#281 id=281 data-nosnippet>281</a>            </span><span class="kw">if </span><span class="self">self</span>.line_open {
+<a href=#282 id=282 data-nosnippet>282</a>                <span class="self">self</span>.awaiting_line_end.push(record);
+<a href=#283 id=283 data-nosnippet>283</a>            } <span class="kw">else </span>{
+<a href=#284 id=284 data-nosnippet>284</a>                <span class="self">self</span>.drain_pending()<span class="question-mark">?</span>;
+<a href=#285 id=285 data-nosnippet>285</a>                <span class="self">self</span>.write_bytes(<span class="kw-2">&amp;</span>record)<span class="question-mark">?</span>;
+<a href=#286 id=286 data-nosnippet>286</a>            }
+<a href=#287 id=287 data-nosnippet>287</a>        }
+<a href=#288 id=288 data-nosnippet>288</a>        <span class="comment">// **NOTHING is appended to inbound bytes**, and that fidelity is this
+<a href=#289 id=289 data-nosnippet>289</a>        // file's whole purpose. Adding a newline to a chunk that did not end in
+<a href=#290 id=290 data-nosnippet>290</a>        // one would split a tag straddling a read: a boundary inside
+<a href=#291 id=291 data-nosnippet>291</a>        // `&lt;pushStream id='room'/&gt;` would be written with a newline in the
+<a href=#292 id=292 data-nosnippet>292</a>        // middle of the attribute, so a replay would parse something the live
+<a href=#293 id=293 data-nosnippet>293</a>        // session never saw.
+<a href=#294 id=294 data-nosnippet>294</a>        //
+<a href=#295 id=295 data-nosnippet>295</a>        // The `.bytes` file is what golden fixtures are cut from and what
+<a href=#296 id=296 data-nosnippet>296</a>        // replay tests replay, so a byte invented here is inherited by every
+<a href=#297 id=297 data-nosnippet>297</a>        // future fixture.
+<a href=#298 id=298 data-nosnippet>298</a>        </span><span class="self">self</span>.lines_written += <span class="number">1</span>;
+<a href=#299 id=299 data-nosnippet>299</a>        <span class="kw">if </span><span class="self">self</span>.lines_written &gt;= <span class="self">self</span>.rotate_after {
+<a href=#300 id=300 data-nosnippet>300</a>            <span class="self">self</span>.roll()<span class="question-mark">?</span>;
+<a href=#301 id=301 data-nosnippet>301</a>        }
+<a href=#302 id=302 data-nosnippet>302</a>        <span class="prelude-val">Ok</span>(())
+<a href=#303 id=303 data-nosnippet>303</a>    }
+<a href=#304 id=304 data-nosnippet>304</a>
+<a href=#305 id=305 data-nosnippet>305</a>    <span class="doccomment">/// The same sink with the bytes file stamped, whatever the environment
+<a href=#306 id=306 data-nosnippet>306</a>    /// says: for a test of the stamped file, which cannot set the variable
+<a href=#307 id=307 data-nosnippet>307</a>    /// without every other test's sink seeing it.
+<a href=#308 id=308 data-nosnippet>308</a>    </span><span class="attr">#[must_use]
+<a href=#309 id=309 data-nosnippet>309</a>    </span><span class="kw">pub fn </span>stamped(<span class="kw-2">mut </span><span class="self">self</span>) -&gt; <span class="self">Self </span>{
+<a href=#310 id=310 data-nosnippet>310</a>        <span class="self">self</span>.stamp_bytes = <span class="bool-val">true</span>;
+<a href=#311 id=311 data-nosnippet>311</a>        <span class="self">self
+<a href=#312 id=312 data-nosnippet>312</a>    </span>}
+<a href=#313 id=313 data-nosnippet>313</a>
+<a href=#314 id=314 data-nosnippet>314</a>    <span class="doccomment">/// Write inbound bytes, releasing any command that was waiting for the
+<a href=#315 id=315 data-nosnippet>315</a>    /// line they finish. Returns whether anything reached the file.
+<a href=#316 id=316 data-nosnippet>316</a>    </span><span class="kw">fn </span>inbound(<span class="kw-2">&amp;mut </span><span class="self">self</span>, bytes: <span class="kw-2">&amp;</span>[u8]) -&gt; io::Result&lt;bool&gt; {
+<a href=#317 id=317 data-nosnippet>317</a>        <span class="kw">let </span><span class="prelude-val">Some</span>(last) = bytes.last() <span class="kw">else </span>{
+<a href=#318 id=318 data-nosnippet>318</a>            <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="bool-val">false</span>);
+<a href=#319 id=319 data-nosnippet>319</a>        };
+<a href=#320 id=320 data-nosnippet>320</a>        <span class="kw">let </span><span class="kw-2">mut </span>wrote = <span class="bool-val">false</span>;
+<a href=#321 id=321 data-nosnippet>321</a>        <span class="kw">let </span><span class="kw-2">mut </span>rest = bytes;
+<a href=#322 id=322 data-nosnippet>322</a>        <span class="kw">if </span>!<span class="self">self</span>.awaiting_line_end.is_empty()
+<a href=#323 id=323 data-nosnippet>323</a>            &amp;&amp; <span class="kw">let </span><span class="prelude-val">Some</span>(at) = rest.iter().position(|<span class="kw-2">&amp;</span>b| b == <span class="string">b'\n'</span>)
+<a href=#324 id=324 data-nosnippet>324</a>        {
+<a href=#325 id=325 data-nosnippet>325</a>            <span class="kw">let </span>(line_end, after) = rest.split_at(at + <span class="number">1</span>);
+<a href=#326 id=326 data-nosnippet>326</a>            <span class="self">self</span>.inbound_chunk(line_end)<span class="question-mark">?</span>;
+<a href=#327 id=327 data-nosnippet>327</a>            <span class="comment">// The tail now ends in a newline, so draining it cannot cut a
+<a href=#328 id=328 data-nosnippet>328</a>            // secret in two -- and the drain releases the waiting commands.
+<a href=#329 id=329 data-nosnippet>329</a>            </span><span class="self">self</span>.drain_pending()<span class="question-mark">?</span>;
+<a href=#330 id=330 data-nosnippet>330</a>            wrote = <span class="bool-val">true</span>;
+<a href=#331 id=331 data-nosnippet>331</a>            rest = after;
+<a href=#332 id=332 data-nosnippet>332</a>        }
+<a href=#333 id=333 data-nosnippet>333</a>        <span class="kw">if </span>!rest.is_empty() {
+<a href=#334 id=334 data-nosnippet>334</a>            wrote |= <span class="self">self</span>.inbound_chunk(rest)<span class="question-mark">?</span>;
+<a href=#335 id=335 data-nosnippet>335</a>        }
+<a href=#336 id=336 data-nosnippet>336</a>        <span class="self">self</span>.line_open = <span class="kw-2">*</span>last != <span class="string">b'\n'</span>;
+<a href=#337 id=337 data-nosnippet>337</a>        <span class="prelude-val">Ok</span>(wrote)
+<a href=#338 id=338 data-nosnippet>338</a>    }
+<a href=#339 id=339 data-nosnippet>339</a>
+<a href=#340 id=340 data-nosnippet>340</a>    <span class="doccomment">/// One inbound chunk through the redaction hold.
+<a href=#341 id=341 data-nosnippet>341</a>    </span><span class="kw">fn </span>inbound_chunk(<span class="kw-2">&amp;mut </span><span class="self">self</span>, bytes: <span class="kw-2">&amp;</span>[u8]) -&gt; io::Result&lt;bool&gt; {
+<a href=#342 id=342 data-nosnippet>342</a>        <span class="comment">// `None` means every byte is still held back waiting for more: nothing
+<a href=#343 id=343 data-nosnippet>343</a>        // to write yet, and writing a stamp for it would invent a line.
+<a href=#344 id=344 data-nosnippet>344</a>        </span><span class="kw">let </span><span class="prelude-val">Some</span>(redacted) = <span class="self">self</span>.redact_across_chunks(bytes) <span class="kw">else </span>{
+<a href=#345 id=345 data-nosnippet>345</a>            <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="bool-val">false</span>);
+<a href=#346 id=346 data-nosnippet>346</a>        };
+<a href=#347 id=347 data-nosnippet>347</a>        <span class="kw">if </span><span class="self">self</span>.stamp_bytes {
+<a href=#348 id=348 data-nosnippet>348</a>            <span class="comment">// Each line the chunk begins, stamped where it begins; a line
+<a href=#349 id=349 data-nosnippet>349</a>            // the chunk continues, not.
+<a href=#350 id=350 data-nosnippet>350</a>            </span><span class="kw">for </span>piece <span class="kw">in </span>redacted.split_inclusive(|byte| <span class="kw-2">*</span>byte == <span class="string">b'\n'</span>) {
+<a href=#351 id=351 data-nosnippet>351</a>                <span class="kw">if </span><span class="self">self</span>.at_line_start {
+<a href=#352 id=352 data-nosnippet>352</a>                    <span class="macro">write!</span>(<span class="self">self</span>.bytes, <span class="string">"{}: "</span>, line_time())<span class="question-mark">?</span>;
+<a href=#353 id=353 data-nosnippet>353</a>                }
+<a href=#354 id=354 data-nosnippet>354</a>                <span class="self">self</span>.write_bytes(piece)<span class="question-mark">?</span>;
+<a href=#355 id=355 data-nosnippet>355</a>            }
+<a href=#356 id=356 data-nosnippet>356</a>        } <span class="kw">else </span>{
+<a href=#357 id=357 data-nosnippet>357</a>            <span class="self">self</span>.write_bytes(<span class="kw-2">&amp;</span>redacted)<span class="question-mark">?</span>;
+<a href=#358 id=358 data-nosnippet>358</a>        }
+<a href=#359 id=359 data-nosnippet>359</a>        <span class="prelude-val">Ok</span>(<span class="bool-val">true</span>)
+<a href=#360 id=360 data-nosnippet>360</a>    }
+<a href=#361 id=361 data-nosnippet>361</a>
+<a href=#362 id=362 data-nosnippet>362</a>    <span class="doccomment">/// `bytes` to the bytes file, noting whether they end a line.
+<a href=#363 id=363 data-nosnippet>363</a>    </span><span class="kw">fn </span>write_bytes(<span class="kw-2">&amp;mut </span><span class="self">self</span>, bytes: <span class="kw-2">&amp;</span>[u8]) -&gt; io::Result&lt;()&gt; {
+<a href=#364 id=364 data-nosnippet>364</a>        <span class="self">self</span>.bytes.write_all(bytes)<span class="question-mark">?</span>;
+<a href=#365 id=365 data-nosnippet>365</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(last) = bytes.last() {
+<a href=#366 id=366 data-nosnippet>366</a>            <span class="self">self</span>.at_line_start = <span class="kw-2">*</span>last == <span class="string">b'\n'</span>;
+<a href=#367 id=367 data-nosnippet>367</a>        }
+<a href=#368 id=368 data-nosnippet>368</a>        <span class="self">self</span>.note_gap();
+<a href=#369 id=369 data-nosnippet>369</a>        <span class="prelude-val">Ok</span>(())
+<a href=#370 id=370 data-nosnippet>370</a>    }
+<a href=#371 id=371 data-nosnippet>371</a>
+<a href=#372 id=372 data-nosnippet>372</a>    <span class="doccomment">/// A gap in the bytes file -- the disk too far behind to take what
+<a href=#373 id=373 data-nosnippet>373</a>    /// came, then caught up -- noted in the events file at each end, so the
+<a href=#374 id=374 data-nosnippet>374</a>    /// recording says where it is short and a replay of it is not taken as
+<a href=#375 id=375 data-nosnippet>375</a>    /// whole. The bytes file holds no mark: it is the wire, nothing else.
+<a href=#376 id=376 data-nosnippet>376</a>    </span><span class="kw">fn </span>note_gap(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+<a href=#377 id=377 data-nosnippet>377</a>        <span class="kw">let </span>said = <span class="kw">match </span><span class="self">self</span>.bytes.gap() {
+<a href=#378 id=378 data-nosnippet>378</a>            <span class="prelude-val">Some</span>(Gap::Began) =&gt; {
+<a href=#379 id=379 data-nosnippet>379</a>                <span class="string">"recording gap: the disk is too far behind; the wire from here is left out of \
+<a href=#380 id=380 data-nosnippet>380</a>                 the .bytes file"
+<a href=#381 id=381 data-nosnippet>381</a>                    </span>.to_owned()
+<a href=#382 id=382 data-nosnippet>382</a>            }
+<a href=#383 id=383 data-nosnippet>383</a>            <span class="prelude-val">Some</span>(Gap::Ended(bytes)) =&gt; <span class="macro">format!</span>(
+<a href=#384 id=384 data-nosnippet>384</a>                <span class="string">"recording gap ended: {bytes} bytes of the wire are missing from the .bytes \
+<a href=#385 id=385 data-nosnippet>385</a>                 file before here"
+<a href=#386 id=386 data-nosnippet>386</a>            </span>),
+<a href=#387 id=387 data-nosnippet>387</a>            <span class="prelude-val">None </span>=&gt; <span class="kw">return</span>,
+<a href=#388 id=388 data-nosnippet>388</a>        };
+<a href=#389 id=389 data-nosnippet>389</a>        <span class="kw">let _ </span>= <span class="self">self</span>.event(<span class="kw-2">&amp;</span>said);
+<a href=#390 id=390 data-nosnippet>390</a>    }
+<a href=#391 id=391 data-nosnippet>391</a>
+<a href=#392 id=392 data-nosnippet>392</a>    <span class="doccomment">/// One outbound command, redacted and framed, ready to write.
+<a href=#393 id=393 data-nosnippet>393</a>    </span><span class="kw">fn </span>client_record(<span class="kw-2">&amp;</span><span class="self">self</span>, bytes: <span class="kw-2">&amp;</span>[u8]) -&gt; Vec&lt;u8&gt; {
+<a href=#394 id=394 data-nosnippet>394</a>        <span class="kw">let </span>redacted = <span class="self">self</span>.redactions.apply_bytes(bytes);
+<a href=#395 id=395 data-nosnippet>395</a>        <span class="kw">let </span><span class="kw-2">mut </span>record = Vec::with_capacity(redacted.len() + <span class="number">64</span>);
+<a href=#396 id=396 data-nosnippet>396</a>        <span class="kw">if </span><span class="self">self</span>.stamp_bytes {
+<a href=#397 id=397 data-nosnippet>397</a>            record.extend_from_slice(<span class="macro">format!</span>(<span class="string">"{}: "</span>, line_time()).as_bytes());
+<a href=#398 id=398 data-nosnippet>398</a>        }
+<a href=#399 id=399 data-nosnippet>399</a>        <span class="comment">// Client input is WRAPPED, not prefixed -- the same
+<a href=#400 id=400 data-nosnippet>400</a>        // `&lt;!-- CLIENT --&gt;...&lt;!-- ENDCLIENT --&gt;` markers GemStone XML logs
+<a href=#401 id=401 data-nosnippet>401</a>        // conventionally use, so a Hydra capture can be read by anything that
+<a href=#402 id=402 data-nosnippet>402</a>        // already reads those, and vice versa. A private framing would make
+<a href=#403 id=403 data-nosnippet>403</a>        // Hydra's logs the odd ones out.
+<a href=#404 id=404 data-nosnippet>404</a>        </span>record.extend_from_slice(CLIENT_OPEN);
+<a href=#405 id=405 data-nosnippet>405</a>        record.extend_from_slice(redacted.trim_ascii_end());
+<a href=#406 id=406 data-nosnippet>406</a>        record.extend_from_slice(CLIENT_CLOSE);
+<a href=#407 id=407 data-nosnippet>407</a>        <span class="comment">// **The wrapper gets its own terminator, unconditionally**, because
+<a href=#408 id=408 data-nosnippet>408</a>        // the command's own newline was just trimmed off. Without it the
+<a href=#409 id=409 data-nosnippet>409</a>        // next inbound line is glued to `ENDCLIENT --&gt;` and a reader
+<a href=#410 id=410 data-nosnippet>410</a>        // splitting on lines sees one line where there were two. (Testing
+<a href=#411 id=411 data-nosnippet>411</a>        // whether the UNTRIMMED buffer ends in a newline would be wrong: the
+<a href=#412 id=412 data-nosnippet>412</a>        // trimmed one is what is written.)
+<a href=#413 id=413 data-nosnippet>413</a>        </span>record.push(<span class="string">b'\n'</span>);
+<a href=#414 id=414 data-nosnippet>414</a>        record
+<a href=#415 id=415 data-nosnippet>415</a>    }
+<a href=#416 id=416 data-nosnippet>416</a>
+<a href=#417 id=417 data-nosnippet>417</a>    <span class="doccomment">/// Redact `bytes`, carrying a tail forward so a secret cannot hide in a
+<a href=#418 id=418 data-nosnippet>418</a>    /// chunk boundary.
+<a href=#419 id=419 data-nosnippet>419</a>    ///
+<a href=#420 id=420 data-nosnippet>420</a>    /// # The failure this exists for
+<a href=#421 id=421 data-nosnippet>421</a>    ///
+<a href=#422 id=422 data-nosnippet>422</a>    /// `apply_bytes` sees one `read` at a time, and a TCP read boundary falls
+<a href=#423 id=423 data-nosnippet>423</a>    /// wherever the network puts it. A launch key split across two reads would
+<a href=#424 id=424 data-nosnippet>424</a>    /// match neither half and be **written in the clear** -- the live
+<a href=#425 id=425 data-nosnippet>425</a>    /// credential, in a file on disk.
+<a href=#426 id=426 data-nosnippet>426</a>    ///
+<a href=#427 id=427 data-nosnippet>427</a>    /// # How the tail works, and why it is bounded
+<a href=#428 id=428 data-nosnippet>428</a>    ///
+<a href=#429 id=429 data-nosnippet>429</a>    /// Holding back `longest_secret - 1` bytes guarantees that any secret is
+<a href=#430 id=430 data-nosnippet>430</a>    /// wholly inside some chunk: a secret of length `n` cannot span more than
+<a href=#431 id=431 data-nosnippet>431</a>    /// `n - 1` bytes of held-back tail plus the new chunk. The tail is bounded
+<a href=#432 id=432 data-nosnippet>432</a>    /// by the longest registered secret, so it cannot grow with the session.
+<a href=#433 id=433 data-nosnippet>433</a>    ///
+<a href=#434 id=434 data-nosnippet>434</a>    /// # What this costs, stated plainly
+<a href=#435 id=435 data-nosnippet>435</a>    ///
+<a href=#436 id=436 data-nosnippet>436</a>    /// **Chunk boundaries shift** by up to `longest_secret - 1` bytes while
+<a href=#437 id=437 data-nosnippet>437</a>    /// secrets are registered, and this function's own doc says boundaries are
+<a href=#438 id=438 data-nosnippet>438</a>    /// preserved so a replay drives the parser's partial-line path with a real
+<a href=#439 id=439 data-nosnippet>439</a>    /// split. That guarantee is weakened here, deliberately:
+<a href=#440 id=440 data-nosnippet>440</a>    ///
+<a href=#441 id=441 data-nosnippet>441</a>    /// - the boundary is still a boundary the wire *could* have produced -- no
+<a href=#442 id=442 data-nosnippet>442</a>    ///   byte is invented, reordered or dropped, only deferred;
+<a href=#443 id=443 data-nosnippet>443</a>    /// - [`Recorder`](crate::record::Recorder) keeps its own in-memory copy and
+<a href=#444 id=444 data-nosnippet>444</a>    ///   is unaffected, so live replay fidelity is untouched;
+<a href=#445 id=445 data-nosnippet>445</a>    /// - a credential in a log is a worse outcome than a shifted split in a
+<a href=#446 id=446 data-nosnippet>446</a>    ///   fixture.
+<a href=#447 id=447 data-nosnippet>447</a>    ///
+<a href=#448 id=448 data-nosnippet>448</a>    /// Inbound only. Outbound commands are whole, so there is nothing to
+<a href=#449 id=449 data-nosnippet>449</a>    /// straddle; they are placed at line ends instead (see [`Self::wire`]).
+<a href=#450 id=450 data-nosnippet>450</a>    </span><span class="kw">fn </span>redact_across_chunks(<span class="kw-2">&amp;mut </span><span class="self">self</span>, bytes: <span class="kw-2">&amp;</span>[u8]) -&gt; <span class="prelude-ty">Option</span>&lt;Vec&lt;u8&gt;&gt; {
+<a href=#451 id=451 data-nosnippet>451</a>        <span class="kw">let </span>hold = <span class="self">self</span>.redactions.longest_secret().saturating_sub(<span class="number">1</span>);
+<a href=#452 id=452 data-nosnippet>452</a>        <span class="kw">if </span>hold == <span class="number">0 </span>{
+<a href=#453 id=453 data-nosnippet>453</a>            <span class="comment">// Nothing registered: redact in place.
+<a href=#454 id=454 data-nosnippet>454</a>            </span><span class="kw">return </span><span class="prelude-val">Some</span>(<span class="self">self</span>.redact_inbound(bytes));
+<a href=#455 id=455 data-nosnippet>455</a>        }
+<a href=#456 id=456 data-nosnippet>456</a>
+<a href=#457 id=457 data-nosnippet>457</a>        <span class="self">self</span>.pending.extend_from_slice(bytes);
+<a href=#458 id=458 data-nosnippet>458</a>        <span class="comment">// Keep back the last `hold` bytes: a secret could still be completed by
+<a href=#459 id=459 data-nosnippet>459</a>        // the next chunk.
+<a href=#460 id=460 data-nosnippet>460</a>        </span><span class="kw">let </span><span class="kw-2">mut </span>safe = <span class="self">self</span>.pending.len().saturating_sub(hold);
+<a href=#461 id=461 data-nosnippet>461</a>        <span class="kw">if </span>safe == <span class="number">0 </span>{
+<a href=#462 id=462 data-nosnippet>462</a>            <span class="kw">return </span><span class="prelude-val">None</span>;
+<a href=#463 id=463 data-nosnippet>463</a>        }
+<a href=#464 id=464 data-nosnippet>464</a>
+<a href=#465 id=465 data-nosnippet>465</a>        <span class="comment">// **And do not cut through a secret that is ALREADY whole.** Holding
+<a href=#466 id=466 data-nosnippet>466</a>        // back `hold` bytes stops an INCOMING boundary from splitting a secret,
+<a href=#467 id=467 data-nosnippet>467</a>        // but the cut made here is a second boundary, and a naive one lands
+<a href=#468 id=468 data-nosnippet>468</a>        // mid-secret just as easily: a key whole in `pending` sliced at byte
+<a href=#469 id=469 data-nosnippet>469</a>        // 17 of 48 leaves neither piece matching. Walk the cut backwards past
+<a href=#470 id=470 data-nosnippet>470</a>        // any secret that spans it.
+<a href=#471 id=471 data-nosnippet>471</a>        </span>safe = <span class="self">self</span>.cut_clear_of_secrets(safe);
+<a href=#472 id=472 data-nosnippet>472</a>        <span class="kw">if </span>safe == <span class="number">0 </span>{
+<a href=#473 id=473 data-nosnippet>473</a>            <span class="kw">return </span><span class="prelude-val">None</span>;
+<a href=#474 id=474 data-nosnippet>474</a>        }
+<a href=#475 id=475 data-nosnippet>475</a>        <span class="kw">let </span>head: Vec&lt;u8&gt; = <span class="self">self</span>.pending.drain(..safe).collect();
+<a href=#476 id=476 data-nosnippet>476</a>        <span class="prelude-val">Some</span>(<span class="self">self</span>.redact_inbound(<span class="kw-2">&amp;</span>head))
+<a href=#477 id=477 data-nosnippet>477</a>    }
+<a href=#478 id=478 data-nosnippet>478</a>
+<a href=#479 id=479 data-nosnippet>479</a>    <span class="doccomment">/// Redact the next inbound bytes, after those redacted before them.
+<a href=#480 id=480 data-nosnippet>480</a>    </span><span class="kw">fn </span>redact_inbound(<span class="kw-2">&amp;mut </span><span class="self">self</span>, bytes: <span class="kw-2">&amp;</span>[u8]) -&gt; Vec&lt;u8&gt; {
+<a href=#481 id=481 data-nosnippet>481</a>        <span class="kw">let </span>redacted = <span class="self">self
+<a href=#482 id=482 data-nosnippet>482</a>            </span>.redactions
+<a href=#483 id=483 data-nosnippet>483</a>            .apply_bytes_after(<span class="self">self</span>.inbound_before, bytes);
+<a href=#484 id=484 data-nosnippet>484</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(last) = bytes.last() {
+<a href=#485 id=485 data-nosnippet>485</a>            <span class="self">self</span>.inbound_before = <span class="prelude-val">Some</span>(<span class="kw-2">*</span>last);
+<a href=#486 id=486 data-nosnippet>486</a>        }
+<a href=#487 id=487 data-nosnippet>487</a>        redacted
+<a href=#488 id=488 data-nosnippet>488</a>    }
+<a href=#489 id=489 data-nosnippet>489</a>
+<a href=#490 id=490 data-nosnippet>490</a>    <span class="doccomment">/// Move a proposed cut back until no registered secret spans it or ends
+<a href=#491 id=491 data-nosnippet>491</a>    /// at it.
+<a href=#492 id=492 data-nosnippet>492</a>    ///
+<a href=#493 id=493 data-nosnippet>493</a>    /// A secret occupying `[start, start + len)` spans the cut when
+<a href=#494 id=494 data-nosnippet>494</a>    /// `start &lt; cut &lt;= start + len`. Moving the cut to `start` puts the whole
+<a href=#495 id=495 data-nosnippet>495</a>    /// secret in the held-back tail, where the next chunk -- or
+<a href=#496 id=496 data-nosnippet>496</a>    /// `drain_pending` -- redacts it intact. One that ends at the cut is held
+<a href=#497 id=497 data-nosnippet>497</a>    /// too: a name is replaced only as a whole word, which the byte after it
+<a href=#498 id=498 data-nosnippet>498</a>    /// decides.
 <a href=#499 id=499 data-nosnippet>499</a>    ///
-<a href=#500 id=500 data-nosnippet>500</a>    /// Commands still waiting for a line end go out after it: a session that
-<a href=#501 id=501 data-nosnippet>501</a>    /// ends mid-line must not lose the commands it sent.
-<a href=#502 id=502 data-nosnippet>502</a>    </span><span class="kw">fn </span>drain_pending(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; io::Result&lt;()&gt; {
-<a href=#503 id=503 data-nosnippet>503</a>        <span class="kw">if </span>!<span class="self">self</span>.pending.is_empty() {
-<a href=#504 id=504 data-nosnippet>504</a>            <span class="kw">let </span>tail: Vec&lt;u8&gt; = std::mem::take(<span class="kw-2">&amp;mut </span><span class="self">self</span>.pending);
-<a href=#505 id=505 data-nosnippet>505</a>            <span class="kw">let </span>redacted = <span class="self">self</span>.redact_inbound(<span class="kw-2">&amp;</span>tail);
-<a href=#506 id=506 data-nosnippet>506</a>            <span class="self">self</span>.write_bytes(<span class="kw-2">&amp;</span>redacted)<span class="question-mark">?</span>;
-<a href=#507 id=507 data-nosnippet>507</a>        }
-<a href=#508 id=508 data-nosnippet>508</a>        <span class="kw">for </span>record <span class="kw">in </span>std::mem::take(<span class="kw-2">&amp;mut </span><span class="self">self</span>.awaiting_line_end) {
-<a href=#509 id=509 data-nosnippet>509</a>            <span class="self">self</span>.write_bytes(<span class="kw-2">&amp;</span>record)<span class="question-mark">?</span>;
-<a href=#510 id=510 data-nosnippet>510</a>        }
-<a href=#511 id=511 data-nosnippet>511</a>        <span class="prelude-val">Ok</span>(())
-<a href=#512 id=512 data-nosnippet>512</a>    }
-<a href=#513 id=513 data-nosnippet>513</a>
-<a href=#514 id=514 data-nosnippet>514</a>    <span class="doccomment">/// Close the current `.bytes` part and open the next.
-<a href=#515 id=515 data-nosnippet>515</a>    ///
-<a href=#516 id=516 data-nosnippet>516</a>    /// Only the bytes file rolls. The debug log takes a handful of lines per
-<a href=#517 id=517 data-nosnippet>517</a>    /// session (`lifecycle Ready`, `lifecycle Closed`, errors), so rolling it
-<a href=#518 id=518 data-nosnippet>518</a>    /// would produce empty parts and a second thing to reassemble for no gain.
-<a href=#519 id=519 data-nosnippet>519</a>    ///
-<a href=#520 id=520 data-nosnippet>520</a>    /// # Each part is INDEPENDENTLY VALID, and that is the point
-<a href=#521 id=521 data-nosnippet>521</a>    ///
-<a href=#522 id=522 data-nosnippet>522</a>    /// A part boundary falls between two whole chunks, never inside one, so
-<a href=#523 id=523 data-nosnippet>523</a>    /// every part starts on a chunk boundary the wire really had. That is what
-<a href=#524 id=524 data-nosnippet>524</a>    /// keeps a rolled session usable as replay input: concatenating the parts
-<a href=#525 id=525 data-nosnippet>525</a>    /// in order reproduces the original stream exactly, and a single part
-<a href=#526 id=526 data-nosnippet>526</a>    /// parses on its own (`Parser::push_bytes` buffers to a newline, so a part
-<a href=#527 id=527 data-nosnippet>527</a>    /// that begins mid-tag is the one thing this must not produce).
-<a href=#528 id=528 data-nosnippet>528</a>    ///
-<a href=#529 id=529 data-nosnippet>529</a>    /// # Errors
-<a href=#530 id=530 data-nosnippet>530</a>    ///
-<a href=#531 id=531 data-nosnippet>531</a>    /// Any failure to flush the old part or create the new one. The caller
-<a href=#532 id=532 data-nosnippet>532</a>    /// swallows it -- a session must survive a failed log --
-<a href=#533 id=533 data-nosnippet>533</a>    /// but it is returned rather than hidden so the caller *can* report it.
-<a href=#534 id=534 data-nosnippet>534</a>    </span><span class="kw">fn </span>roll(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; io::Result&lt;()&gt; {
-<a href=#535 id=535 data-nosnippet>535</a>        <span class="comment">// **The pending suffix is NOT drained here.**
-<a href=#536 id=536 data-nosnippet>536</a>        //
-<a href=#537 id=537 data-nosnippet>537</a>        // Those bytes arrived while this part was open, so draining them into
-<a href=#538 id=538 data-nosnippet>538</a>        // it is tempting, and it defeats the buffer's whole purpose: `pending`
-<a href=#539 id=539 data-nosnippet>539</a>        // holds back a suffix precisely because it might be the FIRST HALF of
-<a href=#540 id=540 data-nosnippet>540</a>        // a registered secret. With `SECRET` registered and a rotation between
-<a href=#541 id=541 data-nosnippet>541</a>        // a chunk ending `SEC` and one starting `RET`, both fragments would be
-<a href=#542 id=542 data-nosnippet>542</a>        // written unredacted, one per part.
-<a href=#543 id=543 data-nosnippet>543</a>        //
-<a href=#544 id=544 data-nosnippet>544</a>        // Carrying it across costs a little ordering: at most `hold` bytes
-<a href=#545 id=545 data-nosnippet>545</a>        // move from the end of one part to the start of the next. That is the
-<a href=#546 id=546 data-nosnippet>546</a>        // right trade. A part boundary that falls a few bytes early is a
-<a href=#547 id=547 data-nosnippet>547</a>        // cosmetic imprecision in a log; a secret written in clear is not
-<a href=#548 id=548 data-nosnippet>548</a>        // recoverable, and the whole point of this file's redaction is that
-<a href=#549 id=549 data-nosnippet>549</a>        // it never happens.
-<a href=#550 id=550 data-nosnippet>550</a>        //
-<a href=#551 id=551 data-nosnippet>551</a>        // Reassembly is unaffected: concatenating the parts in order still
-<a href=#552 id=552 data-nosnippet>552</a>        // reproduces the stream exactly, because the bytes are not lost, only
-<a href=#553 id=553 data-nosnippet>553</a>        // deferred. The independently-valid-part claim above is the one that
-<a href=#554 id=554 data-nosnippet>554</a>        // weakens, and only by `hold` bytes at the seam.
-<a href=#555 id=555 data-nosnippet>555</a>        </span><span class="self">self</span>.bytes.flush()<span class="question-mark">?</span>;
-<a href=#556 id=556 data-nosnippet>556</a>        <span class="comment">// `part` is committed only AFTER the file exists. Incrementing first
-<a href=#557 id=557 data-nosnippet>557</a>        // and then using `?` on `File::create` spends the number on a part
-<a href=#558 id=558 data-nosnippet>558</a>        // that was never opened: the next roll takes the one after it, and the
-<a href=#559 id=559 data-nosnippet>559</a>        // sequence has a permanent hole. A reader of a capture directory
-<a href=#560 id=560 data-nosnippet>560</a>        // cannot then tell a transient ENOSPC from a part that was written and
-<a href=#561 id=561 data-nosnippet>561</a>        // later deleted -- and for a capture format whose whole claim is that
-<a href=#562 id=562 data-nosnippet>562</a>        // it is the wire verbatim, "a file is missing here" must mean exactly
-<a href=#563 id=563 data-nosnippet>563</a>        // one thing.
-<a href=#564 id=564 data-nosnippet>564</a>        </span><span class="kw">let </span>next_part = <span class="self">self</span>.part + <span class="number">1</span>;
-<a href=#565 id=565 data-nosnippet>565</a>        <span class="kw">let </span>next = <span class="self">self</span>.stem.with_file_name(<span class="macro">format!</span>(
-<a href=#566 id=566 data-nosnippet>566</a>            <span class="string">"{}-{:03}.bytes"</span>,
-<a href=#567 id=567 data-nosnippet>567</a>            <span class="self">self</span>.stem.file_name().unwrap_or_default().to_string_lossy(),
-<a href=#568 id=568 data-nosnippet>568</a>            next_part
-<a href=#569 id=569 data-nosnippet>569</a>        ));
-<a href=#570 id=570 data-nosnippet>570</a>        <span class="self">self</span>.bytes = BufWriter::new(File::create(<span class="kw-2">&amp;</span>next)<span class="question-mark">?</span>);
-<a href=#571 id=571 data-nosnippet>571</a>        <span class="self">self</span>.part = next_part;
-<a href=#572 id=572 data-nosnippet>572</a>        <span class="self">self</span>.bytes_path = next;
-<a href=#573 id=573 data-nosnippet>573</a>        <span class="self">self</span>.lines_written = <span class="number">0</span>;
-<a href=#574 id=574 data-nosnippet>574</a>        <span class="prelude-val">Ok</span>(())
-<a href=#575 id=575 data-nosnippet>575</a>    }
-<a href=#576 id=576 data-nosnippet>576</a>
-<a href=#577 id=577 data-nosnippet>577</a>    <span class="doccomment">/// Append one debug line: a lifecycle change, an error -- something that
-<a href=#578 id=578 data-nosnippet>578</a>    /// is **not** on the wire.
-<a href=#579 id=579 data-nosnippet>579</a>    ///
-<a href=#580 id=580 data-nosnippet>580</a>    /// # Do not log wire content here
-<a href=#581 id=581 data-nosnippet>581</a>    ///
-<a href=#582 id=582 data-nosnippet>582</a>    /// A command, a frame or a line of game text is already in the `.bytes`
-<a href=#583 id=583 data-nosnippet>583</a>    /// file, byte-for-byte as the server saw it. Writing it again here makes
-<a href=#584 id=584 data-nosnippet>584</a>    /// two records of one fact that can disagree, and doubles the disk to do
-<a href=#585 id=585 data-nosnippet>585</a>    /// it. The `.bytes` file is the whole point.
-<a href=#586 id=586 data-nosnippet>586</a>    ///
-<a href=#587 id=587 data-nosnippet>587</a>    /// The readable timestamped view of a session is the **user log**, a
-<a href=#588 id=588 data-nosnippet>588</a>    /// different artifact above the parser. This is not a down-payment on it.
-<a href=#589 id=589 data-nosnippet>589</a>    ///
-<a href=#590 id=590 data-nosnippet>590</a>    /// # Errors
-<a href=#591 id=591 data-nosnippet>591</a>    ///
-<a href=#592 id=592 data-nosnippet>592</a>    /// Any write failure.
-<a href=#593 id=593 data-nosnippet>593</a>    </span><span class="kw">pub fn </span>event(<span class="kw-2">&amp;mut </span><span class="self">self</span>, line: <span class="kw-2">&amp;</span>str) -&gt; io::Result&lt;()&gt; {
-<a href=#594 id=594 data-nosnippet>594</a>        <span class="comment">// Always stamped: nothing replays this file, so a wall clock costs it
-<a href=#595 id=595 data-nosnippet>595</a>        // nothing, and "when did that happen" is the first question anyone
-<a href=#596 id=596 data-nosnippet>596</a>        // asks of it.
-<a href=#597 id=597 data-nosnippet>597</a>        </span><span class="macro">writeln!</span>(
-<a href=#598 id=598 data-nosnippet>598</a>            <span class="self">self</span>.events,
-<a href=#599 id=599 data-nosnippet>599</a>            <span class="string">"{} {}"</span>,
-<a href=#600 id=600 data-nosnippet>600</a>            line_time(),
-<a href=#601 id=601 data-nosnippet>601</a>            <span class="self">self</span>.redactions.apply(line)
-<a href=#602 id=602 data-nosnippet>602</a>        )
-<a href=#603 id=603 data-nosnippet>603</a>    }
-<a href=#604 id=604 data-nosnippet>604</a>
-<a href=#605 id=605 data-nosnippet>605</a>    <span class="doccomment">/// Register another launch key for redaction.
-<a href=#606 id=606 data-nosnippet>606</a>    ///
-<a href=#607 id=607 data-nosnippet>607</a>    /// # Why a sink outlives the secret it was opened with
-<a href=#608 id=608 data-nosnippet>608</a>    ///
-<a href=#609 id=609 data-nosnippet>609</a>    /// **One log spans every generation**, and a reconnect is a full re-login
-<a href=#610 id=610 data-nosnippet>610</a>    /// (the SGE connection is strictly single-use per authentication), so
-<a href=#611 id=611 data-nosnippet>611</a>    /// **every connection has a different launch key**. A sink
-<a href=#612 id=612 data-nosnippet>612</a>    /// whose redaction set was fixed at creation would write generation 2's
-<a href=#613 id=613 data-nosnippet>613</a>    /// key verbatim into a file opened during generation 1 -- the one secret
-<a href=#614 id=614 data-nosnippet>614</a>    /// the `.bytes` file would otherwise carry in the clear, unredacted,
-<a href=#615 id=615 data-nosnippet>615</a>    /// because it did not exist yet when the set was built.
-<a href=#616 id=616 data-nosnippet>616</a>    ///
-<a href=#617 id=617 data-nosnippet>617</a>    /// That is why this is narrow rather than a general `redactions_mut`: the
-<a href=#618 id=618 data-nosnippet>618</a>    /// launch key is the only secret that is genuinely per-connection. The
-<a href=#619 id=619 data-nosnippet>619</a>    /// account is typed once and registered at creation (the character is
-<a href=#620 id=620 data-nosnippet>620</a>    /// not registered at all: it is display text on every line).
+<a href=#500 id=500 data-nosnippet>500</a>    /// Bounded: only secrets beginning within `longest_secret` bytes before the
+<a href=#501 id=501 data-nosnippet>501</a>    /// cut can span it, so the scan is over a fixed-size window and the cut
+<a href=#502 id=502 data-nosnippet>502</a>    /// moves back at most `longest_secret - 1` bytes.
+<a href=#503 id=503 data-nosnippet>503</a>    </span><span class="kw">fn </span>cut_clear_of_secrets(<span class="kw-2">&amp;</span><span class="self">self</span>, cut: usize) -&gt; usize {
+<a href=#504 id=504 data-nosnippet>504</a>        <span class="kw">let </span>window = <span class="self">self</span>.redactions.longest_secret();
+<a href=#505 id=505 data-nosnippet>505</a>        <span class="kw">let </span>from = cut.saturating_sub(window);
+<a href=#506 id=506 data-nosnippet>506</a>        <span class="kw">let </span><span class="kw-2">mut </span>earliest = cut;
+<a href=#507 id=507 data-nosnippet>507</a>        <span class="kw">for </span>(secret, <span class="kw">_</span>) <span class="kw">in </span><span class="self">self</span>.redactions.secrets() {
+<a href=#508 id=508 data-nosnippet>508</a>            <span class="kw">let </span>needle = secret.as_bytes();
+<a href=#509 id=509 data-nosnippet>509</a>            <span class="kw">for </span>start <span class="kw">in </span>from..cut {
+<a href=#510 id=510 data-nosnippet>510</a>                <span class="kw">if </span>start + needle.len() &gt;= cut
+<a href=#511 id=511 data-nosnippet>511</a>                    &amp;&amp; <span class="self">self</span>.pending.len() &gt;= start + needle.len()
+<a href=#512 id=512 data-nosnippet>512</a>                    &amp;&amp; <span class="self">self</span>.pending[start..].starts_with(needle)
+<a href=#513 id=513 data-nosnippet>513</a>                {
+<a href=#514 id=514 data-nosnippet>514</a>                    earliest = earliest.min(start);
+<a href=#515 id=515 data-nosnippet>515</a>                }
+<a href=#516 id=516 data-nosnippet>516</a>            }
+<a href=#517 id=517 data-nosnippet>517</a>        }
+<a href=#518 id=518 data-nosnippet>518</a>        earliest
+<a href=#519 id=519 data-nosnippet>519</a>    }
+<a href=#520 id=520 data-nosnippet>520</a>
+<a href=#521 id=521 data-nosnippet>521</a>    <span class="doccomment">/// Write out whatever the straddle tail is still holding.
+<a href=#522 id=522 data-nosnippet>522</a>    ///
+<a href=#523 id=523 data-nosnippet>523</a>    /// Called before a flush, a roll and a close: a tail left in memory is
+<a href=#524 id=524 data-nosnippet>524</a>    /// bytes the wire really carried, and losing them would make the `.bytes`
+<a href=#525 id=525 data-nosnippet>525</a>    /// file an incomplete record -- the opposite of its purpose. It is redacted
+<a href=#526 id=526 data-nosnippet>526</a>    /// on the way out like any other chunk.
+<a href=#527 id=527 data-nosnippet>527</a>    ///
+<a href=#528 id=528 data-nosnippet>528</a>    /// # Errors
+<a href=#529 id=529 data-nosnippet>529</a>    ///
+<a href=#530 id=530 data-nosnippet>530</a>    /// Any write failure.
+<a href=#531 id=531 data-nosnippet>531</a>    ///
+<a href=#532 id=532 data-nosnippet>532</a>    /// Commands still waiting for a line end go out after it: a session that
+<a href=#533 id=533 data-nosnippet>533</a>    /// ends mid-line must not lose the commands it sent.
+<a href=#534 id=534 data-nosnippet>534</a>    </span><span class="kw">fn </span>drain_pending(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; io::Result&lt;()&gt; {
+<a href=#535 id=535 data-nosnippet>535</a>        <span class="kw">if </span>!<span class="self">self</span>.pending.is_empty() {
+<a href=#536 id=536 data-nosnippet>536</a>            <span class="kw">let </span>tail: Vec&lt;u8&gt; = std::mem::take(<span class="kw-2">&amp;mut </span><span class="self">self</span>.pending);
+<a href=#537 id=537 data-nosnippet>537</a>            <span class="kw">let </span>redacted = <span class="self">self</span>.redact_inbound(<span class="kw-2">&amp;</span>tail);
+<a href=#538 id=538 data-nosnippet>538</a>            <span class="self">self</span>.write_bytes(<span class="kw-2">&amp;</span>redacted)<span class="question-mark">?</span>;
+<a href=#539 id=539 data-nosnippet>539</a>        }
+<a href=#540 id=540 data-nosnippet>540</a>        <span class="kw">for </span>record <span class="kw">in </span>std::mem::take(<span class="kw-2">&amp;mut </span><span class="self">self</span>.awaiting_line_end) {
+<a href=#541 id=541 data-nosnippet>541</a>            <span class="self">self</span>.write_bytes(<span class="kw-2">&amp;</span>record)<span class="question-mark">?</span>;
+<a href=#542 id=542 data-nosnippet>542</a>        }
+<a href=#543 id=543 data-nosnippet>543</a>        <span class="prelude-val">Ok</span>(())
+<a href=#544 id=544 data-nosnippet>544</a>    }
+<a href=#545 id=545 data-nosnippet>545</a>
+<a href=#546 id=546 data-nosnippet>546</a>    <span class="doccomment">/// Close the current `.bytes` part and open the next.
+<a href=#547 id=547 data-nosnippet>547</a>    ///
+<a href=#548 id=548 data-nosnippet>548</a>    /// Only the bytes file rolls. The debug log takes a handful of lines per
+<a href=#549 id=549 data-nosnippet>549</a>    /// session (`lifecycle Ready`, `lifecycle Closed`, errors), so rolling it
+<a href=#550 id=550 data-nosnippet>550</a>    /// would produce empty parts and a second thing to reassemble for no gain.
+<a href=#551 id=551 data-nosnippet>551</a>    ///
+<a href=#552 id=552 data-nosnippet>552</a>    /// # Each part is INDEPENDENTLY VALID, and that is the point
+<a href=#553 id=553 data-nosnippet>553</a>    ///
+<a href=#554 id=554 data-nosnippet>554</a>    /// A part boundary falls between two whole chunks, never inside one, so
+<a href=#555 id=555 data-nosnippet>555</a>    /// every part starts on a chunk boundary the wire really had. That is what
+<a href=#556 id=556 data-nosnippet>556</a>    /// keeps a rolled session usable as replay input: concatenating the parts
+<a href=#557 id=557 data-nosnippet>557</a>    /// in order reproduces the original stream exactly, and a single part
+<a href=#558 id=558 data-nosnippet>558</a>    /// parses on its own (`Parser::push_bytes` buffers to a newline, so a part
+<a href=#559 id=559 data-nosnippet>559</a>    /// that begins mid-tag is the one thing this must not produce).
+<a href=#560 id=560 data-nosnippet>560</a>    ///
+<a href=#561 id=561 data-nosnippet>561</a>    /// # Errors
+<a href=#562 id=562 data-nosnippet>562</a>    ///
+<a href=#563 id=563 data-nosnippet>563</a>    /// Any failure to flush the old part or create the new one. The caller
+<a href=#564 id=564 data-nosnippet>564</a>    /// swallows it -- a session must survive a failed log --
+<a href=#565 id=565 data-nosnippet>565</a>    /// but it is returned rather than hidden so the caller *can* report it.
+<a href=#566 id=566 data-nosnippet>566</a>    </span><span class="kw">fn </span>roll(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; io::Result&lt;()&gt; {
+<a href=#567 id=567 data-nosnippet>567</a>        <span class="comment">// **The pending suffix is NOT drained here.**
+<a href=#568 id=568 data-nosnippet>568</a>        //
+<a href=#569 id=569 data-nosnippet>569</a>        // Those bytes arrived while this part was open, so draining them into
+<a href=#570 id=570 data-nosnippet>570</a>        // it is tempting, and it defeats the buffer's whole purpose: `pending`
+<a href=#571 id=571 data-nosnippet>571</a>        // holds back a suffix precisely because it might be the FIRST HALF of
+<a href=#572 id=572 data-nosnippet>572</a>        // a registered secret. With `SECRET` registered and a rotation between
+<a href=#573 id=573 data-nosnippet>573</a>        // a chunk ending `SEC` and one starting `RET`, both fragments would be
+<a href=#574 id=574 data-nosnippet>574</a>        // written unredacted, one per part.
+<a href=#575 id=575 data-nosnippet>575</a>        //
+<a href=#576 id=576 data-nosnippet>576</a>        // Carrying it across costs a little ordering: at most `hold` bytes
+<a href=#577 id=577 data-nosnippet>577</a>        // move from the end of one part to the start of the next. That is the
+<a href=#578 id=578 data-nosnippet>578</a>        // right trade. A part boundary that falls a few bytes early is a
+<a href=#579 id=579 data-nosnippet>579</a>        // cosmetic imprecision in a log; a secret written in clear is not
+<a href=#580 id=580 data-nosnippet>580</a>        // recoverable, and the whole point of this file's redaction is that
+<a href=#581 id=581 data-nosnippet>581</a>        // it never happens.
+<a href=#582 id=582 data-nosnippet>582</a>        //
+<a href=#583 id=583 data-nosnippet>583</a>        // Reassembly is unaffected: concatenating the parts in order still
+<a href=#584 id=584 data-nosnippet>584</a>        // reproduces the stream exactly, because the bytes are not lost, only
+<a href=#585 id=585 data-nosnippet>585</a>        // deferred. The independently-valid-part claim above is the one that
+<a href=#586 id=586 data-nosnippet>586</a>        // weakens, and only by `hold` bytes at the seam.
+<a href=#587 id=587 data-nosnippet>587</a>        </span><span class="self">self</span>.bytes.flush()<span class="question-mark">?</span>;
+<a href=#588 id=588 data-nosnippet>588</a>        <span class="comment">// `part` is committed only AFTER the file exists. Incrementing first
+<a href=#589 id=589 data-nosnippet>589</a>        // and then using `?` on `File::create` spends the number on a part
+<a href=#590 id=590 data-nosnippet>590</a>        // that was never opened: the next roll takes the one after it, and the
+<a href=#591 id=591 data-nosnippet>591</a>        // sequence has a permanent hole. A reader of a capture directory
+<a href=#592 id=592 data-nosnippet>592</a>        // cannot then tell a transient ENOSPC from a part that was written and
+<a href=#593 id=593 data-nosnippet>593</a>        // later deleted -- and for a capture format whose whole claim is that
+<a href=#594 id=594 data-nosnippet>594</a>        // it is the wire verbatim, "a file is missing here" must mean exactly
+<a href=#595 id=595 data-nosnippet>595</a>        // one thing.
+<a href=#596 id=596 data-nosnippet>596</a>        </span><span class="kw">let </span>next_part = <span class="self">self</span>.part + <span class="number">1</span>;
+<a href=#597 id=597 data-nosnippet>597</a>        <span class="kw">let </span>next = <span class="self">self</span>.stem.with_file_name(<span class="macro">format!</span>(
+<a href=#598 id=598 data-nosnippet>598</a>            <span class="string">"{}-{:03}.bytes"</span>,
+<a href=#599 id=599 data-nosnippet>599</a>            <span class="self">self</span>.stem.file_name().unwrap_or_default().to_string_lossy(),
+<a href=#600 id=600 data-nosnippet>600</a>            next_part
+<a href=#601 id=601 data-nosnippet>601</a>        ));
+<a href=#602 id=602 data-nosnippet>602</a>        <span class="self">self</span>.bytes = Behind::new(File::create(<span class="kw-2">&amp;</span>next)<span class="question-mark">?</span>, next.display().to_string());
+<a href=#603 id=603 data-nosnippet>603</a>        <span class="self">self</span>.part = next_part;
+<a href=#604 id=604 data-nosnippet>604</a>        <span class="self">self</span>.bytes_path = next;
+<a href=#605 id=605 data-nosnippet>605</a>        <span class="self">self</span>.lines_written = <span class="number">0</span>;
+<a href=#606 id=606 data-nosnippet>606</a>        <span class="prelude-val">Ok</span>(())
+<a href=#607 id=607 data-nosnippet>607</a>    }
+<a href=#608 id=608 data-nosnippet>608</a>
+<a href=#609 id=609 data-nosnippet>609</a>    <span class="doccomment">/// Append one debug line: a lifecycle change, an error -- something that
+<a href=#610 id=610 data-nosnippet>610</a>    /// is **not** on the wire.
+<a href=#611 id=611 data-nosnippet>611</a>    ///
+<a href=#612 id=612 data-nosnippet>612</a>    /// # Do not log wire content here
+<a href=#613 id=613 data-nosnippet>613</a>    ///
+<a href=#614 id=614 data-nosnippet>614</a>    /// A command, a frame or a line of game text is already in the `.bytes`
+<a href=#615 id=615 data-nosnippet>615</a>    /// file, byte-for-byte as the server saw it. Writing it again here makes
+<a href=#616 id=616 data-nosnippet>616</a>    /// two records of one fact that can disagree, and doubles the disk to do
+<a href=#617 id=617 data-nosnippet>617</a>    /// it. The `.bytes` file is the whole point.
+<a href=#618 id=618 data-nosnippet>618</a>    ///
+<a href=#619 id=619 data-nosnippet>619</a>    /// The readable timestamped view of a session is the **user log**, a
+<a href=#620 id=620 data-nosnippet>620</a>    /// different artifact above the parser. This is not a down-payment on it.
 <a href=#621 id=621 data-nosnippet>621</a>    ///
-<a href=#622 id=622 data-nosnippet>622</a>    /// Keys accumulate. An earlier generation's key stays redacted, because
-<a href=#623 id=623 data-nosnippet>623</a>    /// the log still contains the bytes it appeared in.
-<a href=#624 id=624 data-nosnippet>624</a>    </span><span class="kw">pub fn </span>redact_key(<span class="kw-2">&amp;mut </span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>str) {
-<a href=#625 id=625 data-nosnippet>625</a>        <span class="self">self</span>.redactions.key(key);
-<a href=#626 id=626 data-nosnippet>626</a>        <span class="comment">// **Recorded in the file, not just applied.** The header is written
-<a href=#627 id=627 data-nosnippet>627</a>        // once at creation and cannot describe a set that grows afterwards, so
-<a href=#628 id=628 data-nosnippet>628</a>        // a reader needs an in-band marker to tell which part of a log a
-<a href=#629 id=629 data-nosnippet>629</a>        // redaction covers. Everything above this line predates it.
-<a href=#630 id=630 data-nosnippet>630</a>        //
-<a href=#631 id=631 data-nosnippet>631</a>        // The KEY IS NOT LOGGED, obviously -- only the fact that one was
-<a href=#632 id=632 data-nosnippet>632</a>        // registered. It is applied to this very line, so a bug that wrote the
-<a href=#633 id=633 data-nosnippet>633</a>        // secret here would redact it on the way out.
-<a href=#634 id=634 data-nosnippet>634</a>        </span><span class="kw">let _ </span>= <span class="self">self</span>.event(<span class="string">"redaction registered (session key)"</span>);
+<a href=#622 id=622 data-nosnippet>622</a>    /// # Errors
+<a href=#623 id=623 data-nosnippet>623</a>    ///
+<a href=#624 id=624 data-nosnippet>624</a>    /// Any write failure.
+<a href=#625 id=625 data-nosnippet>625</a>    </span><span class="kw">pub fn </span>event(<span class="kw-2">&amp;mut </span><span class="self">self</span>, line: <span class="kw-2">&amp;</span>str) -&gt; io::Result&lt;()&gt; {
+<a href=#626 id=626 data-nosnippet>626</a>        <span class="comment">// Always stamped: nothing replays this file, so a wall clock costs it
+<a href=#627 id=627 data-nosnippet>627</a>        // nothing, and "when did that happen" is the first question anyone
+<a href=#628 id=628 data-nosnippet>628</a>        // asks of it.
+<a href=#629 id=629 data-nosnippet>629</a>        </span><span class="macro">writeln!</span>(
+<a href=#630 id=630 data-nosnippet>630</a>            <span class="self">self</span>.events,
+<a href=#631 id=631 data-nosnippet>631</a>            <span class="string">"{} {}"</span>,
+<a href=#632 id=632 data-nosnippet>632</a>            line_time(),
+<a href=#633 id=633 data-nosnippet>633</a>            <span class="self">self</span>.redactions.apply(line)
+<a href=#634 id=634 data-nosnippet>634</a>        )
 <a href=#635 id=635 data-nosnippet>635</a>    }
 <a href=#636 id=636 data-nosnippet>636</a>
-<a href=#637 id=637 data-nosnippet>637</a>    <span class="doccomment">/// Flush both files.
+<a href=#637 id=637 data-nosnippet>637</a>    <span class="doccomment">/// Register another launch key for redaction.
 <a href=#638 id=638 data-nosnippet>638</a>    ///
-<a href=#639 id=639 data-nosnippet>639</a>    /// Called at shutdown, and worth calling on a lifecycle change: a session
-<a href=#640 id=640 data-nosnippet>640</a>    /// that panics should still leave the log that explains why.
-<a href=#641 id=641 data-nosnippet>641</a>    ///
-<a href=#642 id=642 data-nosnippet>642</a>    /// # Errors
-<a href=#643 id=643 data-nosnippet>643</a>    ///
-<a href=#644 id=644 data-nosnippet>644</a>    /// Any flush failure.
-<a href=#645 id=645 data-nosnippet>645</a>    </span><span class="kw">pub fn </span>flush(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; io::Result&lt;()&gt; {
-<a href=#646 id=646 data-nosnippet>646</a>        <span class="comment">// A flush that left the straddle tail in memory would be a lie: the
-<a href=#647 id=647 data-nosnippet>647</a>        // caller flushes to make the file complete, and a session that panics
-<a href=#648 id=648 data-nosnippet>648</a>        // should still leave the log explaining why.
-<a href=#649 id=649 data-nosnippet>649</a>        </span><span class="self">self</span>.drain_pending()<span class="question-mark">?</span>;
-<a href=#650 id=650 data-nosnippet>650</a>        <span class="self">self</span>.bytes.flush()<span class="question-mark">?</span>;
-<a href=#651 id=651 data-nosnippet>651</a>        <span class="self">self</span>.events.flush()
-<a href=#652 id=652 data-nosnippet>652</a>    }
-<a href=#653 id=653 data-nosnippet>653</a>
-<a href=#654 id=654 data-nosnippet>654</a>    <span class="doccomment">/// Where the raw wire went.
-<a href=#655 id=655 data-nosnippet>655</a>    </span><span class="attr">#[must_use]
-<a href=#656 id=656 data-nosnippet>656</a>    </span><span class="kw">pub fn </span>bytes_path(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>Path {
-<a href=#657 id=657 data-nosnippet>657</a>        <span class="kw-2">&amp;</span><span class="self">self</span>.bytes_path
-<a href=#658 id=658 data-nosnippet>658</a>    }
-<a href=#659 id=659 data-nosnippet>659</a>
-<a href=#660 id=660 data-nosnippet>660</a>    <span class="doccomment">/// Where the structured log went.
-<a href=#661 id=661 data-nosnippet>661</a>    </span><span class="attr">#[must_use]
-<a href=#662 id=662 data-nosnippet>662</a>    </span><span class="kw">pub fn </span>events_path(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>Path {
-<a href=#663 id=663 data-nosnippet>663</a>        <span class="kw-2">&amp;</span><span class="self">self</span>.events_path
-<a href=#664 id=664 data-nosnippet>664</a>    }
-<a href=#665 id=665 data-nosnippet>665</a>}
+<a href=#639 id=639 data-nosnippet>639</a>    /// # Why a sink outlives the secret it was opened with
+<a href=#640 id=640 data-nosnippet>640</a>    ///
+<a href=#641 id=641 data-nosnippet>641</a>    /// **One log spans every generation**, and a reconnect is a full re-login
+<a href=#642 id=642 data-nosnippet>642</a>    /// (the SGE connection is strictly single-use per authentication), so
+<a href=#643 id=643 data-nosnippet>643</a>    /// **every connection has a different launch key**. A sink
+<a href=#644 id=644 data-nosnippet>644</a>    /// whose redaction set was fixed at creation would write generation 2's
+<a href=#645 id=645 data-nosnippet>645</a>    /// key verbatim into a file opened during generation 1 -- the one secret
+<a href=#646 id=646 data-nosnippet>646</a>    /// the `.bytes` file would otherwise carry in the clear, unredacted,
+<a href=#647 id=647 data-nosnippet>647</a>    /// because it did not exist yet when the set was built.
+<a href=#648 id=648 data-nosnippet>648</a>    ///
+<a href=#649 id=649 data-nosnippet>649</a>    /// That is why this is narrow rather than a general `redactions_mut`: the
+<a href=#650 id=650 data-nosnippet>650</a>    /// launch key is the only secret that is genuinely per-connection. The
+<a href=#651 id=651 data-nosnippet>651</a>    /// account is typed once and registered at creation (the character is
+<a href=#652 id=652 data-nosnippet>652</a>    /// not registered at all: it is display text on every line).
+<a href=#653 id=653 data-nosnippet>653</a>    ///
+<a href=#654 id=654 data-nosnippet>654</a>    /// Keys accumulate. An earlier generation's key stays redacted, because
+<a href=#655 id=655 data-nosnippet>655</a>    /// the log still contains the bytes it appeared in.
+<a href=#656 id=656 data-nosnippet>656</a>    </span><span class="kw">pub fn </span>redact_key(<span class="kw-2">&amp;mut </span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>str) {
+<a href=#657 id=657 data-nosnippet>657</a>        <span class="self">self</span>.redactions.key(key);
+<a href=#658 id=658 data-nosnippet>658</a>        <span class="comment">// **Recorded in the file, not just applied.** The header is written
+<a href=#659 id=659 data-nosnippet>659</a>        // once at creation and cannot describe a set that grows afterwards, so
+<a href=#660 id=660 data-nosnippet>660</a>        // a reader needs an in-band marker to tell which part of a log a
+<a href=#661 id=661 data-nosnippet>661</a>        // redaction covers. Everything above this line predates it.
+<a href=#662 id=662 data-nosnippet>662</a>        //
+<a href=#663 id=663 data-nosnippet>663</a>        // The KEY IS NOT LOGGED, obviously -- only the fact that one was
+<a href=#664 id=664 data-nosnippet>664</a>        // registered. It is applied to this very line, so a bug that wrote the
+<a href=#665 id=665 data-nosnippet>665</a>        // secret here would redact it on the way out.
+<a href=#666 id=666 data-nosnippet>666</a>        </span><span class="kw">let _ </span>= <span class="self">self</span>.event(<span class="string">"redaction registered (session key)"</span>);
+<a href=#667 id=667 data-nosnippet>667</a>    }
+<a href=#668 id=668 data-nosnippet>668</a>
+<a href=#669 id=669 data-nosnippet>669</a>    <span class="doccomment">/// Flush both files.
+<a href=#670 id=670 data-nosnippet>670</a>    ///
+<a href=#671 id=671 data-nosnippet>671</a>    /// Called at shutdown, and worth calling on a lifecycle change: a session
+<a href=#672 id=672 data-nosnippet>672</a>    /// that panics should still leave the log that explains why.
+<a href=#673 id=673 data-nosnippet>673</a>    ///
+<a href=#674 id=674 data-nosnippet>674</a>    /// # Errors
+<a href=#675 id=675 data-nosnippet>675</a>    ///
+<a href=#676 id=676 data-nosnippet>676</a>    /// Any flush failure.
+<a href=#677 id=677 data-nosnippet>677</a>    </span><span class="kw">pub fn </span>flush(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; io::Result&lt;()&gt; {
+<a href=#678 id=678 data-nosnippet>678</a>        <span class="comment">// A flush that left the straddle tail in memory would be a lie: the
+<a href=#679 id=679 data-nosnippet>679</a>        // caller flushes to make the file complete, and a session that panics
+<a href=#680 id=680 data-nosnippet>680</a>        // should still leave the log explaining why.
+<a href=#681 id=681 data-nosnippet>681</a>        </span><span class="self">self</span>.drain_pending()<span class="question-mark">?</span>;
+<a href=#682 id=682 data-nosnippet>682</a>        <span class="self">self</span>.note_gap();
+<a href=#683 id=683 data-nosnippet>683</a>        <span class="kw">let </span>left_out = <span class="self">self</span>.bytes.left_out();
+<a href=#684 id=684 data-nosnippet>684</a>        <span class="kw">let </span>bytes_settled = <span class="self">self</span>.bytes.settle(SETTLE);
+<a href=#685 id=685 data-nosnippet>685</a>        <span class="kw">let </span>events_settled = <span class="self">self</span>.events.settle(SETTLE);
+<a href=#686 id=686 data-nosnippet>686</a>        <span class="comment">// Told the truth: a file the disk has not taken, or is short of,
+<a href=#687 id=687 data-nosnippet>687</a>        // is not complete.
+<a href=#688 id=688 data-nosnippet>688</a>        </span><span class="kw">if </span>!bytes_settled || !events_settled {
+<a href=#689 id=689 data-nosnippet>689</a>            <span class="kw">return </span><span class="prelude-val">Err</span>(io::Error::new(
+<a href=#690 id=690 data-nosnippet>690</a>                io::ErrorKind::TimedOut,
+<a href=#691 id=691 data-nosnippet>691</a>                <span class="macro">format!</span>(
+<a href=#692 id=692 data-nosnippet>692</a>                    <span class="string">"the disk did not take the recording within {}s"</span>,
+<a href=#693 id=693 data-nosnippet>693</a>                    SETTLE.as_secs()
+<a href=#694 id=694 data-nosnippet>694</a>                ),
+<a href=#695 id=695 data-nosnippet>695</a>            ));
+<a href=#696 id=696 data-nosnippet>696</a>        }
+<a href=#697 id=697 data-nosnippet>697</a>        <span class="kw">if </span>left_out &gt; <span class="number">0 </span>{
+<a href=#698 id=698 data-nosnippet>698</a>            <span class="kw">return </span><span class="prelude-val">Err</span>(io::Error::other(<span class="macro">format!</span>(
+<a href=#699 id=699 data-nosnippet>699</a>                <span class="string">"{left_out} bytes of the wire were left out of the .bytes file: the disk \
+<a href=#700 id=700 data-nosnippet>700</a>                 was too far behind"
+<a href=#701 id=701 data-nosnippet>701</a>            </span>)));
+<a href=#702 id=702 data-nosnippet>702</a>        }
+<a href=#703 id=703 data-nosnippet>703</a>        <span class="prelude-val">Ok</span>(())
+<a href=#704 id=704 data-nosnippet>704</a>    }
+<a href=#705 id=705 data-nosnippet>705</a>
+<a href=#706 id=706 data-nosnippet>706</a>    <span class="doccomment">/// Hand both files everything held for them, the straddle tail
+<a href=#707 id=707 data-nosnippet>707</a>    /// included, without waiting for the disk: what a session calls as its
+<a href=#708 id=708 data-nosnippet>708</a>    /// connection ends, while other characters may still be playing.
+<a href=#709 id=709 data-nosnippet>709</a>    /// [`Self::flush`] waits.
+<a href=#710 id=710 data-nosnippet>710</a>    ///
+<a href=#711 id=711 data-nosnippet>711</a>    /// # Errors
+<a href=#712 id=712 data-nosnippet>712</a>    ///
+<a href=#713 id=713 data-nosnippet>713</a>    /// Any failure handing over the held tail.
+<a href=#714 id=714 data-nosnippet>714</a>    </span><span class="kw">pub fn </span>hand_over(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; io::Result&lt;()&gt; {
+<a href=#715 id=715 data-nosnippet>715</a>        <span class="self">self</span>.drain_pending()<span class="question-mark">?</span>;
+<a href=#716 id=716 data-nosnippet>716</a>        <span class="self">self</span>.note_gap();
+<a href=#717 id=717 data-nosnippet>717</a>        <span class="self">self</span>.bytes.flush()<span class="question-mark">?</span>;
+<a href=#718 id=718 data-nosnippet>718</a>        <span class="self">self</span>.events.flush()
+<a href=#719 id=719 data-nosnippet>719</a>    }
+<a href=#720 id=720 data-nosnippet>720</a>
+<a href=#721 id=721 data-nosnippet>721</a>    <span class="doccomment">/// Where the raw wire went.
+<a href=#722 id=722 data-nosnippet>722</a>    </span><span class="attr">#[must_use]
+<a href=#723 id=723 data-nosnippet>723</a>    </span><span class="kw">pub fn </span>bytes_path(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>Path {
+<a href=#724 id=724 data-nosnippet>724</a>        <span class="kw-2">&amp;</span><span class="self">self</span>.bytes_path
+<a href=#725 id=725 data-nosnippet>725</a>    }
+<a href=#726 id=726 data-nosnippet>726</a>
+<a href=#727 id=727 data-nosnippet>727</a>    <span class="doccomment">/// Where the structured log went.
+<a href=#728 id=728 data-nosnippet>728</a>    </span><span class="attr">#[must_use]
+<a href=#729 id=729 data-nosnippet>729</a>    </span><span class="kw">pub fn </span>events_path(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>Path {
+<a href=#730 id=730 data-nosnippet>730</a>        <span class="kw-2">&amp;</span><span class="self">self</span>.events_path
+<a href=#731 id=731 data-nosnippet>731</a>    }
+<a href=#732 id=732 data-nosnippet>732</a>}
 </code></pre></div></section></main></body></html>

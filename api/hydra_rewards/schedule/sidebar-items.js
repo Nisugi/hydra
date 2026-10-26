@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["FILE","IDLE"],"fn":["may_claim","next"],"struct":["Character","Settings"]};

@@ -183,31 +183,32 @@
 <a href=#183 id=183 data-nosnippet>183</a>                    tags: <span class="prelude-val">None</span>,
 <a href=#184 id=184 data-nosnippet>184</a>                    minimap: <span class="prelude-val">None</span>,
 <a href=#185 id=185 data-nosnippet>185</a>                    travel: <span class="prelude-val">None</span>,
-<a href=#186 id=186 data-nosnippet>186</a>                    trainer: <span class="prelude-val">None</span>,
-<a href=#187 id=187 data-nosnippet>187</a>                    hydra: <span class="bool-val">true</span>,
-<a href=#188 id=188 data-nosnippet>188</a>                };
-<a href=#189 id=189 data-nosnippet>189</a>                <span class="kw">let </span>clicked = widget.draw(ui, <span class="kw-2">&amp;</span>seen, Id::new(<span class="string">"dialog"</span>));
-<a href=#190 id=190 data-nosnippet>190</a>                <span class="kw">let </span><span class="prelude-val">Some</span>(<span class="kw">crate</span>::widget::Clicked::FromGame(line)) = clicked <span class="kw">else </span>{
-<a href=#191 id=191 data-nosnippet>191</a>                    <span class="kw">return</span>;
-<a href=#192 id=192 data-nosnippet>192</a>                };
-<a href=#193 id=193 data-nosnippet>193</a>                heard
-<a href=#194 id=194 data-nosnippet>194</a>                    .lock()
-<a href=#195 id=195 data-nosnippet>195</a>                    .unwrap_or_else(std::sync::PoisonError::into_inner)
-<a href=#196 id=196 data-nosnippet>196</a>                    .push(line);
-<a href=#197 id=197 data-nosnippet>197</a>            });
-<a href=#198 id=198 data-nosnippet>198</a>        harness.run();
-<a href=#199 id=199 data-nosnippet>199</a>        harness.get_by_label(<span class="string">"Betrayer"</span>);
-<a href=#200 id=200 data-nosnippet>200</a>        harness.get_by_label(<span class="string">"Blood Points: 1"</span>);
-<a href=#201 id=201 data-nosnippet>201</a>        harness.get_by_label(<span class="string">"trade"</span>).click();
-<a href=#202 id=202 data-nosnippet>202</a>        harness.run();
-<a href=#203 id=203 data-nosnippet>203</a>        harness.get_by_label(<span class="string">"configure"</span>).click();
-<a href=#204 id=204 data-nosnippet>204</a>        harness.run();
-<a href=#205 id=205 data-nosnippet>205</a>        <span class="macro">assert_eq!</span>(
-<a href=#206 id=206 data-nosnippet>206</a>            <span class="kw-2">*</span>sent
-<a href=#207 id=207 data-nosnippet>207</a>                .lock()
-<a href=#208 id=208 data-nosnippet>208</a>                .unwrap_or_else(std::sync::PoisonError::into_inner),
-<a href=#209 id=209 data-nosnippet>209</a>            [<span class="string">"trade points"</span>, <span class="string">"_cmbtpl configure dialog"</span>]
-<a href=#210 id=210 data-nosnippet>210</a>        );
-<a href=#211 id=211 data-nosnippet>211</a>    }
-<a href=#212 id=212 data-nosnippet>212</a>}
+<a href=#186 id=186 data-nosnippet>186</a>                    notes: <span class="prelude-val">None</span>,
+<a href=#187 id=187 data-nosnippet>187</a>                    trainer: <span class="prelude-val">None</span>,
+<a href=#188 id=188 data-nosnippet>188</a>                    hydra: <span class="bool-val">true</span>,
+<a href=#189 id=189 data-nosnippet>189</a>                };
+<a href=#190 id=190 data-nosnippet>190</a>                <span class="kw">let </span>clicked = widget.draw(ui, <span class="kw-2">&amp;</span>seen, Id::new(<span class="string">"dialog"</span>));
+<a href=#191 id=191 data-nosnippet>191</a>                <span class="kw">let </span><span class="prelude-val">Some</span>(<span class="kw">crate</span>::widget::Clicked::FromGame(line)) = clicked <span class="kw">else </span>{
+<a href=#192 id=192 data-nosnippet>192</a>                    <span class="kw">return</span>;
+<a href=#193 id=193 data-nosnippet>193</a>                };
+<a href=#194 id=194 data-nosnippet>194</a>                heard
+<a href=#195 id=195 data-nosnippet>195</a>                    .lock()
+<a href=#196 id=196 data-nosnippet>196</a>                    .unwrap_or_else(std::sync::PoisonError::into_inner)
+<a href=#197 id=197 data-nosnippet>197</a>                    .push(line);
+<a href=#198 id=198 data-nosnippet>198</a>            });
+<a href=#199 id=199 data-nosnippet>199</a>        harness.run();
+<a href=#200 id=200 data-nosnippet>200</a>        harness.get_by_label(<span class="string">"Betrayer"</span>);
+<a href=#201 id=201 data-nosnippet>201</a>        harness.get_by_label(<span class="string">"Blood Points: 1"</span>);
+<a href=#202 id=202 data-nosnippet>202</a>        harness.get_by_label(<span class="string">"trade"</span>).click();
+<a href=#203 id=203 data-nosnippet>203</a>        harness.run();
+<a href=#204 id=204 data-nosnippet>204</a>        harness.get_by_label(<span class="string">"configure"</span>).click();
+<a href=#205 id=205 data-nosnippet>205</a>        harness.run();
+<a href=#206 id=206 data-nosnippet>206</a>        <span class="macro">assert_eq!</span>(
+<a href=#207 id=207 data-nosnippet>207</a>            <span class="kw-2">*</span>sent
+<a href=#208 id=208 data-nosnippet>208</a>                .lock()
+<a href=#209 id=209 data-nosnippet>209</a>                .unwrap_or_else(std::sync::PoisonError::into_inner),
+<a href=#210 id=210 data-nosnippet>210</a>            [<span class="string">"trade points"</span>, <span class="string">"_cmbtpl configure dialog"</span>]
+<a href=#211 id=211 data-nosnippet>211</a>        );
+<a href=#212 id=212 data-nosnippet>212</a>    }
+<a href=#213 id=213 data-nosnippet>213</a>}
 </code></pre></div></section></main></body></html>

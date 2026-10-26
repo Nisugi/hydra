@@ -1,574 +1,870 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates\hydra-gui\src\bar.rs`."><title>bar.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="hydra_gui" data-themes="" data-resource-suffix="" data-rustdoc-version="1.96.1 (31fca3adb 2026-06-26)" data-channel="1.96.1" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="../../static.files/src-script-813739b1.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><h1><div class="sub-heading">hydra_gui/</div>bar.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap digits-3"><pre class="rust"><code><a href=#1 id=1 data-nosnippet>1</a><span class="doccomment">//! A progress bar: it fills across or upright (or as an orb or a ring), its
-<a href=#2 id=2 data-nosnippet>2</a>//! height and width adjustable, with an overlay laid over it, and text
-<a href=#3 id=3 data-nosnippet>3</a>//! inside it, outside it on any of the four sides, or none -- the text
-<a href=#4 id=4 data-nosnippet>4</a>//! numbers, a percent, a label, or any mix of them.
-<a href=#5 id=5 data-nosnippet>5</a>//!
-<a href=#6 id=6 data-nosnippet>6</a>//! An overlay may be a skin's frame painted over the bar, a nine-slice
-<a href=#7 id=7 data-nosnippet>7</a>//! ([`Overlay::framed`]). Unlike egui's own bar, an empty bar paints no
-<a href=#8 id=8 data-nosnippet>8</a>//! sliver of fill at zero.
-<a href=#9 id=9 data-nosnippet>9</a>
-<a href=#10 id=10 data-nosnippet>10</a></span><span class="kw">use </span>egui::{Align2, Color32, Sense, Vec2, WidgetInfo, WidgetType};
-<a href=#11 id=11 data-nosnippet>11</a>
-<a href=#12 id=12 data-nosnippet>12</a><span class="kw">use </span><span class="kw">crate</span>::theme::readable_on;
-<a href=#13 id=13 data-nosnippet>13</a>
-<a href=#14 id=14 data-nosnippet>14</a><span class="doccomment">/// Which way a bar fills as its value grows.
-<a href=#15 id=15 data-nosnippet>15</a></span><span class="attr">#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-<a href=#16 id=16 data-nosnippet>16</a>#[serde(rename_all = <span class="string">"snake_case"</span>)]
-<a href=#17 id=17 data-nosnippet>17</a></span><span class="kw">pub enum </span>Fills {
-<a href=#18 id=18 data-nosnippet>18</a>    <span class="doccomment">/// Horizontal, from the left edge.
-<a href=#19 id=19 data-nosnippet>19</a>    </span><span class="attr">#[default]
-<a href=#20 id=20 data-nosnippet>20</a>    </span>Right,
-<a href=#21 id=21 data-nosnippet>21</a>    <span class="doccomment">/// Horizontal, from the right edge.
-<a href=#22 id=22 data-nosnippet>22</a>    </span>Left,
-<a href=#23 id=23 data-nosnippet>23</a>    <span class="doccomment">/// Vertical, from the bottom edge.
-<a href=#24 id=24 data-nosnippet>24</a>    </span>Up,
-<a href=#25 id=25 data-nosnippet>25</a>    <span class="doccomment">/// Vertical, from the top edge.
-<a href=#26 id=26 data-nosnippet>26</a>    </span>Down,
-<a href=#27 id=27 data-nosnippet>27</a>    <span class="doccomment">/// A circle, filling from the bottom as a flask fills: a health or mana
-<a href=#28 id=28 data-nosnippet>28</a>    /// orb.
-<a href=#29 id=29 data-nosnippet>29</a>    </span>Orb,
-<a href=#30 id=30 data-nosnippet>30</a>    <span class="doccomment">/// A ring, filling clockwise from the top.
-<a href=#31 id=31 data-nosnippet>31</a>    </span>Ring,
-<a href=#32 id=32 data-nosnippet>32</a>}
-<a href=#33 id=33 data-nosnippet>33</a>
-<a href=#34 id=34 data-nosnippet>34</a><span class="doccomment">/// Where a bar's text goes.
-<a href=#35 id=35 data-nosnippet>35</a></span><span class="attr">#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-<a href=#36 id=36 data-nosnippet>36</a>#[serde(rename_all = <span class="string">"snake_case"</span>)]
-<a href=#37 id=37 data-nosnippet>37</a></span><span class="kw">pub enum </span>Place {
-<a href=#38 id=38 data-nosnippet>38</a>    <span class="doccomment">/// Over the bar, centred.
-<a href=#39 id=39 data-nosnippet>39</a>    </span><span class="attr">#[default]
-<a href=#40 id=40 data-nosnippet>40</a>    </span>Inside,
-<a href=#41 id=41 data-nosnippet>41</a>    <span class="doccomment">/// Above the bar.
-<a href=#42 id=42 data-nosnippet>42</a>    </span>Above,
-<a href=#43 id=43 data-nosnippet>43</a>    <span class="doccomment">/// Below the bar.
-<a href=#44 id=44 data-nosnippet>44</a>    </span>Below,
-<a href=#45 id=45 data-nosnippet>45</a>    <span class="doccomment">/// To the bar's left.
-<a href=#46 id=46 data-nosnippet>46</a>    </span>Left,
-<a href=#47 id=47 data-nosnippet>47</a>    <span class="doccomment">/// To the bar's right.
-<a href=#48 id=48 data-nosnippet>48</a>    </span>Right,
-<a href=#49 id=49 data-nosnippet>49</a>    <span class="doccomment">/// No text at all.
-<a href=#50 id=50 data-nosnippet>50</a>    </span>Hidden,
-<a href=#51 id=51 data-nosnippet>51</a>}
-<a href=#52 id=52 data-nosnippet>52</a>
-<a href=#53 id=53 data-nosnippet>53</a><span class="doccomment">/// What a bar's text says, in this order: its label, the game's word for
-<a href=#54 id=54 data-nosnippet>54</a>/// its state, its numbers (`current/max`), its percent. Any combination;
-<a href=#55 id=55 data-nosnippet>55</a>/// none is no text.
-<a href=#56 id=56 data-nosnippet>56</a></span><span class="attr">#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-<a href=#57 id=57 data-nosnippet>57</a>#[expect(
-<a href=#58 id=58 data-nosnippet>58</a>    clippy::struct_excessive_bools,
-<a href=#59 id=59 data-nosnippet>59</a>    reason = <span class="string">"what a bar's text says: each part on or off on its own, as the player picks"
-<a href=#60 id=60 data-nosnippet>60</a></span>)]
-<a href=#61 id=61 data-nosnippet>61</a></span><span class="kw">pub struct </span>Says {
-<a href=#62 id=62 data-nosnippet>62</a>    <span class="doccomment">/// The bar's label: "HP".
-<a href=#63 id=63 data-nosnippet>63</a>    </span><span class="kw">pub </span>label: bool,
-<a href=#64 id=64 data-nosnippet>64</a>    <span class="doccomment">/// Its value out of its most: "350/400". Left out when either is unknown.
-<a href=#65 id=65 data-nosnippet>65</a>    </span><span class="kw">pub </span>numbers: bool,
-<a href=#66 id=66 data-nosnippet>66</a>    <span class="doccomment">/// Its percent: "87%".
-<a href=#67 id=67 data-nosnippet>67</a>    </span><span class="kw">pub </span>percent: bool,
-<a href=#68 id=68 data-nosnippet>68</a>    <span class="doccomment">/// What the game calls its state, after the label: "offensive",
-<a href=#69 id=69 data-nosnippet>69</a>    /// "Light", "clear as a bell". Only a bar the game words has any: stance,
-<a href=#70 id=70 data-nosnippet>70</a>    /// encumbrance, the mind and the next level. With the label and the
-<a href=#71 id=71 data-nosnippet>71</a>    /// percent, any mix of the three can be shown.
-<a href=#72 id=72 data-nosnippet>72</a>    </span><span class="attr">#[serde(default)]
-<a href=#73 id=73 data-nosnippet>73</a>    </span><span class="kw">pub </span>words: bool,
-<a href=#74 id=74 data-nosnippet>74</a>}
-<a href=#75 id=75 data-nosnippet>75</a>
-<a href=#76 id=76 data-nosnippet>76</a><span class="kw">impl </span>Default <span class="kw">for </span>Says {
-<a href=#77 id=77 data-nosnippet>77</a>    <span class="doccomment">/// The label and the percent, as the hub's cards have them.
-<a href=#78 id=78 data-nosnippet>78</a>    </span><span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
-<a href=#79 id=79 data-nosnippet>79</a>        <span class="self">Self </span>{
-<a href=#80 id=80 data-nosnippet>80</a>            label: <span class="bool-val">true</span>,
-<a href=#81 id=81 data-nosnippet>81</a>            numbers: <span class="bool-val">false</span>,
-<a href=#82 id=82 data-nosnippet>82</a>            percent: <span class="bool-val">true</span>,
-<a href=#83 id=83 data-nosnippet>83</a>            words: <span class="bool-val">false</span>,
-<a href=#84 id=84 data-nosnippet>84</a>        }
-<a href=#85 id=85 data-nosnippet>85</a>    }
-<a href=#86 id=86 data-nosnippet>86</a>}
-<a href=#87 id=87 data-nosnippet>87</a>
-<a href=#88 id=88 data-nosnippet>88</a><span class="doccomment">/// How a bar widget draws its bar: which way it fills, where its text goes,
-<a href=#89 id=89 data-nosnippet>89</a>/// what the text says, its colour, and an image laid over it. The player
-<a href=#90 id=90 data-nosnippet>90</a>/// picks it on the widget's own page in the settings menu, which its
-<a href=#91 id=91 data-nosnippet>91</a>/// right-click opens, and it is kept with the layout.
-<a href=#92 id=92 data-nosnippet>92</a></span><span class="attr">#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-<a href=#93 id=93 data-nosnippet>93</a></span><span class="kw">pub struct </span>Look {
-<a href=#94 id=94 data-nosnippet>94</a>    <span class="doccomment">/// Which way it fills.
-<a href=#95 id=95 data-nosnippet>95</a>    </span><span class="kw">pub </span>fills: Fills,
-<a href=#96 id=96 data-nosnippet>96</a>    <span class="doccomment">/// Where its text goes.
-<a href=#97 id=97 data-nosnippet>97</a>    </span><span class="kw">pub </span>place: Place,
-<a href=#98 id=98 data-nosnippet>98</a>    <span class="doccomment">/// What its text says.
-<a href=#99 id=99 data-nosnippet>99</a>    </span><span class="kw">pub </span>says: Says,
-<a href=#100 id=100 data-nosnippet>100</a>    <span class="doccomment">/// Its fill's colour, red, green and blue, when the player chose one;
-<a href=#101 id=101 data-nosnippet>101</a>    /// none is the theme's for its kind.
-<a href=#102 id=102 data-nosnippet>102</a>    </span><span class="attr">#[serde(default, skip_serializing_if = <span class="string">"Option::is_none"</span>)]
-<a href=#103 id=103 data-nosnippet>103</a>    </span><span class="kw">pub </span>color: <span class="prelude-ty">Option</span>&lt;[u8; <span class="number">3</span>]&gt;,
-<a href=#104 id=104 data-nosnippet>104</a>    <span class="doccomment">/// An image laid over it, stretched, by its file's path; none unset.
-<a href=#105 id=105 data-nosnippet>105</a>    </span><span class="attr">#[serde(default, skip_serializing_if = <span class="string">"Option::is_none"</span>)]
-<a href=#106 id=106 data-nosnippet>106</a>    </span><span class="kw">pub </span>overlay: <span class="prelude-ty">Option</span>&lt;String&gt;,
-<a href=#107 id=107 data-nosnippet>107</a>    <span class="doccomment">/// An image under its fill, in place of its trough, by its file's path:
-<a href=#108 id=108 data-nosnippet>108</a>    /// an empty orb's glass.
-<a href=#109 id=109 data-nosnippet>109</a>    </span><span class="attr">#[serde(default, skip_serializing_if = <span class="string">"Option::is_none"</span>)]
-<a href=#110 id=110 data-nosnippet>110</a>    </span><span class="kw">pub </span>background: <span class="prelude-ty">Option</span>&lt;String&gt;,
-<a href=#111 id=111 data-nosnippet>111</a>    <span class="doccomment">/// An image its fill uncovers as it fills, in place of its colour, by its
-<a href=#112 id=112 data-nosnippet>112</a>    /// file's path: a liquid.
-<a href=#113 id=113 data-nosnippet>113</a>    </span><span class="attr">#[serde(default, skip_serializing_if = <span class="string">"Option::is_none"</span>)]
-<a href=#114 id=114 data-nosnippet>114</a>    </span><span class="kw">pub </span>fill_image: <span class="prelude-ty">Option</span>&lt;String&gt;,
-<a href=#115 id=115 data-nosnippet>115</a>    <span class="doccomment">/// A ring's thickness, in percent of its radius.
-<a href=#116 id=116 data-nosnippet>116</a>    </span><span class="attr">#[serde(default = <span class="string">"Look::default_ring"</span>)]
-<a href=#117 id=117 data-nosnippet>117</a>    </span><span class="kw">pub </span>ring: u8,
-<a href=#118 id=118 data-nosnippet>118</a>    <span class="doccomment">/// A clock in place of the bar, for a bar that counts down to
-<a href=#119 id=119 data-nosnippet>119</a>    /// something: the pulse's seconds to its earliest, then below zero
-<a href=#120 id=120 data-nosnippet>120</a>    /// until it comes.
-<a href=#121 id=121 data-nosnippet>121</a>    </span><span class="attr">#[serde(default, skip_serializing_if = <span class="string">"std::ops::Not::not"</span>)]
-<a href=#122 id=122 data-nosnippet>122</a>    </span><span class="kw">pub </span>clock: bool,
-<a href=#123 id=123 data-nosnippet>123</a>    <span class="doccomment">/// Colours by how full it is: from each threshold's percent up, its
-<a href=#124 id=124 data-nosnippet>124</a>    /// colour, over [`Self::color`]; below them all, that one. In order,
-<a href=#125 id=125 data-nosnippet>125</a>    /// the lowest first.
-<a href=#126 id=126 data-nosnippet>126</a>    </span><span class="attr">#[serde(default, skip_serializing_if = <span class="string">"Vec::is_empty"</span>)]
-<a href=#127 id=127 data-nosnippet>127</a>    </span><span class="kw">pub </span>thresholds: Vec&lt;Threshold&gt;,
-<a href=#128 id=128 data-nosnippet>128</a>    <span class="doccomment">/// Its words' colour, red, green and blue, when the player chose one;
-<a href=#129 id=129 data-nosnippet>129</a>    /// none is black or white inside the bar, whichever reads over what is
-<a href=#130 id=130 data-nosnippet>130</a>    /// behind them, and the theme's text colour beside it.
-<a href=#131 id=131 data-nosnippet>131</a>    </span><span class="attr">#[serde(default, skip_serializing_if = <span class="string">"Option::is_none"</span>)]
-<a href=#132 id=132 data-nosnippet>132</a>    </span><span class="kw">pub </span>text_color: <span class="prelude-ty">Option</span>&lt;[u8; <span class="number">3</span>]&gt;,
-<a href=#133 id=133 data-nosnippet>133</a>    <span class="doccomment">/// The colour of the outline round its words, when the player chose
-<a href=#134 id=134 data-nosnippet>134</a>    /// one; none is the other of black and white from the words inside the
-<a href=#135 id=135 data-nosnippet>135</a>    /// bar, and no outline beside it.
-<a href=#136 id=136 data-nosnippet>136</a>    </span><span class="attr">#[serde(default, skip_serializing_if = <span class="string">"Option::is_none"</span>)]
-<a href=#137 id=137 data-nosnippet>137</a>    </span><span class="kw">pub </span>outline_color: <span class="prelude-ty">Option</span>&lt;[u8; <span class="number">3</span>]&gt;,
-<a href=#138 id=138 data-nosnippet>138</a>    <span class="doccomment">/// The outline's width, in points: 0 none, at most [`Look::OUTLINE_MOST`].
-<a href=#139 id=139 data-nosnippet>139</a>    </span><span class="attr">#[serde(
-<a href=#140 id=140 data-nosnippet>140</a>        default = <span class="string">"Look::default_outline"</span>,
-<a href=#141 id=141 data-nosnippet>141</a>        skip_serializing_if = <span class="string">"Look::is_default_outline"
-<a href=#142 id=142 data-nosnippet>142</a>    </span>)]
-<a href=#143 id=143 data-nosnippet>143</a>    </span><span class="kw">pub </span>outline: u8,
-<a href=#144 id=144 data-nosnippet>144</a>}
-<a href=#145 id=145 data-nosnippet>145</a>
-<a href=#146 id=146 data-nosnippet>146</a><span class="doccomment">/// From `from` percent up, a bar fills in `color`, until a higher
-<a href=#147 id=147 data-nosnippet>147</a>/// threshold takes over.
-<a href=#148 id=148 data-nosnippet>148</a></span><span class="attr">#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-<a href=#149 id=149 data-nosnippet>149</a></span><span class="kw">pub struct </span>Threshold {
-<a href=#150 id=150 data-nosnippet>150</a>    <span class="doccomment">/// The percent it begins at, 0-100.
-<a href=#151 id=151 data-nosnippet>151</a>    </span><span class="kw">pub </span>from: u8,
-<a href=#152 id=152 data-nosnippet>152</a>    <span class="doccomment">/// Its colour, red, green and blue.
-<a href=#153 id=153 data-nosnippet>153</a>    </span><span class="kw">pub </span>color: [u8; <span class="number">3</span>],
-<a href=#154 id=154 data-nosnippet>154</a>}
-<a href=#155 id=155 data-nosnippet>155</a>
-<a href=#156 id=156 data-nosnippet>156</a><span class="kw">impl </span>Look {
-<a href=#157 id=157 data-nosnippet>157</a>    <span class="doccomment">/// A ring's thickness unless the player chose: a quarter of its radius.
-<a href=#158 id=158 data-nosnippet>158</a>    </span><span class="kw">pub const </span>RING: u8 = <span class="number">25</span>;
-<a href=#159 id=159 data-nosnippet>159</a>
-<a href=#160 id=160 data-nosnippet>160</a>    <span class="doccomment">/// The outline round a bar's words unless the player chose: a point.
-<a href=#161 id=161 data-nosnippet>161</a>    </span><span class="kw">pub const </span>OUTLINE: u8 = <span class="number">1</span>;
-<a href=#162 id=162 data-nosnippet>162</a>
-<a href=#163 id=163 data-nosnippet>163</a>    <span class="doccomment">/// The widest an outline round a bar's words may be, in points.
-<a href=#164 id=164 data-nosnippet>164</a>    </span><span class="kw">pub const </span>OUTLINE_MOST: u8 = <span class="number">4</span>;
-<a href=#165 id=165 data-nosnippet>165</a>
-<a href=#166 id=166 data-nosnippet>166</a>    <span class="doccomment">/// A saved colour that is the one its kind had before Hydra had themes
-<a href=#167 id=167 data-nosnippet>167</a>    /// (`token.bare()`) is read as none: a layout saved then held every
-<a href=#168 id=168 data-nosnippet>168</a>    /// bar's colour whether the player chose it or not, and a theme could
-<a href=#169 id=169 data-nosnippet>169</a>    /// not have changed it.
-<a href=#170 id=170 data-nosnippet>170</a>    </span><span class="attr">#[must_use]
-<a href=#171 id=171 data-nosnippet>171</a>    </span><span class="kw">pub fn </span>themed(<span class="kw-2">mut </span><span class="self">self</span>, token: hydra_ui::theme::Token) -&gt; <span class="self">Self </span>{
-<a href=#172 id=172 data-nosnippet>172</a>        <span class="kw">if </span><span class="self">self</span>.color == <span class="prelude-val">Some</span>(token.bare()) {
-<a href=#173 id=173 data-nosnippet>173</a>            <span class="self">self</span>.color = <span class="prelude-val">None</span>;
-<a href=#174 id=174 data-nosnippet>174</a>        }
-<a href=#175 id=175 data-nosnippet>175</a>        <span class="self">self
-<a href=#176 id=176 data-nosnippet>176</a>    </span>}
-<a href=#177 id=177 data-nosnippet>177</a>
-<a href=#178 id=178 data-nosnippet>178</a>    <span class="kw">const fn </span>default_ring() -&gt; u8 {
-<a href=#179 id=179 data-nosnippet>179</a>        <span class="self">Self</span>::RING
-<a href=#180 id=180 data-nosnippet>180</a>    }
-<a href=#181 id=181 data-nosnippet>181</a>
-<a href=#182 id=182 data-nosnippet>182</a>    <span class="kw">const fn </span>default_outline() -&gt; u8 {
-<a href=#183 id=183 data-nosnippet>183</a>        <span class="self">Self</span>::OUTLINE
-<a href=#184 id=184 data-nosnippet>184</a>    }
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates\hydra-gui\src\bar.rs`."><title>bar.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="hydra_gui" data-themes="" data-resource-suffix="" data-rustdoc-version="1.96.1 (31fca3adb 2026-06-26)" data-channel="1.96.1" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="../../static.files/src-script-813739b1.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><h1><div class="sub-heading">hydra_gui/</div>bar.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap digits-3"><pre class="rust"><code><a href=#1 id=1 data-nosnippet>1</a><span class="doccomment">//! A progress bar: it fills across or upright (or as an orb, a ring, or a
+<a href=#2 id=2 data-nosnippet>2</a>//! panel under its stat's emblem), its
+<a href=#3 id=3 data-nosnippet>3</a>//! height and width adjustable, with an overlay laid over it, and text
+<a href=#4 id=4 data-nosnippet>4</a>//! inside it, outside it on any of the four sides, or none -- the text
+<a href=#5 id=5 data-nosnippet>5</a>//! numbers, a percent, a label, or any mix of them.
+<a href=#6 id=6 data-nosnippet>6</a>//!
+<a href=#7 id=7 data-nosnippet>7</a>//! An overlay may be a skin's frame painted over the bar, a nine-slice
+<a href=#8 id=8 data-nosnippet>8</a>//! ([`Overlay::framed`]). Unlike egui's own bar, an empty bar paints no
+<a href=#9 id=9 data-nosnippet>9</a>//! sliver of fill at zero.
+<a href=#10 id=10 data-nosnippet>10</a>
+<a href=#11 id=11 data-nosnippet>11</a></span><span class="kw">use </span>std::sync::Arc;
+<a href=#12 id=12 data-nosnippet>12</a>
+<a href=#13 id=13 data-nosnippet>13</a><span class="kw">use </span>egui::{Align2, Color32, Galley, Rect, Sense, Vec2, WidgetInfo, WidgetType};
+<a href=#14 id=14 data-nosnippet>14</a>
+<a href=#15 id=15 data-nosnippet>15</a><span class="kw">use </span><span class="kw">crate</span>::theme::readable_on;
+<a href=#16 id=16 data-nosnippet>16</a>
+<a href=#17 id=17 data-nosnippet>17</a><span class="doccomment">/// Which way a bar fills as its value grows.
+<a href=#18 id=18 data-nosnippet>18</a></span><span class="attr">#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+<a href=#19 id=19 data-nosnippet>19</a>#[serde(rename_all = <span class="string">"snake_case"</span>)]
+<a href=#20 id=20 data-nosnippet>20</a></span><span class="kw">pub enum </span>Fills {
+<a href=#21 id=21 data-nosnippet>21</a>    <span class="doccomment">/// Horizontal, from the left edge.
+<a href=#22 id=22 data-nosnippet>22</a>    </span><span class="attr">#[default]
+<a href=#23 id=23 data-nosnippet>23</a>    </span>Right,
+<a href=#24 id=24 data-nosnippet>24</a>    <span class="doccomment">/// Horizontal, from the right edge.
+<a href=#25 id=25 data-nosnippet>25</a>    </span>Left,
+<a href=#26 id=26 data-nosnippet>26</a>    <span class="doccomment">/// Vertical, from the bottom edge.
+<a href=#27 id=27 data-nosnippet>27</a>    </span>Up,
+<a href=#28 id=28 data-nosnippet>28</a>    <span class="doccomment">/// Vertical, from the top edge.
+<a href=#29 id=29 data-nosnippet>29</a>    </span>Down,
+<a href=#30 id=30 data-nosnippet>30</a>    <span class="doccomment">/// A circle, filling from the bottom as a flask fills: a health or mana
+<a href=#31 id=31 data-nosnippet>31</a>    /// orb.
+<a href=#32 id=32 data-nosnippet>32</a>    </span>Orb,
+<a href=#33 id=33 data-nosnippet>33</a>    <span class="doccomment">/// A ring, filling clockwise from the top.
+<a href=#34 id=34 data-nosnippet>34</a>    </span>Ring,
+<a href=#35 id=35 data-nosnippet>35</a>    <span class="doccomment">/// A panel the fill rises in from the bottom, its stat's emblem over
+<a href=#36 id=36 data-nosnippet>36</a>    /// its middle: the whole of its space, as wide and tall as it is given.
+<a href=#37 id=37 data-nosnippet>37</a>    </span>Panel,
+<a href=#38 id=38 data-nosnippet>38</a>}
+<a href=#39 id=39 data-nosnippet>39</a>
+<a href=#40 id=40 data-nosnippet>40</a><span class="doccomment">/// The track under a ring's or a bar's fill where no background picture is
+<a href=#41 id=41 data-nosnippet>41</a>/// chosen: what the empty part shows, so a ring at nothing still shows.
+<a href=#42 id=42 data-nosnippet>42</a></span><span class="attr">#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+<a href=#43 id=43 data-nosnippet>43</a>#[serde(rename_all = <span class="string">"snake_case"</span>)]
+<a href=#44 id=44 data-nosnippet>44</a></span><span class="kw">pub enum </span>Track {
+<a href=#45 id=45 data-nosnippet>45</a>    <span class="doccomment">/// A tube: the band shaded across its width, darker at the edges and
+<a href=#46 id=46 data-nosnippet>46</a>    /// lighter in the middle.
+<a href=#47 id=47 data-nosnippet>47</a>    </span><span class="attr">#[default]
+<a href=#48 id=48 data-nosnippet>48</a>    </span>Tube,
+<a href=#49 id=49 data-nosnippet>49</a>    <span class="doccomment">/// A tube with a dark, dull cast of the bar's colour.
+<a href=#50 id=50 data-nosnippet>50</a>    </span>Tinted,
+<a href=#51 id=51 data-nosnippet>51</a>    <span class="doccomment">/// The fill's own strip, faint and uncoloured: the fill brings it to
+<a href=#52 id=52 data-nosnippet>52</a>    /// full brightness as it fills. With no fill strip, a tube.
+<a href=#53 id=53 data-nosnippet>53</a>    </span>Ghost,
+<a href=#54 id=54 data-nosnippet>54</a>}
+<a href=#55 id=55 data-nosnippet>55</a>
+<a href=#56 id=56 data-nosnippet>56</a><span class="doccomment">/// Where a bar's text goes.
+<a href=#57 id=57 data-nosnippet>57</a></span><span class="attr">#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+<a href=#58 id=58 data-nosnippet>58</a>#[serde(rename_all = <span class="string">"snake_case"</span>)]
+<a href=#59 id=59 data-nosnippet>59</a></span><span class="kw">pub enum </span>Place {
+<a href=#60 id=60 data-nosnippet>60</a>    <span class="doccomment">/// Over the bar, centred.
+<a href=#61 id=61 data-nosnippet>61</a>    </span><span class="attr">#[default]
+<a href=#62 id=62 data-nosnippet>62</a>    </span>Inside,
+<a href=#63 id=63 data-nosnippet>63</a>    <span class="doccomment">/// Above the bar.
+<a href=#64 id=64 data-nosnippet>64</a>    </span>Above,
+<a href=#65 id=65 data-nosnippet>65</a>    <span class="doccomment">/// Below the bar.
+<a href=#66 id=66 data-nosnippet>66</a>    </span>Below,
+<a href=#67 id=67 data-nosnippet>67</a>    <span class="doccomment">/// To the bar's left.
+<a href=#68 id=68 data-nosnippet>68</a>    </span>Left,
+<a href=#69 id=69 data-nosnippet>69</a>    <span class="doccomment">/// To the bar's right.
+<a href=#70 id=70 data-nosnippet>70</a>    </span>Right,
+<a href=#71 id=71 data-nosnippet>71</a>    <span class="doccomment">/// Its label and the game's word above it, its numbers and percent in
+<a href=#72 id=72 data-nosnippet>72</a>    /// its lower right corner: an emblem panel's.
+<a href=#73 id=73 data-nosnippet>73</a>    </span>Corner,
+<a href=#74 id=74 data-nosnippet>74</a>    <span class="doccomment">/// No text at all.
+<a href=#75 id=75 data-nosnippet>75</a>    </span>Hidden,
+<a href=#76 id=76 data-nosnippet>76</a>}
+<a href=#77 id=77 data-nosnippet>77</a>
+<a href=#78 id=78 data-nosnippet>78</a><span class="doccomment">/// What a bar's text says, in this order: its label, the game's word for
+<a href=#79 id=79 data-nosnippet>79</a>/// its state, its numbers (`current/max`), its percent. Any combination;
+<a href=#80 id=80 data-nosnippet>80</a>/// none is no text.
+<a href=#81 id=81 data-nosnippet>81</a></span><span class="attr">#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+<a href=#82 id=82 data-nosnippet>82</a>#[expect(
+<a href=#83 id=83 data-nosnippet>83</a>    clippy::struct_excessive_bools,
+<a href=#84 id=84 data-nosnippet>84</a>    reason = <span class="string">"what a bar's text says: each part on or off on its own, as the player picks"
+<a href=#85 id=85 data-nosnippet>85</a></span>)]
+<a href=#86 id=86 data-nosnippet>86</a></span><span class="kw">pub struct </span>Says {
+<a href=#87 id=87 data-nosnippet>87</a>    <span class="doccomment">/// The bar's label: "HP".
+<a href=#88 id=88 data-nosnippet>88</a>    </span><span class="kw">pub </span>label: bool,
+<a href=#89 id=89 data-nosnippet>89</a>    <span class="doccomment">/// Its value out of its most: "350/400". Left out when either is unknown.
+<a href=#90 id=90 data-nosnippet>90</a>    </span><span class="kw">pub </span>numbers: bool,
+<a href=#91 id=91 data-nosnippet>91</a>    <span class="doccomment">/// Its percent: "87%".
+<a href=#92 id=92 data-nosnippet>92</a>    </span><span class="kw">pub </span>percent: bool,
+<a href=#93 id=93 data-nosnippet>93</a>    <span class="doccomment">/// What the game calls its state, after the label: "offensive",
+<a href=#94 id=94 data-nosnippet>94</a>    /// "Light", "clear as a bell". Only a bar the game words has any: stance,
+<a href=#95 id=95 data-nosnippet>95</a>    /// encumbrance, the mind and the next level. With the label and the
+<a href=#96 id=96 data-nosnippet>96</a>    /// percent, any mix of the three can be shown.
+<a href=#97 id=97 data-nosnippet>97</a>    </span><span class="attr">#[serde(default)]
+<a href=#98 id=98 data-nosnippet>98</a>    </span><span class="kw">pub </span>words: bool,
+<a href=#99 id=99 data-nosnippet>99</a>}
+<a href=#100 id=100 data-nosnippet>100</a>
+<a href=#101 id=101 data-nosnippet>101</a><span class="kw">impl </span>Default <span class="kw">for </span>Says {
+<a href=#102 id=102 data-nosnippet>102</a>    <span class="doccomment">/// The label and the percent, as the hub's cards have them.
+<a href=#103 id=103 data-nosnippet>103</a>    </span><span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+<a href=#104 id=104 data-nosnippet>104</a>        <span class="self">Self </span>{
+<a href=#105 id=105 data-nosnippet>105</a>            label: <span class="bool-val">true</span>,
+<a href=#106 id=106 data-nosnippet>106</a>            numbers: <span class="bool-val">false</span>,
+<a href=#107 id=107 data-nosnippet>107</a>            percent: <span class="bool-val">true</span>,
+<a href=#108 id=108 data-nosnippet>108</a>            words: <span class="bool-val">false</span>,
+<a href=#109 id=109 data-nosnippet>109</a>        }
+<a href=#110 id=110 data-nosnippet>110</a>    }
+<a href=#111 id=111 data-nosnippet>111</a>}
+<a href=#112 id=112 data-nosnippet>112</a>
+<a href=#113 id=113 data-nosnippet>113</a><span class="doccomment">/// How a bar widget draws its bar: which way it fills, where its text goes,
+<a href=#114 id=114 data-nosnippet>114</a>/// what the text says, its colour, and an image laid over it. The player
+<a href=#115 id=115 data-nosnippet>115</a>/// picks it on the widget's own page in the settings menu, which its
+<a href=#116 id=116 data-nosnippet>116</a>/// right-click opens, and it is kept with the layout.
+<a href=#117 id=117 data-nosnippet>117</a></span><span class="attr">#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+<a href=#118 id=118 data-nosnippet>118</a></span><span class="kw">pub struct </span>Look {
+<a href=#119 id=119 data-nosnippet>119</a>    <span class="doccomment">/// Which way it fills.
+<a href=#120 id=120 data-nosnippet>120</a>    </span><span class="kw">pub </span>fills: Fills,
+<a href=#121 id=121 data-nosnippet>121</a>    <span class="doccomment">/// Where its text goes.
+<a href=#122 id=122 data-nosnippet>122</a>    </span><span class="kw">pub </span>place: Place,
+<a href=#123 id=123 data-nosnippet>123</a>    <span class="doccomment">/// What its text says.
+<a href=#124 id=124 data-nosnippet>124</a>    </span><span class="kw">pub </span>says: Says,
+<a href=#125 id=125 data-nosnippet>125</a>    <span class="doccomment">/// Its fill's colour, red, green and blue, when the player chose one;
+<a href=#126 id=126 data-nosnippet>126</a>    /// none is the theme's for its kind.
+<a href=#127 id=127 data-nosnippet>127</a>    </span><span class="attr">#[serde(default, skip_serializing_if = <span class="string">"Option::is_none"</span>)]
+<a href=#128 id=128 data-nosnippet>128</a>    </span><span class="kw">pub </span>color: <span class="prelude-ty">Option</span>&lt;[u8; <span class="number">3</span>]&gt;,
+<a href=#129 id=129 data-nosnippet>129</a>    <span class="doccomment">/// An image laid over it, by its path: an orb's rim, a whole picture;
+<a href=#130 id=130 data-nosnippet>130</a>    /// a ring's or a bar's kit, the folder holding its rails, caps and
+<a href=#131 id=131 data-nosnippet>131</a>    /// `kit.toml`. None unset.
+<a href=#132 id=132 data-nosnippet>132</a>    </span><span class="attr">#[serde(default, skip_serializing_if = <span class="string">"Option::is_none"</span>)]
+<a href=#133 id=133 data-nosnippet>133</a>    </span><span class="kw">pub </span>overlay: <span class="prelude-ty">Option</span>&lt;String&gt;,
+<a href=#134 id=134 data-nosnippet>134</a>    <span class="doccomment">/// An image under its fill, in place of its trough, by its file's path:
+<a href=#135 id=135 data-nosnippet>135</a>    /// an orb's glass, or a ring's or a bar's strip background; none, and an
+<a href=#136 id=136 data-nosnippet>136</a>    /// orb wears the glass Hydra ships, a ring or a bar its [`Self::track`].
+<a href=#137 id=137 data-nosnippet>137</a>    </span><span class="attr">#[serde(default, skip_serializing_if = <span class="string">"Option::is_none"</span>)]
+<a href=#138 id=138 data-nosnippet>138</a>    </span><span class="kw">pub </span>background: <span class="prelude-ty">Option</span>&lt;String&gt;,
+<a href=#139 id=139 data-nosnippet>139</a>    <span class="doccomment">/// What a ring or a bar shows under its fill with no background chosen.
+<a href=#140 id=140 data-nosnippet>140</a>    </span><span class="attr">#[serde(default, skip_serializing_if = <span class="string">"is_default_track"</span>)]
+<a href=#141 id=141 data-nosnippet>141</a>    </span><span class="kw">pub </span>track: Track,
+<a href=#142 id=142 data-nosnippet>142</a>    <span class="doccomment">/// An image its fill uncovers as it fills, by its file's path: a liquid,
+<a href=#143 id=143 data-nosnippet>143</a>    /// grey art in the fill's colour.
+<a href=#144 id=144 data-nosnippet>144</a>    </span><span class="attr">#[serde(default, skip_serializing_if = <span class="string">"Option::is_none"</span>)]
+<a href=#145 id=145 data-nosnippet>145</a>    </span><span class="kw">pub </span>fill_image: <span class="prelude-ty">Option</span>&lt;String&gt;,
+<a href=#146 id=146 data-nosnippet>146</a>    <span class="doccomment">/// A ring's thickness, in percent of its radius.
+<a href=#147 id=147 data-nosnippet>147</a>    </span><span class="attr">#[serde(default = <span class="string">"Look::default_ring"</span>)]
+<a href=#148 id=148 data-nosnippet>148</a>    </span><span class="kw">pub </span>ring: u8,
+<a href=#149 id=149 data-nosnippet>149</a>    <span class="doccomment">/// A clock in place of the bar, for a bar that counts down to
+<a href=#150 id=150 data-nosnippet>150</a>    /// something: the pulse's seconds to its earliest, then below zero
+<a href=#151 id=151 data-nosnippet>151</a>    /// until it comes.
+<a href=#152 id=152 data-nosnippet>152</a>    </span><span class="attr">#[serde(default, skip_serializing_if = <span class="string">"std::ops::Not::not"</span>)]
+<a href=#153 id=153 data-nosnippet>153</a>    </span><span class="kw">pub </span>clock: bool,
+<a href=#154 id=154 data-nosnippet>154</a>    <span class="doccomment">/// Colours by how full it is: from each threshold's percent up, its
+<a href=#155 id=155 data-nosnippet>155</a>    /// colour, over [`Self::color`]; below them all, that one. In order,
+<a href=#156 id=156 data-nosnippet>156</a>    /// the lowest first.
+<a href=#157 id=157 data-nosnippet>157</a>    </span><span class="attr">#[serde(default, skip_serializing_if = <span class="string">"Vec::is_empty"</span>)]
+<a href=#158 id=158 data-nosnippet>158</a>    </span><span class="kw">pub </span>thresholds: Vec&lt;Threshold&gt;,
+<a href=#159 id=159 data-nosnippet>159</a>    <span class="doccomment">/// Its words' colour, red, green and blue, when the player chose one;
+<a href=#160 id=160 data-nosnippet>160</a>    /// none is black or white inside the bar, whichever reads over what is
+<a href=#161 id=161 data-nosnippet>161</a>    /// behind them, and the theme's text colour beside it.
+<a href=#162 id=162 data-nosnippet>162</a>    </span><span class="attr">#[serde(default, skip_serializing_if = <span class="string">"Option::is_none"</span>)]
+<a href=#163 id=163 data-nosnippet>163</a>    </span><span class="kw">pub </span>text_color: <span class="prelude-ty">Option</span>&lt;[u8; <span class="number">3</span>]&gt;,
+<a href=#164 id=164 data-nosnippet>164</a>    <span class="doccomment">/// The colour of the outline round its words, when the player chose
+<a href=#165 id=165 data-nosnippet>165</a>    /// one; none is the other of black and white from the words inside the
+<a href=#166 id=166 data-nosnippet>166</a>    /// bar, and no outline beside it.
+<a href=#167 id=167 data-nosnippet>167</a>    </span><span class="attr">#[serde(default, skip_serializing_if = <span class="string">"Option::is_none"</span>)]
+<a href=#168 id=168 data-nosnippet>168</a>    </span><span class="kw">pub </span>outline_color: <span class="prelude-ty">Option</span>&lt;[u8; <span class="number">3</span>]&gt;,
+<a href=#169 id=169 data-nosnippet>169</a>    <span class="doccomment">/// The outline's width, in points: 0 none, at most [`Look::OUTLINE_MOST`].
+<a href=#170 id=170 data-nosnippet>170</a>    </span><span class="attr">#[serde(
+<a href=#171 id=171 data-nosnippet>171</a>        default = <span class="string">"Look::default_outline"</span>,
+<a href=#172 id=172 data-nosnippet>172</a>        skip_serializing_if = <span class="string">"Look::is_default_outline"
+<a href=#173 id=173 data-nosnippet>173</a>    </span>)]
+<a href=#174 id=174 data-nosnippet>174</a>    </span><span class="kw">pub </span>outline: u8,
+<a href=#175 id=175 data-nosnippet>175</a>    <span class="doccomment">/// Its stat's second emblem, where it has one: stamina's lungs rather
+<a href=#176 id=176 data-nosnippet>176</a>    /// than its winged boot, the pulse's bell rather than its watch.
+<a href=#177 id=177 data-nosnippet>177</a>    </span><span class="attr">#[serde(default, skip_serializing_if = <span class="string">"std::ops::Not::not"</span>)]
+<a href=#178 id=178 data-nosnippet>178</a>    </span><span class="kw">pub </span>second_emblem: bool,
+<a href=#179 id=179 data-nosnippet>179</a>    <span class="doccomment">/// The stat whose emblem a panel shows, its picture's name in an
+<a href=#180 id=180 data-nosnippet>180</a>    /// emblem style (`health`, `stamina_lungs`): set as the widget is
+<a href=#181 id=181 data-nosnippet>181</a>    /// drawn, from what it shows, and never saved.
+<a href=#182 id=182 data-nosnippet>182</a>    </span><span class="attr">#[serde(skip)]
+<a href=#183 id=183 data-nosnippet>183</a>    </span><span class="kw">pub </span>stat: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">'static </span>str&gt;,
+<a href=#184 id=184 data-nosnippet>184</a>}
 <a href=#185 id=185 data-nosnippet>185</a>
-<a href=#186 id=186 data-nosnippet>186</a>    <span class="attr">#[expect(
-<a href=#187 id=187 data-nosnippet>187</a>        clippy::trivially_copy_pass_by_ref,
-<a href=#188 id=188 data-nosnippet>188</a>        reason = <span class="string">"serde's skip_serializing_if hands a reference"
-<a href=#189 id=189 data-nosnippet>189</a>    </span>)]
-<a href=#190 id=190 data-nosnippet>190</a>    </span><span class="kw">const fn </span>is_default_outline(outline: <span class="kw-2">&amp;</span>u8) -&gt; bool {
-<a href=#191 id=191 data-nosnippet>191</a>        <span class="kw-2">*</span>outline == <span class="self">Self</span>::OUTLINE
-<a href=#192 id=192 data-nosnippet>192</a>    }
-<a href=#193 id=193 data-nosnippet>193</a>}
+<a href=#186 id=186 data-nosnippet>186</a><span class="kw">pub use </span>hydra_board::targets::Threshold;
+<a href=#187 id=187 data-nosnippet>187</a>
+<a href=#188 id=188 data-nosnippet>188</a><span class="kw">impl </span>Look {
+<a href=#189 id=189 data-nosnippet>189</a>    <span class="doccomment">/// A ring's thickness unless the player chose: a quarter of its radius.
+<a href=#190 id=190 data-nosnippet>190</a>    </span><span class="kw">pub const </span>RING: u8 = <span class="number">25</span>;
+<a href=#191 id=191 data-nosnippet>191</a>
+<a href=#192 id=192 data-nosnippet>192</a>    <span class="doccomment">/// The outline round a bar's words unless the player chose: a point.
+<a href=#193 id=193 data-nosnippet>193</a>    </span><span class="kw">pub const </span>OUTLINE: u8 = <span class="number">1</span>;
 <a href=#194 id=194 data-nosnippet>194</a>
-<a href=#195 id=195 data-nosnippet>195</a><span class="kw">impl </span>Fills {
-<a href=#196 id=196 data-nosnippet>196</a>    <span class="doccomment">/// Whether it is round, an orb or a ring: drawn in the square in the
-<a href=#197 id=197 data-nosnippet>197</a>    /// middle of its space.
-<a href=#198 id=198 data-nosnippet>198</a>    </span><span class="attr">#[must_use]
-<a href=#199 id=199 data-nosnippet>199</a>    </span><span class="kw">pub const fn </span>round(<span class="self">self</span>) -&gt; bool {
-<a href=#200 id=200 data-nosnippet>200</a>        <span class="macro">matches!</span>(<span class="self">self</span>, <span class="self">Self</span>::Orb | <span class="self">Self</span>::Ring)
-<a href=#201 id=201 data-nosnippet>201</a>    }
-<a href=#202 id=202 data-nosnippet>202</a>}
-<a href=#203 id=203 data-nosnippet>203</a>
-<a href=#204 id=204 data-nosnippet>204</a><span class="doccomment">/// Where a bar's words are drawn again, in the outline's colour, for an
-<a href=#205 id=205 data-nosnippet>205</a>/// outline `width` points wide: none for 0; a point each way for 1; and for
-<a href=#206 id=206 data-nosnippet>206</a>/// a wider one, each way and each corner at every point out to its width.
-<a href=#207 id=207 data-nosnippet>207</a></span><span class="kw">fn </span>outline_offsets(width: u8) -&gt; Vec&lt;Vec2&gt; {
-<a href=#208 id=208 data-nosnippet>208</a>    <span class="kw">let </span>ways = |out: f32| {
-<a href=#209 id=209 data-nosnippet>209</a>        [
-<a href=#210 id=210 data-nosnippet>210</a>            Vec2::new(-out, <span class="number">0.0</span>),
-<a href=#211 id=211 data-nosnippet>211</a>            Vec2::new(out, <span class="number">0.0</span>),
-<a href=#212 id=212 data-nosnippet>212</a>            Vec2::new(<span class="number">0.0</span>, -out),
-<a href=#213 id=213 data-nosnippet>213</a>            Vec2::new(<span class="number">0.0</span>, out),
-<a href=#214 id=214 data-nosnippet>214</a>        ]
-<a href=#215 id=215 data-nosnippet>215</a>    };
-<a href=#216 id=216 data-nosnippet>216</a>    <span class="kw">match </span>width {
-<a href=#217 id=217 data-nosnippet>217</a>        <span class="number">0 </span>=&gt; Vec::new(),
-<a href=#218 id=218 data-nosnippet>218</a>        <span class="number">1 </span>=&gt; ways(<span class="number">1.0</span>).to_vec(),
-<a href=#219 id=219 data-nosnippet>219</a>        <span class="kw">_ </span>=&gt; (<span class="number">1</span>..=width)
-<a href=#220 id=220 data-nosnippet>220</a>            .map(f32::from)
-<a href=#221 id=221 data-nosnippet>221</a>            .flat_map(|out| {
-<a href=#222 id=222 data-nosnippet>222</a>                ways(out).into_iter().chain([
-<a href=#223 id=223 data-nosnippet>223</a>                    Vec2::new(-out, -out),
-<a href=#224 id=224 data-nosnippet>224</a>                    Vec2::new(out, -out),
-<a href=#225 id=225 data-nosnippet>225</a>                    Vec2::new(-out, out),
-<a href=#226 id=226 data-nosnippet>226</a>                    Vec2::new(out, out),
-<a href=#227 id=227 data-nosnippet>227</a>                ])
-<a href=#228 id=228 data-nosnippet>228</a>            })
-<a href=#229 id=229 data-nosnippet>229</a>            .collect(),
-<a href=#230 id=230 data-nosnippet>230</a>    }
-<a href=#231 id=231 data-nosnippet>231</a>}
-<a href=#232 id=232 data-nosnippet>232</a>
-<a href=#233 id=233 data-nosnippet>233</a><span class="doccomment">/// The least a bar is, either way, however little room it is given.
-<a href=#234 id=234 data-nosnippet>234</a></span><span class="kw">const </span>LEAST: f32 = <span class="number">8.0</span>;
-<a href=#235 id=235 data-nosnippet>235</a>
-<a href=#236 id=236 data-nosnippet>236</a><span class="doccomment">/// A bar's value: its percent, and its numbers when the game gave them.
-<a href=#237 id=237 data-nosnippet>237</a></span><span class="attr">#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-<a href=#238 id=238 data-nosnippet>238</a></span><span class="kw">pub struct </span>Amount {
-<a href=#239 id=239 data-nosnippet>239</a>    <span class="doccomment">/// 0-100; more is shown full.
-<a href=#240 id=240 data-nosnippet>240</a>    </span><span class="kw">pub </span>percent: u32,
-<a href=#241 id=241 data-nosnippet>241</a>    <span class="doccomment">/// The value now, when known; a vital can be below zero.
-<a href=#242 id=242 data-nosnippet>242</a>    </span><span class="kw">pub </span>current: <span class="prelude-ty">Option</span>&lt;i32&gt;,
-<a href=#243 id=243 data-nosnippet>243</a>    <span class="doccomment">/// The most it can be, when known.
-<a href=#244 id=244 data-nosnippet>244</a>    </span><span class="kw">pub </span>max: <span class="prelude-ty">Option</span>&lt;i32&gt;,
-<a href=#245 id=245 data-nosnippet>245</a>}
-<a href=#246 id=246 data-nosnippet>246</a>
-<a href=#247 id=247 data-nosnippet>247</a><span class="doccomment">/// A progress bar: `ui.add(Bar::new("HP", Some(amount)).fill(HEALTH))`.
-<a href=#248 id=248 data-nosnippet>248</a></span><span class="attr">#[derive(Clone, Debug)]
-<a href=#249 id=249 data-nosnippet>249</a>#[must_use = <span class="string">"a bar draws nothing until added to a Ui"</span>]
-<a href=#250 id=250 data-nosnippet>250</a></span><span class="kw">pub struct </span>Bar&lt;<span class="lifetime">'a</span>&gt; {
-<a href=#251 id=251 data-nosnippet>251</a>    label: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>str,
-<a href=#252 id=252 data-nosnippet>252</a>    state: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>str&gt;,
-<a href=#253 id=253 data-nosnippet>253</a>    value: <span class="prelude-ty">Option</span>&lt;Amount&gt;,
-<a href=#254 id=254 data-nosnippet>254</a>    fill: <span class="prelude-ty">Option</span>&lt;Color32&gt;,
-<a href=#255 id=255 data-nosnippet>255</a>    fills: Fills,
-<a href=#256 id=256 data-nosnippet>256</a>    size: <span class="prelude-ty">Option</span>&lt;Vec2&gt;,
-<a href=#257 id=257 data-nosnippet>257</a>    place: Place,
-<a href=#258 id=258 data-nosnippet>258</a>    says: Says,
-<a href=#259 id=259 data-nosnippet>259</a>    overlay: <span class="prelude-ty">Option</span>&lt;Overlay&gt;,
-<a href=#260 id=260 data-nosnippet>260</a>    background: <span class="prelude-ty">Option</span>&lt;egui::TextureId&gt;,
-<a href=#261 id=261 data-nosnippet>261</a>    fill_image: <span class="prelude-ty">Option</span>&lt;egui::TextureId&gt;,
-<a href=#262 id=262 data-nosnippet>262</a>    ring: u8,
-<a href=#263 id=263 data-nosnippet>263</a>    <span class="doccomment">/// Its words' colour, when chosen.
-<a href=#264 id=264 data-nosnippet>264</a>    </span>text_color: <span class="prelude-ty">Option</span>&lt;Color32&gt;,
-<a href=#265 id=265 data-nosnippet>265</a>    <span class="doccomment">/// Its words' outline's colour, when chosen.
-<a href=#266 id=266 data-nosnippet>266</a>    </span>outline_color: <span class="prelude-ty">Option</span>&lt;Color32&gt;,
-<a href=#267 id=267 data-nosnippet>267</a>    <span class="doccomment">/// Its words' outline's width, in points.
-<a href=#268 id=268 data-nosnippet>268</a>    </span>outline: u8,
-<a href=#269 id=269 data-nosnippet>269</a>}
-<a href=#270 id=270 data-nosnippet>270</a>
-<a href=#271 id=271 data-nosnippet>271</a><span class="doccomment">/// The gap between a bar and text outside it.
-<a href=#272 id=272 data-nosnippet>272</a></span><span class="kw">const </span>GAP: f32 = <span class="number">4.0</span>;
-<a href=#273 id=273 data-nosnippet>273</a>
-<a href=#274 id=274 data-nosnippet>274</a><span class="doccomment">/// `bar` no thicker than `thickness` across the way it fills, centred where
-<a href=#275 id=275 data-nosnippet>275</a>/// it was; a `thickness` of 0 leaves it as it is, and so does an orb's or a
-<a href=#276 id=276 data-nosnippet>276</a>/// ring's, which are as thick as they are wide.
-<a href=#277 id=277 data-nosnippet>277</a></span><span class="kw">fn </span>thinned(bar: egui::Rect, fills: Fills, thickness: f32) -&gt; egui::Rect {
-<a href=#278 id=278 data-nosnippet>278</a>    <span class="kw">if </span>thickness &lt;= <span class="number">0.0 </span>{
-<a href=#279 id=279 data-nosnippet>279</a>        <span class="kw">return </span>bar;
-<a href=#280 id=280 data-nosnippet>280</a>    }
-<a href=#281 id=281 data-nosnippet>281</a>    <span class="kw">let </span>size = <span class="kw">match </span>fills {
-<a href=#282 id=282 data-nosnippet>282</a>        Fills::Right | Fills::Left =&gt; Vec2::new(bar.width(), bar.height().min(thickness)),
-<a href=#283 id=283 data-nosnippet>283</a>        Fills::Up | Fills::Down =&gt; Vec2::new(bar.width().min(thickness), bar.height()),
-<a href=#284 id=284 data-nosnippet>284</a>        Fills::Orb | Fills::Ring =&gt; <span class="kw">return </span>bar,
-<a href=#285 id=285 data-nosnippet>285</a>    };
-<a href=#286 id=286 data-nosnippet>286</a>    egui::Rect::from_center_size(bar.center(), size)
-<a href=#287 id=287 data-nosnippet>287</a>}
-<a href=#288 id=288 data-nosnippet>288</a>
-<a href=#289 id=289 data-nosnippet>289</a><span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; Bar&lt;<span class="lifetime">'a</span>&gt; {
-<a href=#290 id=290 data-nosnippet>290</a>    <span class="doccomment">/// A bar labelled `label` at `value`; `None` is unknown, drawn empty
-<a href=#291 id=291 data-nosnippet>291</a>    /// with `?` for its numbers and percent, never as a guess.
-<a href=#292 id=292 data-nosnippet>292</a>    </span><span class="kw">pub fn </span>new(label: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>str, value: <span class="prelude-ty">Option</span>&lt;Amount&gt;) -&gt; <span class="self">Self </span>{
-<a href=#293 id=293 data-nosnippet>293</a>        <span class="self">Self </span>{
-<a href=#294 id=294 data-nosnippet>294</a>            label,
-<a href=#295 id=295 data-nosnippet>295</a>            state: <span class="prelude-val">None</span>,
-<a href=#296 id=296 data-nosnippet>296</a>            value,
-<a href=#297 id=297 data-nosnippet>297</a>            fill: <span class="prelude-val">None</span>,
-<a href=#298 id=298 data-nosnippet>298</a>            fills: Fills::default(),
-<a href=#299 id=299 data-nosnippet>299</a>            size: <span class="prelude-val">None</span>,
-<a href=#300 id=300 data-nosnippet>300</a>            place: Place::default(),
-<a href=#301 id=301 data-nosnippet>301</a>            says: Says::default(),
-<a href=#302 id=302 data-nosnippet>302</a>            overlay: <span class="prelude-val">None</span>,
-<a href=#303 id=303 data-nosnippet>303</a>            background: <span class="prelude-val">None</span>,
-<a href=#304 id=304 data-nosnippet>304</a>            fill_image: <span class="prelude-val">None</span>,
-<a href=#305 id=305 data-nosnippet>305</a>            ring: Look::RING,
-<a href=#306 id=306 data-nosnippet>306</a>            text_color: <span class="prelude-val">None</span>,
-<a href=#307 id=307 data-nosnippet>307</a>            outline_color: <span class="prelude-val">None</span>,
-<a href=#308 id=308 data-nosnippet>308</a>            outline: Look::OUTLINE,
-<a href=#309 id=309 data-nosnippet>309</a>        }
-<a href=#310 id=310 data-nosnippet>310</a>    }
-<a href=#311 id=311 data-nosnippet>311</a>
-<a href=#312 id=312 data-nosnippet>312</a>    <span class="doccomment">/// The fill's colour; the theme's selection colour otherwise.
-<a href=#313 id=313 data-nosnippet>313</a>    </span><span class="kw">pub fn </span>fill(<span class="kw-2">mut </span><span class="self">self</span>, color: Color32) -&gt; <span class="self">Self </span>{
-<a href=#314 id=314 data-nosnippet>314</a>        <span class="self">self</span>.fill = <span class="prelude-val">Some</span>(color);
-<a href=#315 id=315 data-nosnippet>315</a>        <span class="self">self
-<a href=#316 id=316 data-nosnippet>316</a>    </span>}
-<a href=#317 id=317 data-nosnippet>317</a>
-<a href=#318 id=318 data-nosnippet>318</a>    <span class="doccomment">/// Which way it fills.
-<a href=#319 id=319 data-nosnippet>319</a>    </span><span class="kw">pub fn </span>fills(<span class="kw-2">mut </span><span class="self">self</span>, fills: Fills) -&gt; <span class="self">Self </span>{
-<a href=#320 id=320 data-nosnippet>320</a>        <span class="self">self</span>.fills = fills;
-<a href=#321 id=321 data-nosnippet>321</a>        <span class="self">self
-<a href=#322 id=322 data-nosnippet>322</a>    </span>}
-<a href=#323 id=323 data-nosnippet>323</a>
-<a href=#324 id=324 data-nosnippet>324</a>    <span class="doccomment">/// The bar's own width and height, text outside it not counted. Unset,
-<a href=#325 id=325 data-nosnippet>325</a>    /// 72 by 18 across and 18 by 72 upright.
-<a href=#326 id=326 data-nosnippet>326</a>    </span><span class="kw">pub fn </span>size(<span class="kw-2">mut </span><span class="self">self</span>, size: <span class="kw">impl </span>Into&lt;Vec2&gt;) -&gt; <span class="self">Self </span>{
-<a href=#327 id=327 data-nosnippet>327</a>        <span class="self">self</span>.size = <span class="prelude-val">Some</span>(size.into());
-<a href=#328 id=328 data-nosnippet>328</a>        <span class="self">self
-<a href=#329 id=329 data-nosnippet>329</a>    </span>}
-<a href=#330 id=330 data-nosnippet>330</a>
-<a href=#331 id=331 data-nosnippet>331</a>    <span class="doccomment">/// Where its text goes.
-<a href=#332 id=332 data-nosnippet>332</a>    </span><span class="kw">pub fn </span>text(<span class="kw-2">mut </span><span class="self">self</span>, place: Place) -&gt; <span class="self">Self </span>{
-<a href=#333 id=333 data-nosnippet>333</a>        <span class="self">self</span>.place = place;
-<a href=#334 id=334 data-nosnippet>334</a>        <span class="self">self
-<a href=#335 id=335 data-nosnippet>335</a>    </span>}
-<a href=#336 id=336 data-nosnippet>336</a>
-<a href=#337 id=337 data-nosnippet>337</a>    <span class="doccomment">/// What the game calls its state, `words`, said when [`Says::words`]
-<a href=#338 id=338 data-nosnippet>338</a>    /// asks for it.
-<a href=#339 id=339 data-nosnippet>339</a>    </span><span class="kw">pub fn </span>state(<span class="kw-2">mut </span><span class="self">self</span>, words: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>str&gt;) -&gt; <span class="self">Self </span>{
-<a href=#340 id=340 data-nosnippet>340</a>        <span class="self">self</span>.state = words;
-<a href=#341 id=341 data-nosnippet>341</a>        <span class="self">self
-<a href=#342 id=342 data-nosnippet>342</a>    </span>}
-<a href=#343 id=343 data-nosnippet>343</a>
-<a href=#344 id=344 data-nosnippet>344</a>    <span class="doccomment">/// What its text says.
-<a href=#345 id=345 data-nosnippet>345</a>    </span><span class="kw">pub fn </span>says(<span class="kw-2">mut </span><span class="self">self</span>, says: Says) -&gt; <span class="self">Self </span>{
-<a href=#346 id=346 data-nosnippet>346</a>        <span class="self">self</span>.says = says;
-<a href=#347 id=347 data-nosnippet>347</a>        <span class="self">self
-<a href=#348 id=348 data-nosnippet>348</a>    </span>}
-<a href=#349 id=349 data-nosnippet>349</a>
-<a href=#350 id=350 data-nosnippet>350</a>    <span class="doccomment">/// Drawn as `look` says: which way it fills, where its text goes, what
-<a href=#351 id=351 data-nosnippet>351</a>    /// the text says, its colour where the player chose one, and a ring's
-<a href=#352 id=352 data-nosnippet>352</a>    /// thickness. Its images are the caller's to load.
-<a href=#353 id=353 data-nosnippet>353</a>    </span><span class="kw">pub fn </span>look(<span class="self">self</span>, look: <span class="kw-2">&amp;</span>Look) -&gt; <span class="self">Self </span>{
-<a href=#354 id=354 data-nosnippet>354</a>        <span class="kw">let </span><span class="kw-2">mut </span>drawn = <span class="self">self</span>.fills(look.fills).text(look.place).says(look.says);
-<a href=#355 id=355 data-nosnippet>355</a>        <span class="comment">// The highest threshold reached, else its own colour.
-<a href=#356 id=356 data-nosnippet>356</a>        </span><span class="kw">let </span>reached = drawn.value.and_then(|value| {
-<a href=#357 id=357 data-nosnippet>357</a>            look.thresholds
-<a href=#358 id=358 data-nosnippet>358</a>                .iter()
-<a href=#359 id=359 data-nosnippet>359</a>                .filter(|threshold| u32::from(threshold.from) &lt;= value.percent)
-<a href=#360 id=360 data-nosnippet>360</a>                .max_by_key(|threshold| threshold.from)
-<a href=#361 id=361 data-nosnippet>361</a>        });
-<a href=#362 id=362 data-nosnippet>362</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(color) = reached.map(|threshold| threshold.color).or(look.color) {
-<a href=#363 id=363 data-nosnippet>363</a>            drawn = drawn.fill(<span class="kw">crate</span>::theme::rgb(color));
-<a href=#364 id=364 data-nosnippet>364</a>        }
-<a href=#365 id=365 data-nosnippet>365</a>        drawn.ring = look.ring;
-<a href=#366 id=366 data-nosnippet>366</a>        drawn.text_color = look.text_color.map(<span class="kw">crate</span>::theme::rgb);
-<a href=#367 id=367 data-nosnippet>367</a>        drawn.outline_color = look.outline_color.map(<span class="kw">crate</span>::theme::rgb);
-<a href=#368 id=368 data-nosnippet>368</a>        drawn.outline = look.outline.min(Look::OUTLINE_MOST);
-<a href=#369 id=369 data-nosnippet>369</a>        drawn
-<a href=#370 id=370 data-nosnippet>370</a>    }
-<a href=#371 id=371 data-nosnippet>371</a>
-<a href=#372 id=372 data-nosnippet>372</a>    <span class="doccomment">/// An image under the fill, in place of the trough.
-<a href=#373 id=373 data-nosnippet>373</a>    </span><span class="kw">pub fn </span>background(<span class="kw-2">mut </span><span class="self">self</span>, image: egui::TextureId) -&gt; <span class="self">Self </span>{
-<a href=#374 id=374 data-nosnippet>374</a>        <span class="self">self</span>.background = <span class="prelude-val">Some</span>(image);
-<a href=#375 id=375 data-nosnippet>375</a>        <span class="self">self
-<a href=#376 id=376 data-nosnippet>376</a>    </span>}
-<a href=#377 id=377 data-nosnippet>377</a>
-<a href=#378 id=378 data-nosnippet>378</a>    <span class="doccomment">/// An image the fill uncovers as it fills, in place of its colour.
-<a href=#379 id=379 data-nosnippet>379</a>    </span><span class="kw">pub fn </span>fill_image(<span class="kw-2">mut </span><span class="self">self</span>, image: egui::TextureId) -&gt; <span class="self">Self </span>{
-<a href=#380 id=380 data-nosnippet>380</a>        <span class="self">self</span>.fill_image = <span class="prelude-val">Some</span>(image);
-<a href=#381 id=381 data-nosnippet>381</a>        <span class="self">self
-<a href=#382 id=382 data-nosnippet>382</a>    </span>}
-<a href=#383 id=383 data-nosnippet>383</a>
-<a href=#384 id=384 data-nosnippet>384</a>    <span class="doccomment">/// Sized to what `ui` has left, its text outside it counted: as wide and
-<a href=#385 id=385 data-nosnippet>385</a>    /// as tall as the room, across or upright, so the space it is given is its
-<a href=#386 id=386 data-nosnippet>386</a>    /// shape: a bar filling across and made taller grows taller.
-<a href=#387 id=387 data-nosnippet>387</a>    </span><span class="kw">pub fn </span>fitted(<span class="kw-2">mut </span><span class="self">self</span>, ui: <span class="kw-2">&amp;</span>egui::Ui) -&gt; <span class="self">Self </span>{
-<a href=#388 id=388 data-nosnippet>388</a>        <span class="kw">let </span>room = ui.available_size();
-<a href=#389 id=389 data-nosnippet>389</a>        <span class="kw">let </span>words = <span class="self">self</span>.words();
-<a href=#390 id=390 data-nosnippet>390</a>        <span class="kw">let </span>text = <span class="kw">if </span><span class="self">self</span>.place == Place::Inside || <span class="self">self</span>.place == Place::Hidden || words.is_empty()
-<a href=#391 id=391 data-nosnippet>391</a>        {
-<a href=#392 id=392 data-nosnippet>392</a>            Vec2::ZERO
-<a href=#393 id=393 data-nosnippet>393</a>        } <span class="kw">else </span>{
-<a href=#394 id=394 data-nosnippet>394</a>            ui.painter()
-<a href=#395 id=395 data-nosnippet>395</a>                .layout_no_wrap(
-<a href=#396 id=396 data-nosnippet>396</a>                    words,
-<a href=#397 id=397 data-nosnippet>397</a>                    egui::TextStyle::Body.resolve(ui.style()),
-<a href=#398 id=398 data-nosnippet>398</a>                    Color32::PLACEHOLDER,
-<a href=#399 id=399 data-nosnippet>399</a>                )
-<a href=#400 id=400 data-nosnippet>400</a>                .size()
-<a href=#401 id=401 data-nosnippet>401</a>                + Vec2::splat(GAP)
-<a href=#402 id=402 data-nosnippet>402</a>        };
-<a href=#403 id=403 data-nosnippet>403</a>        <span class="kw">let </span>left = <span class="kw">match </span><span class="self">self</span>.place {
-<a href=#404 id=404 data-nosnippet>404</a>            Place::Above | Place::Below =&gt; Vec2::new(room.x, room.y - text.y),
-<a href=#405 id=405 data-nosnippet>405</a>            Place::Left | Place::Right =&gt; Vec2::new(room.x - text.x, room.y),
-<a href=#406 id=406 data-nosnippet>406</a>            Place::Inside | Place::Hidden =&gt; room,
-<a href=#407 id=407 data-nosnippet>407</a>        };
-<a href=#408 id=408 data-nosnippet>408</a>        <span class="self">self</span>.size = <span class="prelude-val">Some</span>(Vec2::new(left.x.max(LEAST), left.y.max(LEAST)));
-<a href=#409 id=409 data-nosnippet>409</a>        <span class="self">self
-<a href=#410 id=410 data-nosnippet>410</a>    </span>}
-<a href=#411 id=411 data-nosnippet>411</a>
-<a href=#412 id=412 data-nosnippet>412</a>    <span class="doccomment">/// Art painted over the bar, after its fill and before its text.
-<a href=#413 id=413 data-nosnippet>413</a>    </span><span class="kw">pub fn </span>overlay(<span class="kw-2">mut </span><span class="self">self</span>, overlay: Overlay) -&gt; <span class="self">Self </span>{
-<a href=#414 id=414 data-nosnippet>414</a>        <span class="self">self</span>.overlay = <span class="prelude-val">Some</span>(overlay);
-<a href=#415 id=415 data-nosnippet>415</a>        <span class="self">self
-<a href=#416 id=416 data-nosnippet>416</a>    </span>}
-<a href=#417 id=417 data-nosnippet>417</a>
-<a href=#418 id=418 data-nosnippet>418</a>    <span class="doccomment">/// The words, in order, joined by spaces; empty for none.
-<a href=#419 id=419 data-nosnippet>419</a>    </span><span class="attr">#[must_use]
-<a href=#420 id=420 data-nosnippet>420</a>    </span><span class="kw">pub fn </span>words(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
-<a href=#421 id=421 data-nosnippet>421</a>        <span class="kw">let </span><span class="kw-2">mut </span>parts = Vec::new();
-<a href=#422 id=422 data-nosnippet>422</a>        <span class="kw">let </span>state = <span class="self">self
-<a href=#423 id=423 data-nosnippet>423</a>            </span>.state
-<a href=#424 id=424 data-nosnippet>424</a>            .filter(|words| <span class="self">self</span>.says.words &amp;&amp; !words.is_empty());
-<a href=#425 id=425 data-nosnippet>425</a>        <span class="kw">if </span><span class="self">self</span>.says.label &amp;&amp; !<span class="self">self</span>.label.is_empty() {
-<a href=#426 id=426 data-nosnippet>426</a>            <span class="comment">// `Stance: offensive`, and `Stance 80%` with no word after it.
-<a href=#427 id=427 data-nosnippet>427</a>            </span>parts.push(<span class="kw">match </span>state {
-<a href=#428 id=428 data-nosnippet>428</a>                <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; <span class="macro">format!</span>(<span class="string">"{}:"</span>, <span class="self">self</span>.label),
-<a href=#429 id=429 data-nosnippet>429</a>                <span class="prelude-val">None </span>=&gt; <span class="self">self</span>.label.to_owned(),
-<a href=#430 id=430 data-nosnippet>430</a>            });
-<a href=#431 id=431 data-nosnippet>431</a>        }
-<a href=#432 id=432 data-nosnippet>432</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(state) = state {
-<a href=#433 id=433 data-nosnippet>433</a>            parts.push(state.to_owned());
-<a href=#434 id=434 data-nosnippet>434</a>        }
-<a href=#435 id=435 data-nosnippet>435</a>        <span class="kw">match </span><span class="self">self</span>.value {
-<a href=#436 id=436 data-nosnippet>436</a>            <span class="prelude-val">Some</span>(amount) =&gt; {
-<a href=#437 id=437 data-nosnippet>437</a>                <span class="kw">if </span><span class="self">self</span>.says.numbers
-<a href=#438 id=438 data-nosnippet>438</a>                    &amp;&amp; <span class="kw">let </span>(<span class="prelude-val">Some</span>(current), <span class="prelude-val">Some</span>(max)) = (amount.current, amount.max)
-<a href=#439 id=439 data-nosnippet>439</a>                {
-<a href=#440 id=440 data-nosnippet>440</a>                    parts.push(<span class="macro">format!</span>(<span class="string">"{current}/{max}"</span>));
-<a href=#441 id=441 data-nosnippet>441</a>                }
-<a href=#442 id=442 data-nosnippet>442</a>                <span class="kw">if </span><span class="self">self</span>.says.percent {
-<a href=#443 id=443 data-nosnippet>443</a>                    parts.push(<span class="macro">format!</span>(<span class="string">"{}%"</span>, amount.percent));
-<a href=#444 id=444 data-nosnippet>444</a>                }
-<a href=#445 id=445 data-nosnippet>445</a>            }
-<a href=#446 id=446 data-nosnippet>446</a>            <span class="prelude-val">None </span><span class="kw">if </span><span class="self">self</span>.says.numbers || <span class="self">self</span>.says.percent =&gt; parts.push(<span class="string">"?"</span>.to_owned()),
-<a href=#447 id=447 data-nosnippet>447</a>            <span class="prelude-val">None </span>=&gt; {}
-<a href=#448 id=448 data-nosnippet>448</a>        }
-<a href=#449 id=449 data-nosnippet>449</a>        parts.join(<span class="string">" "</span>)
-<a href=#450 id=450 data-nosnippet>450</a>    }
-<a href=#451 id=451 data-nosnippet>451</a>
-<a href=#452 id=452 data-nosnippet>452</a>    <span class="kw">fn </span>bar_size(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec2 {
-<a href=#453 id=453 data-nosnippet>453</a>        <span class="self">self</span>.size.unwrap_or(<span class="kw">match </span><span class="self">self</span>.fills {
-<a href=#454 id=454 data-nosnippet>454</a>            Fills::Right | Fills::Left =&gt; Vec2::new(<span class="number">72.0</span>, <span class="number">18.0</span>),
-<a href=#455 id=455 data-nosnippet>455</a>            Fills::Up | Fills::Down =&gt; Vec2::new(<span class="number">18.0</span>, <span class="number">72.0</span>),
-<a href=#456 id=456 data-nosnippet>456</a>            Fills::Orb | Fills::Ring =&gt; Vec2::splat(<span class="number">48.0</span>),
-<a href=#457 id=457 data-nosnippet>457</a>        })
-<a href=#458 id=458 data-nosnippet>458</a>    }
-<a href=#459 id=459 data-nosnippet>459</a>}
+<a href=#195 id=195 data-nosnippet>195</a>    <span class="doccomment">/// The widest an outline round a bar's words may be, in points.
+<a href=#196 id=196 data-nosnippet>196</a>    </span><span class="kw">pub const </span>OUTLINE_MOST: u8 = <span class="number">4</span>;
+<a href=#197 id=197 data-nosnippet>197</a>
+<a href=#198 id=198 data-nosnippet>198</a>    <span class="doccomment">/// A saved colour that is the one its kind had before Hydra had themes
+<a href=#199 id=199 data-nosnippet>199</a>    /// (`token.bare()`) is read as none: a layout saved then held every
+<a href=#200 id=200 data-nosnippet>200</a>    /// bar's colour whether the player chose it or not, and a theme could
+<a href=#201 id=201 data-nosnippet>201</a>    /// not have changed it.
+<a href=#202 id=202 data-nosnippet>202</a>    </span><span class="attr">#[must_use]
+<a href=#203 id=203 data-nosnippet>203</a>    </span><span class="kw">pub fn </span>themed(<span class="kw-2">mut </span><span class="self">self</span>, token: hydra_ui::theme::Token) -&gt; <span class="self">Self </span>{
+<a href=#204 id=204 data-nosnippet>204</a>        <span class="kw">if </span><span class="self">self</span>.color == <span class="prelude-val">Some</span>(token.bare()) {
+<a href=#205 id=205 data-nosnippet>205</a>            <span class="self">self</span>.color = <span class="prelude-val">None</span>;
+<a href=#206 id=206 data-nosnippet>206</a>        }
+<a href=#207 id=207 data-nosnippet>207</a>        <span class="self">self
+<a href=#208 id=208 data-nosnippet>208</a>    </span>}
+<a href=#209 id=209 data-nosnippet>209</a>
+<a href=#210 id=210 data-nosnippet>210</a>    <span class="kw">const fn </span>default_ring() -&gt; u8 {
+<a href=#211 id=211 data-nosnippet>211</a>        <span class="self">Self</span>::RING
+<a href=#212 id=212 data-nosnippet>212</a>    }
+<a href=#213 id=213 data-nosnippet>213</a>
+<a href=#214 id=214 data-nosnippet>214</a>    <span class="kw">const fn </span>default_outline() -&gt; u8 {
+<a href=#215 id=215 data-nosnippet>215</a>        <span class="self">Self</span>::OUTLINE
+<a href=#216 id=216 data-nosnippet>216</a>    }
+<a href=#217 id=217 data-nosnippet>217</a>
+<a href=#218 id=218 data-nosnippet>218</a>    <span class="attr">#[expect(
+<a href=#219 id=219 data-nosnippet>219</a>        clippy::trivially_copy_pass_by_ref,
+<a href=#220 id=220 data-nosnippet>220</a>        reason = <span class="string">"serde's skip_serializing_if hands a reference"
+<a href=#221 id=221 data-nosnippet>221</a>    </span>)]
+<a href=#222 id=222 data-nosnippet>222</a>    </span><span class="kw">const fn </span>is_default_outline(outline: <span class="kw-2">&amp;</span>u8) -&gt; bool {
+<a href=#223 id=223 data-nosnippet>223</a>        <span class="kw-2">*</span>outline == <span class="self">Self</span>::OUTLINE
+<a href=#224 id=224 data-nosnippet>224</a>    }
+<a href=#225 id=225 data-nosnippet>225</a>}
+<a href=#226 id=226 data-nosnippet>226</a>
+<a href=#227 id=227 data-nosnippet>227</a><span class="kw">impl </span>Fills {
+<a href=#228 id=228 data-nosnippet>228</a>    <span class="doccomment">/// Whether it is round, an orb or a ring: drawn in the square in the
+<a href=#229 id=229 data-nosnippet>229</a>    /// middle of its space.
+<a href=#230 id=230 data-nosnippet>230</a>    </span><span class="attr">#[must_use]
+<a href=#231 id=231 data-nosnippet>231</a>    </span><span class="kw">pub const fn </span>round(<span class="self">self</span>) -&gt; bool {
+<a href=#232 id=232 data-nosnippet>232</a>        <span class="macro">matches!</span>(<span class="self">self</span>, <span class="self">Self</span>::Orb | <span class="self">Self</span>::Ring)
+<a href=#233 id=233 data-nosnippet>233</a>    }
+<a href=#234 id=234 data-nosnippet>234</a>
+<a href=#235 id=235 data-nosnippet>235</a>    <span class="doccomment">/// Whether it stands upright, filling up or down: a panel too.
+<a href=#236 id=236 data-nosnippet>236</a>    </span><span class="attr">#[must_use]
+<a href=#237 id=237 data-nosnippet>237</a>    </span><span class="kw">pub const fn </span>upright(<span class="self">self</span>) -&gt; bool {
+<a href=#238 id=238 data-nosnippet>238</a>        <span class="macro">matches!</span>(<span class="self">self</span>, <span class="self">Self</span>::Up | <span class="self">Self</span>::Down | <span class="self">Self</span>::Panel)
+<a href=#239 id=239 data-nosnippet>239</a>    }
+<a href=#240 id=240 data-nosnippet>240</a>}
+<a href=#241 id=241 data-nosnippet>241</a>
+<a href=#242 id=242 data-nosnippet>242</a><span class="doccomment">/// Whether a track is the one a bar starts with, left out of its file.
+<a href=#243 id=243 data-nosnippet>243</a></span><span class="attr">#[allow(clippy::trivially_copy_pass_by_ref)]
+<a href=#244 id=244 data-nosnippet>244</a></span><span class="kw">fn </span>is_default_track(track: <span class="kw-2">&amp;</span>Track) -&gt; bool {
+<a href=#245 id=245 data-nosnippet>245</a>    <span class="kw-2">*</span>track == Track::default()
+<a href=#246 id=246 data-nosnippet>246</a>}
+<a href=#247 id=247 data-nosnippet>247</a>
+<a href=#248 id=248 data-nosnippet>248</a><span class="doccomment">/// An image under a bar's fill, in place of its trough.
+<a href=#249 id=249 data-nosnippet>249</a></span><span class="attr">#[derive(Clone, Copy, Debug, PartialEq)]
+<a href=#250 id=250 data-nosnippet>250</a></span><span class="kw">pub enum </span>Background {
+<a href=#251 id=251 data-nosnippet>251</a>    <span class="doccomment">/// A whole picture over the bar's frame: an orb's glass.
+<a href=#252 id=252 data-nosnippet>252</a>    </span>Whole(egui::TextureId),
+<a href=#253 id=253 data-nosnippet>253</a>    <span class="doccomment">/// A strip of `size` pixels, round a ring or along a bar: once over,
+<a href=#254 id=254 data-nosnippet>254</a>    /// stretched, when it spans; else repeated at its own scale, as a fill
+<a href=#255 id=255 data-nosnippet>255</a>    /// strip is. The texture must repeat.
+<a href=#256 id=256 data-nosnippet>256</a>    </span>Strip {
+<a href=#257 id=257 data-nosnippet>257</a>        <span class="doccomment">/// The strip, read so it repeats.
+<a href=#258 id=258 data-nosnippet>258</a>        </span>image: egui::TextureId,
+<a href=#259 id=259 data-nosnippet>259</a>        <span class="doccomment">/// Its size in pixels, which says how far one goes.
+<a href=#260 id=260 data-nosnippet>260</a>        </span>size: Vec2,
+<a href=#261 id=261 data-nosnippet>261</a>        <span class="doccomment">/// Once over, stretched, rather than repeated.
+<a href=#262 id=262 data-nosnippet>262</a>        </span>span: bool,
+<a href=#263 id=263 data-nosnippet>263</a>    },
+<a href=#264 id=264 data-nosnippet>264</a>}
+<a href=#265 id=265 data-nosnippet>265</a>
+<a href=#266 id=266 data-nosnippet>266</a><span class="doccomment">/// Where a bar's words are drawn again, in the outline's colour, for an
+<a href=#267 id=267 data-nosnippet>267</a>/// outline `width` points wide: none for 0; a point each way for 1; and for
+<a href=#268 id=268 data-nosnippet>268</a>/// a wider one, each way and each corner at every point out to its width.
+<a href=#269 id=269 data-nosnippet>269</a></span><span class="kw">fn </span>outline_offsets(width: u8) -&gt; Vec&lt;Vec2&gt; {
+<a href=#270 id=270 data-nosnippet>270</a>    <span class="kw">let </span>ways = |out: f32| {
+<a href=#271 id=271 data-nosnippet>271</a>        [
+<a href=#272 id=272 data-nosnippet>272</a>            Vec2::new(-out, <span class="number">0.0</span>),
+<a href=#273 id=273 data-nosnippet>273</a>            Vec2::new(out, <span class="number">0.0</span>),
+<a href=#274 id=274 data-nosnippet>274</a>            Vec2::new(<span class="number">0.0</span>, -out),
+<a href=#275 id=275 data-nosnippet>275</a>            Vec2::new(<span class="number">0.0</span>, out),
+<a href=#276 id=276 data-nosnippet>276</a>        ]
+<a href=#277 id=277 data-nosnippet>277</a>    };
+<a href=#278 id=278 data-nosnippet>278</a>    <span class="kw">match </span>width {
+<a href=#279 id=279 data-nosnippet>279</a>        <span class="number">0 </span>=&gt; Vec::new(),
+<a href=#280 id=280 data-nosnippet>280</a>        <span class="number">1 </span>=&gt; ways(<span class="number">1.0</span>).to_vec(),
+<a href=#281 id=281 data-nosnippet>281</a>        <span class="kw">_ </span>=&gt; (<span class="number">1</span>..=width)
+<a href=#282 id=282 data-nosnippet>282</a>            .map(f32::from)
+<a href=#283 id=283 data-nosnippet>283</a>            .flat_map(|out| {
+<a href=#284 id=284 data-nosnippet>284</a>                ways(out).into_iter().chain([
+<a href=#285 id=285 data-nosnippet>285</a>                    Vec2::new(-out, -out),
+<a href=#286 id=286 data-nosnippet>286</a>                    Vec2::new(out, -out),
+<a href=#287 id=287 data-nosnippet>287</a>                    Vec2::new(-out, out),
+<a href=#288 id=288 data-nosnippet>288</a>                    Vec2::new(out, out),
+<a href=#289 id=289 data-nosnippet>289</a>                ])
+<a href=#290 id=290 data-nosnippet>290</a>            })
+<a href=#291 id=291 data-nosnippet>291</a>            .collect(),
+<a href=#292 id=292 data-nosnippet>292</a>    }
+<a href=#293 id=293 data-nosnippet>293</a>}
+<a href=#294 id=294 data-nosnippet>294</a>
+<a href=#295 id=295 data-nosnippet>295</a><span class="doccomment">/// The least a bar is, either way, however little room it is given.
+<a href=#296 id=296 data-nosnippet>296</a></span><span class="kw">const </span>LEAST: f32 = <span class="number">8.0</span>;
+<a href=#297 id=297 data-nosnippet>297</a>
+<a href=#298 id=298 data-nosnippet>298</a><span class="doccomment">/// A bar's value: its percent, and its numbers when the game gave them.
+<a href=#299 id=299 data-nosnippet>299</a></span><span class="attr">#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+<a href=#300 id=300 data-nosnippet>300</a></span><span class="kw">pub struct </span>Amount {
+<a href=#301 id=301 data-nosnippet>301</a>    <span class="doccomment">/// 0-100; more is shown full.
+<a href=#302 id=302 data-nosnippet>302</a>    </span><span class="kw">pub </span>percent: u32,
+<a href=#303 id=303 data-nosnippet>303</a>    <span class="doccomment">/// The value now, when known; a vital can be below zero.
+<a href=#304 id=304 data-nosnippet>304</a>    </span><span class="kw">pub </span>current: <span class="prelude-ty">Option</span>&lt;i32&gt;,
+<a href=#305 id=305 data-nosnippet>305</a>    <span class="doccomment">/// The most it can be, when known.
+<a href=#306 id=306 data-nosnippet>306</a>    </span><span class="kw">pub </span>max: <span class="prelude-ty">Option</span>&lt;i32&gt;,
+<a href=#307 id=307 data-nosnippet>307</a>}
+<a href=#308 id=308 data-nosnippet>308</a>
+<a href=#309 id=309 data-nosnippet>309</a><span class="doccomment">/// A progress bar: `ui.add(Bar::new("HP", Some(amount)).fill(HEALTH))`.
+<a href=#310 id=310 data-nosnippet>310</a></span><span class="attr">#[derive(Clone, Debug)]
+<a href=#311 id=311 data-nosnippet>311</a>#[must_use = <span class="string">"a bar draws nothing until added to a Ui"</span>]
+<a href=#312 id=312 data-nosnippet>312</a></span><span class="kw">pub struct </span>Bar&lt;<span class="lifetime">'a</span>&gt; {
+<a href=#313 id=313 data-nosnippet>313</a>    label: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>str,
+<a href=#314 id=314 data-nosnippet>314</a>    state: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>str&gt;,
+<a href=#315 id=315 data-nosnippet>315</a>    value: <span class="prelude-ty">Option</span>&lt;Amount&gt;,
+<a href=#316 id=316 data-nosnippet>316</a>    fill: <span class="prelude-ty">Option</span>&lt;Color32&gt;,
+<a href=#317 id=317 data-nosnippet>317</a>    fills: Fills,
+<a href=#318 id=318 data-nosnippet>318</a>    size: <span class="prelude-ty">Option</span>&lt;Vec2&gt;,
+<a href=#319 id=319 data-nosnippet>319</a>    place: Place,
+<a href=#320 id=320 data-nosnippet>320</a>    says: Says,
+<a href=#321 id=321 data-nosnippet>321</a>    overlay: <span class="prelude-ty">Option</span>&lt;Overlay&gt;,
+<a href=#322 id=322 data-nosnippet>322</a>    kit: <span class="prelude-ty">Option</span>&lt;Kit&gt;,
+<a href=#323 id=323 data-nosnippet>323</a>    vessel: <span class="prelude-ty">Option</span>&lt;Vessel&gt;,
+<a href=#324 id=324 data-nosnippet>324</a>    emblem: <span class="prelude-ty">Option</span>&lt;egui::TextureId&gt;,
+<a href=#325 id=325 data-nosnippet>325</a>    background: <span class="prelude-ty">Option</span>&lt;Background&gt;,
+<a href=#326 id=326 data-nosnippet>326</a>    track: Track,
+<a href=#327 id=327 data-nosnippet>327</a>    fill_image: <span class="prelude-ty">Option</span>&lt;(egui::TextureId, Vec2)&gt;,
+<a href=#328 id=328 data-nosnippet>328</a>    ring: u8,
+<a href=#329 id=329 data-nosnippet>329</a>    <span class="doccomment">/// Its words' colour, when chosen.
+<a href=#330 id=330 data-nosnippet>330</a>    </span>text_color: <span class="prelude-ty">Option</span>&lt;Color32&gt;,
+<a href=#331 id=331 data-nosnippet>331</a>    <span class="doccomment">/// Its words' outline's colour, when chosen.
+<a href=#332 id=332 data-nosnippet>332</a>    </span>outline_color: <span class="prelude-ty">Option</span>&lt;Color32&gt;,
+<a href=#333 id=333 data-nosnippet>333</a>    <span class="doccomment">/// Its words' outline's width, in points.
+<a href=#334 id=334 data-nosnippet>334</a>    </span>outline: u8,
+<a href=#335 id=335 data-nosnippet>335</a>    <span class="doccomment">/// Words at its right end, its others at its left: [`Self::end`].
+<a href=#336 id=336 data-nosnippet>336</a>    </span>end: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>str&gt;,
+<a href=#337 id=337 data-nosnippet>337</a>}
+<a href=#338 id=338 data-nosnippet>338</a>
+<a href=#339 id=339 data-nosnippet>339</a><span class="doccomment">/// The gap between a bar and text outside it.
+<a href=#340 id=340 data-nosnippet>340</a></span><span class="kw">const </span>GAP: f32 = <span class="number">4.0</span>;
+<a href=#341 id=341 data-nosnippet>341</a>
+<a href=#342 id=342 data-nosnippet>342</a><span class="doccomment">/// `bar` no thicker than `thickness` across the way it fills, centred where
+<a href=#343 id=343 data-nosnippet>343</a>/// it was; a `thickness` of 0 leaves it as it is, and so does an orb's or a
+<a href=#344 id=344 data-nosnippet>344</a>/// ring's, which are as thick as they are wide.
+<a href=#345 id=345 data-nosnippet>345</a></span><span class="kw">fn </span>thinned(bar: egui::Rect, fills: Fills, thickness: f32) -&gt; egui::Rect {
+<a href=#346 id=346 data-nosnippet>346</a>    <span class="kw">if </span>thickness &lt;= <span class="number">0.0 </span>{
+<a href=#347 id=347 data-nosnippet>347</a>        <span class="kw">return </span>bar;
+<a href=#348 id=348 data-nosnippet>348</a>    }
+<a href=#349 id=349 data-nosnippet>349</a>    <span class="kw">let </span>size = <span class="kw">match </span>fills {
+<a href=#350 id=350 data-nosnippet>350</a>        Fills::Right | Fills::Left =&gt; Vec2::new(bar.width(), bar.height().min(thickness)),
+<a href=#351 id=351 data-nosnippet>351</a>        Fills::Up | Fills::Down =&gt; Vec2::new(bar.width().min(thickness), bar.height()),
+<a href=#352 id=352 data-nosnippet>352</a>        Fills::Orb | Fills::Ring | Fills::Panel =&gt; <span class="kw">return </span>bar,
+<a href=#353 id=353 data-nosnippet>353</a>    };
+<a href=#354 id=354 data-nosnippet>354</a>    egui::Rect::from_center_size(bar.center(), size)
+<a href=#355 id=355 data-nosnippet>355</a>}
+<a href=#356 id=356 data-nosnippet>356</a>
+<a href=#357 id=357 data-nosnippet>357</a><span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; Bar&lt;<span class="lifetime">'a</span>&gt; {
+<a href=#358 id=358 data-nosnippet>358</a>    <span class="doccomment">/// A bar labelled `label` at `value`; `None` is unknown, drawn empty
+<a href=#359 id=359 data-nosnippet>359</a>    /// with `?` for its numbers and percent, never as a guess.
+<a href=#360 id=360 data-nosnippet>360</a>    </span><span class="kw">pub fn </span>new(label: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>str, value: <span class="prelude-ty">Option</span>&lt;Amount&gt;) -&gt; <span class="self">Self </span>{
+<a href=#361 id=361 data-nosnippet>361</a>        <span class="self">Self </span>{
+<a href=#362 id=362 data-nosnippet>362</a>            label,
+<a href=#363 id=363 data-nosnippet>363</a>            state: <span class="prelude-val">None</span>,
+<a href=#364 id=364 data-nosnippet>364</a>            value,
+<a href=#365 id=365 data-nosnippet>365</a>            fill: <span class="prelude-val">None</span>,
+<a href=#366 id=366 data-nosnippet>366</a>            fills: Fills::default(),
+<a href=#367 id=367 data-nosnippet>367</a>            size: <span class="prelude-val">None</span>,
+<a href=#368 id=368 data-nosnippet>368</a>            place: Place::default(),
+<a href=#369 id=369 data-nosnippet>369</a>            says: Says::default(),
+<a href=#370 id=370 data-nosnippet>370</a>            overlay: <span class="prelude-val">None</span>,
+<a href=#371 id=371 data-nosnippet>371</a>            kit: <span class="prelude-val">None</span>,
+<a href=#372 id=372 data-nosnippet>372</a>            vessel: <span class="prelude-val">None</span>,
+<a href=#373 id=373 data-nosnippet>373</a>            emblem: <span class="prelude-val">None</span>,
+<a href=#374 id=374 data-nosnippet>374</a>            background: <span class="prelude-val">None</span>,
+<a href=#375 id=375 data-nosnippet>375</a>            track: Track::default(),
+<a href=#376 id=376 data-nosnippet>376</a>            fill_image: <span class="prelude-val">None</span>,
+<a href=#377 id=377 data-nosnippet>377</a>            ring: Look::RING,
+<a href=#378 id=378 data-nosnippet>378</a>            text_color: <span class="prelude-val">None</span>,
+<a href=#379 id=379 data-nosnippet>379</a>            outline_color: <span class="prelude-val">None</span>,
+<a href=#380 id=380 data-nosnippet>380</a>            outline: Look::OUTLINE,
+<a href=#381 id=381 data-nosnippet>381</a>            end: <span class="prelude-val">None</span>,
+<a href=#382 id=382 data-nosnippet>382</a>        }
+<a href=#383 id=383 data-nosnippet>383</a>    }
+<a href=#384 id=384 data-nosnippet>384</a>
+<a href=#385 id=385 data-nosnippet>385</a>    <span class="doccomment">/// `end` written over its right end, in figures of one width so ends
+<a href=#386 id=386 data-nosnippet>386</a>    /// line up down a list, and its other words over its left, cut short
+<a href=#387 id=387 data-nosnippet>387</a>    /// with an ellipsis before they reach it: an effect's name and its time
+<a href=#388 id=388 data-nosnippet>388</a>    /// left. An empty `end` still puts its words at the left.
+<a href=#389 id=389 data-nosnippet>389</a>    </span><span class="kw">pub fn </span>end(<span class="kw-2">mut </span><span class="self">self</span>, end: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>str) -&gt; <span class="self">Self </span>{
+<a href=#390 id=390 data-nosnippet>390</a>        <span class="self">self</span>.end = <span class="prelude-val">Some</span>(end);
+<a href=#391 id=391 data-nosnippet>391</a>        <span class="self">self
+<a href=#392 id=392 data-nosnippet>392</a>    </span>}
+<a href=#393 id=393 data-nosnippet>393</a>
+<a href=#394 id=394 data-nosnippet>394</a>    <span class="doccomment">/// The fill's colour; the theme's selection colour otherwise.
+<a href=#395 id=395 data-nosnippet>395</a>    </span><span class="kw">pub fn </span>fill(<span class="kw-2">mut </span><span class="self">self</span>, color: Color32) -&gt; <span class="self">Self </span>{
+<a href=#396 id=396 data-nosnippet>396</a>        <span class="self">self</span>.fill = <span class="prelude-val">Some</span>(color);
+<a href=#397 id=397 data-nosnippet>397</a>        <span class="self">self
+<a href=#398 id=398 data-nosnippet>398</a>    </span>}
+<a href=#399 id=399 data-nosnippet>399</a>
+<a href=#400 id=400 data-nosnippet>400</a>    <span class="doccomment">/// Which way it fills.
+<a href=#401 id=401 data-nosnippet>401</a>    </span><span class="kw">pub fn </span>fills(<span class="kw-2">mut </span><span class="self">self</span>, fills: Fills) -&gt; <span class="self">Self </span>{
+<a href=#402 id=402 data-nosnippet>402</a>        <span class="self">self</span>.fills = fills;
+<a href=#403 id=403 data-nosnippet>403</a>        <span class="self">self
+<a href=#404 id=404 data-nosnippet>404</a>    </span>}
+<a href=#405 id=405 data-nosnippet>405</a>
+<a href=#406 id=406 data-nosnippet>406</a>    <span class="doccomment">/// The bar's own width and height, text outside it not counted. Unset,
+<a href=#407 id=407 data-nosnippet>407</a>    /// 72 by 18 across and 18 by 72 upright.
+<a href=#408 id=408 data-nosnippet>408</a>    </span><span class="kw">pub fn </span>size(<span class="kw-2">mut </span><span class="self">self</span>, size: <span class="kw">impl </span>Into&lt;Vec2&gt;) -&gt; <span class="self">Self </span>{
+<a href=#409 id=409 data-nosnippet>409</a>        <span class="self">self</span>.size = <span class="prelude-val">Some</span>(size.into());
+<a href=#410 id=410 data-nosnippet>410</a>        <span class="self">self
+<a href=#411 id=411 data-nosnippet>411</a>    </span>}
+<a href=#412 id=412 data-nosnippet>412</a>
+<a href=#413 id=413 data-nosnippet>413</a>    <span class="doccomment">/// Where its text goes.
+<a href=#414 id=414 data-nosnippet>414</a>    </span><span class="kw">pub fn </span>text(<span class="kw-2">mut </span><span class="self">self</span>, place: Place) -&gt; <span class="self">Self </span>{
+<a href=#415 id=415 data-nosnippet>415</a>        <span class="self">self</span>.place = place;
+<a href=#416 id=416 data-nosnippet>416</a>        <span class="self">self
+<a href=#417 id=417 data-nosnippet>417</a>    </span>}
+<a href=#418 id=418 data-nosnippet>418</a>
+<a href=#419 id=419 data-nosnippet>419</a>    <span class="doccomment">/// What the game calls its state, `words`, said when [`Says::words`]
+<a href=#420 id=420 data-nosnippet>420</a>    /// asks for it.
+<a href=#421 id=421 data-nosnippet>421</a>    </span><span class="kw">pub fn </span>state(<span class="kw-2">mut </span><span class="self">self</span>, words: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>str&gt;) -&gt; <span class="self">Self </span>{
+<a href=#422 id=422 data-nosnippet>422</a>        <span class="self">self</span>.state = words;
+<a href=#423 id=423 data-nosnippet>423</a>        <span class="self">self
+<a href=#424 id=424 data-nosnippet>424</a>    </span>}
+<a href=#425 id=425 data-nosnippet>425</a>
+<a href=#426 id=426 data-nosnippet>426</a>    <span class="doccomment">/// What its text says.
+<a href=#427 id=427 data-nosnippet>427</a>    </span><span class="kw">pub fn </span>says(<span class="kw-2">mut </span><span class="self">self</span>, says: Says) -&gt; <span class="self">Self </span>{
+<a href=#428 id=428 data-nosnippet>428</a>        <span class="self">self</span>.says = says;
+<a href=#429 id=429 data-nosnippet>429</a>        <span class="self">self
+<a href=#430 id=430 data-nosnippet>430</a>    </span>}
+<a href=#431 id=431 data-nosnippet>431</a>
+<a href=#432 id=432 data-nosnippet>432</a>    <span class="doccomment">/// Drawn as `look` says: which way it fills, where its text goes, what
+<a href=#433 id=433 data-nosnippet>433</a>    /// the text says, its colour where the player chose one, and a ring's
+<a href=#434 id=434 data-nosnippet>434</a>    /// thickness. Its images are the caller's to load.
+<a href=#435 id=435 data-nosnippet>435</a>    </span><span class="kw">pub fn </span>look(<span class="self">self</span>, look: <span class="kw-2">&amp;</span>Look) -&gt; <span class="self">Self </span>{
+<a href=#436 id=436 data-nosnippet>436</a>        <span class="kw">let </span><span class="kw-2">mut </span>drawn = <span class="self">self</span>.fills(look.fills).text(look.place).says(look.says);
+<a href=#437 id=437 data-nosnippet>437</a>        <span class="comment">// The highest threshold reached, else its own colour.
+<a href=#438 id=438 data-nosnippet>438</a>        </span><span class="kw">let </span>reached = drawn.value.and_then(|value| {
+<a href=#439 id=439 data-nosnippet>439</a>            look.thresholds
+<a href=#440 id=440 data-nosnippet>440</a>                .iter()
+<a href=#441 id=441 data-nosnippet>441</a>                .filter(|threshold| u32::from(threshold.from) &lt;= value.percent)
+<a href=#442 id=442 data-nosnippet>442</a>                .max_by_key(|threshold| threshold.from)
+<a href=#443 id=443 data-nosnippet>443</a>        });
+<a href=#444 id=444 data-nosnippet>444</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(color) = reached.map(|threshold| threshold.color).or(look.color) {
+<a href=#445 id=445 data-nosnippet>445</a>            drawn = drawn.fill(<span class="kw">crate</span>::theme::rgb(color));
+<a href=#446 id=446 data-nosnippet>446</a>        }
+<a href=#447 id=447 data-nosnippet>447</a>        drawn.ring = look.ring;
+<a href=#448 id=448 data-nosnippet>448</a>        drawn.track = look.track;
+<a href=#449 id=449 data-nosnippet>449</a>        drawn.text_color = look.text_color.map(<span class="kw">crate</span>::theme::rgb);
+<a href=#450 id=450 data-nosnippet>450</a>        drawn.outline_color = look.outline_color.map(<span class="kw">crate</span>::theme::rgb);
+<a href=#451 id=451 data-nosnippet>451</a>        drawn.outline = look.outline.min(Look::OUTLINE_MOST);
+<a href=#452 id=452 data-nosnippet>452</a>        drawn
+<a href=#453 id=453 data-nosnippet>453</a>    }
+<a href=#454 id=454 data-nosnippet>454</a>
+<a href=#455 id=455 data-nosnippet>455</a>    <span class="doccomment">/// A whole picture under the fill, over the bar's frame: an orb's glass.
+<a href=#456 id=456 data-nosnippet>456</a>    </span><span class="kw">pub fn </span>background(<span class="kw-2">mut </span><span class="self">self</span>, image: egui::TextureId) -&gt; <span class="self">Self </span>{
+<a href=#457 id=457 data-nosnippet>457</a>        <span class="self">self</span>.background = <span class="prelude-val">Some</span>(Background::Whole(image));
+<a href=#458 id=458 data-nosnippet>458</a>        <span class="self">self
+<a href=#459 id=459 data-nosnippet>459</a>    </span>}
 <a href=#460 id=460 data-nosnippet>460</a>
-<a href=#461 id=461 data-nosnippet>461</a><span class="kw">impl </span>egui::Widget <span class="kw">for </span>Bar&lt;<span class="lifetime">'_</span>&gt; {
-<a href=#462 id=462 data-nosnippet>462</a>    <span class="kw">fn </span>ui(<span class="self">self</span>, ui: <span class="kw-2">&amp;mut </span>egui::Ui) -&gt; egui::Response {
-<a href=#463 id=463 data-nosnippet>463</a>        <span class="kw">let </span>words = <span class="self">self</span>.words();
-<a href=#464 id=464 data-nosnippet>464</a>        <span class="kw">let </span>shown = <span class="kw">if </span><span class="self">self</span>.place == Place::Hidden {
-<a href=#465 id=465 data-nosnippet>465</a>            String::new()
-<a href=#466 id=466 data-nosnippet>466</a>        } <span class="kw">else </span>{
-<a href=#467 id=467 data-nosnippet>467</a>            words.clone()
-<a href=#468 id=468 data-nosnippet>468</a>        };
-<a href=#469 id=469 data-nosnippet>469</a>        <span class="kw">let </span>galley = (!shown.is_empty()).then(|| {
-<a href=#470 id=470 data-nosnippet>470</a>            ui.painter().layout_no_wrap(
-<a href=#471 id=471 data-nosnippet>471</a>                shown,
-<a href=#472 id=472 data-nosnippet>472</a>                egui::TextStyle::Body.resolve(ui.style()),
-<a href=#473 id=473 data-nosnippet>473</a>                Color32::PLACEHOLDER,
-<a href=#474 id=474 data-nosnippet>474</a>            )
-<a href=#475 id=475 data-nosnippet>475</a>        });
-<a href=#476 id=476 data-nosnippet>476</a>        <span class="kw">let </span>bar = <span class="self">self</span>.bar_size();
-<a href=#477 id=477 data-nosnippet>477</a>        <span class="kw">let </span>text = galley.as_ref().map_or(Vec2::ZERO, |galley| galley.size());
-<a href=#478 id=478 data-nosnippet>478</a>        <span class="kw">let </span>outside = galley.is_some() &amp;&amp; <span class="self">self</span>.place != Place::Inside;
-<a href=#479 id=479 data-nosnippet>479</a>        <span class="kw">let </span>total = <span class="kw">match </span><span class="self">self</span>.place {
-<a href=#480 id=480 data-nosnippet>480</a>            Place::Above | Place::Below <span class="kw">if </span>outside =&gt; {
-<a href=#481 id=481 data-nosnippet>481</a>                Vec2::new(bar.x.max(text.x), bar.y + GAP + text.y)
-<a href=#482 id=482 data-nosnippet>482</a>            }
-<a href=#483 id=483 data-nosnippet>483</a>            Place::Left | Place::Right <span class="kw">if </span>outside =&gt; {
-<a href=#484 id=484 data-nosnippet>484</a>                Vec2::new(text.x + GAP + bar.x, bar.y.max(text.y))
-<a href=#485 id=485 data-nosnippet>485</a>            }
-<a href=#486 id=486 data-nosnippet>486</a>            <span class="kw">_ </span>=&gt; bar,
-<a href=#487 id=487 data-nosnippet>487</a>        };
-<a href=#488 id=488 data-nosnippet>488</a>        <span class="kw">let </span>(rect, response) = ui.allocate_exact_size(total, Sense::hover());
-<a href=#489 id=489 data-nosnippet>489</a>        <span class="kw">let </span>bar_rect = <span class="kw">match </span><span class="self">self</span>.place {
-<a href=#490 id=490 data-nosnippet>490</a>            Place::Above <span class="kw">if </span>outside =&gt; Align2::CENTER_BOTTOM.align_size_within_rect(bar, rect),
-<a href=#491 id=491 data-nosnippet>491</a>            Place::Below <span class="kw">if </span>outside =&gt; Align2::CENTER_TOP.align_size_within_rect(bar, rect),
-<a href=#492 id=492 data-nosnippet>492</a>            Place::Left <span class="kw">if </span>outside =&gt; Align2::RIGHT_CENTER.align_size_within_rect(bar, rect),
-<a href=#493 id=493 data-nosnippet>493</a>            Place::Right <span class="kw">if </span>outside =&gt; Align2::LEFT_CENTER.align_size_within_rect(bar, rect),
-<a href=#494 id=494 data-nosnippet>494</a>            <span class="kw">_ </span>=&gt; rect,
-<a href=#495 id=495 data-nosnippet>495</a>        };
-<a href=#496 id=496 data-nosnippet>496</a>        <span class="kw">let </span>bar_rect = thinned(
-<a href=#497 id=497 data-nosnippet>497</a>            bar_rect,
-<a href=#498 id=498 data-nosnippet>498</a>            <span class="self">self</span>.fills,
-<a href=#499 id=499 data-nosnippet>499</a>            <span class="kw">crate</span>::theme::shape(ui.ctx()).bar_thickness,
-<a href=#500 id=500 data-nosnippet>500</a>        );
-<a href=#501 id=501 data-nosnippet>501</a>        <span class="kw">let </span>enabled = ui.is_enabled();
-<a href=#502 id=502 data-nosnippet>502</a>        response.widget_info(|| {
-<a href=#503 id=503 data-nosnippet>503</a>            WidgetInfo::labeled(WidgetType::ProgressIndicator, enabled, words.clone())
-<a href=#504 id=504 data-nosnippet>504</a>        });
-<a href=#505 id=505 data-nosnippet>505</a>        <span class="kw">if </span>!ui.is_rect_visible(rect) {
-<a href=#506 id=506 data-nosnippet>506</a>            <span class="kw">return </span>response;
-<a href=#507 id=507 data-nosnippet>507</a>        }
-<a href=#508 id=508 data-nosnippet>508</a>        <span class="kw">let </span>visuals = ui.visuals();
-<a href=#509 id=509 data-nosnippet>509</a>        <span class="kw">let </span>trough = visuals.extreme_bg_color;
-<a href=#510 id=510 data-nosnippet>510</a>        <span class="kw">let </span>fill = <span class="self">self</span>.fill.unwrap_or(visuals.selection.bg_fill);
-<a href=#511 id=511 data-nosnippet>511</a>        <span class="kw">let </span>painter = ui.painter();
-<a href=#512 id=512 data-nosnippet>512</a>        <span class="kw">let </span>share = <span class="self">self
-<a href=#513 id=513 data-nosnippet>513</a>            </span>.value
-<a href=#514 id=514 data-nosnippet>514</a>            .map_or(<span class="number">0.0</span>, |amount| shape::share(amount.percent));
-<a href=#515 id=515 data-nosnippet>515</a>        <span class="kw">let </span>paint = shape::Paint {
-<a href=#516 id=516 data-nosnippet>516</a>            trough,
-<a href=#517 id=517 data-nosnippet>517</a>            fill,
-<a href=#518 id=518 data-nosnippet>518</a>            background: <span class="self">self</span>.background,
-<a href=#519 id=519 data-nosnippet>519</a>            fill_image: <span class="self">self</span>.fill_image,
-<a href=#520 id=520 data-nosnippet>520</a>            ring: f32::from(<span class="self">self</span>.ring) / <span class="number">100.0</span>,
-<a href=#521 id=521 data-nosnippet>521</a>        };
-<a href=#522 id=522 data-nosnippet>522</a>        <span class="kw">let </span>covered = shape::paint(painter, <span class="self">self</span>.fills, bar_rect, share, <span class="kw-2">&amp;</span>paint);
-<a href=#523 id=523 data-nosnippet>523</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(overlay) = <span class="self">self</span>.overlay {
-<a href=#524 id=524 data-nosnippet>524</a>            overlay.paint(painter, shape::frame(<span class="self">self</span>.fills, bar_rect));
-<a href=#525 id=525 data-nosnippet>525</a>        }
-<a href=#526 id=526 data-nosnippet>526</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(galley) = galley {
-<a href=#527 id=527 data-nosnippet>527</a>            <span class="kw">let </span>(at, color, outline) = <span class="kw">if </span>outside {
-<a href=#528 id=528 data-nosnippet>528</a>                <span class="kw">let </span>anchor = <span class="kw">match </span><span class="self">self</span>.place {
-<a href=#529 id=529 data-nosnippet>529</a>                    Place::Above =&gt; Align2::CENTER_TOP,
-<a href=#530 id=530 data-nosnippet>530</a>                    Place::Below =&gt; Align2::CENTER_BOTTOM,
-<a href=#531 id=531 data-nosnippet>531</a>                    Place::Left =&gt; Align2::LEFT_CENTER,
-<a href=#532 id=532 data-nosnippet>532</a>                    <span class="kw">_ </span>=&gt; Align2::RIGHT_CENTER,
-<a href=#533 id=533 data-nosnippet>533</a>                };
-<a href=#534 id=534 data-nosnippet>534</a>                <span class="comment">// Beside the bar, on the window's ground: outlined only
-<a href=#535 id=535 data-nosnippet>535</a>                // when the player chose an outline's colour.
-<a href=#536 id=536 data-nosnippet>536</a>                </span>(
-<a href=#537 id=537 data-nosnippet>537</a>                    anchor.align_size_within_rect(galley.size(), rect).min,
-<a href=#538 id=538 data-nosnippet>538</a>                    <span class="self">self</span>.text_color.unwrap_or_else(|| visuals.text_color()),
-<a href=#539 id=539 data-nosnippet>539</a>                    <span class="self">self</span>.outline_color,
-<a href=#540 id=540 data-nosnippet>540</a>                )
-<a href=#541 id=541 data-nosnippet>541</a>            } <span class="kw">else </span>{
-<a href=#542 id=542 data-nosnippet>542</a>                <span class="kw">let </span>at = Align2::CENTER_CENTER
-<a href=#543 id=543 data-nosnippet>543</a>                    .align_size_within_rect(galley.size(), bar_rect)
-<a href=#544 id=544 data-nosnippet>544</a>                    .min;
-<a href=#545 id=545 data-nosnippet>545</a>                <span class="comment">// Readable over whatever is behind the text's middle.
-<a href=#546 id=546 data-nosnippet>546</a>                </span><span class="kw">let </span>behind = <span class="kw">if </span>covered { fill } <span class="kw">else </span>{ trough };
-<a href=#547 id=547 data-nosnippet>547</a>                <span class="kw">let </span>color = <span class="self">self</span>.text_color.unwrap_or_else(|| readable_on(behind));
-<a href=#548 id=548 data-nosnippet>548</a>                <span class="comment">// An outline in the other colour, so the text still reads
-<a href=#549 id=549 data-nosnippet>549</a>                // where the fill's edge runs through it.
-<a href=#550 id=550 data-nosnippet>550</a>                </span>(
-<a href=#551 id=551 data-nosnippet>551</a>                    at,
-<a href=#552 id=552 data-nosnippet>552</a>                    color,
-<a href=#553 id=553 data-nosnippet>553</a>                    <span class="prelude-val">Some</span>(<span class="self">self</span>.outline_color.unwrap_or_else(|| readable_on(color))),
-<a href=#554 id=554 data-nosnippet>554</a>                )
-<a href=#555 id=555 data-nosnippet>555</a>            };
-<a href=#556 id=556 data-nosnippet>556</a>            <span class="kw">if let </span><span class="prelude-val">Some</span>(outline) = outline {
-<a href=#557 id=557 data-nosnippet>557</a>                <span class="kw">for </span>offset <span class="kw">in </span>outline_offsets(<span class="self">self</span>.outline) {
-<a href=#558 id=558 data-nosnippet>558</a>                    painter.galley(at + offset, galley.clone(), outline);
-<a href=#559 id=559 data-nosnippet>559</a>                }
-<a href=#560 id=560 data-nosnippet>560</a>            }
-<a href=#561 id=561 data-nosnippet>561</a>            painter.galley(at, galley, color);
-<a href=#562 id=562 data-nosnippet>562</a>        }
-<a href=#563 id=563 data-nosnippet>563</a>        response
-<a href=#564 id=564 data-nosnippet>564</a>    }
-<a href=#565 id=565 data-nosnippet>565</a>}
-<a href=#566 id=566 data-nosnippet>566</a>
-<a href=#567 id=567 data-nosnippet>567</a><span class="kw">mod </span>overlay;
-<a href=#568 id=568 data-nosnippet>568</a><span class="kw">mod </span>shape;
+<a href=#461 id=461 data-nosnippet>461</a>    <span class="doccomment">/// A strip under the fill, of `size` pixels, round a ring or along a
+<a href=#462 id=462 data-nosnippet>462</a>    /// bar: once over when it spans, else repeated at its own scale.
+<a href=#463 id=463 data-nosnippet>463</a>    </span><span class="kw">pub fn </span>track_strip(<span class="kw-2">mut </span><span class="self">self</span>, image: egui::TextureId, size: Vec2, span: bool) -&gt; <span class="self">Self </span>{
+<a href=#464 id=464 data-nosnippet>464</a>        <span class="self">self</span>.background = <span class="prelude-val">Some</span>(Background::Strip { image, size, span });
+<a href=#465 id=465 data-nosnippet>465</a>        <span class="self">self
+<a href=#466 id=466 data-nosnippet>466</a>    </span>}
+<a href=#467 id=467 data-nosnippet>467</a>
+<a href=#468 id=468 data-nosnippet>468</a>    <span class="doccomment">/// What a ring or a bar shows under its fill with no background.
+<a href=#469 id=469 data-nosnippet>469</a>    </span><span class="kw">pub fn </span>track(<span class="kw-2">mut </span><span class="self">self</span>, track: Track) -&gt; <span class="self">Self </span>{
+<a href=#470 id=470 data-nosnippet>470</a>        <span class="self">self</span>.track = track;
+<a href=#471 id=471 data-nosnippet>471</a>        <span class="self">self
+<a href=#472 id=472 data-nosnippet>472</a>    </span>}
+<a href=#473 id=473 data-nosnippet>473</a>
+<a href=#474 id=474 data-nosnippet>474</a>    <span class="doccomment">/// Its shape painted in `bar_rect`, its trough and fill the colours
+<a href=#475 id=475 data-nosnippet>475</a>    /// given, and what lies over it: as a vessel, when it is an orb that is
+<a href=#476 id=476 data-nosnippet>476</a>    /// one; else its track, fill, overlay and kit. Whether the fill covers
+<a href=#477 id=477 data-nosnippet>477</a>    /// the middle.
+<a href=#478 id=478 data-nosnippet>478</a>    </span><span class="kw">fn </span>painted(
+<a href=#479 id=479 data-nosnippet>479</a>        <span class="kw-2">&amp;</span><span class="self">self</span>,
+<a href=#480 id=480 data-nosnippet>480</a>        painter: <span class="kw-2">&amp;</span>egui::Painter,
+<a href=#481 id=481 data-nosnippet>481</a>        bar_rect: egui::Rect,
+<a href=#482 id=482 data-nosnippet>482</a>        (trough, fill): (Color32, Color32),
+<a href=#483 id=483 data-nosnippet>483</a>    ) -&gt; bool {
+<a href=#484 id=484 data-nosnippet>484</a>        <span class="kw">let </span>share = <span class="self">self
+<a href=#485 id=485 data-nosnippet>485</a>            </span>.value
+<a href=#486 id=486 data-nosnippet>486</a>            .map_or(<span class="number">0.0</span>, |amount| shape::share(amount.percent));
+<a href=#487 id=487 data-nosnippet>487</a>        <span class="kw">if let </span>(<span class="prelude-val">Some</span>(vessel), Fills::Orb) = (<span class="kw-2">&amp;</span><span class="self">self</span>.vessel, <span class="self">self</span>.fills) {
+<a href=#488 id=488 data-nosnippet>488</a>            <span class="kw">let </span>frame = shape::frame(<span class="self">self</span>.fills, bar_rect);
+<a href=#489 id=489 data-nosnippet>489</a>            <span class="kw">return </span>vessel::paint(painter, frame, share, vessel, fill);
+<a href=#490 id=490 data-nosnippet>490</a>        }
+<a href=#491 id=491 data-nosnippet>491</a>        <span class="kw">let </span>paint = shape::Paint {
+<a href=#492 id=492 data-nosnippet>492</a>            trough,
+<a href=#493 id=493 data-nosnippet>493</a>            fill,
+<a href=#494 id=494 data-nosnippet>494</a>            background: <span class="self">self</span>.glassed(painter.ctx()),
+<a href=#495 id=495 data-nosnippet>495</a>            track: <span class="self">self</span>.track,
+<a href=#496 id=496 data-nosnippet>496</a>            kit: <span class="self">self</span>.kit,
+<a href=#497 id=497 data-nosnippet>497</a>            fill_image: <span class="self">self</span>.fill_image,
+<a href=#498 id=498 data-nosnippet>498</a>            ring: f32::from(<span class="self">self</span>.ring) / <span class="number">100.0</span>,
+<a href=#499 id=499 data-nosnippet>499</a>        };
+<a href=#500 id=500 data-nosnippet>500</a>        <span class="kw">let </span>covered = shape::paint(painter, <span class="self">self</span>.fills, bar_rect, share, <span class="kw-2">&amp;</span>paint);
+<a href=#501 id=501 data-nosnippet>501</a>        <span class="self">self</span>.dressed(painter, bar_rect, paint.ring);
+<a href=#502 id=502 data-nosnippet>502</a>        covered
+<a href=#503 id=503 data-nosnippet>503</a>    }
+<a href=#504 id=504 data-nosnippet>504</a>
+<a href=#505 id=505 data-nosnippet>505</a>    <span class="doccomment">/// Its overlay and its kit over the fill in `bar_rect`, those it has.
+<a href=#506 id=506 data-nosnippet>506</a>    </span><span class="kw">fn </span>dressed(<span class="kw-2">&amp;</span><span class="self">self</span>, painter: <span class="kw-2">&amp;</span>egui::Painter, bar_rect: egui::Rect, ring: f32) {
+<a href=#507 id=507 data-nosnippet>507</a>        <span class="kw">let </span>frame = shape::frame(<span class="self">self</span>.fills, bar_rect);
+<a href=#508 id=508 data-nosnippet>508</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(overlay) = <span class="self">self</span>.overlay {
+<a href=#509 id=509 data-nosnippet>509</a>            overlay.paint(painter, frame);
+<a href=#510 id=510 data-nosnippet>510</a>        }
+<a href=#511 id=511 data-nosnippet>511</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(kit) = <span class="kw-2">&amp;</span><span class="self">self</span>.kit {
+<a href=#512 id=512 data-nosnippet>512</a>            shape::kit(painter, <span class="self">self</span>.fills, frame, kit, ring);
+<a href=#513 id=513 data-nosnippet>513</a>        }
+<a href=#514 id=514 data-nosnippet>514</a>        <span class="kw">if let </span>(<span class="prelude-val">Some</span>(emblem), Fills::Panel) = (<span class="self">self</span>.emblem, <span class="self">self</span>.fills) {
+<a href=#515 id=515 data-nosnippet>515</a>            <span class="kw">let </span>side = frame.width().min(frame.height());
+<a href=#516 id=516 data-nosnippet>516</a>            <span class="kw">let </span>square = Rect::from_center_size(frame.center(), Vec2::splat(side));
+<a href=#517 id=517 data-nosnippet>517</a>            <span class="kw">let </span>whole = Rect::from_min_max(egui::pos2(<span class="number">0.0</span>, <span class="number">0.0</span>), egui::pos2(<span class="number">1.0</span>, <span class="number">1.0</span>));
+<a href=#518 id=518 data-nosnippet>518</a>            painter.image(emblem, square, whole, Color32::WHITE);
+<a href=#519 id=519 data-nosnippet>519</a>        }
+<a href=#520 id=520 data-nosnippet>520</a>    }
+<a href=#521 id=521 data-nosnippet>521</a>
+<a href=#522 id=522 data-nosnippet>522</a>    <span class="doccomment">/// Its background: as given, or, for an orb with none chosen, the
+<a href=#523 id=523 data-nosnippet>523</a>    /// glass Hydra ships.
+<a href=#524 id=524 data-nosnippet>524</a>    </span><span class="kw">fn </span>glassed(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;</span>egui::Context) -&gt; <span class="prelude-ty">Option</span>&lt;Background&gt; {
+<a href=#525 id=525 data-nosnippet>525</a>        <span class="self">self</span>.background
+<a href=#526 id=526 data-nosnippet>526</a>            .or_else(|| (<span class="self">self</span>.fills == Fills::Orb).then(|| Background::Whole(orb_glass(ctx))))
+<a href=#527 id=527 data-nosnippet>527</a>    }
+<a href=#528 id=528 data-nosnippet>528</a>
+<a href=#529 id=529 data-nosnippet>529</a>    <span class="doccomment">/// An image the fill uncovers as it fills, in the fill's colour, of
+<a href=#530 id=530 data-nosnippet>530</a>    /// `size` pixels: a ring's or a bar's is a strip, wrapped round or laid
+<a href=#531 id=531 data-nosnippet>531</a>    /// along it at its own scale, so its size says how far one goes.
+<a href=#532 id=532 data-nosnippet>532</a>    </span><span class="kw">pub fn </span>fill_image(<span class="kw-2">mut </span><span class="self">self</span>, image: egui::TextureId, size: Vec2) -&gt; <span class="self">Self </span>{
+<a href=#533 id=533 data-nosnippet>533</a>        <span class="self">self</span>.fill_image = <span class="prelude-val">Some</span>((image, size));
+<a href=#534 id=534 data-nosnippet>534</a>        <span class="self">self
+<a href=#535 id=535 data-nosnippet>535</a>    </span>}
+<a href=#536 id=536 data-nosnippet>536</a>
+<a href=#537 id=537 data-nosnippet>537</a>    <span class="doccomment">/// Sized to what `ui` has left, its text outside it counted: as wide and
+<a href=#538 id=538 data-nosnippet>538</a>    /// as tall as the room, across or upright, so the space it is given is its
+<a href=#539 id=539 data-nosnippet>539</a>    /// shape: a bar filling across and made taller grows taller.
+<a href=#540 id=540 data-nosnippet>540</a>    </span><span class="kw">pub fn </span>fitted(<span class="kw-2">mut </span><span class="self">self</span>, ui: <span class="kw-2">&amp;</span>egui::Ui) -&gt; <span class="self">Self </span>{
+<a href=#541 id=541 data-nosnippet>541</a>        <span class="kw">let </span>room = ui.available_size();
+<a href=#542 id=542 data-nosnippet>542</a>        <span class="comment">// Beside it, all its words; above a panel, those that name it.
+<a href=#543 id=543 data-nosnippet>543</a>        </span><span class="kw">let </span>words = <span class="kw">if </span><span class="self">self</span>.place == Place::Corner {
+<a href=#544 id=544 data-nosnippet>544</a>            <span class="self">self</span>.parts().<span class="number">0
+<a href=#545 id=545 data-nosnippet>545</a>        </span>} <span class="kw">else </span>{
+<a href=#546 id=546 data-nosnippet>546</a>            <span class="self">self</span>.words()
+<a href=#547 id=547 data-nosnippet>547</a>        };
+<a href=#548 id=548 data-nosnippet>548</a>        <span class="kw">let </span>text = <span class="kw">if </span><span class="self">self</span>.place == Place::Inside || <span class="self">self</span>.place == Place::Hidden || words.is_empty()
+<a href=#549 id=549 data-nosnippet>549</a>        {
+<a href=#550 id=550 data-nosnippet>550</a>            Vec2::ZERO
+<a href=#551 id=551 data-nosnippet>551</a>        } <span class="kw">else </span>{
+<a href=#552 id=552 data-nosnippet>552</a>            ui.painter()
+<a href=#553 id=553 data-nosnippet>553</a>                .layout_no_wrap(
+<a href=#554 id=554 data-nosnippet>554</a>                    words,
+<a href=#555 id=555 data-nosnippet>555</a>                    egui::TextStyle::Body.resolve(ui.style()),
+<a href=#556 id=556 data-nosnippet>556</a>                    Color32::PLACEHOLDER,
+<a href=#557 id=557 data-nosnippet>557</a>                )
+<a href=#558 id=558 data-nosnippet>558</a>                .size()
+<a href=#559 id=559 data-nosnippet>559</a>                + Vec2::splat(GAP)
+<a href=#560 id=560 data-nosnippet>560</a>        };
+<a href=#561 id=561 data-nosnippet>561</a>        <span class="kw">let </span>left = <span class="kw">match </span><span class="self">self</span>.place {
+<a href=#562 id=562 data-nosnippet>562</a>            Place::Above | Place::Below | Place::Corner =&gt; Vec2::new(room.x, room.y - text.y),
+<a href=#563 id=563 data-nosnippet>563</a>            Place::Left | Place::Right =&gt; Vec2::new(room.x - text.x, room.y),
+<a href=#564 id=564 data-nosnippet>564</a>            Place::Inside | Place::Hidden =&gt; room,
+<a href=#565 id=565 data-nosnippet>565</a>        };
+<a href=#566 id=566 data-nosnippet>566</a>        <span class="self">self</span>.size = <span class="prelude-val">Some</span>(Vec2::new(left.x.max(LEAST), left.y.max(LEAST)));
+<a href=#567 id=567 data-nosnippet>567</a>        <span class="self">self
+<a href=#568 id=568 data-nosnippet>568</a>    </span>}
 <a href=#569 id=569 data-nosnippet>569</a>
-<a href=#570 id=570 data-nosnippet>570</a><span class="kw">pub use </span>overlay::Overlay;
-<a href=#571 id=571 data-nosnippet>571</a>
-<a href=#572 id=572 data-nosnippet>572</a><span class="attr">#[cfg(test)]
-<a href=#573 id=573 data-nosnippet>573</a></span><span class="kw">mod </span>tests;
+<a href=#570 id=570 data-nosnippet>570</a>    <span class="doccomment">/// Art painted over the bar, after its fill and before its text.
+<a href=#571 id=571 data-nosnippet>571</a>    </span><span class="kw">pub fn </span>overlay(<span class="kw-2">mut </span><span class="self">self</span>, overlay: Overlay) -&gt; <span class="self">Self </span>{
+<a href=#572 id=572 data-nosnippet>572</a>        <span class="self">self</span>.overlay = <span class="prelude-val">Some</span>(overlay);
+<a href=#573 id=573 data-nosnippet>573</a>        <span class="self">self
+<a href=#574 id=574 data-nosnippet>574</a>    </span>}
+<a href=#575 id=575 data-nosnippet>575</a>
+<a href=#576 id=576 data-nosnippet>576</a>    <span class="doccomment">/// A panel's emblem: drawn square over its middle, as wide as its
+<a href=#577 id=577 data-nosnippet>577</a>    /// shorter side, in its own colours, whatever the panel holds.
+<a href=#578 id=578 data-nosnippet>578</a>    </span><span class="kw">pub fn </span>emblem(<span class="kw-2">mut </span><span class="self">self</span>, emblem: egui::TextureId) -&gt; <span class="self">Self </span>{
+<a href=#579 id=579 data-nosnippet>579</a>        <span class="self">self</span>.emblem = <span class="prelude-val">Some</span>(emblem);
+<a href=#580 id=580 data-nosnippet>580</a>        <span class="self">self
+<a href=#581 id=581 data-nosnippet>581</a>    </span>}
+<a href=#582 id=582 data-nosnippet>582</a>
+<a href=#583 id=583 data-nosnippet>583</a>    <span class="doccomment">/// An orb drawn as a vessel: its inside under its picture, filled to
+<a href=#584 id=584 data-nosnippet>584</a>    /// the level its mask's area says, and no glass.
+<a href=#585 id=585 data-nosnippet>585</a>    </span><span class="kw">pub fn </span>vessel(<span class="kw-2">mut </span><span class="self">self</span>, vessel: Vessel) -&gt; <span class="self">Self </span>{
+<a href=#586 id=586 data-nosnippet>586</a>        <span class="self">self</span>.vessel = <span class="prelude-val">Some</span>(vessel);
+<a href=#587 id=587 data-nosnippet>587</a>        <span class="self">self
+<a href=#588 id=588 data-nosnippet>588</a>    </span>}
+<a href=#589 id=589 data-nosnippet>589</a>
+<a href=#590 id=590 data-nosnippet>590</a>    <span class="doccomment">/// A kit over a ring or a bar: its rails and caps over the fill, which
+<a href=#591 id=591 data-nosnippet>591</a>    /// keeps to the channel between them.
+<a href=#592 id=592 data-nosnippet>592</a>    </span><span class="kw">pub fn </span>kit(<span class="kw-2">mut </span><span class="self">self</span>, kit: Kit) -&gt; <span class="self">Self </span>{
+<a href=#593 id=593 data-nosnippet>593</a>        <span class="self">self</span>.kit = <span class="prelude-val">Some</span>(kit);
+<a href=#594 id=594 data-nosnippet>594</a>        <span class="self">self
+<a href=#595 id=595 data-nosnippet>595</a>    </span>}
+<a href=#596 id=596 data-nosnippet>596</a>
+<a href=#597 id=597 data-nosnippet>597</a>    <span class="doccomment">/// The words, in order, joined by spaces; empty for none.
+<a href=#598 id=598 data-nosnippet>598</a>    </span><span class="attr">#[must_use]
+<a href=#599 id=599 data-nosnippet>599</a>    </span><span class="kw">pub fn </span>words(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
+<a href=#600 id=600 data-nosnippet>600</a>        <span class="kw">let </span>said = <span class="self">self</span>.said();
+<a href=#601 id=601 data-nosnippet>601</a>        <span class="kw">match </span><span class="self">self</span>.end.filter(|end| !end.is_empty()) {
+<a href=#602 id=602 data-nosnippet>602</a>            <span class="prelude-val">Some</span>(end) <span class="kw">if </span>said.is_empty() =&gt; end.to_owned(),
+<a href=#603 id=603 data-nosnippet>603</a>            <span class="prelude-val">Some</span>(end) =&gt; <span class="macro">format!</span>(<span class="string">"{said} {end}"</span>),
+<a href=#604 id=604 data-nosnippet>604</a>            <span class="prelude-val">None </span>=&gt; said,
+<a href=#605 id=605 data-nosnippet>605</a>        }
+<a href=#606 id=606 data-nosnippet>606</a>    }
+<a href=#607 id=607 data-nosnippet>607</a>
+<a href=#608 id=608 data-nosnippet>608</a>    <span class="doccomment">/// Its words but its [`Self::end`]: what names it and what measures it.
+<a href=#609 id=609 data-nosnippet>609</a>    </span><span class="kw">fn </span>said(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
+<a href=#610 id=610 data-nosnippet>610</a>        <span class="kw">let </span>(named, measured) = <span class="self">self</span>.parts();
+<a href=#611 id=611 data-nosnippet>611</a>        [named, measured]
+<a href=#612 id=612 data-nosnippet>612</a>            .into_iter()
+<a href=#613 id=613 data-nosnippet>613</a>            .filter(|part| !part.is_empty())
+<a href=#614 id=614 data-nosnippet>614</a>            .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;()
+<a href=#615 id=615 data-nosnippet>615</a>            .join(<span class="string">" "</span>)
+<a href=#616 id=616 data-nosnippet>616</a>    }
+<a href=#617 id=617 data-nosnippet>617</a>
+<a href=#618 id=618 data-nosnippet>618</a>    <span class="doccomment">/// The words in two: what names it, its label and the game's word for
+<a href=#619 id=619 data-nosnippet>619</a>    /// its state; and what measures it, its numbers and its percent.
+<a href=#620 id=620 data-nosnippet>620</a>    </span><span class="kw">fn </span>parts(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; (String, String) {
+<a href=#621 id=621 data-nosnippet>621</a>        <span class="kw">let </span><span class="kw-2">mut </span>parts = Vec::new();
+<a href=#622 id=622 data-nosnippet>622</a>        <span class="kw">let </span>state = <span class="self">self
+<a href=#623 id=623 data-nosnippet>623</a>            </span>.state
+<a href=#624 id=624 data-nosnippet>624</a>            .filter(|words| <span class="self">self</span>.says.words &amp;&amp; !words.is_empty());
+<a href=#625 id=625 data-nosnippet>625</a>        <span class="kw">if </span><span class="self">self</span>.says.label &amp;&amp; !<span class="self">self</span>.label.is_empty() {
+<a href=#626 id=626 data-nosnippet>626</a>            <span class="comment">// `Stance: offensive`, and `Stance 80%` with no word after it.
+<a href=#627 id=627 data-nosnippet>627</a>            </span>parts.push(<span class="kw">match </span>state {
+<a href=#628 id=628 data-nosnippet>628</a>                <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; <span class="macro">format!</span>(<span class="string">"{}:"</span>, <span class="self">self</span>.label),
+<a href=#629 id=629 data-nosnippet>629</a>                <span class="prelude-val">None </span>=&gt; <span class="self">self</span>.label.to_owned(),
+<a href=#630 id=630 data-nosnippet>630</a>            });
+<a href=#631 id=631 data-nosnippet>631</a>        }
+<a href=#632 id=632 data-nosnippet>632</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(state) = state {
+<a href=#633 id=633 data-nosnippet>633</a>            parts.push(state.to_owned());
+<a href=#634 id=634 data-nosnippet>634</a>        }
+<a href=#635 id=635 data-nosnippet>635</a>        <span class="kw">let </span>named = parts.join(<span class="string">" "</span>);
+<a href=#636 id=636 data-nosnippet>636</a>        <span class="kw">let </span><span class="kw-2">mut </span>parts = Vec::new();
+<a href=#637 id=637 data-nosnippet>637</a>        <span class="kw">match </span><span class="self">self</span>.value {
+<a href=#638 id=638 data-nosnippet>638</a>            <span class="prelude-val">Some</span>(amount) =&gt; {
+<a href=#639 id=639 data-nosnippet>639</a>                <span class="kw">if </span><span class="self">self</span>.says.numbers
+<a href=#640 id=640 data-nosnippet>640</a>                    &amp;&amp; <span class="kw">let </span>(<span class="prelude-val">Some</span>(current), <span class="prelude-val">Some</span>(max)) = (amount.current, amount.max)
+<a href=#641 id=641 data-nosnippet>641</a>                {
+<a href=#642 id=642 data-nosnippet>642</a>                    parts.push(<span class="macro">format!</span>(<span class="string">"{current}/{max}"</span>));
+<a href=#643 id=643 data-nosnippet>643</a>                }
+<a href=#644 id=644 data-nosnippet>644</a>                <span class="kw">if </span><span class="self">self</span>.says.percent {
+<a href=#645 id=645 data-nosnippet>645</a>                    parts.push(<span class="macro">format!</span>(<span class="string">"{}%"</span>, amount.percent));
+<a href=#646 id=646 data-nosnippet>646</a>                }
+<a href=#647 id=647 data-nosnippet>647</a>            }
+<a href=#648 id=648 data-nosnippet>648</a>            <span class="prelude-val">None </span><span class="kw">if </span><span class="self">self</span>.says.numbers || <span class="self">self</span>.says.percent =&gt; parts.push(<span class="string">"?"</span>.to_owned()),
+<a href=#649 id=649 data-nosnippet>649</a>            <span class="prelude-val">None </span>=&gt; {}
+<a href=#650 id=650 data-nosnippet>650</a>        }
+<a href=#651 id=651 data-nosnippet>651</a>        (named, parts.join(<span class="string">" "</span>))
+<a href=#652 id=652 data-nosnippet>652</a>    }
+<a href=#653 id=653 data-nosnippet>653</a>
+<a href=#654 id=654 data-nosnippet>654</a>    <span class="kw">fn </span>bar_size(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec2 {
+<a href=#655 id=655 data-nosnippet>655</a>        <span class="self">self</span>.size.unwrap_or(<span class="kw">match </span><span class="self">self</span>.fills {
+<a href=#656 id=656 data-nosnippet>656</a>            Fills::Right | Fills::Left =&gt; Vec2::new(<span class="number">72.0</span>, <span class="number">18.0</span>),
+<a href=#657 id=657 data-nosnippet>657</a>            Fills::Up | Fills::Down =&gt; Vec2::new(<span class="number">18.0</span>, <span class="number">72.0</span>),
+<a href=#658 id=658 data-nosnippet>658</a>            Fills::Orb | Fills::Ring =&gt; Vec2::splat(<span class="number">48.0</span>),
+<a href=#659 id=659 data-nosnippet>659</a>            Fills::Panel =&gt; Vec2::new(<span class="number">56.0</span>, <span class="number">72.0</span>),
+<a href=#660 id=660 data-nosnippet>660</a>        })
+<a href=#661 id=661 data-nosnippet>661</a>    }
+<a href=#662 id=662 data-nosnippet>662</a>}
+<a href=#663 id=663 data-nosnippet>663</a>
+<a href=#664 id=664 data-nosnippet>664</a><span class="kw">impl </span>egui::Widget <span class="kw">for </span>Bar&lt;<span class="lifetime">'_</span>&gt; {
+<a href=#665 id=665 data-nosnippet>665</a>    <span class="kw">fn </span>ui(<span class="self">self</span>, ui: <span class="kw-2">&amp;mut </span>egui::Ui) -&gt; egui::Response {
+<a href=#666 id=666 data-nosnippet>666</a>        <span class="kw">let </span>words = <span class="self">self</span>.words();
+<a href=#667 id=667 data-nosnippet>667</a>        <span class="kw">let </span>(beside, corner) = <span class="self">self</span>.texts(ui);
+<a href=#668 id=668 data-nosnippet>668</a>        <span class="kw">let </span>bar = <span class="self">self</span>.bar_size();
+<a href=#669 id=669 data-nosnippet>669</a>        <span class="kw">let </span>text = beside.as_ref().map_or(Vec2::ZERO, |galley| galley.size());
+<a href=#670 id=670 data-nosnippet>670</a>        <span class="kw">let </span>outside = beside.is_some() &amp;&amp; <span class="self">self</span>.place != Place::Inside;
+<a href=#671 id=671 data-nosnippet>671</a>        <span class="kw">let </span>total = <span class="kw">match </span><span class="self">self</span>.place {
+<a href=#672 id=672 data-nosnippet>672</a>            Place::Above | Place::Below | Place::Corner <span class="kw">if </span>outside =&gt; {
+<a href=#673 id=673 data-nosnippet>673</a>                Vec2::new(bar.x.max(text.x), bar.y + GAP + text.y)
+<a href=#674 id=674 data-nosnippet>674</a>            }
+<a href=#675 id=675 data-nosnippet>675</a>            Place::Left | Place::Right <span class="kw">if </span>outside =&gt; {
+<a href=#676 id=676 data-nosnippet>676</a>                Vec2::new(text.x + GAP + bar.x, bar.y.max(text.y))
+<a href=#677 id=677 data-nosnippet>677</a>            }
+<a href=#678 id=678 data-nosnippet>678</a>            <span class="kw">_ </span>=&gt; bar,
+<a href=#679 id=679 data-nosnippet>679</a>        };
+<a href=#680 id=680 data-nosnippet>680</a>        <span class="kw">let </span>(rect, response) = ui.allocate_exact_size(total, Sense::hover());
+<a href=#681 id=681 data-nosnippet>681</a>        <span class="kw">let </span>bar_rect = <span class="kw">match </span><span class="self">self</span>.place {
+<a href=#682 id=682 data-nosnippet>682</a>            Place::Above | Place::Corner <span class="kw">if </span>outside =&gt; {
+<a href=#683 id=683 data-nosnippet>683</a>                Align2::CENTER_BOTTOM.align_size_within_rect(bar, rect)
+<a href=#684 id=684 data-nosnippet>684</a>            }
+<a href=#685 id=685 data-nosnippet>685</a>            Place::Below <span class="kw">if </span>outside =&gt; Align2::CENTER_TOP.align_size_within_rect(bar, rect),
+<a href=#686 id=686 data-nosnippet>686</a>            Place::Left <span class="kw">if </span>outside =&gt; Align2::RIGHT_CENTER.align_size_within_rect(bar, rect),
+<a href=#687 id=687 data-nosnippet>687</a>            Place::Right <span class="kw">if </span>outside =&gt; Align2::LEFT_CENTER.align_size_within_rect(bar, rect),
+<a href=#688 id=688 data-nosnippet>688</a>            <span class="kw">_ </span>=&gt; rect,
+<a href=#689 id=689 data-nosnippet>689</a>        };
+<a href=#690 id=690 data-nosnippet>690</a>        <span class="kw">let </span>bar_rect = thinned(
+<a href=#691 id=691 data-nosnippet>691</a>            bar_rect,
+<a href=#692 id=692 data-nosnippet>692</a>            <span class="self">self</span>.fills,
+<a href=#693 id=693 data-nosnippet>693</a>            <span class="kw">crate</span>::theme::shape(ui.ctx()).bar_thickness,
+<a href=#694 id=694 data-nosnippet>694</a>        );
+<a href=#695 id=695 data-nosnippet>695</a>        <span class="kw">let </span>enabled = ui.is_enabled();
+<a href=#696 id=696 data-nosnippet>696</a>        response.widget_info(|| {
+<a href=#697 id=697 data-nosnippet>697</a>            WidgetInfo::labeled(WidgetType::ProgressIndicator, enabled, words.clone())
+<a href=#698 id=698 data-nosnippet>698</a>        });
+<a href=#699 id=699 data-nosnippet>699</a>        <span class="kw">if </span>!ui.is_rect_visible(rect) {
+<a href=#700 id=700 data-nosnippet>700</a>            <span class="kw">return </span>response;
+<a href=#701 id=701 data-nosnippet>701</a>        }
+<a href=#702 id=702 data-nosnippet>702</a>        <span class="kw">let </span>visuals = ui.visuals();
+<a href=#703 id=703 data-nosnippet>703</a>        <span class="kw">let </span>(trough, ground) = (visuals.extreme_bg_color, visuals.text_color());
+<a href=#704 id=704 data-nosnippet>704</a>        <span class="kw">let </span>fill = <span class="self">self</span>.fill.unwrap_or(visuals.selection.bg_fill);
+<a href=#705 id=705 data-nosnippet>705</a>        <span class="kw">let </span>painter = ui.painter();
+<a href=#706 id=706 data-nosnippet>706</a>        <span class="kw">let </span>covered = <span class="self">self</span>.painted(painter, bar_rect, (trough, fill));
+<a href=#707 id=707 data-nosnippet>707</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(galley) = beside {
+<a href=#708 id=708 data-nosnippet>708</a>            <span class="kw">if </span>outside {
+<a href=#709 id=709 data-nosnippet>709</a>                <span class="kw">let </span>anchor = <span class="kw">match </span><span class="self">self</span>.place {
+<a href=#710 id=710 data-nosnippet>710</a>                    Place::Above | Place::Corner =&gt; Align2::CENTER_TOP,
+<a href=#711 id=711 data-nosnippet>711</a>                    Place::Below =&gt; Align2::CENTER_BOTTOM,
+<a href=#712 id=712 data-nosnippet>712</a>                    Place::Left =&gt; Align2::LEFT_CENTER,
+<a href=#713 id=713 data-nosnippet>713</a>                    <span class="kw">_ </span>=&gt; Align2::RIGHT_CENTER,
+<a href=#714 id=714 data-nosnippet>714</a>                };
+<a href=#715 id=715 data-nosnippet>715</a>                <span class="kw">let </span>at = anchor.align_size_within_rect(galley.size(), rect).min;
+<a href=#716 id=716 data-nosnippet>716</a>                <span class="self">self</span>.write(painter, galley, at, (<span class="prelude-val">None</span>, ground));
+<a href=#717 id=717 data-nosnippet>717</a>            } <span class="kw">else </span>{
+<a href=#718 id=718 data-nosnippet>718</a>                <span class="kw">let </span>at = Align2::CENTER_CENTER
+<a href=#719 id=719 data-nosnippet>719</a>                    .align_size_within_rect(galley.size(), bar_rect)
+<a href=#720 id=720 data-nosnippet>720</a>                    .min;
+<a href=#721 id=721 data-nosnippet>721</a>                <span class="kw">let </span>behind = <span class="kw">if </span>covered { fill } <span class="kw">else </span>{ trough };
+<a href=#722 id=722 data-nosnippet>722</a>                <span class="self">self</span>.write(painter, galley, at, (<span class="prelude-val">Some</span>(behind), ground));
+<a href=#723 id=723 data-nosnippet>723</a>            }
+<a href=#724 id=724 data-nosnippet>724</a>        }
+<a href=#725 id=725 data-nosnippet>725</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(galley) = corner {
+<a href=#726 id=726 data-nosnippet>726</a>            <span class="kw">let </span>inner = bar_rect.shrink(CORNER_INSET);
+<a href=#727 id=727 data-nosnippet>727</a>            <span class="kw">let </span>at = Align2::RIGHT_BOTTOM
+<a href=#728 id=728 data-nosnippet>728</a>                .align_size_within_rect(galley.size(), inner)
+<a href=#729 id=729 data-nosnippet>729</a>                .min;
+<a href=#730 id=730 data-nosnippet>730</a>            <span class="kw">let </span>behind = <span class="self">self</span>.behind(bar_rect, inner.right_bottom(), (trough, fill));
+<a href=#731 id=731 data-nosnippet>731</a>            <span class="self">self</span>.write(painter, galley, at, (<span class="prelude-val">Some</span>(behind), ground));
+<a href=#732 id=732 data-nosnippet>732</a>        }
+<a href=#733 id=733 data-nosnippet>733</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(end) = <span class="self">self</span>.end.filter(|<span class="kw">_</span>| <span class="self">self</span>.place != Place::Hidden) {
+<a href=#734 id=734 data-nosnippet>734</a>            <span class="self">self</span>.ends(ui, bar_rect, end, (trough, fill, ground));
+<a href=#735 id=735 data-nosnippet>735</a>        }
+<a href=#736 id=736 data-nosnippet>736</a>        response
+<a href=#737 id=737 data-nosnippet>737</a>    }
+<a href=#738 id=738 data-nosnippet>738</a>}
+<a href=#739 id=739 data-nosnippet>739</a>
+<a href=#740 id=740 data-nosnippet>740</a><span class="doccomment">/// How far in from a bar's edge its corner words sit.
+<a href=#741 id=741 data-nosnippet>741</a></span><span class="kw">const </span>CORNER_INSET: f32 = <span class="number">3.0</span>;
+<a href=#742 id=742 data-nosnippet>742</a>
+<a href=#743 id=743 data-nosnippet>743</a><span class="kw">impl </span>Bar&lt;<span class="lifetime">'_</span>&gt; {
+<a href=#744 id=744 data-nosnippet>744</a>    <span class="doccomment">/// Its words laid out: those beside it or over it, as its place says;
+<a href=#745 id=745 data-nosnippet>745</a>    /// and, for [`Place::Corner`], its measures apart, for its corner.
+<a href=#746 id=746 data-nosnippet>746</a>    </span><span class="kw">fn </span>texts(<span class="kw-2">&amp;</span><span class="self">self</span>, ui: <span class="kw-2">&amp;</span>egui::Ui) -&gt; (<span class="prelude-ty">Option</span>&lt;Arc&lt;Galley&gt;&gt;, <span class="prelude-ty">Option</span>&lt;Arc&lt;Galley&gt;&gt;) {
+<a href=#747 id=747 data-nosnippet>747</a>        <span class="comment">// Words at its ends are laid out by `ends`, over it.
+<a href=#748 id=748 data-nosnippet>748</a>        </span><span class="kw">if </span><span class="self">self</span>.end.is_some() {
+<a href=#749 id=749 data-nosnippet>749</a>            <span class="kw">return </span>(<span class="prelude-val">None</span>, <span class="prelude-val">None</span>);
+<a href=#750 id=750 data-nosnippet>750</a>        }
+<a href=#751 id=751 data-nosnippet>751</a>        <span class="kw">let </span>lay = |text: String| {
+<a href=#752 id=752 data-nosnippet>752</a>            (!text.is_empty()).then(|| {
+<a href=#753 id=753 data-nosnippet>753</a>                ui.painter().layout_no_wrap(
+<a href=#754 id=754 data-nosnippet>754</a>                    text,
+<a href=#755 id=755 data-nosnippet>755</a>                    egui::TextStyle::Body.resolve(ui.style()),
+<a href=#756 id=756 data-nosnippet>756</a>                    Color32::PLACEHOLDER,
+<a href=#757 id=757 data-nosnippet>757</a>                )
+<a href=#758 id=758 data-nosnippet>758</a>            })
+<a href=#759 id=759 data-nosnippet>759</a>        };
+<a href=#760 id=760 data-nosnippet>760</a>        <span class="kw">match </span><span class="self">self</span>.place {
+<a href=#761 id=761 data-nosnippet>761</a>            Place::Hidden =&gt; (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>),
+<a href=#762 id=762 data-nosnippet>762</a>            Place::Corner =&gt; {
+<a href=#763 id=763 data-nosnippet>763</a>                <span class="kw">let </span>(named, measured) = <span class="self">self</span>.parts();
+<a href=#764 id=764 data-nosnippet>764</a>                (lay(named), lay(measured))
+<a href=#765 id=765 data-nosnippet>765</a>            }
+<a href=#766 id=766 data-nosnippet>766</a>            <span class="kw">_ </span>=&gt; (lay(<span class="self">self</span>.words()), <span class="prelude-val">None</span>),
+<a href=#767 id=767 data-nosnippet>767</a>        }
+<a href=#768 id=768 data-nosnippet>768</a>    }
+<a href=#769 id=769 data-nosnippet>769</a>
+<a href=#770 id=770 data-nosnippet>770</a>    <span class="doccomment">/// Its words over its left end, cut short with an ellipsis before they
+<a href=#771 id=771 data-nosnippet>771</a>    /// reach `end`, and `end` over its right in figures of one width; each
+<a href=#772 id=772 data-nosnippet>772</a>    /// readable on what lies behind it, the bar's `trough` or `fill`.
+<a href=#773 id=773 data-nosnippet>773</a>    </span><span class="kw">fn </span>ends(
+<a href=#774 id=774 data-nosnippet>774</a>        <span class="kw-2">&amp;</span><span class="self">self</span>,
+<a href=#775 id=775 data-nosnippet>775</a>        ui: <span class="kw-2">&amp;</span>egui::Ui,
+<a href=#776 id=776 data-nosnippet>776</a>        bar_rect: Rect,
+<a href=#777 id=777 data-nosnippet>777</a>        end: <span class="kw-2">&amp;</span>str,
+<a href=#778 id=778 data-nosnippet>778</a>        (trough, fill, ground): (Color32, Color32, Color32),
+<a href=#779 id=779 data-nosnippet>779</a>    ) {
+<a href=#780 id=780 data-nosnippet>780</a>        <span class="kw">let </span>painter = ui.painter();
+<a href=#781 id=781 data-nosnippet>781</a>        <span class="kw">let </span>body = egui::TextStyle::Body.resolve(ui.style());
+<a href=#782 id=782 data-nosnippet>782</a>        <span class="kw">let </span>figures = egui::FontId::monospace(body.size);
+<a href=#783 id=783 data-nosnippet>783</a>        <span class="kw">let </span>inner = bar_rect.shrink2(Vec2::new(CORNER_INSET, <span class="number">0.0</span>));
+<a href=#784 id=784 data-nosnippet>784</a>        <span class="kw">let </span>end = painter.layout_no_wrap(end.to_owned(), figures, Color32::PLACEHOLDER);
+<a href=#785 id=785 data-nosnippet>785</a>        <span class="kw">let </span>end_at = Align2::RIGHT_CENTER.align_size_within_rect(end.size(), inner);
+<a href=#786 id=786 data-nosnippet>786</a>        <span class="kw">let </span><span class="kw-2">mut </span>job =
+<a href=#787 id=787 data-nosnippet>787</a>            egui::text::LayoutJob::simple_singleline(<span class="self">self</span>.said(), body, Color32::PLACEHOLDER);
+<a href=#788 id=788 data-nosnippet>788</a>        job.wrap = egui::text::TextWrapping::truncate_at_width(
+<a href=#789 id=789 data-nosnippet>789</a>            (end_at.min.x - GAP - inner.min.x).max(<span class="number">0.0</span>),
+<a href=#790 id=790 data-nosnippet>790</a>        );
+<a href=#791 id=791 data-nosnippet>791</a>        <span class="kw">let </span>named = painter.layout_job(job);
+<a href=#792 id=792 data-nosnippet>792</a>        <span class="kw">let </span>named_at = Align2::LEFT_CENTER.align_size_within_rect(named.size(), inner);
+<a href=#793 id=793 data-nosnippet>793</a>        <span class="kw">let </span>behind = |at: Rect| <span class="self">self</span>.behind(bar_rect, at.center(), (trough, fill));
+<a href=#794 id=794 data-nosnippet>794</a>        <span class="kw">let </span>over = behind(named_at);
+<a href=#795 id=795 data-nosnippet>795</a>        <span class="self">self</span>.write(painter, named, named_at.min, (<span class="prelude-val">Some</span>(over), ground));
+<a href=#796 id=796 data-nosnippet>796</a>        <span class="kw">let </span>over = behind(end_at);
+<a href=#797 id=797 data-nosnippet>797</a>        <span class="self">self</span>.write(painter, end, end_at.min, (<span class="prelude-val">Some</span>(over), ground));
+<a href=#798 id=798 data-nosnippet>798</a>    }
+<a href=#799 id=799 data-nosnippet>799</a>
+<a href=#800 id=800 data-nosnippet>800</a>    <span class="doccomment">/// What lies behind the point `at` of the bar drawn in `bar_rect`: its
+<a href=#801 id=801 data-nosnippet>801</a>    /// fill where the fill reaches, else its trough.
+<a href=#802 id=802 data-nosnippet>802</a>    </span><span class="kw">fn </span>behind(
+<a href=#803 id=803 data-nosnippet>803</a>        <span class="kw-2">&amp;</span><span class="self">self</span>,
+<a href=#804 id=804 data-nosnippet>804</a>        bar_rect: Rect,
+<a href=#805 id=805 data-nosnippet>805</a>        at: egui::Pos2,
+<a href=#806 id=806 data-nosnippet>806</a>        (trough, fill): (Color32, Color32),
+<a href=#807 id=807 data-nosnippet>807</a>    ) -&gt; Color32 {
+<a href=#808 id=808 data-nosnippet>808</a>        <span class="kw">let </span>share = <span class="self">self
+<a href=#809 id=809 data-nosnippet>809</a>            </span>.value
+<a href=#810 id=810 data-nosnippet>810</a>            .map_or(<span class="number">0.0</span>, |amount| shape::share(amount.percent));
+<a href=#811 id=811 data-nosnippet>811</a>        <span class="kw">let </span>frame = shape::frame(<span class="self">self</span>.fills, bar_rect);
+<a href=#812 id=812 data-nosnippet>812</a>        <span class="kw">if </span>share &gt; <span class="number">0.0 </span>&amp;&amp; shape::filled(frame, <span class="self">self</span>.fills, share).contains(at) {
+<a href=#813 id=813 data-nosnippet>813</a>            fill
+<a href=#814 id=814 data-nosnippet>814</a>        } <span class="kw">else </span>{
+<a href=#815 id=815 data-nosnippet>815</a>            trough
+<a href=#816 id=816 data-nosnippet>816</a>        }
+<a href=#817 id=817 data-nosnippet>817</a>    }
+<a href=#818 id=818 data-nosnippet>818</a>
+<a href=#819 id=819 data-nosnippet>819</a>    <span class="doccomment">/// `galley` painted at `at`: beside the bar (`over` none) in its words'
+<a href=#820 id=820 data-nosnippet>820</a>    /// colour or the window's `ground` text colour, outlined only when an
+<a href=#821 id=821 data-nosnippet>821</a>    /// outline's colour was chosen; or over the bar, readable on `over`,
+<a href=#822 id=822 data-nosnippet>822</a>    /// outlined in the other colour so it reads where the fill's edge runs
+<a href=#823 id=823 data-nosnippet>823</a>    /// through it.
+<a href=#824 id=824 data-nosnippet>824</a>    </span><span class="kw">fn </span>write(
+<a href=#825 id=825 data-nosnippet>825</a>        <span class="kw-2">&amp;</span><span class="self">self</span>,
+<a href=#826 id=826 data-nosnippet>826</a>        painter: <span class="kw-2">&amp;</span>egui::Painter,
+<a href=#827 id=827 data-nosnippet>827</a>        galley: Arc&lt;Galley&gt;,
+<a href=#828 id=828 data-nosnippet>828</a>        at: egui::Pos2,
+<a href=#829 id=829 data-nosnippet>829</a>        (over, ground): (<span class="prelude-ty">Option</span>&lt;Color32&gt;, Color32),
+<a href=#830 id=830 data-nosnippet>830</a>    ) {
+<a href=#831 id=831 data-nosnippet>831</a>        <span class="kw">let </span>(color, outline) = <span class="kw">match </span>over {
+<a href=#832 id=832 data-nosnippet>832</a>            <span class="prelude-val">None </span>=&gt; (<span class="self">self</span>.text_color.unwrap_or(ground), <span class="self">self</span>.outline_color),
+<a href=#833 id=833 data-nosnippet>833</a>            <span class="prelude-val">Some</span>(behind) =&gt; {
+<a href=#834 id=834 data-nosnippet>834</a>                <span class="kw">let </span>color = <span class="self">self</span>.text_color.unwrap_or_else(|| readable_on(behind));
+<a href=#835 id=835 data-nosnippet>835</a>                <span class="kw">let </span>outline = <span class="self">self</span>.outline_color.unwrap_or_else(|| readable_on(color));
+<a href=#836 id=836 data-nosnippet>836</a>                (color, <span class="prelude-val">Some</span>(outline))
+<a href=#837 id=837 data-nosnippet>837</a>            }
+<a href=#838 id=838 data-nosnippet>838</a>        };
+<a href=#839 id=839 data-nosnippet>839</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(outline) = outline {
+<a href=#840 id=840 data-nosnippet>840</a>            <span class="kw">for </span>offset <span class="kw">in </span>outline_offsets(<span class="self">self</span>.outline) {
+<a href=#841 id=841 data-nosnippet>841</a>                painter.galley(at + offset, galley.clone(), outline);
+<a href=#842 id=842 data-nosnippet>842</a>            }
+<a href=#843 id=843 data-nosnippet>843</a>        }
+<a href=#844 id=844 data-nosnippet>844</a>        painter.galley(at, galley, color);
+<a href=#845 id=845 data-nosnippet>845</a>    }
+<a href=#846 id=846 data-nosnippet>846</a>}
+<a href=#847 id=847 data-nosnippet>847</a>
+<a href=#848 id=848 data-nosnippet>848</a><span class="doccomment">/// The glass every orb wears until the player chooses another: deep
+<a href=#849 id=849 data-nosnippet>849</a>/// smoked, in the orbs' shared layout.
+<a href=#850 id=850 data-nosnippet>850</a></span><span class="kw">const </span>ORB_GLASS: (<span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span>[u8]) = (
+<a href=#851 id=851 data-nosnippet>851</a>    <span class="string">"built-in:orb_background"</span>,
+<a href=#852 id=852 data-nosnippet>852</a>    <span class="macro">include_bytes!</span>(<span class="string">"../assets/orb_background.png"</span>),
+<a href=#853 id=853 data-nosnippet>853</a>);
+<a href=#854 id=854 data-nosnippet>854</a>
+<a href=#855 id=855 data-nosnippet>855</a><span class="doccomment">/// The glass Hydra ships, as a texture.
+<a href=#856 id=856 data-nosnippet>856</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>orb_glass(ctx: <span class="kw-2">&amp;</span>egui::Context) -&gt; egui::TextureId {
+<a href=#857 id=857 data-nosnippet>857</a>    <span class="kw">crate</span>::pictures::built_in(ctx, ORB_GLASS).id()
+<a href=#858 id=858 data-nosnippet>858</a>}
+<a href=#859 id=859 data-nosnippet>859</a>
+<a href=#860 id=860 data-nosnippet>860</a><span class="kw">mod </span>overlay;
+<a href=#861 id=861 data-nosnippet>861</a><span class="kw">mod </span>shape;
+<a href=#862 id=862 data-nosnippet>862</a><span class="kw">pub mod </span>stack;
+<a href=#863 id=863 data-nosnippet>863</a><span class="kw">pub mod </span>vessel;
+<a href=#864 id=864 data-nosnippet>864</a>
+<a href=#865 id=865 data-nosnippet>865</a><span class="kw">pub use </span>overlay::{Kit, Overlay, Picture};
+<a href=#866 id=866 data-nosnippet>866</a><span class="kw">pub use </span>vessel::Vessel;
+<a href=#867 id=867 data-nosnippet>867</a>
+<a href=#868 id=868 data-nosnippet>868</a><span class="attr">#[cfg(test)]
+<a href=#869 id=869 data-nosnippet>869</a></span><span class="kw">mod </span>tests;
 </code></pre></div></section></main></body></html>

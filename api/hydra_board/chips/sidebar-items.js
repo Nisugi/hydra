@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["CRITICAL_SECONDS","WARN_SECONDS"],"enum":["Empty","Level","Says"],"fn":["clock"],"struct":["Chip","Gathered","Row"]};

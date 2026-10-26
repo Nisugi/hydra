@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["Called","Highlights","Watched"],"type":["Desk"]};
+window.SIDEBAR_ITEMS = {"fn":["load"],"struct":["Called","Highlights","Watched"],"type":["Desk"]};

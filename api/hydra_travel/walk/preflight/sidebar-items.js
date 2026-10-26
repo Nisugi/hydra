@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["WORKROOM"],"fn":["gigas_least","gigas_way","out_of_a_shop","silver_for","withdraw_command"],"struct":["GigasWay"]};

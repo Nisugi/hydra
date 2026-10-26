@@ -105,11 +105,11 @@
 <a href=#105 id=105 data-nosnippet>105</a>            run(<span class="kw-2">&amp;</span><span class="kw">crate</span>::account::data_dir(), (<span class="kw-2">&amp;</span>who.<span class="number">0</span>, <span class="kw-2">&amp;</span>who.<span class="number">1</span>), asked)
 <a href=#106 id=106 data-nosnippet>106</a>        });
 <a href=#107 id=107 data-nosnippet>107</a>        <span class="kw">let </span>notice = <span class="kw">match </span>said {
-<a href=#108 id=108 data-nosnippet>108</a>            <span class="prelude-val">Ok</span>(lines) <span class="kw">if </span>table =&gt; Notice::table(NoticeKind::Info, lines),
+<a href=#108 id=108 data-nosnippet>108</a>            <span class="prelude-val">Ok</span>(lines) <span class="kw">if </span>table =&gt; <span class="kw">crate</span>::commands::table_or_help(lines, HELP),
 <a href=#109 id=109 data-nosnippet>109</a>            <span class="prelude-val">Ok</span>(lines) =&gt; Notice::prose(NoticeKind::Info, lines),
 <a href=#110 id=110 data-nosnippet>110</a>            <span class="prelude-val">Err</span>(why) =&gt; Notice::line(NoticeKind::Error, <span class="macro">format!</span>(<span class="string">"Caster: {why}"</span>)),
 <a href=#111 id=111 data-nosnippet>111</a>        };
-<a href=#112 id=112 data-nosnippet>112</a>        handle.say_unlogged(notice.answering());
+<a href=#112 id=112 data-nosnippet>112</a>        handle.say(notice.answering());
 <a href=#113 id=113 data-nosnippet>113</a>        <span class="prelude-val">Some</span>(Claimed::Done)
 <a href=#114 id=114 data-nosnippet>114</a>    })
 <a href=#115 id=115 data-nosnippet>115</a>}

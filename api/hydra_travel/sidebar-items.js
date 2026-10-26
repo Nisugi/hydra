@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["Target"],"fn":["shared_map"],"mod":["command","coverage","facts","file","route","sail","settings","swim","walk"],"struct":["Map","RoomId","Uid","Walker"]};
+window.SIDEBAR_ITEMS = {"enum":["Target"],"fn":["shared_map"],"mod":["command","coverage","facts","file","route","sail","settings","swim","walk"],"struct":["Map","Room","RoomId","Uid","Walker"]};

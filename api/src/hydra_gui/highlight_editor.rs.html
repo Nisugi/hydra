@@ -118,12 +118,12 @@
 <a href=#118 id=118 data-nosnippet>118</a>        <span class="kw">let </span><span class="kw-2">mut </span>asked = Vec::new();
 <a href=#119 id=119 data-nosnippet>119</a>        ui.horizontal(|ui| {
 <a href=#120 id=120 data-nosnippet>120</a>            ui.menu_button(<span class="string">"New"</span>, |ui| {
-<a href=#121 id=121 data-nosnippet>121</a>                ui.weak(<span class="string">"What should it do?"</span>);
+<a href=#121 id=121 data-nosnippet>121</a>                <span class="kw">crate</span>::form::hint(ui, <span class="string">"What should it do?"</span>);
 <a href=#122 id=122 data-nosnippet>122</a>                <span class="kw">for </span>kind <span class="kw">in </span>Kind::ALL {
 <a href=#123 id=123 data-nosnippet>123</a>                    <span class="kw">let </span>chose = ui
 <a href=#124 id=124 data-nosnippet>124</a>                        .horizontal(|ui| {
 <a href=#125 id=125 data-nosnippet>125</a>                            <span class="kw">let </span>chose = ui.button(kind.name()).clicked();
-<a href=#126 id=126 data-nosnippet>126</a>                            ui.weak(kind.about());
+<a href=#126 id=126 data-nosnippet>126</a>                            <span class="kw">crate</span>::form::hint(ui, kind.about());
 <a href=#127 id=127 data-nosnippet>127</a>                            chose
 <a href=#128 id=128 data-nosnippet>128</a>                        })
 <a href=#129 id=129 data-nosnippet>129</a>                        .inner;

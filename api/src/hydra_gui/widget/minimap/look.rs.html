@@ -63,137 +63,141 @@
 <a href=#63 id=63 data-nosnippet>63</a>        value: Value::Text(<span class="macro">format!</span>(<span class="string">"{value}"</span>)),
 <a href=#64 id=64 data-nosnippet>64</a>        here: (value - default).abs() &gt; f32::EPSILON,
 <a href=#65 id=65 data-nosnippet>65</a>        from: <span class="prelude-val">None</span>,
-<a href=#66 id=66 data-nosnippet>66</a>    };
-<a href=#67 id=67 data-nosnippet>67</a>    <span class="macro">vec!</span>[
-<a href=#68 id=68 data-nosnippet>68</a>        zoom(
-<a href=#69 id=69 data-nosnippet>69</a>            <span class="string">"outside"</span>,
-<a href=#70 id=70 data-nosnippet>70</a>            <span class="string">"Zoom outside"</span>,
-<a href=#71 id=71 data-nosnippet>71</a>            <span class="string">"Pixels a cell on the streets and in the wilds: what the minimap comes back to \
-<a href=#72 id=72 data-nosnippet>72</a>             when you step outside. The wheel changes it until then."</span>,
-<a href=#73 id=73 data-nosnippet>73</a>            now.outside,
-<a href=#74 id=74 data-nosnippet>74</a>            default.outside,
-<a href=#75 id=75 data-nosnippet>75</a>        ),
-<a href=#76 id=76 data-nosnippet>76</a>        zoom(
-<a href=#77 id=77 data-nosnippet>77</a>            <span class="string">"inside"</span>,
-<a href=#78 id=78 data-nosnippet>78</a>            <span class="string">"Zoom inside"</span>,
-<a href=#79 id=79 data-nosnippet>79</a>            <span class="string">"Pixels a cell in a shop, a tavern, a bank: its rooms are drawn at half the \
-<a href=#80 id=80 data-nosnippet>80</a>             streets' size, so this is larger. What the minimap goes to when you step in."</span>,
-<a href=#81 id=81 data-nosnippet>81</a>            now.inside,
-<a href=#82 id=82 data-nosnippet>82</a>            default.inside,
-<a href=#83 id=83 data-nosnippet>83</a>        ),
-<a href=#84 id=84 data-nosnippet>84</a>        Row {
-<a href=#85 id=85 data-nosnippet>85</a>            key: <span class="string">"maps_out"</span>.to_owned(),
-<a href=#86 id=86 data-nosnippet>86</a>            label: <span class="string">"Maps next door"</span>.to_owned(),
-<a href=#87 id=87 data-nosnippet>87</a>            help: <span class="string">"How many maps out from yours are drawn beside it, dimmed: 0 for yours \
-<a href=#88 id=88 data-nosnippet>88</a>                   alone, 1 for those a walk joins to it, 2 for theirs too."
-<a href=#89 id=89 data-nosnippet>89</a>                </span>.to_owned(),
-<a href=#90 id=90 data-nosnippet>90</a>            kind: RowKind::Whole {
-<a href=#91 id=91 data-nosnippet>91</a>                min: <span class="number">0</span>,
-<a href=#92 id=92 data-nosnippet>92</a>                max: u32::from(MOST_MAPS_OUT),
-<a href=#93 id=93 data-nosnippet>93</a>            },
-<a href=#94 id=94 data-nosnippet>94</a>            value: Value::Text(now.maps_out.to_string()),
-<a href=#95 id=95 data-nosnippet>95</a>            here: now.maps_out != default.maps_out,
-<a href=#96 id=96 data-nosnippet>96</a>            from: <span class="prelude-val">None</span>,
-<a href=#97 id=97 data-nosnippet>97</a>        },
-<a href=#98 id=98 data-nosnippet>98</a>        Row {
-<a href=#99 id=99 data-nosnippet>99</a>            key: <span class="string">"centred"</span>.to_owned(),
-<a href=#100 id=100 data-nosnippet>100</a>            label: <span class="string">"Keep you centred"</span>.to_owned(),
-<a href=#101 id=101 data-nosnippet>101</a>            help: <span class="string">"On, the map moves with every step, so the room you are in stays in the \
-<a href=#102 id=102 data-nosnippet>102</a>                   middle. Off, it moves only once you near its edge."
-<a href=#103 id=103 data-nosnippet>103</a>                </span>.to_owned(),
-<a href=#104 id=104 data-nosnippet>104</a>            kind: RowKind::Toggle,
-<a href=#105 id=105 data-nosnippet>105</a>            value: Value::On(now.centred),
-<a href=#106 id=106 data-nosnippet>106</a>            here: now.centred != default.centred,
-<a href=#107 id=107 data-nosnippet>107</a>            from: <span class="prelude-val">None</span>,
-<a href=#108 id=108 data-nosnippet>108</a>        },
-<a href=#109 id=109 data-nosnippet>109</a>        Row {
-<a href=#110 id=110 data-nosnippet>110</a>            key: <span class="string">"flow"</span>.to_owned(),
-<a href=#111 id=111 data-nosnippet>111</a>            label: <span class="string">"Moving route"</span>.to_owned(),
-<a href=#112 id=112 data-nosnippet>112</a>            help: <span class="string">"On, marks run along a route or a ship's course shown on the map, the \
-<a href=#113 id=113 data-nosnippet>113</a>                   way it goes. Off, it is a plain line."
-<a href=#114 id=114 data-nosnippet>114</a>                </span>.to_owned(),
-<a href=#115 id=115 data-nosnippet>115</a>            kind: RowKind::Toggle,
-<a href=#116 id=116 data-nosnippet>116</a>            value: Value::On(now.flow),
-<a href=#117 id=117 data-nosnippet>117</a>            here: now.flow != default.flow,
-<a href=#118 id=118 data-nosnippet>118</a>            from: <span class="prelude-val">None</span>,
-<a href=#119 id=119 data-nosnippet>119</a>        },
-<a href=#120 id=120 data-nosnippet>120</a>    ]
-<a href=#121 id=121 data-nosnippet>121</a>}
-<a href=#122 id=122 data-nosnippet>122</a>
-<a href=#123 id=123 data-nosnippet>123</a><span class="doccomment">/// Set `key` to `to`, or back to its default.
-<a href=#124 id=124 data-nosnippet>124</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>set(look: <span class="kw-2">&amp;mut </span>MinimapLook, key: <span class="kw-2">&amp;</span>str, to: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), String&gt; {
-<a href=#125 id=125 data-nosnippet>125</a>    <span class="kw">let </span>default = MinimapLook::default();
-<a href=#126 id=126 data-nosnippet>126</a>    <span class="kw">let </span>(least, most) = <span class="kw">super</span>::ZOOM_RANGE;
-<a href=#127 id=127 data-nosnippet>127</a>    <span class="kw">let </span>zoom = |to: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;, default: f32| -&gt; <span class="prelude-ty">Result</span>&lt;f32, String&gt; {
-<a href=#128 id=128 data-nosnippet>128</a>        <span class="kw">let </span><span class="prelude-val">Some</span>(to) = to <span class="kw">else </span>{ <span class="kw">return </span><span class="prelude-val">Ok</span>(default) };
-<a href=#129 id=129 data-nosnippet>129</a>        to.trim()
-<a href=#130 id=130 data-nosnippet>130</a>            .parse::&lt;f32&gt;()
-<a href=#131 id=131 data-nosnippet>131</a>            .ok()
-<a href=#132 id=132 data-nosnippet>132</a>            .filter(|z| (least..=most).contains(z))
-<a href=#133 id=133 data-nosnippet>133</a>            .ok_or_else(|| <span class="macro">format!</span>(<span class="string">"A zoom is a number from {least} to {most}."</span>))
-<a href=#134 id=134 data-nosnippet>134</a>    };
-<a href=#135 id=135 data-nosnippet>135</a>    <span class="kw">match </span>key {
-<a href=#136 id=136 data-nosnippet>136</a>        <span class="string">"outside" </span>=&gt; look.outside = zoom(to, default.outside)<span class="question-mark">?</span>,
-<a href=#137 id=137 data-nosnippet>137</a>        <span class="string">"inside" </span>=&gt; look.inside = zoom(to, default.inside)<span class="question-mark">?</span>,
-<a href=#138 id=138 data-nosnippet>138</a>        <span class="string">"maps_out" </span>=&gt; {
-<a href=#139 id=139 data-nosnippet>139</a>            look.maps_out = <span class="kw">match </span>to {
-<a href=#140 id=140 data-nosnippet>140</a>                <span class="prelude-val">None </span>=&gt; default.maps_out,
-<a href=#141 id=141 data-nosnippet>141</a>                <span class="prelude-val">Some</span>(to) =&gt; to
-<a href=#142 id=142 data-nosnippet>142</a>                    .trim()
-<a href=#143 id=143 data-nosnippet>143</a>                    .parse::&lt;u8&gt;()
-<a href=#144 id=144 data-nosnippet>144</a>                    .ok()
-<a href=#145 id=145 data-nosnippet>145</a>                    .filter(|n| <span class="kw-2">*</span>n &lt;= MOST_MAPS_OUT)
-<a href=#146 id=146 data-nosnippet>146</a>                    .ok_or_else(|| <span class="macro">format!</span>(<span class="string">"Maps next door is 0 to {MOST_MAPS_OUT}."</span>))<span class="question-mark">?</span>,
-<a href=#147 id=147 data-nosnippet>147</a>            };
-<a href=#148 id=148 data-nosnippet>148</a>        }
-<a href=#149 id=149 data-nosnippet>149</a>        <span class="string">"centred" </span>=&gt; {
-<a href=#150 id=150 data-nosnippet>150</a>            look.centred = <span class="kw">match </span>to.map(str::trim) {
-<a href=#151 id=151 data-nosnippet>151</a>                <span class="prelude-val">None </span>=&gt; default.centred,
-<a href=#152 id=152 data-nosnippet>152</a>                <span class="prelude-val">Some</span>(<span class="string">"on" </span>| <span class="string">"true"</span>) =&gt; <span class="bool-val">true</span>,
-<a href=#153 id=153 data-nosnippet>153</a>                <span class="prelude-val">Some</span>(<span class="string">"off" </span>| <span class="string">"false"</span>) =&gt; <span class="bool-val">false</span>,
-<a href=#154 id=154 data-nosnippet>154</a>                <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="string">"Keep you centred is on or off."</span>.to_owned()),
-<a href=#155 id=155 data-nosnippet>155</a>            };
-<a href=#156 id=156 data-nosnippet>156</a>        }
-<a href=#157 id=157 data-nosnippet>157</a>        <span class="string">"flow" </span>=&gt; {
-<a href=#158 id=158 data-nosnippet>158</a>            look.flow = <span class="kw">match </span>to.map(str::trim) {
-<a href=#159 id=159 data-nosnippet>159</a>                <span class="prelude-val">None </span>=&gt; default.flow,
-<a href=#160 id=160 data-nosnippet>160</a>                <span class="prelude-val">Some</span>(<span class="string">"on" </span>| <span class="string">"true"</span>) =&gt; <span class="bool-val">true</span>,
-<a href=#161 id=161 data-nosnippet>161</a>                <span class="prelude-val">Some</span>(<span class="string">"off" </span>| <span class="string">"false"</span>) =&gt; <span class="bool-val">false</span>,
-<a href=#162 id=162 data-nosnippet>162</a>                <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="string">"Moving route is on or off."</span>.to_owned()),
-<a href=#163 id=163 data-nosnippet>163</a>            };
-<a href=#164 id=164 data-nosnippet>164</a>        }
-<a href=#165 id=165 data-nosnippet>165</a>        <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">"The minimap has no setting {key}."</span>)),
-<a href=#166 id=166 data-nosnippet>166</a>    }
-<a href=#167 id=167 data-nosnippet>167</a>    <span class="prelude-val">Ok</span>(())
-<a href=#168 id=168 data-nosnippet>168</a>}
-<a href=#169 id=169 data-nosnippet>169</a>
-<a href=#170 id=170 data-nosnippet>170</a><span class="attr">#[cfg(test)]
-<a href=#171 id=171 data-nosnippet>171</a></span><span class="kw">mod </span>tests {
-<a href=#172 id=172 data-nosnippet>172</a>    <span class="kw">use </span>super::<span class="kw-2">*</span>;
+<a href=#66 id=66 data-nosnippet>66</a>        needs: <span class="prelude-val">None</span>,
+<a href=#67 id=67 data-nosnippet>67</a>    };
+<a href=#68 id=68 data-nosnippet>68</a>    <span class="macro">vec!</span>[
+<a href=#69 id=69 data-nosnippet>69</a>        zoom(
+<a href=#70 id=70 data-nosnippet>70</a>            <span class="string">"outside"</span>,
+<a href=#71 id=71 data-nosnippet>71</a>            <span class="string">"Zoom outside"</span>,
+<a href=#72 id=72 data-nosnippet>72</a>            <span class="string">"Pixels a cell on the streets and in the wilds: what the minimap comes back to \
+<a href=#73 id=73 data-nosnippet>73</a>             when you step outside. The wheel changes it until then."</span>,
+<a href=#74 id=74 data-nosnippet>74</a>            now.outside,
+<a href=#75 id=75 data-nosnippet>75</a>            default.outside,
+<a href=#76 id=76 data-nosnippet>76</a>        ),
+<a href=#77 id=77 data-nosnippet>77</a>        zoom(
+<a href=#78 id=78 data-nosnippet>78</a>            <span class="string">"inside"</span>,
+<a href=#79 id=79 data-nosnippet>79</a>            <span class="string">"Zoom inside"</span>,
+<a href=#80 id=80 data-nosnippet>80</a>            <span class="string">"Pixels a cell in a shop, a tavern, a bank: its rooms are drawn at half the \
+<a href=#81 id=81 data-nosnippet>81</a>             streets' size, so this is larger. What the minimap goes to when you step in."</span>,
+<a href=#82 id=82 data-nosnippet>82</a>            now.inside,
+<a href=#83 id=83 data-nosnippet>83</a>            default.inside,
+<a href=#84 id=84 data-nosnippet>84</a>        ),
+<a href=#85 id=85 data-nosnippet>85</a>        Row {
+<a href=#86 id=86 data-nosnippet>86</a>            key: <span class="string">"maps_out"</span>.to_owned(),
+<a href=#87 id=87 data-nosnippet>87</a>            label: <span class="string">"Maps next door"</span>.to_owned(),
+<a href=#88 id=88 data-nosnippet>88</a>            help: <span class="string">"How many maps out from yours are drawn beside it, dimmed: 0 for yours \
+<a href=#89 id=89 data-nosnippet>89</a>                   alone, 1 for those a walk joins to it, 2 for theirs too."
+<a href=#90 id=90 data-nosnippet>90</a>                </span>.to_owned(),
+<a href=#91 id=91 data-nosnippet>91</a>            kind: RowKind::Whole {
+<a href=#92 id=92 data-nosnippet>92</a>                min: <span class="number">0</span>,
+<a href=#93 id=93 data-nosnippet>93</a>                max: u32::from(MOST_MAPS_OUT),
+<a href=#94 id=94 data-nosnippet>94</a>            },
+<a href=#95 id=95 data-nosnippet>95</a>            value: Value::Text(now.maps_out.to_string()),
+<a href=#96 id=96 data-nosnippet>96</a>            here: now.maps_out != default.maps_out,
+<a href=#97 id=97 data-nosnippet>97</a>            from: <span class="prelude-val">None</span>,
+<a href=#98 id=98 data-nosnippet>98</a>            needs: <span class="prelude-val">None</span>,
+<a href=#99 id=99 data-nosnippet>99</a>        },
+<a href=#100 id=100 data-nosnippet>100</a>        Row {
+<a href=#101 id=101 data-nosnippet>101</a>            key: <span class="string">"centred"</span>.to_owned(),
+<a href=#102 id=102 data-nosnippet>102</a>            label: <span class="string">"Keep you centred"</span>.to_owned(),
+<a href=#103 id=103 data-nosnippet>103</a>            help: <span class="string">"On, the map moves with every step, so the room you are in stays in the \
+<a href=#104 id=104 data-nosnippet>104</a>                   middle. Off, it moves only once you near its edge."
+<a href=#105 id=105 data-nosnippet>105</a>                </span>.to_owned(),
+<a href=#106 id=106 data-nosnippet>106</a>            kind: RowKind::Toggle,
+<a href=#107 id=107 data-nosnippet>107</a>            value: Value::On(now.centred),
+<a href=#108 id=108 data-nosnippet>108</a>            here: now.centred != default.centred,
+<a href=#109 id=109 data-nosnippet>109</a>            from: <span class="prelude-val">None</span>,
+<a href=#110 id=110 data-nosnippet>110</a>            needs: <span class="prelude-val">None</span>,
+<a href=#111 id=111 data-nosnippet>111</a>        },
+<a href=#112 id=112 data-nosnippet>112</a>        Row {
+<a href=#113 id=113 data-nosnippet>113</a>            key: <span class="string">"flow"</span>.to_owned(),
+<a href=#114 id=114 data-nosnippet>114</a>            label: <span class="string">"Moving route"</span>.to_owned(),
+<a href=#115 id=115 data-nosnippet>115</a>            help: <span class="string">"On, marks run along a route or a ship's course shown on the map, the \
+<a href=#116 id=116 data-nosnippet>116</a>                   way it goes. Off, it is a plain line."
+<a href=#117 id=117 data-nosnippet>117</a>                </span>.to_owned(),
+<a href=#118 id=118 data-nosnippet>118</a>            kind: RowKind::Toggle,
+<a href=#119 id=119 data-nosnippet>119</a>            value: Value::On(now.flow),
+<a href=#120 id=120 data-nosnippet>120</a>            here: now.flow != default.flow,
+<a href=#121 id=121 data-nosnippet>121</a>            from: <span class="prelude-val">None</span>,
+<a href=#122 id=122 data-nosnippet>122</a>            needs: <span class="prelude-val">None</span>,
+<a href=#123 id=123 data-nosnippet>123</a>        },
+<a href=#124 id=124 data-nosnippet>124</a>    ]
+<a href=#125 id=125 data-nosnippet>125</a>}
+<a href=#126 id=126 data-nosnippet>126</a>
+<a href=#127 id=127 data-nosnippet>127</a><span class="doccomment">/// Set `key` to `to`, or back to its default.
+<a href=#128 id=128 data-nosnippet>128</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>set(look: <span class="kw-2">&amp;mut </span>MinimapLook, key: <span class="kw-2">&amp;</span>str, to: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), String&gt; {
+<a href=#129 id=129 data-nosnippet>129</a>    <span class="kw">let </span>default = MinimapLook::default();
+<a href=#130 id=130 data-nosnippet>130</a>    <span class="kw">let </span>(least, most) = <span class="kw">super</span>::ZOOM_RANGE;
+<a href=#131 id=131 data-nosnippet>131</a>    <span class="kw">let </span>zoom = |to: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;, default: f32| -&gt; <span class="prelude-ty">Result</span>&lt;f32, String&gt; {
+<a href=#132 id=132 data-nosnippet>132</a>        <span class="kw">let </span><span class="prelude-val">Some</span>(to) = to <span class="kw">else </span>{ <span class="kw">return </span><span class="prelude-val">Ok</span>(default) };
+<a href=#133 id=133 data-nosnippet>133</a>        to.trim()
+<a href=#134 id=134 data-nosnippet>134</a>            .parse::&lt;f32&gt;()
+<a href=#135 id=135 data-nosnippet>135</a>            .ok()
+<a href=#136 id=136 data-nosnippet>136</a>            .filter(|z| (least..=most).contains(z))
+<a href=#137 id=137 data-nosnippet>137</a>            .ok_or_else(|| <span class="macro">format!</span>(<span class="string">"A zoom is a number from {least} to {most}."</span>))
+<a href=#138 id=138 data-nosnippet>138</a>    };
+<a href=#139 id=139 data-nosnippet>139</a>    <span class="kw">match </span>key {
+<a href=#140 id=140 data-nosnippet>140</a>        <span class="string">"outside" </span>=&gt; look.outside = zoom(to, default.outside)<span class="question-mark">?</span>,
+<a href=#141 id=141 data-nosnippet>141</a>        <span class="string">"inside" </span>=&gt; look.inside = zoom(to, default.inside)<span class="question-mark">?</span>,
+<a href=#142 id=142 data-nosnippet>142</a>        <span class="string">"maps_out" </span>=&gt; {
+<a href=#143 id=143 data-nosnippet>143</a>            look.maps_out = <span class="kw">match </span>to {
+<a href=#144 id=144 data-nosnippet>144</a>                <span class="prelude-val">None </span>=&gt; default.maps_out,
+<a href=#145 id=145 data-nosnippet>145</a>                <span class="prelude-val">Some</span>(to) =&gt; to
+<a href=#146 id=146 data-nosnippet>146</a>                    .trim()
+<a href=#147 id=147 data-nosnippet>147</a>                    .parse::&lt;u8&gt;()
+<a href=#148 id=148 data-nosnippet>148</a>                    .ok()
+<a href=#149 id=149 data-nosnippet>149</a>                    .filter(|n| <span class="kw-2">*</span>n &lt;= MOST_MAPS_OUT)
+<a href=#150 id=150 data-nosnippet>150</a>                    .ok_or_else(|| <span class="macro">format!</span>(<span class="string">"Maps next door is 0 to {MOST_MAPS_OUT}."</span>))<span class="question-mark">?</span>,
+<a href=#151 id=151 data-nosnippet>151</a>            };
+<a href=#152 id=152 data-nosnippet>152</a>        }
+<a href=#153 id=153 data-nosnippet>153</a>        <span class="string">"centred" </span>=&gt; {
+<a href=#154 id=154 data-nosnippet>154</a>            look.centred = <span class="kw">match </span>to.map(str::trim) {
+<a href=#155 id=155 data-nosnippet>155</a>                <span class="prelude-val">None </span>=&gt; default.centred,
+<a href=#156 id=156 data-nosnippet>156</a>                <span class="prelude-val">Some</span>(<span class="string">"on" </span>| <span class="string">"true"</span>) =&gt; <span class="bool-val">true</span>,
+<a href=#157 id=157 data-nosnippet>157</a>                <span class="prelude-val">Some</span>(<span class="string">"off" </span>| <span class="string">"false"</span>) =&gt; <span class="bool-val">false</span>,
+<a href=#158 id=158 data-nosnippet>158</a>                <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="string">"Keep you centred is on or off."</span>.to_owned()),
+<a href=#159 id=159 data-nosnippet>159</a>            };
+<a href=#160 id=160 data-nosnippet>160</a>        }
+<a href=#161 id=161 data-nosnippet>161</a>        <span class="string">"flow" </span>=&gt; {
+<a href=#162 id=162 data-nosnippet>162</a>            look.flow = <span class="kw">match </span>to.map(str::trim) {
+<a href=#163 id=163 data-nosnippet>163</a>                <span class="prelude-val">None </span>=&gt; default.flow,
+<a href=#164 id=164 data-nosnippet>164</a>                <span class="prelude-val">Some</span>(<span class="string">"on" </span>| <span class="string">"true"</span>) =&gt; <span class="bool-val">true</span>,
+<a href=#165 id=165 data-nosnippet>165</a>                <span class="prelude-val">Some</span>(<span class="string">"off" </span>| <span class="string">"false"</span>) =&gt; <span class="bool-val">false</span>,
+<a href=#166 id=166 data-nosnippet>166</a>                <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="string">"Moving route is on or off."</span>.to_owned()),
+<a href=#167 id=167 data-nosnippet>167</a>            };
+<a href=#168 id=168 data-nosnippet>168</a>        }
+<a href=#169 id=169 data-nosnippet>169</a>        <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">"The minimap has no setting {key}."</span>)),
+<a href=#170 id=170 data-nosnippet>170</a>    }
+<a href=#171 id=171 data-nosnippet>171</a>    <span class="prelude-val">Ok</span>(())
+<a href=#172 id=172 data-nosnippet>172</a>}
 <a href=#173 id=173 data-nosnippet>173</a>
-<a href=#174 id=174 data-nosnippet>174</a>    <span class="attr">#[test]
-<a href=#175 id=175 data-nosnippet>175</a>    </span><span class="kw">fn </span>a_setting_is_checked_and_goes_back_to_its_default() {
-<a href=#176 id=176 data-nosnippet>176</a>        <span class="kw">let </span><span class="kw-2">mut </span>look = MinimapLook::default();
-<a href=#177 id=177 data-nosnippet>177</a>        set(<span class="kw-2">&amp;mut </span>look, <span class="string">"inside"</span>, <span class="prelude-val">Some</span>(<span class="string">"20"</span>)).expect(<span class="string">"a zoom"</span>);
-<a href=#178 id=178 data-nosnippet>178</a>        set(<span class="kw-2">&amp;mut </span>look, <span class="string">"maps_out"</span>, <span class="prelude-val">Some</span>(<span class="string">"2"</span>)).expect(<span class="string">"two out"</span>);
-<a href=#179 id=179 data-nosnippet>179</a>        <span class="macro">assert!</span>((look.inside - <span class="number">20.0</span>).abs() &lt; f32::EPSILON);
-<a href=#180 id=180 data-nosnippet>180</a>        <span class="macro">assert_eq!</span>(look.maps_out, <span class="number">2</span>);
-<a href=#181 id=181 data-nosnippet>181</a>        <span class="macro">assert!</span>(
-<a href=#182 id=182 data-nosnippet>182</a>            set(<span class="kw-2">&amp;mut </span>look, <span class="string">"outside"</span>, <span class="prelude-val">Some</span>(<span class="string">"99"</span>)).is_err(),
-<a href=#183 id=183 data-nosnippet>183</a>            <span class="string">"past the most"
-<a href=#184 id=184 data-nosnippet>184</a>        </span>);
-<a href=#185 id=185 data-nosnippet>185</a>        <span class="macro">assert!</span>(set(<span class="kw-2">&amp;mut </span>look, <span class="string">"maps_out"</span>, <span class="prelude-val">Some</span>(<span class="string">"3"</span>)).is_err());
-<a href=#186 id=186 data-nosnippet>186</a>        set(<span class="kw-2">&amp;mut </span>look, <span class="string">"inside"</span>, <span class="prelude-val">None</span>).expect(<span class="string">"back"</span>);
-<a href=#187 id=187 data-nosnippet>187</a>        <span class="macro">assert_eq!</span>(
-<a href=#188 id=188 data-nosnippet>188</a>            look,
-<a href=#189 id=189 data-nosnippet>189</a>            MinimapLook {
-<a href=#190 id=190 data-nosnippet>190</a>                maps_out: <span class="number">2</span>,
-<a href=#191 id=191 data-nosnippet>191</a>                ..MinimapLook::default()
-<a href=#192 id=192 data-nosnippet>192</a>            }
-<a href=#193 id=193 data-nosnippet>193</a>        );
-<a href=#194 id=194 data-nosnippet>194</a>        <span class="kw">let </span>rows = rows(<span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>look));
-<a href=#195 id=195 data-nosnippet>195</a>        <span class="macro">assert!</span>(rows.iter().any(|r| r.key == <span class="string">"maps_out" </span>&amp;&amp; r.here));
-<a href=#196 id=196 data-nosnippet>196</a>        <span class="macro">assert!</span>(rows.iter().all(|r| r.key == <span class="string">"maps_out" </span>|| !r.here));
-<a href=#197 id=197 data-nosnippet>197</a>    }
-<a href=#198 id=198 data-nosnippet>198</a>}
+<a href=#174 id=174 data-nosnippet>174</a><span class="attr">#[cfg(test)]
+<a href=#175 id=175 data-nosnippet>175</a></span><span class="kw">mod </span>tests {
+<a href=#176 id=176 data-nosnippet>176</a>    <span class="kw">use </span>super::<span class="kw-2">*</span>;
+<a href=#177 id=177 data-nosnippet>177</a>
+<a href=#178 id=178 data-nosnippet>178</a>    <span class="attr">#[test]
+<a href=#179 id=179 data-nosnippet>179</a>    </span><span class="kw">fn </span>a_setting_is_checked_and_goes_back_to_its_default() {
+<a href=#180 id=180 data-nosnippet>180</a>        <span class="kw">let </span><span class="kw-2">mut </span>look = MinimapLook::default();
+<a href=#181 id=181 data-nosnippet>181</a>        set(<span class="kw-2">&amp;mut </span>look, <span class="string">"inside"</span>, <span class="prelude-val">Some</span>(<span class="string">"20"</span>)).expect(<span class="string">"a zoom"</span>);
+<a href=#182 id=182 data-nosnippet>182</a>        set(<span class="kw-2">&amp;mut </span>look, <span class="string">"maps_out"</span>, <span class="prelude-val">Some</span>(<span class="string">"2"</span>)).expect(<span class="string">"two out"</span>);
+<a href=#183 id=183 data-nosnippet>183</a>        <span class="macro">assert!</span>((look.inside - <span class="number">20.0</span>).abs() &lt; f32::EPSILON);
+<a href=#184 id=184 data-nosnippet>184</a>        <span class="macro">assert_eq!</span>(look.maps_out, <span class="number">2</span>);
+<a href=#185 id=185 data-nosnippet>185</a>        <span class="macro">assert!</span>(
+<a href=#186 id=186 data-nosnippet>186</a>            set(<span class="kw-2">&amp;mut </span>look, <span class="string">"outside"</span>, <span class="prelude-val">Some</span>(<span class="string">"99"</span>)).is_err(),
+<a href=#187 id=187 data-nosnippet>187</a>            <span class="string">"past the most"
+<a href=#188 id=188 data-nosnippet>188</a>        </span>);
+<a href=#189 id=189 data-nosnippet>189</a>        <span class="macro">assert!</span>(set(<span class="kw-2">&amp;mut </span>look, <span class="string">"maps_out"</span>, <span class="prelude-val">Some</span>(<span class="string">"3"</span>)).is_err());
+<a href=#190 id=190 data-nosnippet>190</a>        set(<span class="kw-2">&amp;mut </span>look, <span class="string">"inside"</span>, <span class="prelude-val">None</span>).expect(<span class="string">"back"</span>);
+<a href=#191 id=191 data-nosnippet>191</a>        <span class="macro">assert_eq!</span>(
+<a href=#192 id=192 data-nosnippet>192</a>            look,
+<a href=#193 id=193 data-nosnippet>193</a>            MinimapLook {
+<a href=#194 id=194 data-nosnippet>194</a>                maps_out: <span class="number">2</span>,
+<a href=#195 id=195 data-nosnippet>195</a>                ..MinimapLook::default()
+<a href=#196 id=196 data-nosnippet>196</a>            }
+<a href=#197 id=197 data-nosnippet>197</a>        );
+<a href=#198 id=198 data-nosnippet>198</a>        <span class="kw">let </span>rows = rows(<span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>look));
+<a href=#199 id=199 data-nosnippet>199</a>        <span class="macro">assert!</span>(rows.iter().any(|r| r.key == <span class="string">"maps_out" </span>&amp;&amp; r.here));
+<a href=#200 id=200 data-nosnippet>200</a>        <span class="macro">assert!</span>(rows.iter().all(|r| r.key == <span class="string">"maps_out" </span>|| !r.here));
+<a href=#201 id=201 data-nosnippet>201</a>    }
+<a href=#202 id=202 data-nosnippet>202</a>}
 </code></pre></div></section></main></body></html>

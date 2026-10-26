@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["PRESET","SAVE_EVERY","STREAM"],"enum":["Verdict"],"fn":["counts_all","day_of","lock","now_seconds","open","reload","save_all"],"mod":["file","key","settings"],"struct":["Counts","Line","Lookout","Object"],"type":["Shared"]};

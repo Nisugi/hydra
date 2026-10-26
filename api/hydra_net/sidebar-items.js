@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["DEFAULT_GAME_CODE","GAMES","INSTANCES"],"fn":["instance"],"mod":["answering","bytes","eaccess","eastern","live","record","replay","sink","trainer"]};
+window.SIDEBAR_ITEMS = {"constant":["DEFAULT_GAME_CODE","GAMES","INSTANCES"],"fn":["instance"],"mod":["answering","behind","bytes","eaccess","eastern","live","record","replay","sink","store","trainer"]};

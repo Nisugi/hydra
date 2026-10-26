@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["LONGEST_WAIT"],"enum":["Step"],"fn":["steps","wait"]};
+window.SIDEBAR_ITEMS = {"constant":["BEHAVIOURS","LONGEST_WAIT"],"enum":["Step"],"fn":["pieces","said","steps","wait"]};
