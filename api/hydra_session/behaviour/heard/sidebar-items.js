@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["SENT_AGAIN"],"enum":["Halt"],"fn":["wait_out","wait_seconds"],"struct":["Heard"]};

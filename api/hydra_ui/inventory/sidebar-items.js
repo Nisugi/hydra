@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FILLING","NEARLY_FULL"],"enum":["Act","Group","Sent","Tab"],"fn":["container","filled","gather","left_room","locked","pounds","roots","shut","sort_name","summary","weight_within"]};
+window.SIDEBAR_ITEMS = {"constant":["FILLING","NEARLY_FULL"],"enum":["Act","Group","Sent","Tab"],"fn":["container","containers_shown","filled","gather","left_room","locked","pounds","roots","shut","sort_name","summary","taken","weight_within"],"struct":["ContainerShown"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["Cell","RowKind","Value"],"fn":["size"],"struct":["Change","Column","Page","Row"]};
+window.SIDEBAR_ITEMS = {"enum":["Cell","RowKind","Value"],"fn":["clock","clock_read","rgb","shown","size","typed","unquoted"],"struct":["Change","Column","Page","Row"]};

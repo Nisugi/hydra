@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["COL","NARROWEST","ROW","SHORTEST","STAGES_SIZE"],"enum":["Button"],"fn":["draw","layout","scaled","size","stages"],"struct":["Kept"]};

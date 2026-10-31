@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Align","Block","Cell","ChartKind","Hue","Key"],"fn":["duration","grouped","has_link","seen"],"struct":["Chart","Column","Report","Series","Table"]};

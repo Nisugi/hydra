@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-50dd7f95.js";
+            window.path_to_searchindex_js = "../searchindex-3cff4ebc.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-b5471689.js"></script>
+        <script src="../toc-a2047d87.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -174,7 +174,7 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="bring-your-setup-from-wrayth-or-vellum"><a class="header" href="#bring-your-setup-from-wrayth-or-vellum">Bring your setup from Wrayth or Vellum</a></h1>
+                        <h1 id="bring-your-setup-from-wrayth-vellum-or-the-wizard"><a class="header" href="#bring-your-setup-from-wrayth-vellum-or-the-wizard">Bring your setup from Wrayth, Vellum or the Wizard</a></h1>
 <p>Hydra reads what Wrayth and Vellum keep, so your keys, highlights and bars
 come with you. Some of it comes over with a command typed in a play window,
 some by copying a file into Hydra’s <code>data</code> folder.</p>
@@ -244,6 +244,38 @@ once; <code>.controller reload</code> reads the controller files again.</p>
 <p><code>.doll import &lt;folder&gt;</code> brings a folder of doll pictures into Hydra’s
 <code>dolls</code> folder, each with the calibration Vellum keeps beside it. Pick one
 on the Injuries widget’s page.</p>
+<h2 id="from-the-wizard"><a class="header" href="#from-the-wizard">From the Wizard</a></h2>
+<p><code>.wizard import &lt;folder&gt;</code> brings a Wizard front end folder in, looking one
+folder deep as an unpacked archive is laid out; <code>.wizard import global &lt;folder&gt;</code> makes the aliases everyone’s and the keys every character’s, for
+a player whose characters all share them:</p>
+<ul>
+<li><strong>Scripts</strong> (<code>.Cmd</code>, <code>.Wiz</code>) become this character’s aliases, each named
+for its file with the dot in front, typed as the Wizard ran it: <code>s.Cmd</code>
+becomes <code>.s</code>, and <code>s</code> alone still goes south. <code>put</code> lines are the commands, <code>pause 2</code> a two-second wait,
+<code>waitrt</code> the roundtime, <code>%1</code> and <code>%2</code> the first and second word typed
+after the alias (<code>.s sword back</code>). A script that runs another
+(<code>put .nexus</code>) gets that script’s lines in its place. A script that is
+one loop, a label at the top and a jump back to it after a pause, becomes
+the alias of its lines, and the import says to run it on the clock:
+<code>.every 60 .acorn</code>. A <code>.Wiz</code> whose name a <code>.Cmd</code> also has is named
+<code>&lt;name&gt;-wiz</code>. A script that matches text, jumps elsewhere or keeps a
+counter needs Lich, which runs Wizard scripts as they are, and is named,
+not imported. A script named like one of Hydra’s commands still comes
+in, and its alias wins: <code>.go2</code> runs the script, not Hydra’s travel, and
+the import says so. When a later Hydra brings a command named like one
+of your aliases, the alias keeps winning, and Hydra says so once, the
+first time the character logs in. Importing again takes away the aliases
+an earlier import brought in without the dot, those you have not changed.</li>
+<li><strong>Macros</strong> (<code>.Mac</code>) become this character’s keys: Alt and Ctrl letters,
+and the keypad with or without a modifier. A macro that places the cursor
+(<code>@</code>), prompts (<code>\?</code>) or uses one of the Wizard’s own <code>{tokens}</code> is
+named, not bound.</li>
+<li><strong>Highlight strings and names</strong> (<code>.His</code>, <code>.Nam</code>) become everyone’s
+highlights, in the categories <em>Wizard strings</em> and <em>Wizard names</em>, each
+in its colour from the profile’s <code>.Colors</code> palette, or the Wizard’s own
+sixteen without one. A string the Wizard marks with a leading <code>$</code> paints
+its whole line.</li>
+</ul>
 <h2 id="your-scripts"><a class="header" href="#your-scripts">Your scripts</a></h2>
 <p>Lich comes with you whole: Hydra runs your own Lich behind each character
 you ask it to, with your scripts and their settings. See

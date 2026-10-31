@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["draw_lines","draw_row","plain","wrap"],"struct":["Piece","Scroll"],"type":["Line"]};

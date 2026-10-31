@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Resource"],"fn":["blood_points","converted_training","event_line","experience","field_experience","grouped","level","objectives","percent_of","resources","society","training","worded","world_events"]};

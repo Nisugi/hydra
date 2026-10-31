@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Border"],"fn":["load","named","named_dir","named_path","path","save"],"mod":["vellum_schema"],"struct":["Kept","Layout","Window"]};

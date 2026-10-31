@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["HIDDEN_DIALOGS","LINE","PANEL_STREAMS","UNNAMED_INDICATOR"],"enum":["CardPart","Category","Group","Indicator","Kin","Widget"],"fn":["clock","dialog_name","field_name","pulse_clock","pulse_said","stream_name","target"]};

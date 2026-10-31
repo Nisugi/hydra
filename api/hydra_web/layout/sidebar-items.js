@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["FOLDER","SHARED"],"fn":["answer","files"],"struct":["Files"],"type":["Answer"]};

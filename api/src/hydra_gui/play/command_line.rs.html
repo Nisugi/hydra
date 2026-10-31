@@ -8,7 +8,7 @@
 <a href=#8 id=8 data-nosnippet>8</a></span><span class="kw">use </span>egui::Id;
 <a href=#9 id=9 data-nosnippet>9</a><span class="kw">use </span>hydra_ui::History;
 <a href=#10 id=10 data-nosnippet>10</a>
-<a href=#11 id=11 data-nosnippet>11</a><span class="kw">use </span><span class="kw">super</span>::complete;
+<a href=#11 id=11 data-nosnippet>11</a><span class="kw">use </span>hydra_ui::complete;
 <a href=#12 id=12 data-nosnippet>12</a>
 <a href=#13 id=13 data-nosnippet>13</a><span class="doccomment">/// What the command line edits and reads, lent to whatever draws it.
 <a href=#14 id=14 data-nosnippet>14</a></span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct </span>Typing&lt;<span class="lifetime">'a</span>&gt; {
@@ -50,7 +50,7 @@
 <a href=#50 id=50 data-nosnippet>50</a>    entered
 <a href=#51 id=51 data-nosnippet>51</a>}
 <a href=#52 id=52 data-nosnippet>52</a>
-<a href=#53 id=53 data-nosnippet>53</a><span class="doccomment">/// The ghost after what is typed (`complete.rs`), in the weak colour,
+<a href=#53 id=53 data-nosnippet>53</a><span class="doccomment">/// The ghost after what is typed (`hydra_ui::complete`), in the weak colour,
 <a href=#54 id=54 data-nosnippet>54</a>/// while the cursor stands at the end with nothing selected.
 <a href=#55 id=55 data-nosnippet>55</a></span><span class="kw">fn </span>ghost(ui: <span class="kw-2">&amp;</span>egui::Ui, typing: <span class="kw-2">&amp;</span>Typing&lt;<span class="lifetime">'_</span>&gt;, output: <span class="kw-2">&amp;</span>egui::text_edit::TextEditOutput) {
 <a href=#56 id=56 data-nosnippet>56</a>    <span class="kw">let </span><span class="prelude-val">Some</span>(range) = output.cursor_range <span class="kw">else </span>{

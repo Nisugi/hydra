@@ -26,883 +26,884 @@
 <a href=#26 id=26 data-nosnippet>26</a><span class="kw">use </span>hydra_session::State;
 <a href=#27 id=27 data-nosnippet>27</a><span class="kw">use </span>hydra_ui::{HubRequest, Listing, RosterCard, TeamCard};
 <a href=#28 id=28 data-nosnippet>28</a>
-<a href=#29 id=29 data-nosnippet>29</a><span class="kw">use </span><span class="kw">crate</span>::seat::Seat;
-<a href=#30 id=30 data-nosnippet>30</a><span class="kw">use </span><span class="kw">crate</span>::theme::{<span class="self">self</span>, T};
-<a href=#31 id=31 data-nosnippet>31</a>
-<a href=#32 id=32 data-nosnippet>32</a><span class="doccomment">/// Which of the hub's tabs is showing.
-<a href=#33 id=33 data-nosnippet>33</a></span><span class="attr">#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
-<a href=#34 id=34 data-nosnippet>34</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum </span>Tab {
-<a href=#35 id=35 data-nosnippet>35</a>    <span class="doccomment">/// Characters whose connection is open, or being retried.
-<a href=#36 id=36 data-nosnippet>36</a>    </span><span class="attr">#[default]
-<a href=#37 id=37 data-nosnippet>37</a>    </span>Live,
-<a href=#38 id=38 data-nosnippet>38</a>    <span class="doccomment">/// Every other character: those that ended this run, then the roster's
-<a href=#39 id=39 data-nosnippet>39</a>    /// not on the table.
-<a href=#40 id=40 data-nosnippet>40</a>    </span>Offline,
-<a href=#41 id=41 data-nosnippet>41</a>    <span class="doccomment">/// The teams kept, and their editor.
-<a href=#42 id=42 data-nosnippet>42</a>    </span>Teams,
-<a href=#43 id=43 data-nosnippet>43</a>    <span class="doccomment">/// A login by account, and the kept passwords.
-<a href=#44 id=44 data-nosnippet>44</a>    </span>NewLogin,
-<a href=#45 id=45 data-nosnippet>45</a>}
-<a href=#46 id=46 data-nosnippet>46</a>
-<a href=#47 id=47 data-nosnippet>47</a><span class="doccomment">/// What the player asked the hub for.
-<a href=#48 id=48 data-nosnippet>48</a></span><span class="attr">#[derive(Clone, Debug, PartialEq, Eq)]
-<a href=#49 id=49 data-nosnippet>49</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum </span>HubAction {
-<a href=#50 id=50 data-nosnippet>50</a>    <span class="doccomment">/// Something for the binary, the owner of the session table.
-<a href=#51 id=51 data-nosnippet>51</a>    </span>Ask(HubRequest),
-<a href=#52 id=52 data-nosnippet>52</a>    <span class="doccomment">/// Bring this session's play window up: open it, or to the front.
-<a href=#53 id=53 data-nosnippet>53</a>    </span>Show(u32),
-<a href=#54 id=54 data-nosnippet>54</a>    <span class="doccomment">/// Open this session's character's log window.
-<a href=#55 id=55 data-nosnippet>55</a>    </span>Log(u32),
-<a href=#56 id=56 data-nosnippet>56</a>    <span class="doccomment">/// What the Menu was asked for, save its *Performance* switch, which
-<a href=#57 id=57 data-nosnippet>57</a>    /// the hub keeps.
-<a href=#58 id=58 data-nosnippet>58</a>    </span>Menu(<span class="kw">crate</span>::main_menu::Choice),
-<a href=#59 id=59 data-nosnippet>59</a>    <span class="doccomment">/// Fetch the newer release out.
-<a href=#60 id=60 data-nosnippet>60</a>    </span>Update,
-<a href=#61 id=61 data-nosnippet>61</a>}
-<a href=#62 id=62 data-nosnippet>62</a>
-<a href=#63 id=63 data-nosnippet>63</a><span class="doccomment">/// What the hub shows this frame.
-<a href=#64 id=64 data-nosnippet>64</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>HubView&lt;<span class="lifetime">'a</span>&gt; {
-<a href=#65 id=65 data-nosnippet>65</a>    <span class="doccomment">/// Every character seated, in the order it was started.
-<a href=#66 id=66 data-nosnippet>66</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) seats: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>[std::sync::Arc&lt;Seat&gt;],
-<a href=#67 id=67 data-nosnippet>67</a>    <span class="doccomment">/// Characters the binary can start: on the roster, with a kept password,
-<a href=#68 id=68 data-nosnippet>68</a>    /// not running.
-<a href=#69 id=69 data-nosnippet>69</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) offered: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>[String],
-<a href=#70 id=70 data-nosnippet>70</a>    <span class="doccomment">/// Every character on the roster.
-<a href=#71 id=71 data-nosnippet>71</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) roster: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>[RosterCard],
-<a href=#72 id=72 data-nosnippet>72</a>    <span class="doccomment">/// Every team kept.
-<a href=#73 id=73 data-nosnippet>73</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) teams: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>[TeamCard],
-<a href=#74 id=74 data-nosnippet>74</a>    <span class="doccomment">/// The last account whose characters the login service listed.
-<a href=#75 id=75 data-nosnippet>75</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) listing: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>Listing&gt;,
-<a href=#76 id=76 data-nosnippet>76</a>    <span class="doccomment">/// What the binary answered the last request, while it is shown.
-<a href=#77 id=77 data-nosnippet>77</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) said: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>str&gt;,
-<a href=#78 id=78 data-nosnippet>78</a>    <span class="doccomment">/// A newer release, once one is out, and how far it has come.
-<a href=#79 id=79 data-nosnippet>79</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) update: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>Update&gt;,
-<a href=#80 id=80 data-nosnippet>80</a>    <span class="doccomment">/// The design every character's card is drawn from (`crate::card`).
-<a href=#81 id=81 data-nosnippet>81</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) card: <span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="kw">crate</span>::layout::Custom,
-<a href=#82 id=82 data-nosnippet>82</a>    <span class="doccomment">/// The shared streams merged across every character, for the Chat
-<a href=#83 id=83 data-nosnippet>83</a>    /// card (`crate::chat`).
-<a href=#84 id=84 data-nosnippet>84</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) merged: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>hydra_ui::MergedHistory,
-<a href=#85 id=85 data-nosnippet>85</a>}
-<a href=#86 id=86 data-nosnippet>86</a>
-<a href=#87 id=87 data-nosnippet>87</a><span class="doccomment">/// The hub's own state, which outlives a frame.
-<a href=#88 id=88 data-nosnippet>88</a></span><span class="attr">#[derive(Debug, Default)]
-<a href=#89 id=89 data-nosnippet>89</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>Hub {
-<a href=#90 id=90 data-nosnippet>90</a>    <span class="doccomment">/// The tab showing.
-<a href=#91 id=91 data-nosnippet>91</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) tab: Tab,
-<a href=#92 id=92 data-nosnippet>92</a>    <span class="doccomment">/// The Chat card, above or below the Live tab's cards.
-<a href=#93 id=93 data-nosnippet>93</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) chat: <span class="kw">crate</span>::chat::Chat,
-<a href=#94 id=94 data-nosnippet>94</a>    <span class="doccomment">/// Asking whether to shut Hydra down.
-<a href=#95 id=95 data-nosnippet>95</a>    </span>confirming: bool,
-<a href=#96 id=96 data-nosnippet>96</a>    <span class="doccomment">/// What the roster cards and the New login tab are typing, and the
-<a href=#97 id=97 data-nosnippet>97</a>    /// account logged in.
-<a href=#98 id=98 data-nosnippet>98</a>    </span>launch: <span class="kw">crate</span>::launch::Launch,
-<a href=#99 id=99 data-nosnippet>99</a>    <span class="doccomment">/// The team the Teams tab is making or changing.
-<a href=#100 id=100 data-nosnippet>100</a>    </span>teams: <span class="kw">crate</span>::teams::Teams,
-<a href=#101 id=101 data-nosnippet>101</a>    <span class="doccomment">/// What the window itself last had to say: a setting not kept.
-<a href=#102 id=102 data-nosnippet>102</a>    </span>told: <span class="prelude-ty">Option</span>&lt;String&gt;,
-<a href=#103 id=103 data-nosnippet>103</a>    <span class="doccomment">/// Each live card shows how quick its window is.
-<a href=#104 id=104 data-nosnippet>104</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) perf: bool,
-<a href=#105 id=105 data-nosnippet>105</a>    <span class="doccomment">/// Asking whether to restart Hydra now, characters playing: whether
-<a href=#106 id=106 data-nosnippet>106</a>    /// to start them again afterwards, as the box says.
-<a href=#107 id=107 data-nosnippet>107</a>    </span>restarting: <span class="prelude-ty">Option</span>&lt;bool&gt;,
-<a href=#108 id=108 data-nosnippet>108</a>}
-<a href=#109 id=109 data-nosnippet>109</a>
-<a href=#110 id=110 data-nosnippet>110</a><span class="doccomment">/// A card's width inside its frame: the card design's
-<a href=#111 id=111 data-nosnippet>111</a>/// (`crate::card`), which a roster character's card takes too.
-<a href=#112 id=112 data-nosnippet>112</a></span><span class="attr">#[derive(Clone, Copy, Debug, PartialEq)]
-<a href=#113 id=113 data-nosnippet>113</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>CardWidth(<span class="kw">pub</span>(<span class="kw">crate</span>) f32);
-<a href=#114 id=114 data-nosnippet>114</a>
-<a href=#115 id=115 data-nosnippet>115</a><span class="kw">impl </span>Hub {
-<a href=#116 id=116 data-nosnippet>116</a>    <span class="doccomment">/// Say `why` under the header until it is said again: a setting the
-<a href=#117 id=117 data-nosnippet>117</a>    /// window could not keep.
-<a href=#118 id=118 data-nosnippet>118</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>tell(<span class="kw-2">&amp;mut </span><span class="self">self</span>, why: String) {
-<a href=#119 id=119 data-nosnippet>119</a>        <span class="self">self</span>.told = <span class="prelude-val">Some</span>(why);
-<a href=#120 id=120 data-nosnippet>120</a>    }
-<a href=#121 id=121 data-nosnippet>121</a>}
-<a href=#122 id=122 data-nosnippet>122</a>
-<a href=#123 id=123 data-nosnippet>123</a><span class="doccomment">/// What the shut-down question says.
-<a href=#124 id=124 data-nosnippet>124</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>SHUT_DOWN_QUESTION: <span class="kw-2">&amp;</span>str = <span class="string">"Shut Hydra down? Every character will quit."</span>;
-<a href=#125 id=125 data-nosnippet>125</a>
-<a href=#126 id=126 data-nosnippet>126</a><span class="kw">impl </span>Hub {
-<a href=#127 id=127 data-nosnippet>127</a>    <span class="doccomment">/// The hub's Menu: Performance switched here; anything else chosen,
-<a href=#128 id=128 data-nosnippet>128</a>    /// asked.
-<a href=#129 id=129 data-nosnippet>129</a>    </span><span class="kw">fn </span>menu(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ui: <span class="kw-2">&amp;mut </span>egui::Ui) -&gt; <span class="prelude-ty">Option</span>&lt;HubAction&gt; {
-<a href=#130 id=130 data-nosnippet>130</a>        <span class="kw">let </span>place = <span class="kw">crate</span>::main_menu::Place::Hub { perf: <span class="self">self</span>.perf };
-<a href=#131 id=131 data-nosnippet>131</a>        <span class="kw">match </span><span class="kw">crate</span>::main_menu::show(ui, place)<span class="question-mark">? </span>{
-<a href=#132 id=132 data-nosnippet>132</a>            <span class="kw">crate</span>::main_menu::Choice::Performance(on) =&gt; {
-<a href=#133 id=133 data-nosnippet>133</a>                <span class="self">self</span>.perf = on;
-<a href=#134 id=134 data-nosnippet>134</a>                <span class="prelude-val">None
-<a href=#135 id=135 data-nosnippet>135</a>            </span>}
-<a href=#136 id=136 data-nosnippet>136</a>            choice =&gt; <span class="prelude-val">Some</span>(HubAction::Menu(choice)),
-<a href=#137 id=137 data-nosnippet>137</a>        }
-<a href=#138 id=138 data-nosnippet>138</a>    }
-<a href=#139 id=139 data-nosnippet>139</a>
-<a href=#140 id=140 data-nosnippet>140</a>    <span class="doccomment">/// Draw the hub over `view`, and return what the player asked for, if
-<a href=#141 id=141 data-nosnippet>141</a>    /// anything.
-<a href=#142 id=142 data-nosnippet>142</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>show(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ui: <span class="kw-2">&amp;mut </span>egui::Ui, view: <span class="kw-2">&amp;</span>HubView&lt;<span class="lifetime">'_</span>&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;HubAction&gt; {
-<a href=#143 id=143 data-nosnippet>143</a>        <span class="kw">let </span><span class="kw-2">mut </span>asked = <span class="prelude-val">None</span>;
-<a href=#144 id=144 data-nosnippet>144</a>        <span class="kw">let </span>(closed, live): (Vec&lt;<span class="kw-2">&amp;</span>Seat&gt;, Vec&lt;<span class="kw-2">&amp;</span>Seat&gt;) = view
-<a href=#145 id=145 data-nosnippet>145</a>            .seats
-<a href=#146 id=146 data-nosnippet>146</a>            .iter()
-<a href=#147 id=147 data-nosnippet>147</a>            .map(AsRef::as_ref)
-<a href=#148 id=148 data-nosnippet>148</a>            .partition(|seat| seat.lifecycle() == State::Closed);
-<a href=#149 id=149 data-nosnippet>149</a>        <span class="kw">let </span>playing = !live.is_empty();
-<a href=#150 id=150 data-nosnippet>150</a>        <span class="kw">let </span>offline = closed.len() + <span class="kw">crate</span>::launch::waiting(view).len();
-<a href=#151 id=151 data-nosnippet>151</a>        ui.horizontal(|ui| {
-<a href=#152 id=152 data-nosnippet>152</a>            ui.selectable_value(<span class="kw-2">&amp;mut </span><span class="self">self</span>.tab, Tab::Live, <span class="macro">format!</span>(<span class="string">"Live ({})"</span>, live.len()));
-<a href=#153 id=153 data-nosnippet>153</a>            ui.selectable_value(<span class="kw-2">&amp;mut </span><span class="self">self</span>.tab, Tab::Offline, <span class="macro">format!</span>(<span class="string">"Offline ({offline})"</span>));
-<a href=#154 id=154 data-nosnippet>154</a>            ui.selectable_value(
-<a href=#155 id=155 data-nosnippet>155</a>                <span class="kw-2">&amp;mut </span><span class="self">self</span>.tab,
-<a href=#156 id=156 data-nosnippet>156</a>                Tab::Teams,
-<a href=#157 id=157 data-nosnippet>157</a>                <span class="macro">format!</span>(<span class="string">"Teams ({})"</span>, view.teams.len()),
-<a href=#158 id=158 data-nosnippet>158</a>            );
-<a href=#159 id=159 data-nosnippet>159</a>            ui.selectable_value(<span class="kw-2">&amp;mut </span><span class="self">self</span>.tab, Tab::NewLogin, <span class="string">"New login"</span>);
-<a href=#160 id=160 data-nosnippet>160</a>            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-<a href=#161 id=161 data-nosnippet>161</a>                <span class="comment">// With nothing playing there is nothing to lose, so it does
-<a href=#162 id=162 data-nosnippet>162</a>                // not ask. Closing the window never asks: it only hides it,
-<a href=#163 id=163 data-nosnippet>163</a>                // or lets Hydra rest.
-<a href=#164 id=164 data-nosnippet>164</a>                </span><span class="kw">if </span>ui.button(<span class="string">"Shut down"</span>).clicked() {
-<a href=#165 id=165 data-nosnippet>165</a>                    <span class="kw">if </span>playing {
-<a href=#166 id=166 data-nosnippet>166</a>                        <span class="self">self</span>.confirming = <span class="bool-val">true</span>;
-<a href=#167 id=167 data-nosnippet>167</a>                    } <span class="kw">else </span>{
-<a href=#168 id=168 data-nosnippet>168</a>                        asked = <span class="prelude-val">Some</span>(HubAction::Ask(HubRequest::Shutdown));
-<a href=#169 id=169 data-nosnippet>169</a>                    }
-<a href=#170 id=170 data-nosnippet>170</a>                }
-<a href=#171 id=171 data-nosnippet>171</a>                asked = asked.take().or(<span class="self">self</span>.menu(ui));
-<a href=#172 id=172 data-nosnippet>172</a>            });
-<a href=#173 id=173 data-nosnippet>173</a>        });
-<a href=#174 id=174 data-nosnippet>174</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(update) = view.update
-<a href=#175 id=175 data-nosnippet>175</a>            &amp;&amp; <span class="kw">let </span><span class="prelude-val">Some</span>(action) = update_line(ui, update, <span class="kw-2">&amp;</span>live, <span class="kw-2">&amp;mut </span><span class="self">self</span>.restarting)
-<a href=#176 id=176 data-nosnippet>176</a>        {
-<a href=#177 id=177 data-nosnippet>177</a>            asked = <span class="prelude-val">Some</span>(action);
-<a href=#178 id=178 data-nosnippet>178</a>        }
-<a href=#179 id=179 data-nosnippet>179</a>        <span class="kw">if </span><span class="self">self</span>.confirming {
-<a href=#180 id=180 data-nosnippet>180</a>            ui.horizontal(|ui| {
-<a href=#181 id=181 data-nosnippet>181</a>                ui.label(SHUT_DOWN_QUESTION);
-<a href=#182 id=182 data-nosnippet>182</a>                <span class="kw">if </span>ui.button(<span class="string">"Shut down every character"</span>).clicked() {
-<a href=#183 id=183 data-nosnippet>183</a>                    <span class="self">self</span>.confirming = <span class="bool-val">false</span>;
-<a href=#184 id=184 data-nosnippet>184</a>                    asked = <span class="prelude-val">Some</span>(HubAction::Ask(HubRequest::Shutdown));
-<a href=#185 id=185 data-nosnippet>185</a>                }
-<a href=#186 id=186 data-nosnippet>186</a>                <span class="kw">if </span>ui.button(<span class="string">"Keep playing"</span>).clicked() {
-<a href=#187 id=187 data-nosnippet>187</a>                    <span class="self">self</span>.confirming = <span class="bool-val">false</span>;
-<a href=#188 id=188 data-nosnippet>188</a>                }
-<a href=#189 id=189 data-nosnippet>189</a>            });
-<a href=#190 id=190 data-nosnippet>190</a>        }
-<a href=#191 id=191 data-nosnippet>191</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(said) = view.said {
-<a href=#192 id=192 data-nosnippet>192</a>            ui.weak(said);
-<a href=#193 id=193 data-nosnippet>193</a>        }
-<a href=#194 id=194 data-nosnippet>194</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(told) = <span class="kw-2">&amp;</span><span class="self">self</span>.told {
-<a href=#195 id=195 data-nosnippet>195</a>            ui.colored_label(theme::color(ui.ctx(), T::Wrong), told);
-<a href=#196 id=196 data-nosnippet>196</a>        }
-<a href=#197 id=197 data-nosnippet>197</a>        ui.separator();
-<a href=#198 id=198 data-nosnippet>198</a>        <span class="comment">// Below the header, an id of its own: a line appearing above -- the
-<a href=#199 id=199 data-nosnippet>199</a>        // answer, the shut-down question -- would otherwise renumber every
-<a href=#200 id=200 data-nosnippet>200</a>        // widget under it, which a debug build draws as red boxes.
-<a href=#201 id=201 data-nosnippet>201</a>        </span><span class="kw">let </span>body = egui::UiBuilder::new().id(ui.id().with(<span class="string">"hub-body"</span>));
-<a href=#202 id=202 data-nosnippet>202</a>        ui.scope_builder(body, |ui| {
-<a href=#203 id=203 data-nosnippet>203</a>            <span class="kw">let </span>perf = <span class="self">self</span>.perf;
-<a href=#204 id=204 data-nosnippet>204</a>            <span class="kw">match </span><span class="self">self</span>.tab {
-<a href=#205 id=205 data-nosnippet>205</a>                Tab::Live =&gt; {
-<a href=#206 id=206 data-nosnippet>206</a>                    <span class="self">self</span>.chat.show(ui, view, view.merged, <span class="kw-2">&amp;mut </span>asked);
-<a href=#207 id=207 data-nosnippet>207</a>                    list(
-<a href=#208 id=208 data-nosnippet>208</a>                        ui,
-<a href=#209 id=209 data-nosnippet>209</a>                        (<span class="kw-2">&amp;</span>live, view.card),
-<a href=#210 id=210 data-nosnippet>210</a>                        (<span class="string">"No character is running."</span>, perf),
-<a href=#211 id=211 data-nosnippet>211</a>                        <span class="kw-2">&amp;mut </span>asked,
-<a href=#212 id=212 data-nosnippet>212</a>                    );
-<a href=#213 id=213 data-nosnippet>213</a>                }
-<a href=#214 id=214 data-nosnippet>214</a>                Tab::Offline =&gt; {
-<a href=#215 id=215 data-nosnippet>215</a>                    <span class="kw">let </span>launch = <span class="kw-2">&amp;mut </span><span class="self">self</span>.launch;
-<a href=#216 id=216 data-nosnippet>216</a>                    egui::ScrollArea::vertical()
-<a href=#217 id=217 data-nosnippet>217</a>                        .id_salt(<span class="string">"hub-offline"</span>)
-<a href=#218 id=218 data-nosnippet>218</a>                        .auto_shrink(<span class="bool-val">false</span>)
-<a href=#219 id=219 data-nosnippet>219</a>                        .show(ui, |ui| {
-<a href=#220 id=220 data-nosnippet>220</a>                            <span class="kw">if </span>offline == <span class="number">0 </span>{
-<a href=#221 id=221 data-nosnippet>221</a>                                ui.label(<span class="string">"Every character is playing. New login adds another."</span>);
-<a href=#222 id=222 data-nosnippet>222</a>                            }
-<a href=#223 id=223 data-nosnippet>223</a>                            cards(ui, (<span class="kw-2">&amp;</span>closed, view.card), <span class="bool-val">false</span>, <span class="kw-2">&amp;mut </span>asked);
-<a href=#224 id=224 data-nosnippet>224</a>                            <span class="kw">if </span>!closed.is_empty() {
-<a href=#225 id=225 data-nosnippet>225</a>                                ui.add_space(ui.spacing().item_spacing.y);
-<a href=#226 id=226 data-nosnippet>226</a>                            }
-<a href=#227 id=227 data-nosnippet>227</a>                            <span class="kw">let </span>width = CardWidth(view.card.inside().x);
-<a href=#228 id=228 data-nosnippet>228</a>                            launch.cards(ui, view, width, <span class="kw-2">&amp;mut </span>asked);
-<a href=#229 id=229 data-nosnippet>229</a>                        });
-<a href=#230 id=230 data-nosnippet>230</a>                }
-<a href=#231 id=231 data-nosnippet>231</a>                Tab::Teams =&gt; <span class="self">self</span>.teams.show(ui, view, <span class="kw-2">&amp;mut </span>asked),
-<a href=#232 id=232 data-nosnippet>232</a>                Tab::NewLogin =&gt; <span class="self">self</span>.launch.show_login(ui, view, <span class="kw-2">&amp;mut </span>asked),
-<a href=#233 id=233 data-nosnippet>233</a>            }
-<a href=#234 id=234 data-nosnippet>234</a>        });
-<a href=#235 id=235 data-nosnippet>235</a>        asked
-<a href=#236 id=236 data-nosnippet>236</a>    }
-<a href=#237 id=237 data-nosnippet>237</a>}
-<a href=#238 id=238 data-nosnippet>238</a>
-<a href=#239 id=239 data-nosnippet>239</a><span class="doccomment">/// A newer release, and how far it has come: *What's new* opens its page,
-<a href=#240 id=240 data-nosnippet>240</a>/// *Update* asks for it, and *Try again* after a fetch failed. Fetched,
-<a href=#241 id=241 data-nosnippet>241</a>/// *Restart now* restarts Hydra into it: at once with nothing playing; with
-<a href=#242 id=242 data-nosnippet>242</a>/// `live` characters playing, once the player says so (`restarting`), with
-<a href=#243 id=243 data-nosnippet>243</a>/// them started again afterwards unless the box is unticked.
-<a href=#244 id=244 data-nosnippet>244</a></span><span class="kw">fn </span>update_line(
-<a href=#245 id=245 data-nosnippet>245</a>    ui: <span class="kw-2">&amp;mut </span>egui::Ui,
-<a href=#246 id=246 data-nosnippet>246</a>    update: <span class="kw-2">&amp;</span>Update,
-<a href=#247 id=247 data-nosnippet>247</a>    live: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>Seat],
-<a href=#248 id=248 data-nosnippet>248</a>    restarting: <span class="kw-2">&amp;mut </span><span class="prelude-ty">Option</span>&lt;bool&gt;,
-<a href=#249 id=249 data-nosnippet>249</a>) -&gt; <span class="prelude-ty">Option</span>&lt;HubAction&gt; {
-<a href=#250 id=250 data-nosnippet>250</a>    <span class="kw">let </span>version = <span class="kw-2">&amp;</span>update.version;
-<a href=#251 id=251 data-nosnippet>251</a>    <span class="kw">let </span><span class="kw-2">mut </span>asked = <span class="prelude-val">None</span>;
-<a href=#252 id=252 data-nosnippet>252</a>    <span class="kw">let </span>restart = |again| <span class="prelude-val">Some</span>(HubAction::Ask(HubRequest::Restart { again }));
-<a href=#253 id=253 data-nosnippet>253</a>    ui.horizontal(|ui| <span class="kw">match </span><span class="kw-2">&amp;</span>update.fetch {
-<a href=#254 id=254 data-nosnippet>254</a>        Fetch::Out =&gt; {
-<a href=#255 id=255 data-nosnippet>255</a>            ui.label(<span class="macro">format!</span>(<span class="string">"Hydra {version} is out."</span>));
-<a href=#256 id=256 data-nosnippet>256</a>            ui.hyperlink_to(<span class="string">"What's new"</span>, <span class="kw-2">&amp;</span>update.page);
-<a href=#257 id=257 data-nosnippet>257</a>            <span class="kw">if </span>ui.button(<span class="string">"Update"</span>).clicked() {
-<a href=#258 id=258 data-nosnippet>258</a>                asked = <span class="prelude-val">Some</span>(HubAction::Update);
-<a href=#259 id=259 data-nosnippet>259</a>            }
-<a href=#260 id=260 data-nosnippet>260</a>        }
-<a href=#261 id=261 data-nosnippet>261</a>        Fetch::Fetching(got, total) =&gt; {
-<a href=#262 id=262 data-nosnippet>262</a>            ui.label(<span class="macro">format!</span>(<span class="string">"Fetching Hydra {version}"</span>));
-<a href=#263 id=263 data-nosnippet>263</a>            <span class="comment">// In thousandths, which a u16 holds and an f32 takes whole.
-<a href=#264 id=264 data-nosnippet>264</a>            </span><span class="kw">let </span>done = u16::try_from(got.saturating_mul(<span class="number">1000</span>) / (<span class="kw-2">*</span>total).max(<span class="number">1</span>))
-<a href=#265 id=265 data-nosnippet>265</a>                .unwrap_or(<span class="number">1000</span>)
-<a href=#266 id=266 data-nosnippet>266</a>                .min(<span class="number">1000</span>);
-<a href=#267 id=267 data-nosnippet>267</a>            ui.add(
-<a href=#268 id=268 data-nosnippet>268</a>                egui::ProgressBar::new(f32::from(done) / <span class="number">1000.0</span>)
-<a href=#269 id=269 data-nosnippet>269</a>                    .desired_width(<span class="number">160.0</span>)
-<a href=#270 id=270 data-nosnippet>270</a>                    .show_percentage(),
-<a href=#271 id=271 data-nosnippet>271</a>            );
-<a href=#272 id=272 data-nosnippet>272</a>        }
-<a href=#273 id=273 data-nosnippet>273</a>        Fetch::Ready =&gt; {
-<a href=#274 id=274 data-nosnippet>274</a>            ui.label(<span class="macro">format!</span>(<span class="string">"Hydra {version} runs from Hydra's next start."</span>));
-<a href=#275 id=275 data-nosnippet>275</a>            ui.hyperlink_to(<span class="string">"What's new"</span>, <span class="kw-2">&amp;</span>update.page);
-<a href=#276 id=276 data-nosnippet>276</a>            <span class="kw">if </span>restarting.is_none() &amp;&amp; ui.button(<span class="string">"Restart now"</span>).clicked() {
-<a href=#277 id=277 data-nosnippet>277</a>                <span class="kw">if </span>live.is_empty() {
-<a href=#278 id=278 data-nosnippet>278</a>                    asked = restart(<span class="bool-val">false</span>);
-<a href=#279 id=279 data-nosnippet>279</a>                } <span class="kw">else </span>{
-<a href=#280 id=280 data-nosnippet>280</a>                    <span class="kw-2">*</span>restarting = <span class="prelude-val">Some</span>(<span class="bool-val">true</span>);
-<a href=#281 id=281 data-nosnippet>281</a>                }
-<a href=#282 id=282 data-nosnippet>282</a>            }
-<a href=#283 id=283 data-nosnippet>283</a>        }
-<a href=#284 id=284 data-nosnippet>284</a>        Fetch::Failed(why) =&gt; {
-<a href=#285 id=285 data-nosnippet>285</a>            ui.colored_label(
-<a href=#286 id=286 data-nosnippet>286</a>                theme::color(ui.ctx(), T::Wrong),
-<a href=#287 id=287 data-nosnippet>287</a>                <span class="macro">format!</span>(<span class="string">"Hydra {version} could not be fetched: {why}"</span>),
-<a href=#288 id=288 data-nosnippet>288</a>            );
-<a href=#289 id=289 data-nosnippet>289</a>            <span class="kw">if </span>ui.button(<span class="string">"Try again"</span>).clicked() {
-<a href=#290 id=290 data-nosnippet>290</a>                asked = <span class="prelude-val">Some</span>(HubAction::Update);
-<a href=#291 id=291 data-nosnippet>291</a>            }
-<a href=#292 id=292 data-nosnippet>292</a>        }
-<a href=#293 id=293 data-nosnippet>293</a>    });
-<a href=#294 id=294 data-nosnippet>294</a>    <span class="kw">if </span>update.fetch == Fetch::Ready
-<a href=#295 id=295 data-nosnippet>295</a>        &amp;&amp; <span class="kw">let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>again) = <span class="kw-2">*</span>restarting
-<a href=#296 id=296 data-nosnippet>296</a>    {
-<a href=#297 id=297 data-nosnippet>297</a>        <span class="kw">let </span>names: Vec&lt;<span class="kw-2">&amp;</span>str&gt; = live.iter().map(|seat| seat.name.as_str()).collect();
-<a href=#298 id=298 data-nosnippet>298</a>        <span class="kw">let </span>(who, them) = <span class="kw">match </span>names.as_slice() {
-<a href=#299 id=299 data-nosnippet>299</a>            [] =&gt; (String::new(), <span class="string">"them"</span>),
-<a href=#300 id=300 data-nosnippet>300</a>            [one] =&gt; ((<span class="kw-2">*</span>one).to_owned(), <span class="string">"it"</span>),
-<a href=#301 id=301 data-nosnippet>301</a>            [rest @ .., last] =&gt; (<span class="macro">format!</span>(<span class="string">"{} and {last}"</span>, rest.join(<span class="string">", "</span>)), <span class="string">"them"</span>),
-<a href=#302 id=302 data-nosnippet>302</a>        };
-<a href=#303 id=303 data-nosnippet>303</a>        ui.horizontal(|ui| {
-<a href=#304 id=304 data-nosnippet>304</a>            ui.label(<span class="macro">format!</span>(<span class="string">"Restart Hydra now? {who} will be disconnected."</span>));
-<a href=#305 id=305 data-nosnippet>305</a>            ui.checkbox(<span class="kw-2">&amp;mut </span>again, <span class="macro">format!</span>(<span class="string">"Start {them} again afterwards"</span>));
-<a href=#306 id=306 data-nosnippet>306</a>            <span class="kw-2">*</span>restarting = <span class="prelude-val">Some</span>(again);
-<a href=#307 id=307 data-nosnippet>307</a>            <span class="kw">if </span>ui.button(<span class="string">"Restart"</span>).clicked() {
-<a href=#308 id=308 data-nosnippet>308</a>                asked = restart(again);
-<a href=#309 id=309 data-nosnippet>309</a>                <span class="kw-2">*</span>restarting = <span class="prelude-val">None</span>;
-<a href=#310 id=310 data-nosnippet>310</a>            }
-<a href=#311 id=311 data-nosnippet>311</a>            <span class="kw">if </span>ui.button(<span class="string">"Cancel"</span>).clicked() {
-<a href=#312 id=312 data-nosnippet>312</a>                <span class="kw-2">*</span>restarting = <span class="prelude-val">None</span>;
-<a href=#313 id=313 data-nosnippet>313</a>            }
-<a href=#314 id=314 data-nosnippet>314</a>        });
-<a href=#315 id=315 data-nosnippet>315</a>    }
-<a href=#316 id=316 data-nosnippet>316</a>    asked
-<a href=#317 id=317 data-nosnippet>317</a>}
-<a href=#318 id=318 data-nosnippet>318</a>
-<a href=#319 id=319 data-nosnippet>319</a><span class="doccomment">/// The web page's address, its pairing in it, and the same as a code a
-<a href=#320 id=320 data-nosnippet>320</a>/// phone's camera opens; or why it is not served.
-<a href=#321 id=321 data-nosnippet>321</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>web_page(ui: <span class="kw-2">&amp;mut </span>egui::Ui, at: <span class="kw-2">&amp;</span><span class="kw">crate</span>::WebAt) {
-<a href=#322 id=322 data-nosnippet>322</a>    <span class="kw">match </span>at {
-<a href=#323 id=323 data-nosnippet>323</a>        <span class="kw">crate</span>::WebAt::Failed(why) =&gt; {
-<a href=#324 id=324 data-nosnippet>324</a>            ui.colored_label(theme::color(ui.ctx(), T::Wrong), why);
-<a href=#325 id=325 data-nosnippet>325</a>        }
-<a href=#326 id=326 data-nosnippet>326</a>        <span class="kw">crate</span>::WebAt::Listening(address) =&gt; {
-<a href=#327 id=327 data-nosnippet>327</a>            ui.horizontal(|ui| {
-<a href=#328 id=328 data-nosnippet>328</a>                qr(ui, address);
-<a href=#329 id=329 data-nosnippet>329</a>                ui.vertical(|ui| {
-<a href=#330 id=330 data-nosnippet>330</a>                    ui.label(
-<a href=#331 id=331 data-nosnippet>331</a>                        <span class="string">"Open this on a phone or tablet on the home network, or scan the code:"</span>,
-<a href=#332 id=332 data-nosnippet>332</a>                    );
-<a href=#333 id=333 data-nosnippet>333</a>                    ui.add(
-<a href=#334 id=334 data-nosnippet>334</a>                        egui::Label::new(egui::RichText::new(address).monospace()).selectable(<span class="bool-val">true</span>),
-<a href=#335 id=335 data-nosnippet>335</a>                    );
-<a href=#336 id=336 data-nosnippet>336</a>                    <span class="kw">if </span>ui.button(<span class="string">"Copy"</span>).clicked() {
-<a href=#337 id=337 data-nosnippet>337</a>                        ui.ctx().copy_text(address.clone());
-<a href=#338 id=338 data-nosnippet>338</a>                    }
-<a href=#339 id=339 data-nosnippet>339</a>                    <span class="kw">crate</span>::form::hint(
-<a href=#340 id=340 data-nosnippet>340</a>                        ui,
-<a href=#341 id=341 data-nosnippet>341</a>                        <span class="string">"The address holds the pairing: give it only to your own devices."</span>,
-<a href=#342 id=342 data-nosnippet>342</a>                    );
-<a href=#343 id=343 data-nosnippet>343</a>                });
-<a href=#344 id=344 data-nosnippet>344</a>            });
-<a href=#345 id=345 data-nosnippet>345</a>        }
-<a href=#346 id=346 data-nosnippet>346</a>    }
-<a href=#347 id=347 data-nosnippet>347</a>}
-<a href=#348 id=348 data-nosnippet>348</a>
-<a href=#349 id=349 data-nosnippet>349</a><span class="doccomment">/// `text` as a QR code, dark on light whatever the theme, so a camera
-<a href=#350 id=350 data-nosnippet>350</a>/// reads it.
-<a href=#351 id=351 data-nosnippet>351</a></span><span class="kw">fn </span>qr(ui: <span class="kw-2">&amp;mut </span>egui::Ui, text: <span class="kw-2">&amp;</span>str) {
-<a href=#352 id=352 data-nosnippet>352</a>    <span class="kw">let </span><span class="prelude-val">Ok</span>(code) = qrcode::QrCode::new(text.as_bytes()) <span class="kw">else </span>{
-<a href=#353 id=353 data-nosnippet>353</a>        <span class="kw">return</span>;
-<a href=#354 id=354 data-nosnippet>354</a>    };
-<a href=#355 id=355 data-nosnippet>355</a>    <span class="kw">let </span>width = code.width();
-<a href=#356 id=356 data-nosnippet>356</a>    <span class="kw">let </span>colors = code.to_colors();
-<a href=#357 id=357 data-nosnippet>357</a>    <span class="comment">// A quiet zone of four modules round it, as readers want.
-<a href=#358 id=358 data-nosnippet>358</a>    </span><span class="kw">let </span>modules = width + <span class="number">8</span>;
-<a href=#359 id=359 data-nosnippet>359</a>    <span class="kw">let </span>module = <span class="number">3.0</span>;
-<a href=#360 id=360 data-nosnippet>360</a>    <span class="attr">#[expect(
-<a href=#361 id=361 data-nosnippet>361</a>        clippy::cast_precision_loss,
-<a href=#362 id=362 data-nosnippet>362</a>        reason = <span class="string">"a code is under 200 modules wide"
-<a href=#363 id=363 data-nosnippet>363</a>    </span>)]
-<a href=#364 id=364 data-nosnippet>364</a>    </span><span class="kw">let </span>side = modules <span class="kw">as </span>f32 * module;
-<a href=#365 id=365 data-nosnippet>365</a>    <span class="kw">let </span>(area, response) = ui.allocate_exact_size(egui::vec2(side, side), egui::Sense::hover());
-<a href=#366 id=366 data-nosnippet>366</a>    response
-<a href=#367 id=367 data-nosnippet>367</a>        .widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Image, <span class="bool-val">true</span>, <span class="string">"Web page code"</span>));
-<a href=#368 id=368 data-nosnippet>368</a>    <span class="kw">let </span>painter = ui.painter();
-<a href=#369 id=369 data-nosnippet>369</a>    painter.rect_filled(area, <span class="number">0.0</span>, egui::Color32::WHITE);
-<a href=#370 id=370 data-nosnippet>370</a>    <span class="kw">for </span>(at, color) <span class="kw">in </span>colors.iter().enumerate() {
-<a href=#371 id=371 data-nosnippet>371</a>        <span class="kw">if </span><span class="kw-2">*</span>color != qrcode::Color::Dark {
-<a href=#372 id=372 data-nosnippet>372</a>            <span class="kw">continue</span>;
-<a href=#373 id=373 data-nosnippet>373</a>        }
-<a href=#374 id=374 data-nosnippet>374</a>        <span class="attr">#[expect(clippy::cast_precision_loss, reason = <span class="string">"as above"</span>)]
-<a href=#375 id=375 data-nosnippet>375</a>        </span><span class="kw">let </span>(x, y) = (((at % width) + <span class="number">4</span>) <span class="kw">as </span>f32, ((at / width) + <span class="number">4</span>) <span class="kw">as </span>f32);
-<a href=#376 id=376 data-nosnippet>376</a>        painter.rect_filled(
-<a href=#377 id=377 data-nosnippet>377</a>            egui::Rect::from_min_size(
-<a href=#378 id=378 data-nosnippet>378</a>                area.min + egui::vec2(x * module, y * module),
-<a href=#379 id=379 data-nosnippet>379</a>                egui::vec2(module, module),
-<a href=#380 id=380 data-nosnippet>380</a>            ),
-<a href=#381 id=381 data-nosnippet>381</a>            <span class="number">0.0</span>,
-<a href=#382 id=382 data-nosnippet>382</a>            egui::Color32::BLACK,
-<a href=#383 id=383 data-nosnippet>383</a>        );
-<a href=#384 id=384 data-nosnippet>384</a>    }
-<a href=#385 id=385 data-nosnippet>385</a>}
-<a href=#386 id=386 data-nosnippet>386</a>
-<a href=#387 id=387 data-nosnippet>387</a><span class="doccomment">/// The cards of one tab, drawn from `design` and tiled as many to a row as
-<a href=#388 id=388 data-nosnippet>388</a>/// fit, or what an empty one says; each with how quick its window is, when
-<a href=#389 id=389 data-nosnippet>389</a>/// `perf`.
-<a href=#390 id=390 data-nosnippet>390</a></span><span class="kw">fn </span>list(
-<a href=#391 id=391 data-nosnippet>391</a>    ui: <span class="kw-2">&amp;mut </span>egui::Ui,
-<a href=#392 id=392 data-nosnippet>392</a>    seats: (<span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>Seat], <span class="kw-2">&amp;</span><span class="kw">crate</span>::layout::Custom),
-<a href=#393 id=393 data-nosnippet>393</a>    (none, perf): (<span class="kw-2">&amp;</span>str, bool),
-<a href=#394 id=394 data-nosnippet>394</a>    asked: <span class="kw-2">&amp;mut </span><span class="prelude-ty">Option</span>&lt;HubAction&gt;,
-<a href=#395 id=395 data-nosnippet>395</a>) {
-<a href=#396 id=396 data-nosnippet>396</a>    <span class="kw">if </span>seats.<span class="number">0</span>.is_empty() {
-<a href=#397 id=397 data-nosnippet>397</a>        ui.label(none);
-<a href=#398 id=398 data-nosnippet>398</a>        <span class="kw">return</span>;
-<a href=#399 id=399 data-nosnippet>399</a>    }
-<a href=#400 id=400 data-nosnippet>400</a>    egui::ScrollArea::vertical()
-<a href=#401 id=401 data-nosnippet>401</a>        .id_salt(<span class="string">"hub-cards"</span>)
-<a href=#402 id=402 data-nosnippet>402</a>        .auto_shrink(<span class="bool-val">false</span>)
-<a href=#403 id=403 data-nosnippet>403</a>        .show(ui, |ui| cards(ui, seats, perf, asked));
-<a href=#404 id=404 data-nosnippet>404</a>}
-<a href=#405 id=405 data-nosnippet>405</a>
-<a href=#406 id=406 data-nosnippet>406</a><span class="doccomment">/// `seats`' cards drawn from `design`, tiled; each with how quick its window
-<a href=#407 id=407 data-nosnippet>407</a>/// is, when `perf`.
-<a href=#408 id=408 data-nosnippet>408</a></span><span class="kw">fn </span>cards(
-<a href=#409 id=409 data-nosnippet>409</a>    ui: <span class="kw-2">&amp;mut </span>egui::Ui,
-<a href=#410 id=410 data-nosnippet>410</a>    (seats, design): (<span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>Seat], <span class="kw-2">&amp;</span><span class="kw">crate</span>::layout::Custom),
-<a href=#411 id=411 data-nosnippet>411</a>    perf: bool,
-<a href=#412 id=412 data-nosnippet>412</a>    asked: <span class="kw-2">&amp;mut </span><span class="prelude-ty">Option</span>&lt;HubAction&gt;,
-<a href=#413 id=413 data-nosnippet>413</a>) {
-<a href=#414 id=414 data-nosnippet>414</a>    tiled(ui, seats, CardWidth(design.inside().x), |ui, seat| {
-<a href=#415 id=415 data-nosnippet>415</a>        <span class="comment">// Each card keyed by its session, not its place, so a card keeps its
-<a href=#416 id=416 data-nosnippet>416</a>        // widgets' state as others come and go.
-<a href=#417 id=417 data-nosnippet>417</a>        </span><span class="kw">let </span>id = egui::Id::new((<span class="string">"hub-card"</span>, seat.id));
-<a href=#418 id=418 data-nosnippet>418</a>        <span class="kw">let </span>drawn = card_scope(ui, id, |ui| <span class="kw">crate</span>::card::card(ui, seat, design, perf));
-<a href=#419 id=419 data-nosnippet>419</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(action) = drawn.inner {
-<a href=#420 id=420 data-nosnippet>420</a>            <span class="kw-2">*</span>asked = <span class="prelude-val">Some</span>(action);
-<a href=#421 id=421 data-nosnippet>421</a>        }
-<a href=#422 id=422 data-nosnippet>422</a>    });
-<a href=#423 id=423 data-nosnippet>423</a>}
-<a href=#424 id=424 data-nosnippet>424</a>
-<a href=#425 id=425 data-nosnippet>425</a><span class="doccomment">/// Lay `items` out as cards `width` wide, as many to a row as fit, each
-<a href=#426 id=426 data-nosnippet>426</a>/// row's cards aligned at their tops.
-<a href=#427 id=427 data-nosnippet>427</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>tiled&lt;I&gt;(
-<a href=#428 id=428 data-nosnippet>428</a>    ui: <span class="kw-2">&amp;mut </span>egui::Ui,
-<a href=#429 id=429 data-nosnippet>429</a>    items: <span class="kw-2">&amp;</span>[I],
-<a href=#430 id=430 data-nosnippet>430</a>    width: CardWidth,
-<a href=#431 id=431 data-nosnippet>431</a>    <span class="kw-2">mut </span>card: <span class="kw">impl </span>FnMut(<span class="kw-2">&amp;mut </span>egui::Ui, <span class="kw-2">&amp;</span>I),
-<a href=#432 id=432 data-nosnippet>432</a>) {
-<a href=#433 id=433 data-nosnippet>433</a>    <span class="kw">let </span>outer = width.<span class="number">0 </span>+ <span class="kw">crate</span>::card::surround(ui).<span class="number">0</span>.total_margin().sum().x;
-<a href=#434 id=434 data-nosnippet>434</a>    <span class="kw">let </span>gap = ui.spacing().item_spacing.x;
-<a href=#435 id=435 data-nosnippet>435</a>    <span class="kw">let </span>room = ui.available_width();
-<a href=#436 id=436 data-nosnippet>436</a>    <span class="kw">let </span>(<span class="kw-2">mut </span>per_row, <span class="kw-2">mut </span>used) = (<span class="number">1</span>, outer);
-<a href=#437 id=437 data-nosnippet>437</a>    <span class="kw">while </span>used + gap + outer &lt;= room {
-<a href=#438 id=438 data-nosnippet>438</a>        used += gap + outer;
-<a href=#439 id=439 data-nosnippet>439</a>        per_row += <span class="number">1</span>;
-<a href=#440 id=440 data-nosnippet>440</a>    }
-<a href=#441 id=441 data-nosnippet>441</a>    <span class="kw">for </span>row <span class="kw">in </span>items.chunks(per_row) {
-<a href=#442 id=442 data-nosnippet>442</a>        ui.horizontal_top(|ui| {
-<a href=#443 id=443 data-nosnippet>443</a>            <span class="kw">for </span>item <span class="kw">in </span>row {
-<a href=#444 id=444 data-nosnippet>444</a>                card(ui, item);
-<a href=#445 id=445 data-nosnippet>445</a>            }
-<a href=#446 id=446 data-nosnippet>446</a>        });
-<a href=#447 id=447 data-nosnippet>447</a>    }
-<a href=#448 id=448 data-nosnippet>448</a>}
-<a href=#449 id=449 data-nosnippet>449</a>
-<a href=#450 id=450 data-nosnippet>450</a><span class="doccomment">/// A card's own area: an id of its own, laid out top to bottom.
-<a href=#451 id=451 data-nosnippet>451</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>card_scope&lt;R&gt;(
-<a href=#452 id=452 data-nosnippet>452</a>    ui: <span class="kw-2">&amp;mut </span>egui::Ui,
-<a href=#453 id=453 data-nosnippet>453</a>    id: egui::Id,
-<a href=#454 id=454 data-nosnippet>454</a>    card: <span class="kw">impl </span>FnOnce(<span class="kw-2">&amp;mut </span>egui::Ui) -&gt; R,
-<a href=#455 id=455 data-nosnippet>455</a>) -&gt; egui::InnerResponse&lt;R&gt; {
-<a href=#456 id=456 data-nosnippet>456</a>    <span class="kw">let </span>own = egui::UiBuilder::new()
-<a href=#457 id=457 data-nosnippet>457</a>        .id(id)
-<a href=#458 id=458 data-nosnippet>458</a>        .layout(egui::Layout::top_down(egui::Align::Min));
-<a href=#459 id=459 data-nosnippet>459</a>    ui.scope_builder(own, card)
-<a href=#460 id=460 data-nosnippet>460</a>}
-<a href=#461 id=461 data-nosnippet>461</a>
-<a href=#462 id=462 data-nosnippet>462</a><span class="doccomment">/// How quick a character's window is: each stage's median and slow end
-<a href=#463 id=463 data-nosnippet>463</a>/// over its last samples, coloured by how they read, and how often it fell
-<a href=#464 id=464 data-nosnippet>464</a>/// behind. A stage's name says, under the pointer, what it measures.
-<a href=#465 id=465 data-nosnippet>465</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>stages(ui: <span class="kw-2">&amp;mut </span>egui::Ui, id: u32, perf: <span class="kw-2">&amp;</span>hydra_ui::perf::Perf, lichs_text: bool) {
-<a href=#466 id=466 data-nosnippet>466</a>    <span class="kw">use </span>hydra_ui::perf::{Grade, took};
-<a href=#467 id=467 data-nosnippet>467</a>    <span class="kw">let </span>colour = |ui: <span class="kw-2">&amp;</span>egui::Ui, grade: Grade| graded(ui.ctx(), grade);
-<a href=#468 id=468 data-nosnippet>468</a>    egui::Grid::new((<span class="string">"perf"</span>, id))
-<a href=#469 id=469 data-nosnippet>469</a>        .num_columns(<span class="number">4</span>)
-<a href=#470 id=470 data-nosnippet>470</a>        .spacing([<span class="number">10.0</span>, <span class="number">2.0</span>])
-<a href=#471 id=471 data-nosnippet>471</a>        .show(ui, |ui| {
-<a href=#472 id=472 data-nosnippet>472</a>            ui.weak(<span class="string">"Stage"</span>);
-<a href=#473 id=473 data-nosnippet>473</a>            ui.weak(<span class="string">"median"</span>);
-<a href=#474 id=474 data-nosnippet>474</a>            ui.weak(<span class="string">"95%"</span>);
-<a href=#475 id=475 data-nosnippet>475</a>            ui.weak(<span class="string">"of"</span>);
-<a href=#476 id=476 data-nosnippet>476</a>            ui.end_row();
-<a href=#477 id=477 data-nosnippet>477</a>            <span class="kw">for </span>(stage, samples) <span class="kw">in </span>perf.stages(lichs_text) {
-<a href=#478 id=478 data-nosnippet>478</a>                ui.label(stage.name).on_hover_text(stage.help);
-<a href=#479 id=479 data-nosnippet>479</a>                <span class="kw">if let </span><span class="prelude-val">Some</span>((median, slow)) = samples.spread() {
-<a href=#480 id=480 data-nosnippet>480</a>                    <span class="kw">for </span>time <span class="kw">in </span>[median, slow] {
-<a href=#481 id=481 data-nosnippet>481</a>                        <span class="kw">let </span>text = egui::RichText::new(took(time))
-<a href=#482 id=482 data-nosnippet>482</a>                            .monospace()
-<a href=#483 id=483 data-nosnippet>483</a>                            .color(colour(ui, stage.grade(time)));
-<a href=#484 id=484 data-nosnippet>484</a>                        ui.label(text);
-<a href=#485 id=485 data-nosnippet>485</a>                    }
-<a href=#486 id=486 data-nosnippet>486</a>                } <span class="kw">else </span>{
-<a href=#487 id=487 data-nosnippet>487</a>                    ui.weak(<span class="string">"—"</span>);
+<a href=#29 id=29 data-nosnippet>29</a><span class="kw">use </span><span class="kw">crate</span>::layout::CustomGeometry;
+<a href=#30 id=30 data-nosnippet>30</a><span class="kw">use </span><span class="kw">crate</span>::seat::Seat;
+<a href=#31 id=31 data-nosnippet>31</a><span class="kw">use </span><span class="kw">crate</span>::theme::{<span class="self">self</span>, T};
+<a href=#32 id=32 data-nosnippet>32</a>
+<a href=#33 id=33 data-nosnippet>33</a><span class="doccomment">/// Which of the hub's tabs is showing.
+<a href=#34 id=34 data-nosnippet>34</a></span><span class="attr">#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+<a href=#35 id=35 data-nosnippet>35</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum </span>Tab {
+<a href=#36 id=36 data-nosnippet>36</a>    <span class="doccomment">/// Characters whose connection is open, or being retried.
+<a href=#37 id=37 data-nosnippet>37</a>    </span><span class="attr">#[default]
+<a href=#38 id=38 data-nosnippet>38</a>    </span>Live,
+<a href=#39 id=39 data-nosnippet>39</a>    <span class="doccomment">/// Every other character: those that ended this run, then the roster's
+<a href=#40 id=40 data-nosnippet>40</a>    /// not on the table.
+<a href=#41 id=41 data-nosnippet>41</a>    </span>Offline,
+<a href=#42 id=42 data-nosnippet>42</a>    <span class="doccomment">/// The teams kept, and their editor.
+<a href=#43 id=43 data-nosnippet>43</a>    </span>Teams,
+<a href=#44 id=44 data-nosnippet>44</a>    <span class="doccomment">/// A login by account, and the kept passwords.
+<a href=#45 id=45 data-nosnippet>45</a>    </span>NewLogin,
+<a href=#46 id=46 data-nosnippet>46</a>}
+<a href=#47 id=47 data-nosnippet>47</a>
+<a href=#48 id=48 data-nosnippet>48</a><span class="doccomment">/// What the player asked the hub for.
+<a href=#49 id=49 data-nosnippet>49</a></span><span class="attr">#[derive(Clone, Debug, PartialEq, Eq)]
+<a href=#50 id=50 data-nosnippet>50</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum </span>HubAction {
+<a href=#51 id=51 data-nosnippet>51</a>    <span class="doccomment">/// Something for the binary, the owner of the session table.
+<a href=#52 id=52 data-nosnippet>52</a>    </span>Ask(HubRequest),
+<a href=#53 id=53 data-nosnippet>53</a>    <span class="doccomment">/// Bring this session's play window up: open it, or to the front.
+<a href=#54 id=54 data-nosnippet>54</a>    </span>Show(u32),
+<a href=#55 id=55 data-nosnippet>55</a>    <span class="doccomment">/// Open this session's character's log window.
+<a href=#56 id=56 data-nosnippet>56</a>    </span>Log(u32),
+<a href=#57 id=57 data-nosnippet>57</a>    <span class="doccomment">/// What the Menu was asked for, save its *Performance* switch, which
+<a href=#58 id=58 data-nosnippet>58</a>    /// the hub keeps.
+<a href=#59 id=59 data-nosnippet>59</a>    </span>Menu(<span class="kw">crate</span>::main_menu::Choice),
+<a href=#60 id=60 data-nosnippet>60</a>    <span class="doccomment">/// Fetch the newer release out.
+<a href=#61 id=61 data-nosnippet>61</a>    </span>Update,
+<a href=#62 id=62 data-nosnippet>62</a>}
+<a href=#63 id=63 data-nosnippet>63</a>
+<a href=#64 id=64 data-nosnippet>64</a><span class="doccomment">/// What the hub shows this frame.
+<a href=#65 id=65 data-nosnippet>65</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>HubView&lt;<span class="lifetime">'a</span>&gt; {
+<a href=#66 id=66 data-nosnippet>66</a>    <span class="doccomment">/// Every character seated, in the order it was started.
+<a href=#67 id=67 data-nosnippet>67</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) seats: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>[std::sync::Arc&lt;Seat&gt;],
+<a href=#68 id=68 data-nosnippet>68</a>    <span class="doccomment">/// Characters the binary can start: on the roster, with a kept password,
+<a href=#69 id=69 data-nosnippet>69</a>    /// not running.
+<a href=#70 id=70 data-nosnippet>70</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) offered: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>[String],
+<a href=#71 id=71 data-nosnippet>71</a>    <span class="doccomment">/// Every character on the roster.
+<a href=#72 id=72 data-nosnippet>72</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) roster: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>[RosterCard],
+<a href=#73 id=73 data-nosnippet>73</a>    <span class="doccomment">/// Every team kept.
+<a href=#74 id=74 data-nosnippet>74</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) teams: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>[TeamCard],
+<a href=#75 id=75 data-nosnippet>75</a>    <span class="doccomment">/// The last account whose characters the login service listed.
+<a href=#76 id=76 data-nosnippet>76</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) listing: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>Listing&gt;,
+<a href=#77 id=77 data-nosnippet>77</a>    <span class="doccomment">/// What the binary answered the last request, while it is shown.
+<a href=#78 id=78 data-nosnippet>78</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) said: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>str&gt;,
+<a href=#79 id=79 data-nosnippet>79</a>    <span class="doccomment">/// A newer release, once one is out, and how far it has come.
+<a href=#80 id=80 data-nosnippet>80</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) update: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>Update&gt;,
+<a href=#81 id=81 data-nosnippet>81</a>    <span class="doccomment">/// The design every character's card is drawn from (`crate::card`).
+<a href=#82 id=82 data-nosnippet>82</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) card: <span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="kw">crate</span>::layout::Custom,
+<a href=#83 id=83 data-nosnippet>83</a>    <span class="doccomment">/// The shared streams merged across every character, for the Chat
+<a href=#84 id=84 data-nosnippet>84</a>    /// card (`crate::chat`).
+<a href=#85 id=85 data-nosnippet>85</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) merged: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>hydra_ui::MergedHistory,
+<a href=#86 id=86 data-nosnippet>86</a>}
+<a href=#87 id=87 data-nosnippet>87</a>
+<a href=#88 id=88 data-nosnippet>88</a><span class="doccomment">/// The hub's own state, which outlives a frame.
+<a href=#89 id=89 data-nosnippet>89</a></span><span class="attr">#[derive(Debug, Default)]
+<a href=#90 id=90 data-nosnippet>90</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>Hub {
+<a href=#91 id=91 data-nosnippet>91</a>    <span class="doccomment">/// The tab showing.
+<a href=#92 id=92 data-nosnippet>92</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) tab: Tab,
+<a href=#93 id=93 data-nosnippet>93</a>    <span class="doccomment">/// The Chat card, above or below the Live tab's cards.
+<a href=#94 id=94 data-nosnippet>94</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) chat: <span class="kw">crate</span>::chat::Chat,
+<a href=#95 id=95 data-nosnippet>95</a>    <span class="doccomment">/// Asking whether to shut Hydra down.
+<a href=#96 id=96 data-nosnippet>96</a>    </span>confirming: bool,
+<a href=#97 id=97 data-nosnippet>97</a>    <span class="doccomment">/// What the roster cards and the New login tab are typing, and the
+<a href=#98 id=98 data-nosnippet>98</a>    /// account logged in.
+<a href=#99 id=99 data-nosnippet>99</a>    </span>launch: <span class="kw">crate</span>::launch::Launch,
+<a href=#100 id=100 data-nosnippet>100</a>    <span class="doccomment">/// The team the Teams tab is making or changing.
+<a href=#101 id=101 data-nosnippet>101</a>    </span>teams: <span class="kw">crate</span>::teams::Teams,
+<a href=#102 id=102 data-nosnippet>102</a>    <span class="doccomment">/// What the window itself last had to say: a setting not kept.
+<a href=#103 id=103 data-nosnippet>103</a>    </span>told: <span class="prelude-ty">Option</span>&lt;String&gt;,
+<a href=#104 id=104 data-nosnippet>104</a>    <span class="doccomment">/// Each live card shows how quick its window is.
+<a href=#105 id=105 data-nosnippet>105</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) perf: bool,
+<a href=#106 id=106 data-nosnippet>106</a>    <span class="doccomment">/// Asking whether to restart Hydra now, characters playing: whether
+<a href=#107 id=107 data-nosnippet>107</a>    /// to start them again afterwards, as the box says.
+<a href=#108 id=108 data-nosnippet>108</a>    </span>restarting: <span class="prelude-ty">Option</span>&lt;bool&gt;,
+<a href=#109 id=109 data-nosnippet>109</a>}
+<a href=#110 id=110 data-nosnippet>110</a>
+<a href=#111 id=111 data-nosnippet>111</a><span class="doccomment">/// A card's width inside its frame: the card design's
+<a href=#112 id=112 data-nosnippet>112</a>/// (`crate::card`), which a roster character's card takes too.
+<a href=#113 id=113 data-nosnippet>113</a></span><span class="attr">#[derive(Clone, Copy, Debug, PartialEq)]
+<a href=#114 id=114 data-nosnippet>114</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>CardWidth(<span class="kw">pub</span>(<span class="kw">crate</span>) f32);
+<a href=#115 id=115 data-nosnippet>115</a>
+<a href=#116 id=116 data-nosnippet>116</a><span class="kw">impl </span>Hub {
+<a href=#117 id=117 data-nosnippet>117</a>    <span class="doccomment">/// Say `why` under the header until it is said again: a setting the
+<a href=#118 id=118 data-nosnippet>118</a>    /// window could not keep.
+<a href=#119 id=119 data-nosnippet>119</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>tell(<span class="kw-2">&amp;mut </span><span class="self">self</span>, why: String) {
+<a href=#120 id=120 data-nosnippet>120</a>        <span class="self">self</span>.told = <span class="prelude-val">Some</span>(why);
+<a href=#121 id=121 data-nosnippet>121</a>    }
+<a href=#122 id=122 data-nosnippet>122</a>}
+<a href=#123 id=123 data-nosnippet>123</a>
+<a href=#124 id=124 data-nosnippet>124</a><span class="doccomment">/// What the shut-down question says.
+<a href=#125 id=125 data-nosnippet>125</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>SHUT_DOWN_QUESTION: <span class="kw-2">&amp;</span>str = <span class="string">"Shut Hydra down? Every character will quit."</span>;
+<a href=#126 id=126 data-nosnippet>126</a>
+<a href=#127 id=127 data-nosnippet>127</a><span class="kw">impl </span>Hub {
+<a href=#128 id=128 data-nosnippet>128</a>    <span class="doccomment">/// The hub's Menu: Performance switched here; anything else chosen,
+<a href=#129 id=129 data-nosnippet>129</a>    /// asked.
+<a href=#130 id=130 data-nosnippet>130</a>    </span><span class="kw">fn </span>menu(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ui: <span class="kw-2">&amp;mut </span>egui::Ui) -&gt; <span class="prelude-ty">Option</span>&lt;HubAction&gt; {
+<a href=#131 id=131 data-nosnippet>131</a>        <span class="kw">let </span>place = <span class="kw">crate</span>::main_menu::Place::Hub { perf: <span class="self">self</span>.perf };
+<a href=#132 id=132 data-nosnippet>132</a>        <span class="kw">match </span><span class="kw">crate</span>::main_menu::show(ui, place)<span class="question-mark">? </span>{
+<a href=#133 id=133 data-nosnippet>133</a>            <span class="kw">crate</span>::main_menu::Choice::Performance(on) =&gt; {
+<a href=#134 id=134 data-nosnippet>134</a>                <span class="self">self</span>.perf = on;
+<a href=#135 id=135 data-nosnippet>135</a>                <span class="prelude-val">None
+<a href=#136 id=136 data-nosnippet>136</a>            </span>}
+<a href=#137 id=137 data-nosnippet>137</a>            choice =&gt; <span class="prelude-val">Some</span>(HubAction::Menu(choice)),
+<a href=#138 id=138 data-nosnippet>138</a>        }
+<a href=#139 id=139 data-nosnippet>139</a>    }
+<a href=#140 id=140 data-nosnippet>140</a>
+<a href=#141 id=141 data-nosnippet>141</a>    <span class="doccomment">/// Draw the hub over `view`, and return what the player asked for, if
+<a href=#142 id=142 data-nosnippet>142</a>    /// anything.
+<a href=#143 id=143 data-nosnippet>143</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>show(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ui: <span class="kw-2">&amp;mut </span>egui::Ui, view: <span class="kw-2">&amp;</span>HubView&lt;<span class="lifetime">'_</span>&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;HubAction&gt; {
+<a href=#144 id=144 data-nosnippet>144</a>        <span class="kw">let </span><span class="kw-2">mut </span>asked = <span class="prelude-val">None</span>;
+<a href=#145 id=145 data-nosnippet>145</a>        <span class="kw">let </span>(closed, live): (Vec&lt;<span class="kw-2">&amp;</span>Seat&gt;, Vec&lt;<span class="kw-2">&amp;</span>Seat&gt;) = view
+<a href=#146 id=146 data-nosnippet>146</a>            .seats
+<a href=#147 id=147 data-nosnippet>147</a>            .iter()
+<a href=#148 id=148 data-nosnippet>148</a>            .map(AsRef::as_ref)
+<a href=#149 id=149 data-nosnippet>149</a>            .partition(|seat| seat.lifecycle() == State::Closed);
+<a href=#150 id=150 data-nosnippet>150</a>        <span class="kw">let </span>playing = !live.is_empty();
+<a href=#151 id=151 data-nosnippet>151</a>        <span class="kw">let </span>offline = closed.len() + <span class="kw">crate</span>::launch::waiting(view).len();
+<a href=#152 id=152 data-nosnippet>152</a>        ui.horizontal(|ui| {
+<a href=#153 id=153 data-nosnippet>153</a>            ui.selectable_value(<span class="kw-2">&amp;mut </span><span class="self">self</span>.tab, Tab::Live, <span class="macro">format!</span>(<span class="string">"Live ({})"</span>, live.len()));
+<a href=#154 id=154 data-nosnippet>154</a>            ui.selectable_value(<span class="kw-2">&amp;mut </span><span class="self">self</span>.tab, Tab::Offline, <span class="macro">format!</span>(<span class="string">"Offline ({offline})"</span>));
+<a href=#155 id=155 data-nosnippet>155</a>            ui.selectable_value(
+<a href=#156 id=156 data-nosnippet>156</a>                <span class="kw-2">&amp;mut </span><span class="self">self</span>.tab,
+<a href=#157 id=157 data-nosnippet>157</a>                Tab::Teams,
+<a href=#158 id=158 data-nosnippet>158</a>                <span class="macro">format!</span>(<span class="string">"Teams ({})"</span>, view.teams.len()),
+<a href=#159 id=159 data-nosnippet>159</a>            );
+<a href=#160 id=160 data-nosnippet>160</a>            ui.selectable_value(<span class="kw-2">&amp;mut </span><span class="self">self</span>.tab, Tab::NewLogin, <span class="string">"New login"</span>);
+<a href=#161 id=161 data-nosnippet>161</a>            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+<a href=#162 id=162 data-nosnippet>162</a>                <span class="comment">// With nothing playing there is nothing to lose, so it does
+<a href=#163 id=163 data-nosnippet>163</a>                // not ask. Closing the window never asks: it only hides it,
+<a href=#164 id=164 data-nosnippet>164</a>                // or lets Hydra rest.
+<a href=#165 id=165 data-nosnippet>165</a>                </span><span class="kw">if </span>ui.button(<span class="string">"Shut down"</span>).clicked() {
+<a href=#166 id=166 data-nosnippet>166</a>                    <span class="kw">if </span>playing {
+<a href=#167 id=167 data-nosnippet>167</a>                        <span class="self">self</span>.confirming = <span class="bool-val">true</span>;
+<a href=#168 id=168 data-nosnippet>168</a>                    } <span class="kw">else </span>{
+<a href=#169 id=169 data-nosnippet>169</a>                        asked = <span class="prelude-val">Some</span>(HubAction::Ask(HubRequest::Shutdown));
+<a href=#170 id=170 data-nosnippet>170</a>                    }
+<a href=#171 id=171 data-nosnippet>171</a>                }
+<a href=#172 id=172 data-nosnippet>172</a>                asked = asked.take().or(<span class="self">self</span>.menu(ui));
+<a href=#173 id=173 data-nosnippet>173</a>            });
+<a href=#174 id=174 data-nosnippet>174</a>        });
+<a href=#175 id=175 data-nosnippet>175</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(update) = view.update
+<a href=#176 id=176 data-nosnippet>176</a>            &amp;&amp; <span class="kw">let </span><span class="prelude-val">Some</span>(action) = update_line(ui, update, <span class="kw-2">&amp;</span>live, <span class="kw-2">&amp;mut </span><span class="self">self</span>.restarting)
+<a href=#177 id=177 data-nosnippet>177</a>        {
+<a href=#178 id=178 data-nosnippet>178</a>            asked = <span class="prelude-val">Some</span>(action);
+<a href=#179 id=179 data-nosnippet>179</a>        }
+<a href=#180 id=180 data-nosnippet>180</a>        <span class="kw">if </span><span class="self">self</span>.confirming {
+<a href=#181 id=181 data-nosnippet>181</a>            ui.horizontal(|ui| {
+<a href=#182 id=182 data-nosnippet>182</a>                ui.label(SHUT_DOWN_QUESTION);
+<a href=#183 id=183 data-nosnippet>183</a>                <span class="kw">if </span>ui.button(<span class="string">"Shut down every character"</span>).clicked() {
+<a href=#184 id=184 data-nosnippet>184</a>                    <span class="self">self</span>.confirming = <span class="bool-val">false</span>;
+<a href=#185 id=185 data-nosnippet>185</a>                    asked = <span class="prelude-val">Some</span>(HubAction::Ask(HubRequest::Shutdown));
+<a href=#186 id=186 data-nosnippet>186</a>                }
+<a href=#187 id=187 data-nosnippet>187</a>                <span class="kw">if </span>ui.button(<span class="string">"Keep playing"</span>).clicked() {
+<a href=#188 id=188 data-nosnippet>188</a>                    <span class="self">self</span>.confirming = <span class="bool-val">false</span>;
+<a href=#189 id=189 data-nosnippet>189</a>                }
+<a href=#190 id=190 data-nosnippet>190</a>            });
+<a href=#191 id=191 data-nosnippet>191</a>        }
+<a href=#192 id=192 data-nosnippet>192</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(said) = view.said {
+<a href=#193 id=193 data-nosnippet>193</a>            ui.weak(said);
+<a href=#194 id=194 data-nosnippet>194</a>        }
+<a href=#195 id=195 data-nosnippet>195</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(told) = <span class="kw-2">&amp;</span><span class="self">self</span>.told {
+<a href=#196 id=196 data-nosnippet>196</a>            ui.colored_label(theme::color(ui.ctx(), T::Wrong), told);
+<a href=#197 id=197 data-nosnippet>197</a>        }
+<a href=#198 id=198 data-nosnippet>198</a>        ui.separator();
+<a href=#199 id=199 data-nosnippet>199</a>        <span class="comment">// Below the header, an id of its own: a line appearing above -- the
+<a href=#200 id=200 data-nosnippet>200</a>        // answer, the shut-down question -- would otherwise renumber every
+<a href=#201 id=201 data-nosnippet>201</a>        // widget under it, which a debug build draws as red boxes.
+<a href=#202 id=202 data-nosnippet>202</a>        </span><span class="kw">let </span>body = egui::UiBuilder::new().id(ui.id().with(<span class="string">"hub-body"</span>));
+<a href=#203 id=203 data-nosnippet>203</a>        ui.scope_builder(body, |ui| {
+<a href=#204 id=204 data-nosnippet>204</a>            <span class="kw">let </span>perf = <span class="self">self</span>.perf;
+<a href=#205 id=205 data-nosnippet>205</a>            <span class="kw">match </span><span class="self">self</span>.tab {
+<a href=#206 id=206 data-nosnippet>206</a>                Tab::Live =&gt; {
+<a href=#207 id=207 data-nosnippet>207</a>                    <span class="self">self</span>.chat.show(ui, view, view.merged, <span class="kw-2">&amp;mut </span>asked);
+<a href=#208 id=208 data-nosnippet>208</a>                    list(
+<a href=#209 id=209 data-nosnippet>209</a>                        ui,
+<a href=#210 id=210 data-nosnippet>210</a>                        (<span class="kw-2">&amp;</span>live, view.card),
+<a href=#211 id=211 data-nosnippet>211</a>                        (<span class="string">"No character is running."</span>, perf),
+<a href=#212 id=212 data-nosnippet>212</a>                        <span class="kw-2">&amp;mut </span>asked,
+<a href=#213 id=213 data-nosnippet>213</a>                    );
+<a href=#214 id=214 data-nosnippet>214</a>                }
+<a href=#215 id=215 data-nosnippet>215</a>                Tab::Offline =&gt; {
+<a href=#216 id=216 data-nosnippet>216</a>                    <span class="kw">let </span>launch = <span class="kw-2">&amp;mut </span><span class="self">self</span>.launch;
+<a href=#217 id=217 data-nosnippet>217</a>                    egui::ScrollArea::vertical()
+<a href=#218 id=218 data-nosnippet>218</a>                        .id_salt(<span class="string">"hub-offline"</span>)
+<a href=#219 id=219 data-nosnippet>219</a>                        .auto_shrink(<span class="bool-val">false</span>)
+<a href=#220 id=220 data-nosnippet>220</a>                        .show(ui, |ui| {
+<a href=#221 id=221 data-nosnippet>221</a>                            <span class="kw">if </span>offline == <span class="number">0 </span>{
+<a href=#222 id=222 data-nosnippet>222</a>                                ui.label(<span class="string">"Every character is playing. New login adds another."</span>);
+<a href=#223 id=223 data-nosnippet>223</a>                            }
+<a href=#224 id=224 data-nosnippet>224</a>                            cards(ui, (<span class="kw-2">&amp;</span>closed, view.card), <span class="bool-val">false</span>, <span class="kw-2">&amp;mut </span>asked);
+<a href=#225 id=225 data-nosnippet>225</a>                            <span class="kw">if </span>!closed.is_empty() {
+<a href=#226 id=226 data-nosnippet>226</a>                                ui.add_space(ui.spacing().item_spacing.y);
+<a href=#227 id=227 data-nosnippet>227</a>                            }
+<a href=#228 id=228 data-nosnippet>228</a>                            <span class="kw">let </span>width = CardWidth(view.card.inside().x);
+<a href=#229 id=229 data-nosnippet>229</a>                            launch.cards(ui, view, width, <span class="kw-2">&amp;mut </span>asked);
+<a href=#230 id=230 data-nosnippet>230</a>                        });
+<a href=#231 id=231 data-nosnippet>231</a>                }
+<a href=#232 id=232 data-nosnippet>232</a>                Tab::Teams =&gt; <span class="self">self</span>.teams.show(ui, view, <span class="kw-2">&amp;mut </span>asked),
+<a href=#233 id=233 data-nosnippet>233</a>                Tab::NewLogin =&gt; <span class="self">self</span>.launch.show_login(ui, view, <span class="kw-2">&amp;mut </span>asked),
+<a href=#234 id=234 data-nosnippet>234</a>            }
+<a href=#235 id=235 data-nosnippet>235</a>        });
+<a href=#236 id=236 data-nosnippet>236</a>        asked
+<a href=#237 id=237 data-nosnippet>237</a>    }
+<a href=#238 id=238 data-nosnippet>238</a>}
+<a href=#239 id=239 data-nosnippet>239</a>
+<a href=#240 id=240 data-nosnippet>240</a><span class="doccomment">/// A newer release, and how far it has come: *What's new* opens its page,
+<a href=#241 id=241 data-nosnippet>241</a>/// *Update* asks for it, and *Try again* after a fetch failed. Fetched,
+<a href=#242 id=242 data-nosnippet>242</a>/// *Restart now* restarts Hydra into it: at once with nothing playing; with
+<a href=#243 id=243 data-nosnippet>243</a>/// `live` characters playing, once the player says so (`restarting`), with
+<a href=#244 id=244 data-nosnippet>244</a>/// them started again afterwards unless the box is unticked.
+<a href=#245 id=245 data-nosnippet>245</a></span><span class="kw">fn </span>update_line(
+<a href=#246 id=246 data-nosnippet>246</a>    ui: <span class="kw-2">&amp;mut </span>egui::Ui,
+<a href=#247 id=247 data-nosnippet>247</a>    update: <span class="kw-2">&amp;</span>Update,
+<a href=#248 id=248 data-nosnippet>248</a>    live: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>Seat],
+<a href=#249 id=249 data-nosnippet>249</a>    restarting: <span class="kw-2">&amp;mut </span><span class="prelude-ty">Option</span>&lt;bool&gt;,
+<a href=#250 id=250 data-nosnippet>250</a>) -&gt; <span class="prelude-ty">Option</span>&lt;HubAction&gt; {
+<a href=#251 id=251 data-nosnippet>251</a>    <span class="kw">let </span>version = <span class="kw-2">&amp;</span>update.version;
+<a href=#252 id=252 data-nosnippet>252</a>    <span class="kw">let </span><span class="kw-2">mut </span>asked = <span class="prelude-val">None</span>;
+<a href=#253 id=253 data-nosnippet>253</a>    <span class="kw">let </span>restart = |again| <span class="prelude-val">Some</span>(HubAction::Ask(HubRequest::Restart { again }));
+<a href=#254 id=254 data-nosnippet>254</a>    ui.horizontal(|ui| <span class="kw">match </span><span class="kw-2">&amp;</span>update.fetch {
+<a href=#255 id=255 data-nosnippet>255</a>        Fetch::Out =&gt; {
+<a href=#256 id=256 data-nosnippet>256</a>            ui.label(<span class="macro">format!</span>(<span class="string">"Hydra {version} is out."</span>));
+<a href=#257 id=257 data-nosnippet>257</a>            ui.hyperlink_to(<span class="string">"What's new"</span>, <span class="kw-2">&amp;</span>update.page);
+<a href=#258 id=258 data-nosnippet>258</a>            <span class="kw">if </span>ui.button(<span class="string">"Update"</span>).clicked() {
+<a href=#259 id=259 data-nosnippet>259</a>                asked = <span class="prelude-val">Some</span>(HubAction::Update);
+<a href=#260 id=260 data-nosnippet>260</a>            }
+<a href=#261 id=261 data-nosnippet>261</a>        }
+<a href=#262 id=262 data-nosnippet>262</a>        Fetch::Fetching(got, total) =&gt; {
+<a href=#263 id=263 data-nosnippet>263</a>            ui.label(<span class="macro">format!</span>(<span class="string">"Fetching Hydra {version}"</span>));
+<a href=#264 id=264 data-nosnippet>264</a>            <span class="comment">// In thousandths, which a u16 holds and an f32 takes whole.
+<a href=#265 id=265 data-nosnippet>265</a>            </span><span class="kw">let </span>done = u16::try_from(got.saturating_mul(<span class="number">1000</span>) / (<span class="kw-2">*</span>total).max(<span class="number">1</span>))
+<a href=#266 id=266 data-nosnippet>266</a>                .unwrap_or(<span class="number">1000</span>)
+<a href=#267 id=267 data-nosnippet>267</a>                .min(<span class="number">1000</span>);
+<a href=#268 id=268 data-nosnippet>268</a>            ui.add(
+<a href=#269 id=269 data-nosnippet>269</a>                egui::ProgressBar::new(f32::from(done) / <span class="number">1000.0</span>)
+<a href=#270 id=270 data-nosnippet>270</a>                    .desired_width(<span class="number">160.0</span>)
+<a href=#271 id=271 data-nosnippet>271</a>                    .show_percentage(),
+<a href=#272 id=272 data-nosnippet>272</a>            );
+<a href=#273 id=273 data-nosnippet>273</a>        }
+<a href=#274 id=274 data-nosnippet>274</a>        Fetch::Ready =&gt; {
+<a href=#275 id=275 data-nosnippet>275</a>            ui.label(<span class="macro">format!</span>(<span class="string">"Hydra {version} runs from Hydra's next start."</span>));
+<a href=#276 id=276 data-nosnippet>276</a>            ui.hyperlink_to(<span class="string">"What's new"</span>, <span class="kw-2">&amp;</span>update.page);
+<a href=#277 id=277 data-nosnippet>277</a>            <span class="kw">if </span>restarting.is_none() &amp;&amp; ui.button(<span class="string">"Restart now"</span>).clicked() {
+<a href=#278 id=278 data-nosnippet>278</a>                <span class="kw">if </span>live.is_empty() {
+<a href=#279 id=279 data-nosnippet>279</a>                    asked = restart(<span class="bool-val">false</span>);
+<a href=#280 id=280 data-nosnippet>280</a>                } <span class="kw">else </span>{
+<a href=#281 id=281 data-nosnippet>281</a>                    <span class="kw-2">*</span>restarting = <span class="prelude-val">Some</span>(<span class="bool-val">true</span>);
+<a href=#282 id=282 data-nosnippet>282</a>                }
+<a href=#283 id=283 data-nosnippet>283</a>            }
+<a href=#284 id=284 data-nosnippet>284</a>        }
+<a href=#285 id=285 data-nosnippet>285</a>        Fetch::Failed(why) =&gt; {
+<a href=#286 id=286 data-nosnippet>286</a>            ui.colored_label(
+<a href=#287 id=287 data-nosnippet>287</a>                theme::color(ui.ctx(), T::Wrong),
+<a href=#288 id=288 data-nosnippet>288</a>                <span class="macro">format!</span>(<span class="string">"Hydra {version} could not be fetched: {why}"</span>),
+<a href=#289 id=289 data-nosnippet>289</a>            );
+<a href=#290 id=290 data-nosnippet>290</a>            <span class="kw">if </span>ui.button(<span class="string">"Try again"</span>).clicked() {
+<a href=#291 id=291 data-nosnippet>291</a>                asked = <span class="prelude-val">Some</span>(HubAction::Update);
+<a href=#292 id=292 data-nosnippet>292</a>            }
+<a href=#293 id=293 data-nosnippet>293</a>        }
+<a href=#294 id=294 data-nosnippet>294</a>    });
+<a href=#295 id=295 data-nosnippet>295</a>    <span class="kw">if </span>update.fetch == Fetch::Ready
+<a href=#296 id=296 data-nosnippet>296</a>        &amp;&amp; <span class="kw">let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>again) = <span class="kw-2">*</span>restarting
+<a href=#297 id=297 data-nosnippet>297</a>    {
+<a href=#298 id=298 data-nosnippet>298</a>        <span class="kw">let </span>names: Vec&lt;<span class="kw-2">&amp;</span>str&gt; = live.iter().map(|seat| seat.name.as_str()).collect();
+<a href=#299 id=299 data-nosnippet>299</a>        <span class="kw">let </span>(who, them) = <span class="kw">match </span>names.as_slice() {
+<a href=#300 id=300 data-nosnippet>300</a>            [] =&gt; (String::new(), <span class="string">"them"</span>),
+<a href=#301 id=301 data-nosnippet>301</a>            [one] =&gt; ((<span class="kw-2">*</span>one).to_owned(), <span class="string">"it"</span>),
+<a href=#302 id=302 data-nosnippet>302</a>            [rest @ .., last] =&gt; (<span class="macro">format!</span>(<span class="string">"{} and {last}"</span>, rest.join(<span class="string">", "</span>)), <span class="string">"them"</span>),
+<a href=#303 id=303 data-nosnippet>303</a>        };
+<a href=#304 id=304 data-nosnippet>304</a>        ui.horizontal(|ui| {
+<a href=#305 id=305 data-nosnippet>305</a>            ui.label(<span class="macro">format!</span>(<span class="string">"Restart Hydra now? {who} will be disconnected."</span>));
+<a href=#306 id=306 data-nosnippet>306</a>            ui.checkbox(<span class="kw-2">&amp;mut </span>again, <span class="macro">format!</span>(<span class="string">"Start {them} again afterwards"</span>));
+<a href=#307 id=307 data-nosnippet>307</a>            <span class="kw-2">*</span>restarting = <span class="prelude-val">Some</span>(again);
+<a href=#308 id=308 data-nosnippet>308</a>            <span class="kw">if </span>ui.button(<span class="string">"Restart"</span>).clicked() {
+<a href=#309 id=309 data-nosnippet>309</a>                asked = restart(again);
+<a href=#310 id=310 data-nosnippet>310</a>                <span class="kw-2">*</span>restarting = <span class="prelude-val">None</span>;
+<a href=#311 id=311 data-nosnippet>311</a>            }
+<a href=#312 id=312 data-nosnippet>312</a>            <span class="kw">if </span>ui.button(<span class="string">"Cancel"</span>).clicked() {
+<a href=#313 id=313 data-nosnippet>313</a>                <span class="kw-2">*</span>restarting = <span class="prelude-val">None</span>;
+<a href=#314 id=314 data-nosnippet>314</a>            }
+<a href=#315 id=315 data-nosnippet>315</a>        });
+<a href=#316 id=316 data-nosnippet>316</a>    }
+<a href=#317 id=317 data-nosnippet>317</a>    asked
+<a href=#318 id=318 data-nosnippet>318</a>}
+<a href=#319 id=319 data-nosnippet>319</a>
+<a href=#320 id=320 data-nosnippet>320</a><span class="doccomment">/// The web page's address, its pairing in it, and the same as a code a
+<a href=#321 id=321 data-nosnippet>321</a>/// phone's camera opens; or why it is not served.
+<a href=#322 id=322 data-nosnippet>322</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>web_page(ui: <span class="kw-2">&amp;mut </span>egui::Ui, at: <span class="kw-2">&amp;</span><span class="kw">crate</span>::WebAt) {
+<a href=#323 id=323 data-nosnippet>323</a>    <span class="kw">match </span>at {
+<a href=#324 id=324 data-nosnippet>324</a>        <span class="kw">crate</span>::WebAt::Failed(why) =&gt; {
+<a href=#325 id=325 data-nosnippet>325</a>            ui.colored_label(theme::color(ui.ctx(), T::Wrong), why);
+<a href=#326 id=326 data-nosnippet>326</a>        }
+<a href=#327 id=327 data-nosnippet>327</a>        <span class="kw">crate</span>::WebAt::Listening(address) =&gt; {
+<a href=#328 id=328 data-nosnippet>328</a>            ui.horizontal(|ui| {
+<a href=#329 id=329 data-nosnippet>329</a>                qr(ui, address);
+<a href=#330 id=330 data-nosnippet>330</a>                ui.vertical(|ui| {
+<a href=#331 id=331 data-nosnippet>331</a>                    ui.label(
+<a href=#332 id=332 data-nosnippet>332</a>                        <span class="string">"Open this on a phone or tablet on the home network, or scan the code:"</span>,
+<a href=#333 id=333 data-nosnippet>333</a>                    );
+<a href=#334 id=334 data-nosnippet>334</a>                    ui.add(
+<a href=#335 id=335 data-nosnippet>335</a>                        egui::Label::new(egui::RichText::new(address).monospace()).selectable(<span class="bool-val">true</span>),
+<a href=#336 id=336 data-nosnippet>336</a>                    );
+<a href=#337 id=337 data-nosnippet>337</a>                    <span class="kw">if </span>ui.button(<span class="string">"Copy"</span>).clicked() {
+<a href=#338 id=338 data-nosnippet>338</a>                        ui.ctx().copy_text(address.clone());
+<a href=#339 id=339 data-nosnippet>339</a>                    }
+<a href=#340 id=340 data-nosnippet>340</a>                    <span class="kw">crate</span>::form::hint(
+<a href=#341 id=341 data-nosnippet>341</a>                        ui,
+<a href=#342 id=342 data-nosnippet>342</a>                        <span class="string">"The address holds the pairing: give it only to your own devices."</span>,
+<a href=#343 id=343 data-nosnippet>343</a>                    );
+<a href=#344 id=344 data-nosnippet>344</a>                });
+<a href=#345 id=345 data-nosnippet>345</a>            });
+<a href=#346 id=346 data-nosnippet>346</a>        }
+<a href=#347 id=347 data-nosnippet>347</a>    }
+<a href=#348 id=348 data-nosnippet>348</a>}
+<a href=#349 id=349 data-nosnippet>349</a>
+<a href=#350 id=350 data-nosnippet>350</a><span class="doccomment">/// `text` as a QR code, dark on light whatever the theme, so a camera
+<a href=#351 id=351 data-nosnippet>351</a>/// reads it.
+<a href=#352 id=352 data-nosnippet>352</a></span><span class="kw">fn </span>qr(ui: <span class="kw-2">&amp;mut </span>egui::Ui, text: <span class="kw-2">&amp;</span>str) {
+<a href=#353 id=353 data-nosnippet>353</a>    <span class="kw">let </span><span class="prelude-val">Ok</span>(code) = qrcode::QrCode::new(text.as_bytes()) <span class="kw">else </span>{
+<a href=#354 id=354 data-nosnippet>354</a>        <span class="kw">return</span>;
+<a href=#355 id=355 data-nosnippet>355</a>    };
+<a href=#356 id=356 data-nosnippet>356</a>    <span class="kw">let </span>width = code.width();
+<a href=#357 id=357 data-nosnippet>357</a>    <span class="kw">let </span>colors = code.to_colors();
+<a href=#358 id=358 data-nosnippet>358</a>    <span class="comment">// A quiet zone of four modules round it, as readers want.
+<a href=#359 id=359 data-nosnippet>359</a>    </span><span class="kw">let </span>modules = width + <span class="number">8</span>;
+<a href=#360 id=360 data-nosnippet>360</a>    <span class="kw">let </span>module = <span class="number">3.0</span>;
+<a href=#361 id=361 data-nosnippet>361</a>    <span class="attr">#[expect(
+<a href=#362 id=362 data-nosnippet>362</a>        clippy::cast_precision_loss,
+<a href=#363 id=363 data-nosnippet>363</a>        reason = <span class="string">"a code is under 200 modules wide"
+<a href=#364 id=364 data-nosnippet>364</a>    </span>)]
+<a href=#365 id=365 data-nosnippet>365</a>    </span><span class="kw">let </span>side = modules <span class="kw">as </span>f32 * module;
+<a href=#366 id=366 data-nosnippet>366</a>    <span class="kw">let </span>(area, response) = ui.allocate_exact_size(egui::vec2(side, side), egui::Sense::hover());
+<a href=#367 id=367 data-nosnippet>367</a>    response
+<a href=#368 id=368 data-nosnippet>368</a>        .widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Image, <span class="bool-val">true</span>, <span class="string">"Web page code"</span>));
+<a href=#369 id=369 data-nosnippet>369</a>    <span class="kw">let </span>painter = ui.painter();
+<a href=#370 id=370 data-nosnippet>370</a>    painter.rect_filled(area, <span class="number">0.0</span>, egui::Color32::WHITE);
+<a href=#371 id=371 data-nosnippet>371</a>    <span class="kw">for </span>(at, color) <span class="kw">in </span>colors.iter().enumerate() {
+<a href=#372 id=372 data-nosnippet>372</a>        <span class="kw">if </span><span class="kw-2">*</span>color != qrcode::Color::Dark {
+<a href=#373 id=373 data-nosnippet>373</a>            <span class="kw">continue</span>;
+<a href=#374 id=374 data-nosnippet>374</a>        }
+<a href=#375 id=375 data-nosnippet>375</a>        <span class="attr">#[expect(clippy::cast_precision_loss, reason = <span class="string">"as above"</span>)]
+<a href=#376 id=376 data-nosnippet>376</a>        </span><span class="kw">let </span>(x, y) = (((at % width) + <span class="number">4</span>) <span class="kw">as </span>f32, ((at / width) + <span class="number">4</span>) <span class="kw">as </span>f32);
+<a href=#377 id=377 data-nosnippet>377</a>        painter.rect_filled(
+<a href=#378 id=378 data-nosnippet>378</a>            egui::Rect::from_min_size(
+<a href=#379 id=379 data-nosnippet>379</a>                area.min + egui::vec2(x * module, y * module),
+<a href=#380 id=380 data-nosnippet>380</a>                egui::vec2(module, module),
+<a href=#381 id=381 data-nosnippet>381</a>            ),
+<a href=#382 id=382 data-nosnippet>382</a>            <span class="number">0.0</span>,
+<a href=#383 id=383 data-nosnippet>383</a>            egui::Color32::BLACK,
+<a href=#384 id=384 data-nosnippet>384</a>        );
+<a href=#385 id=385 data-nosnippet>385</a>    }
+<a href=#386 id=386 data-nosnippet>386</a>}
+<a href=#387 id=387 data-nosnippet>387</a>
+<a href=#388 id=388 data-nosnippet>388</a><span class="doccomment">/// The cards of one tab, drawn from `design` and tiled as many to a row as
+<a href=#389 id=389 data-nosnippet>389</a>/// fit, or what an empty one says; each with how quick its window is, when
+<a href=#390 id=390 data-nosnippet>390</a>/// `perf`.
+<a href=#391 id=391 data-nosnippet>391</a></span><span class="kw">fn </span>list(
+<a href=#392 id=392 data-nosnippet>392</a>    ui: <span class="kw-2">&amp;mut </span>egui::Ui,
+<a href=#393 id=393 data-nosnippet>393</a>    seats: (<span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>Seat], <span class="kw-2">&amp;</span><span class="kw">crate</span>::layout::Custom),
+<a href=#394 id=394 data-nosnippet>394</a>    (none, perf): (<span class="kw-2">&amp;</span>str, bool),
+<a href=#395 id=395 data-nosnippet>395</a>    asked: <span class="kw-2">&amp;mut </span><span class="prelude-ty">Option</span>&lt;HubAction&gt;,
+<a href=#396 id=396 data-nosnippet>396</a>) {
+<a href=#397 id=397 data-nosnippet>397</a>    <span class="kw">if </span>seats.<span class="number">0</span>.is_empty() {
+<a href=#398 id=398 data-nosnippet>398</a>        ui.label(none);
+<a href=#399 id=399 data-nosnippet>399</a>        <span class="kw">return</span>;
+<a href=#400 id=400 data-nosnippet>400</a>    }
+<a href=#401 id=401 data-nosnippet>401</a>    egui::ScrollArea::vertical()
+<a href=#402 id=402 data-nosnippet>402</a>        .id_salt(<span class="string">"hub-cards"</span>)
+<a href=#403 id=403 data-nosnippet>403</a>        .auto_shrink(<span class="bool-val">false</span>)
+<a href=#404 id=404 data-nosnippet>404</a>        .show(ui, |ui| cards(ui, seats, perf, asked));
+<a href=#405 id=405 data-nosnippet>405</a>}
+<a href=#406 id=406 data-nosnippet>406</a>
+<a href=#407 id=407 data-nosnippet>407</a><span class="doccomment">/// `seats`' cards drawn from `design`, tiled; each with how quick its window
+<a href=#408 id=408 data-nosnippet>408</a>/// is, when `perf`.
+<a href=#409 id=409 data-nosnippet>409</a></span><span class="kw">fn </span>cards(
+<a href=#410 id=410 data-nosnippet>410</a>    ui: <span class="kw-2">&amp;mut </span>egui::Ui,
+<a href=#411 id=411 data-nosnippet>411</a>    (seats, design): (<span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>Seat], <span class="kw-2">&amp;</span><span class="kw">crate</span>::layout::Custom),
+<a href=#412 id=412 data-nosnippet>412</a>    perf: bool,
+<a href=#413 id=413 data-nosnippet>413</a>    asked: <span class="kw-2">&amp;mut </span><span class="prelude-ty">Option</span>&lt;HubAction&gt;,
+<a href=#414 id=414 data-nosnippet>414</a>) {
+<a href=#415 id=415 data-nosnippet>415</a>    tiled(ui, seats, CardWidth(design.inside().x), |ui, seat| {
+<a href=#416 id=416 data-nosnippet>416</a>        <span class="comment">// Each card keyed by its session, not its place, so a card keeps its
+<a href=#417 id=417 data-nosnippet>417</a>        // widgets' state as others come and go.
+<a href=#418 id=418 data-nosnippet>418</a>        </span><span class="kw">let </span>id = egui::Id::new((<span class="string">"hub-card"</span>, seat.id));
+<a href=#419 id=419 data-nosnippet>419</a>        <span class="kw">let </span>drawn = card_scope(ui, id, |ui| <span class="kw">crate</span>::card::card(ui, seat, design, perf));
+<a href=#420 id=420 data-nosnippet>420</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(action) = drawn.inner {
+<a href=#421 id=421 data-nosnippet>421</a>            <span class="kw-2">*</span>asked = <span class="prelude-val">Some</span>(action);
+<a href=#422 id=422 data-nosnippet>422</a>        }
+<a href=#423 id=423 data-nosnippet>423</a>    });
+<a href=#424 id=424 data-nosnippet>424</a>}
+<a href=#425 id=425 data-nosnippet>425</a>
+<a href=#426 id=426 data-nosnippet>426</a><span class="doccomment">/// Lay `items` out as cards `width` wide, as many to a row as fit, each
+<a href=#427 id=427 data-nosnippet>427</a>/// row's cards aligned at their tops.
+<a href=#428 id=428 data-nosnippet>428</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>tiled&lt;I&gt;(
+<a href=#429 id=429 data-nosnippet>429</a>    ui: <span class="kw-2">&amp;mut </span>egui::Ui,
+<a href=#430 id=430 data-nosnippet>430</a>    items: <span class="kw-2">&amp;</span>[I],
+<a href=#431 id=431 data-nosnippet>431</a>    width: CardWidth,
+<a href=#432 id=432 data-nosnippet>432</a>    <span class="kw-2">mut </span>card: <span class="kw">impl </span>FnMut(<span class="kw-2">&amp;mut </span>egui::Ui, <span class="kw-2">&amp;</span>I),
+<a href=#433 id=433 data-nosnippet>433</a>) {
+<a href=#434 id=434 data-nosnippet>434</a>    <span class="kw">let </span>outer = width.<span class="number">0 </span>+ <span class="kw">crate</span>::card::surround(ui).<span class="number">0</span>.total_margin().sum().x;
+<a href=#435 id=435 data-nosnippet>435</a>    <span class="kw">let </span>gap = ui.spacing().item_spacing.x;
+<a href=#436 id=436 data-nosnippet>436</a>    <span class="kw">let </span>room = ui.available_width();
+<a href=#437 id=437 data-nosnippet>437</a>    <span class="kw">let </span>(<span class="kw-2">mut </span>per_row, <span class="kw-2">mut </span>used) = (<span class="number">1</span>, outer);
+<a href=#438 id=438 data-nosnippet>438</a>    <span class="kw">while </span>used + gap + outer &lt;= room {
+<a href=#439 id=439 data-nosnippet>439</a>        used += gap + outer;
+<a href=#440 id=440 data-nosnippet>440</a>        per_row += <span class="number">1</span>;
+<a href=#441 id=441 data-nosnippet>441</a>    }
+<a href=#442 id=442 data-nosnippet>442</a>    <span class="kw">for </span>row <span class="kw">in </span>items.chunks(per_row) {
+<a href=#443 id=443 data-nosnippet>443</a>        ui.horizontal_top(|ui| {
+<a href=#444 id=444 data-nosnippet>444</a>            <span class="kw">for </span>item <span class="kw">in </span>row {
+<a href=#445 id=445 data-nosnippet>445</a>                card(ui, item);
+<a href=#446 id=446 data-nosnippet>446</a>            }
+<a href=#447 id=447 data-nosnippet>447</a>        });
+<a href=#448 id=448 data-nosnippet>448</a>    }
+<a href=#449 id=449 data-nosnippet>449</a>}
+<a href=#450 id=450 data-nosnippet>450</a>
+<a href=#451 id=451 data-nosnippet>451</a><span class="doccomment">/// A card's own area: an id of its own, laid out top to bottom.
+<a href=#452 id=452 data-nosnippet>452</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>card_scope&lt;R&gt;(
+<a href=#453 id=453 data-nosnippet>453</a>    ui: <span class="kw-2">&amp;mut </span>egui::Ui,
+<a href=#454 id=454 data-nosnippet>454</a>    id: egui::Id,
+<a href=#455 id=455 data-nosnippet>455</a>    card: <span class="kw">impl </span>FnOnce(<span class="kw-2">&amp;mut </span>egui::Ui) -&gt; R,
+<a href=#456 id=456 data-nosnippet>456</a>) -&gt; egui::InnerResponse&lt;R&gt; {
+<a href=#457 id=457 data-nosnippet>457</a>    <span class="kw">let </span>own = egui::UiBuilder::new()
+<a href=#458 id=458 data-nosnippet>458</a>        .id(id)
+<a href=#459 id=459 data-nosnippet>459</a>        .layout(egui::Layout::top_down(egui::Align::Min));
+<a href=#460 id=460 data-nosnippet>460</a>    ui.scope_builder(own, card)
+<a href=#461 id=461 data-nosnippet>461</a>}
+<a href=#462 id=462 data-nosnippet>462</a>
+<a href=#463 id=463 data-nosnippet>463</a><span class="doccomment">/// How quick a character's window is: each stage's median and slow end
+<a href=#464 id=464 data-nosnippet>464</a>/// over its last samples, coloured by how they read, and how often it fell
+<a href=#465 id=465 data-nosnippet>465</a>/// behind. A stage's name says, under the pointer, what it measures.
+<a href=#466 id=466 data-nosnippet>466</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>stages(ui: <span class="kw-2">&amp;mut </span>egui::Ui, id: u32, perf: <span class="kw-2">&amp;</span>hydra_ui::perf::Perf, lichs_text: bool) {
+<a href=#467 id=467 data-nosnippet>467</a>    <span class="kw">use </span>hydra_ui::perf::{Grade, took};
+<a href=#468 id=468 data-nosnippet>468</a>    <span class="kw">let </span>colour = |ui: <span class="kw-2">&amp;</span>egui::Ui, grade: Grade| graded(ui.ctx(), grade);
+<a href=#469 id=469 data-nosnippet>469</a>    egui::Grid::new((<span class="string">"perf"</span>, id))
+<a href=#470 id=470 data-nosnippet>470</a>        .num_columns(<span class="number">4</span>)
+<a href=#471 id=471 data-nosnippet>471</a>        .spacing([<span class="number">10.0</span>, <span class="number">2.0</span>])
+<a href=#472 id=472 data-nosnippet>472</a>        .show(ui, |ui| {
+<a href=#473 id=473 data-nosnippet>473</a>            ui.weak(<span class="string">"Stage"</span>);
+<a href=#474 id=474 data-nosnippet>474</a>            ui.weak(<span class="string">"median"</span>);
+<a href=#475 id=475 data-nosnippet>475</a>            ui.weak(<span class="string">"95%"</span>);
+<a href=#476 id=476 data-nosnippet>476</a>            ui.weak(<span class="string">"of"</span>);
+<a href=#477 id=477 data-nosnippet>477</a>            ui.end_row();
+<a href=#478 id=478 data-nosnippet>478</a>            <span class="kw">for </span>(stage, samples) <span class="kw">in </span>perf.stages(lichs_text) {
+<a href=#479 id=479 data-nosnippet>479</a>                ui.label(stage.name).on_hover_text(stage.help);
+<a href=#480 id=480 data-nosnippet>480</a>                <span class="kw">if let </span><span class="prelude-val">Some</span>((median, slow)) = samples.spread() {
+<a href=#481 id=481 data-nosnippet>481</a>                    <span class="kw">for </span>time <span class="kw">in </span>[median, slow] {
+<a href=#482 id=482 data-nosnippet>482</a>                        <span class="kw">let </span>text = egui::RichText::new(took(time))
+<a href=#483 id=483 data-nosnippet>483</a>                            .monospace()
+<a href=#484 id=484 data-nosnippet>484</a>                            .color(colour(ui, stage.grade(time)));
+<a href=#485 id=485 data-nosnippet>485</a>                        ui.label(text);
+<a href=#486 id=486 data-nosnippet>486</a>                    }
+<a href=#487 id=487 data-nosnippet>487</a>                } <span class="kw">else </span>{
 <a href=#488 id=488 data-nosnippet>488</a>                    ui.weak(<span class="string">"—"</span>);
-<a href=#489 id=489 data-nosnippet>489</a>                }
-<a href=#490 id=490 data-nosnippet>490</a>                ui.weak(samples.len().to_string());
-<a href=#491 id=491 data-nosnippet>491</a>                ui.end_row();
-<a href=#492 id=492 data-nosnippet>492</a>            }
-<a href=#493 id=493 data-nosnippet>493</a>        });
-<a href=#494 id=494 data-nosnippet>494</a>    ui.horizontal(|ui| {
-<a href=#495 id=495 data-nosnippet>495</a>        ui.label(egui::RichText::new(<span class="string">"quick"</span>).color(colour(ui, Grade::Quick)));
-<a href=#496 id=496 data-nosnippet>496</a>        ui.label(egui::RichText::new(<span class="string">"noticeable"</span>).color(colour(ui, Grade::Noticeable)));
-<a href=#497 id=497 data-nosnippet>497</a>        ui.label(egui::RichText::new(<span class="string">"slow"</span>).color(colour(ui, Grade::Slow)));
-<a href=#498 id=498 data-nosnippet>498</a>        ui.weak(<span class="string">"· a stage's name says what it measures"</span>);
-<a href=#499 id=499 data-nosnippet>499</a>    });
-<a href=#500 id=500 data-nosnippet>500</a>    <span class="kw">if </span>perf.gaps &gt; <span class="number">0 </span>{
-<a href=#501 id=501 data-nosnippet>501</a>        ui.colored_label(
-<a href=#502 id=502 data-nosnippet>502</a>            theme::color(ui.ctx(), T::Wrong),
-<a href=#503 id=503 data-nosnippet>503</a>            <span class="macro">format!</span>(<span class="string">"Fell behind {} times"</span>, perf.gaps),
-<a href=#504 id=504 data-nosnippet>504</a>        );
-<a href=#505 id=505 data-nosnippet>505</a>    }
-<a href=#506 id=506 data-nosnippet>506</a>}
-<a href=#507 id=507 data-nosnippet>507</a>
-<a href=#508 id=508 data-nosnippet>508</a><span class="doccomment">/// The colour a time is said in, as it reads: the green a connection is
-<a href=#509 id=509 data-nosnippet>509</a>/// said in, the warning's, the error's.
-<a href=#510 id=510 data-nosnippet>510</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>graded(context: <span class="kw-2">&amp;</span>egui::Context, grade: hydra_ui::perf::Grade) -&gt; egui::Color32 {
-<a href=#511 id=511 data-nosnippet>511</a>    <span class="kw">use </span>hydra_ui::perf::Grade;
-<a href=#512 id=512 data-nosnippet>512</a>    theme::color(
-<a href=#513 id=513 data-nosnippet>513</a>        context,
-<a href=#514 id=514 data-nosnippet>514</a>        <span class="kw">match </span>grade {
-<a href=#515 id=515 data-nosnippet>515</a>            Grade::Quick =&gt; T::Stamina,
-<a href=#516 id=516 data-nosnippet>516</a>            Grade::Noticeable =&gt; T::Warning,
-<a href=#517 id=517 data-nosnippet>517</a>            Grade::Slow =&gt; T::Wrong,
-<a href=#518 id=518 data-nosnippet>518</a>        },
-<a href=#519 id=519 data-nosnippet>519</a>    )
-<a href=#520 id=520 data-nosnippet>520</a>}
-<a href=#521 id=521 data-nosnippet>521</a>
-<a href=#522 id=522 data-nosnippet>522</a><span class="kw">pub use </span>hydra_board::connection;
-<a href=#523 id=523 data-nosnippet>523</a>
-<a href=#524 id=524 data-nosnippet>524</a><span class="attr">#[cfg(test)]
-<a href=#525 id=525 data-nosnippet>525</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod </span>tests {
-<a href=#526 id=526 data-nosnippet>526</a>    <span class="kw">use </span>egui_kittest::Harness;
-<a href=#527 id=527 data-nosnippet>527</a>    <span class="kw">use </span>egui_kittest::kittest::Queryable <span class="kw">as _</span>;
-<a href=#528 id=528 data-nosnippet>528</a>    <span class="kw">use </span>hydra_board::{Fetch, Update};
-<a href=#529 id=529 data-nosnippet>529</a>    <span class="kw">use </span>hydra_ui::{HubRequest, Listing, RosterCard};
-<a href=#530 id=530 data-nosnippet>530</a>
-<a href=#531 id=531 data-nosnippet>531</a>    <span class="kw">use </span>super::{Hub, HubAction, HubView, Tab};
-<a href=#532 id=532 data-nosnippet>532</a>
-<a href=#533 id=533 data-nosnippet>533</a>    <span class="kw">fn </span>card(character: <span class="kw-2">&amp;</span>str, kept: bool, favourite: bool) -&gt; RosterCard {
-<a href=#534 id=534 data-nosnippet>534</a>        RosterCard {
-<a href=#535 id=535 data-nosnippet>535</a>            character: character.to_owned(),
-<a href=#536 id=536 data-nosnippet>536</a>            account: <span class="macro">format!</span>(<span class="string">"{}acct"</span>, character.to_lowercase()),
-<a href=#537 id=537 data-nosnippet>537</a>            game: <span class="string">"GS3"</span>.to_owned(),
-<a href=#538 id=538 data-nosnippet>538</a>            kept,
-<a href=#539 id=539 data-nosnippet>539</a>            favourite,
-<a href=#540 id=540 data-nosnippet>540</a>            nickname: <span class="prelude-val">None</span>,
-<a href=#541 id=541 data-nosnippet>541</a>        }
-<a href=#542 id=542 data-nosnippet>542</a>    }
-<a href=#543 id=543 data-nosnippet>543</a>
-<a href=#544 id=544 data-nosnippet>544</a>    <span class="doccomment">/// The hub over a roster of two, nobody running, and what it asked.
-<a href=#545 id=545 data-nosnippet>545</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>Scene {
-<a href=#546 id=546 data-nosnippet>546</a>        hub: Hub,
-<a href=#547 id=547 data-nosnippet>547</a>        roster: Vec&lt;RosterCard&gt;,
-<a href=#548 id=548 data-nosnippet>548</a>        listing: <span class="prelude-ty">Option</span>&lt;Listing&gt;,
-<a href=#549 id=549 data-nosnippet>549</a>        update: <span class="prelude-ty">Option</span>&lt;Update&gt;,
-<a href=#550 id=550 data-nosnippet>550</a>        asked: Vec&lt;HubAction&gt;,
-<a href=#551 id=551 data-nosnippet>551</a>    }
-<a href=#552 id=552 data-nosnippet>552</a>
-<a href=#553 id=553 data-nosnippet>553</a>    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>harness&lt;<span class="lifetime">'a</span>&gt;(tab: Tab) -&gt; Harness&lt;<span class="lifetime">'a</span>, Scene&gt; {
-<a href=#554 id=554 data-nosnippet>554</a>        <span class="kw">let </span>scene = Scene {
-<a href=#555 id=555 data-nosnippet>555</a>            hub: Hub {
-<a href=#556 id=556 data-nosnippet>556</a>                tab,
-<a href=#557 id=557 data-nosnippet>557</a>                ..Hub::default()
-<a href=#558 id=558 data-nosnippet>558</a>            },
-<a href=#559 id=559 data-nosnippet>559</a>            roster: <span class="macro">vec!</span>[card(<span class="string">"Nerten"</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>), card(<span class="string">"Nisugi"</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>)],
-<a href=#560 id=560 data-nosnippet>560</a>            listing: <span class="prelude-val">None</span>,
-<a href=#561 id=561 data-nosnippet>561</a>            update: <span class="prelude-val">None</span>,
-<a href=#562 id=562 data-nosnippet>562</a>            asked: Vec::new(),
-<a href=#563 id=563 data-nosnippet>563</a>        };
-<a href=#564 id=564 data-nosnippet>564</a>        <span class="kw">let </span>design = <span class="kw">crate</span>::card::hydras();
-<a href=#565 id=565 data-nosnippet>565</a>        <span class="kw">let </span><span class="kw-2">mut </span>harness = Harness::builder().with_size((<span class="number">700.0</span>, <span class="number">500.0</span>)).build_ui_state(
-<a href=#566 id=566 data-nosnippet>566</a>            <span class="kw">move </span>|ui, scene: <span class="kw-2">&amp;mut </span>Scene| {
-<a href=#567 id=567 data-nosnippet>567</a>                <span class="kw">let </span>merged = hydra_ui::MergedHistory::default();
-<a href=#568 id=568 data-nosnippet>568</a>                <span class="kw">let </span>view = HubView {
-<a href=#569 id=569 data-nosnippet>569</a>                    merged: <span class="kw-2">&amp;</span>merged,
-<a href=#570 id=570 data-nosnippet>570</a>                    seats: <span class="kw-2">&amp;</span>[],
-<a href=#571 id=571 data-nosnippet>571</a>                    offered: <span class="kw-2">&amp;</span>[<span class="string">"Nisugi"</span>.to_owned()],
-<a href=#572 id=572 data-nosnippet>572</a>                    roster: <span class="kw-2">&amp;</span>scene.roster,
-<a href=#573 id=573 data-nosnippet>573</a>                    teams: <span class="kw-2">&amp;</span>[],
-<a href=#574 id=574 data-nosnippet>574</a>                    listing: scene.listing.as_ref(),
-<a href=#575 id=575 data-nosnippet>575</a>                    said: <span class="prelude-val">None</span>,
-<a href=#576 id=576 data-nosnippet>576</a>                    update: scene.update.as_ref(),
-<a href=#577 id=577 data-nosnippet>577</a>                    card: <span class="kw-2">&amp;</span>design,
-<a href=#578 id=578 data-nosnippet>578</a>                };
-<a href=#579 id=579 data-nosnippet>579</a>                <span class="kw">if let </span><span class="prelude-val">Some</span>(asked) = scene.hub.show(ui, <span class="kw-2">&amp;</span>view) {
-<a href=#580 id=580 data-nosnippet>580</a>                    scene.asked.push(asked);
-<a href=#581 id=581 data-nosnippet>581</a>                }
-<a href=#582 id=582 data-nosnippet>582</a>            },
-<a href=#583 id=583 data-nosnippet>583</a>            scene,
-<a href=#584 id=584 data-nosnippet>584</a>        );
-<a href=#585 id=585 data-nosnippet>585</a>        harness.run();
-<a href=#586 id=586 data-nosnippet>586</a>        harness
-<a href=#587 id=587 data-nosnippet>587</a>    }
-<a href=#588 id=588 data-nosnippet>588</a>
-<a href=#589 id=589 data-nosnippet>589</a>    <span class="doccomment">/// Performance, switched on, puts each live card's stages on it; off,
-<a href=#590 id=590 data-nosnippet>590</a>    /// none.
-<a href=#591 id=591 data-nosnippet>591</a>    </span><span class="attr">#[test]
-<a href=#592 id=592 data-nosnippet>592</a>    </span><span class="kw">fn </span>performance_shows_each_live_cards_stages() {
-<a href=#593 id=593 data-nosnippet>593</a>        <span class="kw">let </span>(seat, _lines) = <span class="kw">crate</span>::seat::Seat::idle(<span class="number">1</span>, <span class="string">"Ashryn"</span>);
-<a href=#594 id=594 data-nosnippet>594</a>        seat.story()
-<a href=#595 id=595 data-nosnippet>595</a>            .perf
-<a href=#596 id=596 data-nosnippet>596</a>            .reply
-<a href=#597 id=597 data-nosnippet>597</a>            .push(std::time::Duration::from_millis(<span class="number">120</span>));
-<a href=#598 id=598 data-nosnippet>598</a>        <span class="kw">let </span>seats = <span class="macro">vec!</span>[seat];
-<a href=#599 id=599 data-nosnippet>599</a>        <span class="kw">let </span>design = <span class="kw">crate</span>::card::hydras();
-<a href=#600 id=600 data-nosnippet>600</a>        <span class="kw">let </span><span class="kw-2">mut </span>harness = Harness::builder().with_size((<span class="number">700.0</span>, <span class="number">500.0</span>)).build_ui_state(
-<a href=#601 id=601 data-nosnippet>601</a>            |ui, hub: <span class="kw-2">&amp;mut </span>Hub| {
-<a href=#602 id=602 data-nosnippet>602</a>                <span class="kw">let </span>merged = hydra_ui::MergedHistory::default();
-<a href=#603 id=603 data-nosnippet>603</a>                <span class="kw">let </span>view = HubView {
-<a href=#604 id=604 data-nosnippet>604</a>                    merged: <span class="kw-2">&amp;</span>merged,
-<a href=#605 id=605 data-nosnippet>605</a>                    seats: <span class="kw-2">&amp;</span>seats,
-<a href=#606 id=606 data-nosnippet>606</a>                    offered: <span class="kw-2">&amp;</span>[],
-<a href=#607 id=607 data-nosnippet>607</a>                    roster: <span class="kw-2">&amp;</span>[],
-<a href=#608 id=608 data-nosnippet>608</a>                    teams: <span class="kw-2">&amp;</span>[],
-<a href=#609 id=609 data-nosnippet>609</a>                    listing: <span class="prelude-val">None</span>,
-<a href=#610 id=610 data-nosnippet>610</a>                    said: <span class="prelude-val">None</span>,
-<a href=#611 id=611 data-nosnippet>611</a>                    update: <span class="prelude-val">None</span>,
-<a href=#612 id=612 data-nosnippet>612</a>                    card: <span class="kw-2">&amp;</span>design,
-<a href=#613 id=613 data-nosnippet>613</a>                };
-<a href=#614 id=614 data-nosnippet>614</a>                hub.show(ui, <span class="kw-2">&amp;</span>view);
-<a href=#615 id=615 data-nosnippet>615</a>            },
-<a href=#616 id=616 data-nosnippet>616</a>            Hub::default(),
-<a href=#617 id=617 data-nosnippet>617</a>        );
-<a href=#618 id=618 data-nosnippet>618</a>        harness.run();
-<a href=#619 id=619 data-nosnippet>619</a>        <span class="macro">assert!</span>(harness.query_by_label(<span class="string">"Sent -&gt; reply"</span>).is_none(), <span class="string">"off"</span>);
-<a href=#620 id=620 data-nosnippet>620</a>        harness.get_by_label(<span class="string">"Menu"</span>).click();
-<a href=#621 id=621 data-nosnippet>621</a>        harness.run();
-<a href=#622 id=622 data-nosnippet>622</a>        harness.get_by_label(<span class="string">"Performance"</span>).click();
-<a href=#623 id=623 data-nosnippet>623</a>        harness.run();
-<a href=#624 id=624 data-nosnippet>624</a>        <span class="macro">assert!</span>(harness.query_by_label(<span class="string">"Sent -&gt; reply"</span>).is_some());
-<a href=#625 id=625 data-nosnippet>625</a>        <span class="macro">assert_eq!</span>(
-<a href=#626 id=626 data-nosnippet>626</a>            harness.query_all_by_label(<span class="string">"120 ms"</span>).count(),
-<a href=#627 id=627 data-nosnippet>627</a>            <span class="number">2</span>,
-<a href=#628 id=628 data-nosnippet>628</a>            <span class="string">"one sample: its median and its slow end"
-<a href=#629 id=629 data-nosnippet>629</a>        </span>);
-<a href=#630 id=630 data-nosnippet>630</a>    }
-<a href=#631 id=631 data-nosnippet>631</a>
-<a href=#632 id=632 data-nosnippet>632</a>    <span class="doccomment">/// The roster's characters not running, starred first: one with its
-<a href=#633 id=633 data-nosnippet>633</a>    /// password kept starts with a click; one without asks for it.
-<a href=#634 id=634 data-nosnippet>634</a>    </span><span class="attr">#[test]
-<a href=#635 id=635 data-nosnippet>635</a>    </span><span class="kw">fn </span>offline_starts_a_kept_character_and_asks_for_the_rest() {
-<a href=#636 id=636 data-nosnippet>636</a>        <span class="kw">let </span><span class="kw-2">mut </span>harness = harness(Tab::Offline);
-<a href=#637 id=637 data-nosnippet>637</a>        <span class="macro">assert!</span>(harness.query_by_label(<span class="string">"Offline (2)"</span>).is_some());
-<a href=#638 id=638 data-nosnippet>638</a>        <span class="macro">assert!</span>(harness.query_by_label(<span class="string">"Start Nisugi"</span>).is_some());
-<a href=#639 id=639 data-nosnippet>639</a>        <span class="macro">assert!</span>(
-<a href=#640 id=640 data-nosnippet>640</a>            harness.query_by_label(<span class="string">"Log Nerten in"</span>).is_some(),
-<a href=#641 id=641 data-nosnippet>641</a>            <span class="string">"a password to type"
-<a href=#642 id=642 data-nosnippet>642</a>        </span>);
-<a href=#643 id=643 data-nosnippet>643</a>        harness.get_by_label(<span class="string">"Start Nisugi"</span>).click();
-<a href=#644 id=644 data-nosnippet>644</a>        harness.run();
-<a href=#645 id=645 data-nosnippet>645</a>        <span class="macro">assert_eq!</span>(
-<a href=#646 id=646 data-nosnippet>646</a>            harness.state().asked,
-<a href=#647 id=647 data-nosnippet>647</a>            [HubAction::Ask(HubRequest::Add(<span class="string">"Nisugi"</span>.to_owned()))]
-<a href=#648 id=648 data-nosnippet>648</a>        );
-<a href=#649 id=649 data-nosnippet>649</a>        <span class="kw">let </span>starred: Vec&lt;f32&gt; = [<span class="string">"Nisugi"</span>, <span class="string">"Nerten"</span>]
-<a href=#650 id=650 data-nosnippet>650</a>            .map(|name| harness.get_by_label(name).rect().top())
-<a href=#651 id=651 data-nosnippet>651</a>            .to_vec();
-<a href=#652 id=652 data-nosnippet>652</a>        <span class="macro">assert!</span>(starred[<span class="number">0</span>] &lt; starred[<span class="number">1</span>], <span class="string">"the favourite first"</span>);
-<a href=#653 id=653 data-nosnippet>653</a>    }
-<a href=#654 id=654 data-nosnippet>654</a>
-<a href=#655 id=655 data-nosnippet>655</a>    <span class="doccomment">/// Offline holds every character not playing: one that ended this run,
-<a href=#656 id=656 data-nosnippet>656</a>    /// first, then the roster's not on the table. A live one is not there.
-<a href=#657 id=657 data-nosnippet>657</a>    </span><span class="attr">#[test]
-<a href=#658 id=658 data-nosnippet>658</a>    </span><span class="kw">fn </span>offline_holds_the_closed_and_the_roster_not_running() {
-<a href=#659 id=659 data-nosnippet>659</a>        <span class="kw">let </span>(closed, _lines) = <span class="kw">crate</span>::seat::Seat::idle(<span class="number">1</span>, <span class="string">"Ashryn"</span>);
-<a href=#660 id=660 data-nosnippet>660</a>        closed.end();
-<a href=#661 id=661 data-nosnippet>661</a>        <span class="kw">let </span>(live, _live_lines) = <span class="kw">crate</span>::seat::Seat::idle(<span class="number">2</span>, <span class="string">"Dicate"</span>);
-<a href=#662 id=662 data-nosnippet>662</a>        <span class="kw">let </span>seats = <span class="macro">vec!</span>[closed, live];
-<a href=#663 id=663 data-nosnippet>663</a>        <span class="kw">let </span>roster = <span class="macro">vec!</span>[card(<span class="string">"Nisugi"</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>)];
-<a href=#664 id=664 data-nosnippet>664</a>        <span class="kw">let </span>design = <span class="kw">crate</span>::card::hydras();
-<a href=#665 id=665 data-nosnippet>665</a>        <span class="kw">let </span><span class="kw-2">mut </span>harness = Harness::builder().with_size((<span class="number">700.0</span>, <span class="number">500.0</span>)).build_ui_state(
-<a href=#666 id=666 data-nosnippet>666</a>            |ui, hub: <span class="kw-2">&amp;mut </span>Hub| {
-<a href=#667 id=667 data-nosnippet>667</a>                <span class="kw">let </span>merged = hydra_ui::MergedHistory::default();
-<a href=#668 id=668 data-nosnippet>668</a>                <span class="kw">let </span>view = HubView {
-<a href=#669 id=669 data-nosnippet>669</a>                    merged: <span class="kw-2">&amp;</span>merged,
-<a href=#670 id=670 data-nosnippet>670</a>                    seats: <span class="kw-2">&amp;</span>seats,
-<a href=#671 id=671 data-nosnippet>671</a>                    offered: <span class="kw-2">&amp;</span>[<span class="string">"Nisugi"</span>.to_owned()],
-<a href=#672 id=672 data-nosnippet>672</a>                    roster: <span class="kw-2">&amp;</span>roster,
-<a href=#673 id=673 data-nosnippet>673</a>                    teams: <span class="kw-2">&amp;</span>[],
-<a href=#674 id=674 data-nosnippet>674</a>                    listing: <span class="prelude-val">None</span>,
-<a href=#675 id=675 data-nosnippet>675</a>                    said: <span class="prelude-val">None</span>,
-<a href=#676 id=676 data-nosnippet>676</a>                    update: <span class="prelude-val">None</span>,
-<a href=#677 id=677 data-nosnippet>677</a>                    card: <span class="kw-2">&amp;</span>design,
-<a href=#678 id=678 data-nosnippet>678</a>                };
-<a href=#679 id=679 data-nosnippet>679</a>                hub.show(ui, <span class="kw-2">&amp;</span>view);
-<a href=#680 id=680 data-nosnippet>680</a>            },
-<a href=#681 id=681 data-nosnippet>681</a>            Hub {
-<a href=#682 id=682 data-nosnippet>682</a>                tab: Tab::Offline,
-<a href=#683 id=683 data-nosnippet>683</a>                ..Hub::default()
-<a href=#684 id=684 data-nosnippet>684</a>            },
-<a href=#685 id=685 data-nosnippet>685</a>        );
-<a href=#686 id=686 data-nosnippet>686</a>        harness.run();
-<a href=#687 id=687 data-nosnippet>687</a>        <span class="macro">assert!</span>(harness.query_by_label(<span class="string">"Live (1)"</span>).is_some());
-<a href=#688 id=688 data-nosnippet>688</a>        <span class="macro">assert!</span>(harness.query_by_label(<span class="string">"Offline (2)"</span>).is_some());
-<a href=#689 id=689 data-nosnippet>689</a>        <span class="kw">let </span>tops: Vec&lt;f32&gt; = [<span class="string">"Ashryn"</span>, <span class="string">"Nisugi"</span>]
-<a href=#690 id=690 data-nosnippet>690</a>            .map(|name| harness.get_by_label(name).rect().top())
-<a href=#691 id=691 data-nosnippet>691</a>            .to_vec();
-<a href=#692 id=692 data-nosnippet>692</a>        <span class="macro">assert!</span>(tops[<span class="number">0</span>] &lt; tops[<span class="number">1</span>], <span class="string">"the closed first"</span>);
-<a href=#693 id=693 data-nosnippet>693</a>        <span class="macro">assert!</span>(harness.query_by_label(<span class="string">"Dicate"</span>).is_none(), <span class="string">"live, not here"</span>);
-<a href=#694 id=694 data-nosnippet>694</a>    }
-<a href=#695 id=695 data-nosnippet>695</a>
-<a href=#696 id=696 data-nosnippet>696</a>    <span class="doccomment">/// A newer release out is said under the header, and *Update* asks for
-<a href=#697 id=697 data-nosnippet>697</a>    /// it; fetching, a bar shows how far; fetched, when it runs; failed,
-<a href=#698 id=698 data-nosnippet>698</a>    /// why, and *Try again* asks again.
-<a href=#699 id=699 data-nosnippet>699</a>    </span><span class="attr">#[test]
-<a href=#700 id=700 data-nosnippet>700</a>    </span><span class="kw">fn </span>a_newer_release_is_offered_fetched_and_said_ready() {
-<a href=#701 id=701 data-nosnippet>701</a>        <span class="kw">let </span><span class="kw-2">mut </span>harness = harness(Tab::Live);
-<a href=#702 id=702 data-nosnippet>702</a>        <span class="macro">assert!</span>(harness.query_by_label(<span class="string">"Update"</span>).is_none(), <span class="string">"none out"</span>);
-<a href=#703 id=703 data-nosnippet>703</a>        <span class="kw">let </span>out = |fetch| Update {
-<a href=#704 id=704 data-nosnippet>704</a>            version: <span class="string">"0.1.0-beta.3"</span>.to_owned(),
-<a href=#705 id=705 data-nosnippet>705</a>            page: <span class="string">"https://github.com/Nisugi/hydra/releases/tag/v0.1.0-beta.3"</span>.to_owned(),
-<a href=#706 id=706 data-nosnippet>706</a>            fetch,
-<a href=#707 id=707 data-nosnippet>707</a>        };
-<a href=#708 id=708 data-nosnippet>708</a>        harness.state_mut().update = <span class="prelude-val">Some</span>(out(Fetch::Out));
-<a href=#709 id=709 data-nosnippet>709</a>        harness.run();
-<a href=#710 id=710 data-nosnippet>710</a>        <span class="macro">assert!</span>(
-<a href=#711 id=711 data-nosnippet>711</a>            harness
-<a href=#712 id=712 data-nosnippet>712</a>                .query_by_label(<span class="string">"Hydra 0.1.0-beta.3 is out."</span>)
-<a href=#713 id=713 data-nosnippet>713</a>                .is_some()
-<a href=#714 id=714 data-nosnippet>714</a>        );
-<a href=#715 id=715 data-nosnippet>715</a>        <span class="macro">assert!</span>(harness.query_by_label(<span class="string">"What's new"</span>).is_some());
-<a href=#716 id=716 data-nosnippet>716</a>        harness.get_by_label(<span class="string">"Update"</span>).click();
-<a href=#717 id=717 data-nosnippet>717</a>        harness.run();
-<a href=#718 id=718 data-nosnippet>718</a>        <span class="macro">assert_eq!</span>(harness.state().asked, [HubAction::Update]);
-<a href=#719 id=719 data-nosnippet>719</a>
-<a href=#720 id=720 data-nosnippet>720</a>        harness.state_mut().update = <span class="prelude-val">Some</span>(out(Fetch::Fetching(<span class="number">5</span>, <span class="number">10</span>)));
-<a href=#721 id=721 data-nosnippet>721</a>        harness.run();
-<a href=#722 id=722 data-nosnippet>722</a>        <span class="macro">assert!</span>(
-<a href=#723 id=723 data-nosnippet>723</a>            harness
-<a href=#724 id=724 data-nosnippet>724</a>                .query_by_label(<span class="string">"Fetching Hydra 0.1.0-beta.3"</span>)
-<a href=#725 id=725 data-nosnippet>725</a>                .is_some()
-<a href=#726 id=726 data-nosnippet>726</a>        );
-<a href=#727 id=727 data-nosnippet>727</a>        <span class="macro">assert!</span>(harness.query_by_label(<span class="string">"Update"</span>).is_none(), <span class="string">"asked already"</span>);
-<a href=#728 id=728 data-nosnippet>728</a>
-<a href=#729 id=729 data-nosnippet>729</a>        harness.state_mut().update = <span class="prelude-val">Some</span>(out(Fetch::Ready));
-<a href=#730 id=730 data-nosnippet>730</a>        harness.run();
-<a href=#731 id=731 data-nosnippet>731</a>        <span class="macro">assert!</span>(
-<a href=#732 id=732 data-nosnippet>732</a>            harness
-<a href=#733 id=733 data-nosnippet>733</a>                .query_by_label(<span class="string">"Hydra 0.1.0-beta.3 runs from Hydra's next start."</span>)
-<a href=#734 id=734 data-nosnippet>734</a>                .is_some()
-<a href=#735 id=735 data-nosnippet>735</a>        );
-<a href=#736 id=736 data-nosnippet>736</a>
-<a href=#737 id=737 data-nosnippet>737</a>        harness.state_mut().update = <span class="prelude-val">Some</span>(out(Fetch::Failed(<span class="string">"the network went quiet"</span>.to_owned())));
-<a href=#738 id=738 data-nosnippet>738</a>        harness.run();
-<a href=#739 id=739 data-nosnippet>739</a>        <span class="macro">assert!</span>(
-<a href=#740 id=740 data-nosnippet>740</a>            harness
-<a href=#741 id=741 data-nosnippet>741</a>                .query_by_label(<span class="string">"Hydra 0.1.0-beta.3 could not be fetched: the network went quiet"</span>)
-<a href=#742 id=742 data-nosnippet>742</a>                .is_some()
-<a href=#743 id=743 data-nosnippet>743</a>        );
-<a href=#744 id=744 data-nosnippet>744</a>        harness.get_by_label(<span class="string">"Try again"</span>).click();
-<a href=#745 id=745 data-nosnippet>745</a>        harness.run();
-<a href=#746 id=746 data-nosnippet>746</a>        <span class="macro">assert_eq!</span>(
-<a href=#747 id=747 data-nosnippet>747</a>            harness.state().asked,
-<a href=#748 id=748 data-nosnippet>748</a>            [HubAction::Update, HubAction::Update]
-<a href=#749 id=749 data-nosnippet>749</a>        );
-<a href=#750 id=750 data-nosnippet>750</a>    }
-<a href=#751 id=751 data-nosnippet>751</a>
-<a href=#752 id=752 data-nosnippet>752</a>    <span class="doccomment">/// With nothing playing, *Restart now* restarts at once.
-<a href=#753 id=753 data-nosnippet>753</a>    </span><span class="attr">#[test]
-<a href=#754 id=754 data-nosnippet>754</a>    </span><span class="kw">fn </span>restart_now_with_nothing_playing_asks_nothing() {
-<a href=#755 id=755 data-nosnippet>755</a>        <span class="kw">let </span><span class="kw-2">mut </span>harness = harness(Tab::Live);
-<a href=#756 id=756 data-nosnippet>756</a>        harness.state_mut().update = <span class="prelude-val">Some</span>(Update {
-<a href=#757 id=757 data-nosnippet>757</a>            version: <span class="string">"0.1.0-beta.3"</span>.to_owned(),
-<a href=#758 id=758 data-nosnippet>758</a>            page: String::new(),
-<a href=#759 id=759 data-nosnippet>759</a>            fetch: Fetch::Ready,
-<a href=#760 id=760 data-nosnippet>760</a>        });
-<a href=#761 id=761 data-nosnippet>761</a>        harness.run();
-<a href=#762 id=762 data-nosnippet>762</a>        harness.get_by_label(<span class="string">"Restart now"</span>).click();
-<a href=#763 id=763 data-nosnippet>763</a>        harness.run();
-<a href=#764 id=764 data-nosnippet>764</a>        <span class="macro">assert_eq!</span>(
-<a href=#765 id=765 data-nosnippet>765</a>            harness.state().asked,
-<a href=#766 id=766 data-nosnippet>766</a>            [HubAction::Ask(HubRequest::Restart { again: <span class="bool-val">false </span>})]
-<a href=#767 id=767 data-nosnippet>767</a>        );
-<a href=#768 id=768 data-nosnippet>768</a>    }
-<a href=#769 id=769 data-nosnippet>769</a>
-<a href=#770 id=770 data-nosnippet>770</a>    <span class="doccomment">/// With characters playing, *Restart now* names them and asks first;
-<a href=#771 id=771 data-nosnippet>771</a>    /// they start again afterwards unless the box is unticked, and Cancel
-<a href=#772 id=772 data-nosnippet>772</a>    /// asks nothing.
-<a href=#773 id=773 data-nosnippet>773</a>    </span><span class="attr">#[test]
-<a href=#774 id=774 data-nosnippet>774</a>    </span><span class="kw">fn </span>restart_now_names_who_plays_and_offers_them_again() {
-<a href=#775 id=775 data-nosnippet>775</a>        <span class="kw">let </span>(ashryn, _ashryn_lines) = <span class="kw">crate</span>::seat::Seat::idle(<span class="number">1</span>, <span class="string">"Ashryn"</span>);
-<a href=#776 id=776 data-nosnippet>776</a>        <span class="kw">let </span>(dicate, _dicate_lines) = <span class="kw">crate</span>::seat::Seat::idle(<span class="number">2</span>, <span class="string">"Dicate"</span>);
-<a href=#777 id=777 data-nosnippet>777</a>        <span class="kw">let </span>seats = <span class="macro">vec!</span>[ashryn, dicate];
-<a href=#778 id=778 data-nosnippet>778</a>        <span class="kw">let </span>update = Update {
-<a href=#779 id=779 data-nosnippet>779</a>            version: <span class="string">"0.1.0-beta.3"</span>.to_owned(),
-<a href=#780 id=780 data-nosnippet>780</a>            page: String::new(),
-<a href=#781 id=781 data-nosnippet>781</a>            fetch: Fetch::Ready,
-<a href=#782 id=782 data-nosnippet>782</a>        };
-<a href=#783 id=783 data-nosnippet>783</a>        <span class="kw">let </span>design = <span class="kw">crate</span>::card::hydras();
-<a href=#784 id=784 data-nosnippet>784</a>        <span class="kw">let </span><span class="kw-2">mut </span>harness = Harness::builder().with_size((<span class="number">900.0</span>, <span class="number">500.0</span>)).build_ui_state(
-<a href=#785 id=785 data-nosnippet>785</a>            |ui, (hub, asked): <span class="kw-2">&amp;mut </span>(Hub, Vec&lt;HubAction&gt;)| {
-<a href=#786 id=786 data-nosnippet>786</a>                <span class="kw">let </span>merged = hydra_ui::MergedHistory::default();
-<a href=#787 id=787 data-nosnippet>787</a>                <span class="kw">let </span>view = HubView {
-<a href=#788 id=788 data-nosnippet>788</a>                    merged: <span class="kw-2">&amp;</span>merged,
-<a href=#789 id=789 data-nosnippet>789</a>                    seats: <span class="kw-2">&amp;</span>seats,
-<a href=#790 id=790 data-nosnippet>790</a>                    offered: <span class="kw-2">&amp;</span>[],
-<a href=#791 id=791 data-nosnippet>791</a>                    roster: <span class="kw-2">&amp;</span>[],
-<a href=#792 id=792 data-nosnippet>792</a>                    teams: <span class="kw-2">&amp;</span>[],
-<a href=#793 id=793 data-nosnippet>793</a>                    listing: <span class="prelude-val">None</span>,
-<a href=#794 id=794 data-nosnippet>794</a>                    said: <span class="prelude-val">None</span>,
-<a href=#795 id=795 data-nosnippet>795</a>                    update: <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>update),
-<a href=#796 id=796 data-nosnippet>796</a>                    card: <span class="kw-2">&amp;</span>design,
-<a href=#797 id=797 data-nosnippet>797</a>                };
-<a href=#798 id=798 data-nosnippet>798</a>                asked.extend(hub.show(ui, <span class="kw-2">&amp;</span>view));
-<a href=#799 id=799 data-nosnippet>799</a>            },
-<a href=#800 id=800 data-nosnippet>800</a>            (Hub::default(), Vec::new()),
-<a href=#801 id=801 data-nosnippet>801</a>        );
-<a href=#802 id=802 data-nosnippet>802</a>        harness.run();
-<a href=#803 id=803 data-nosnippet>803</a>        <span class="kw">let </span>question = <span class="string">"Restart Hydra now? Ashryn and Dicate will be disconnected."</span>;
-<a href=#804 id=804 data-nosnippet>804</a>        harness.get_by_label(<span class="string">"Restart now"</span>).click();
-<a href=#805 id=805 data-nosnippet>805</a>        harness.run();
-<a href=#806 id=806 data-nosnippet>806</a>        <span class="macro">assert!</span>(harness.query_by_label(question).is_some());
-<a href=#807 id=807 data-nosnippet>807</a>        harness.get_by_label(<span class="string">"Cancel"</span>).click();
-<a href=#808 id=808 data-nosnippet>808</a>        harness.run();
-<a href=#809 id=809 data-nosnippet>809</a>        <span class="macro">assert!</span>(harness.query_by_label(question).is_none());
-<a href=#810 id=810 data-nosnippet>810</a>        <span class="macro">assert!</span>(harness.state().<span class="number">1</span>.is_empty(), <span class="string">"cancelled"</span>);
-<a href=#811 id=811 data-nosnippet>811</a>
-<a href=#812 id=812 data-nosnippet>812</a>        harness.get_by_label(<span class="string">"Restart now"</span>).click();
-<a href=#813 id=813 data-nosnippet>813</a>        harness.run();
-<a href=#814 id=814 data-nosnippet>814</a>        harness.get_by_label(<span class="string">"Restart"</span>).click();
-<a href=#815 id=815 data-nosnippet>815</a>        harness.run();
-<a href=#816 id=816 data-nosnippet>816</a>        harness.get_by_label(<span class="string">"Restart now"</span>).click();
-<a href=#817 id=817 data-nosnippet>817</a>        harness.run();
-<a href=#818 id=818 data-nosnippet>818</a>        harness.get_by_label(<span class="string">"Start them again afterwards"</span>).click();
-<a href=#819 id=819 data-nosnippet>819</a>        harness.run();
-<a href=#820 id=820 data-nosnippet>820</a>        harness.get_by_label(<span class="string">"Restart"</span>).click();
-<a href=#821 id=821 data-nosnippet>821</a>        harness.run();
-<a href=#822 id=822 data-nosnippet>822</a>        <span class="macro">assert_eq!</span>(
-<a href=#823 id=823 data-nosnippet>823</a>            harness.state().<span class="number">1</span>,
-<a href=#824 id=824 data-nosnippet>824</a>            [
-<a href=#825 id=825 data-nosnippet>825</a>                HubAction::Ask(HubRequest::Restart { again: <span class="bool-val">true </span>}),
-<a href=#826 id=826 data-nosnippet>826</a>                HubAction::Ask(HubRequest::Restart { again: <span class="bool-val">false </span>}),
-<a href=#827 id=827 data-nosnippet>827</a>            ]
-<a href=#828 id=828 data-nosnippet>828</a>        );
-<a href=#829 id=829 data-nosnippet>829</a>    }
-<a href=#830 id=830 data-nosnippet>830</a>
-<a href=#831 id=831 data-nosnippet>831</a>    <span class="doccomment">/// The hub's Menu holds the editors under *Editors*, the Explorer, the
-<a href=#832 id=832 data-nosnippet>832</a>    /// Reports, Settings, Pair and Performance, and no play window's
-<a href=#833 id=833 data-nosnippet>833</a>    /// Layout or Logs: one chosen is asked for, and the menu closes.
-<a href=#834 id=834 data-nosnippet>834</a>    </span><span class="attr">#[test]
-<a href=#835 id=835 data-nosnippet>835</a>    </span><span class="kw">fn </span>the_menu_opens_an_editor() {
-<a href=#836 id=836 data-nosnippet>836</a>        <span class="kw">use </span><span class="kw">crate</span>::main_menu::Choice;
-<a href=#837 id=837 data-nosnippet>837</a>        <span class="kw">use </span><span class="kw">crate</span>::settings_menu::Tool;
-<a href=#838 id=838 data-nosnippet>838</a>        <span class="kw">let </span><span class="kw-2">mut </span>harness = harness(Tab::Live);
-<a href=#839 id=839 data-nosnippet>839</a>        <span class="macro">assert!</span>(harness.query_by_label(<span class="string">"Explorer"</span>).is_none(), <span class="string">"in the menu"</span>);
-<a href=#840 id=840 data-nosnippet>840</a>        harness.get_by_label(<span class="string">"Menu"</span>).click();
-<a href=#841 id=841 data-nosnippet>841</a>        harness.run();
-<a href=#842 id=842 data-nosnippet>842</a>        <span class="comment">// (a list's entry, Editors, is named with its arrow after it)
-<a href=#843 id=843 data-nosnippet>843</a>        </span><span class="kw">for </span>name <span class="kw">in </span><span class="kw">crate</span>::main_menu::tests::hub_entries() {
-<a href=#844 id=844 data-nosnippet>844</a>            <span class="macro">assert!</span>(harness.query_by_label_contains(name).is_some(), <span class="string">"{name}"</span>);
-<a href=#845 id=845 data-nosnippet>845</a>        }
-<a href=#846 id=846 data-nosnippet>846</a>        <span class="kw">for </span>name <span class="kw">in </span>[<span class="string">"Layout"</span>, <span class="string">"Logs"</span>, <span class="string">"Survey"</span>] {
-<a href=#847 id=847 data-nosnippet>847</a>            <span class="kw">if </span>name == <span class="string">"Survey" </span>&amp;&amp; <span class="kw">crate</span>::main_menu::SURVEY {
-<a href=#848 id=848 data-nosnippet>848</a>                <span class="kw">continue</span>;
-<a href=#849 id=849 data-nosnippet>849</a>            }
-<a href=#850 id=850 data-nosnippet>850</a>            <span class="macro">assert!</span>(harness.query_by_label(name).is_none(), <span class="string">"{name}"</span>);
-<a href=#851 id=851 data-nosnippet>851</a>        }
-<a href=#852 id=852 data-nosnippet>852</a>        harness.get_by_label(<span class="string">"Explorer"</span>).click();
-<a href=#853 id=853 data-nosnippet>853</a>        harness.run();
-<a href=#854 id=854 data-nosnippet>854</a>        harness.get_by_label(<span class="string">"Menu"</span>).click();
-<a href=#855 id=855 data-nosnippet>855</a>        harness.run();
-<a href=#856 id=856 data-nosnippet>856</a>        harness.get_by_label_contains(<span class="string">"Editors"</span>).click();
-<a href=#857 id=857 data-nosnippet>857</a>        harness.run();
-<a href=#858 id=858 data-nosnippet>858</a>        harness.get_by_label(<span class="string">"Triggers"</span>).click();
-<a href=#859 id=859 data-nosnippet>859</a>        harness.run();
-<a href=#860 id=860 data-nosnippet>860</a>        <span class="macro">assert_eq!</span>(
-<a href=#861 id=861 data-nosnippet>861</a>            harness.state().asked,
-<a href=#862 id=862 data-nosnippet>862</a>            [
-<a href=#863 id=863 data-nosnippet>863</a>                HubAction::Menu(Choice::Open(Tool::Map)),
-<a href=#864 id=864 data-nosnippet>864</a>                HubAction::Menu(Choice::Editor(<span class="kw">crate</span>::editors_menu::Editor::Triggers))
-<a href=#865 id=865 data-nosnippet>865</a>            ]
-<a href=#866 id=866 data-nosnippet>866</a>        );
-<a href=#867 id=867 data-nosnippet>867</a>        <span class="macro">assert!</span>(harness.query_by_label(<span class="string">"Triggers"</span>).is_none(), <span class="string">"closed"</span>);
-<a href=#868 id=868 data-nosnippet>868</a>    }
-<a href=#869 id=869 data-nosnippet>869</a>
-<a href=#870 id=870 data-nosnippet>870</a>    <span class="doccomment">/// A login by account asks for its characters; the listing that comes
-<a href=#871 id=871 data-nosnippet>871</a>    /// back offers each to play.
-<a href=#872 id=872 data-nosnippet>872</a>    </span><span class="attr">#[test]
-<a href=#873 id=873 data-nosnippet>873</a>    </span><span class="kw">fn </span>a_new_login_lists_the_accounts_characters_to_play() {
-<a href=#874 id=874 data-nosnippet>874</a>        <span class="kw">let </span><span class="kw-2">mut </span>harness = harness(Tab::NewLogin);
-<a href=#875 id=875 data-nosnippet>875</a>        <span class="kw">for </span>(role, text) <span class="kw">in </span>[
-<a href=#876 id=876 data-nosnippet>876</a>            (egui::accesskit::Role::TextInput, <span class="string">"ashacct"</span>),
-<a href=#877 id=877 data-nosnippet>877</a>            (egui::accesskit::Role::PasswordInput, <span class="string">"hunter2"</span>),
-<a href=#878 id=878 data-nosnippet>878</a>        ] {
-<a href=#879 id=879 data-nosnippet>879</a>            harness.get_by_role(role).click();
-<a href=#880 id=880 data-nosnippet>880</a>            harness.run();
-<a href=#881 id=881 data-nosnippet>881</a>            harness.get_by_role(role).type_text(text);
-<a href=#882 id=882 data-nosnippet>882</a>            harness.run();
-<a href=#883 id=883 data-nosnippet>883</a>        }
-<a href=#884 id=884 data-nosnippet>884</a>        harness.get_by_label(<span class="string">"Log in"</span>).click();
-<a href=#885 id=885 data-nosnippet>885</a>        harness.run();
-<a href=#886 id=886 data-nosnippet>886</a>        <span class="kw">let </span>asked = <span class="kw-2">&amp;</span>harness.state().asked;
-<a href=#887 id=887 data-nosnippet>887</a>        <span class="macro">assert!</span>(
-<a href=#888 id=888 data-nosnippet>888</a>            <span class="macro">matches!</span>(<span class="kw-2">&amp;</span>asked[..], [HubAction::Ask(HubRequest::Characters(account))]
-<a href=#889 id=889 data-nosnippet>889</a>                <span class="kw">if </span>account.account == <span class="string">"ashacct" </span>&amp;&amp; account.password.expose() == <span class="string">"hunter2"</span>),
-<a href=#890 id=890 data-nosnippet>890</a>            <span class="string">"{asked:?}"
-<a href=#891 id=891 data-nosnippet>891</a>        </span>);
-<a href=#892 id=892 data-nosnippet>892</a>        harness.state_mut().listing = <span class="prelude-val">Some</span>(Listing {
-<a href=#893 id=893 data-nosnippet>893</a>            account: <span class="string">"ashacct"</span>.to_owned(),
-<a href=#894 id=894 data-nosnippet>894</a>            game: <span class="string">"GS3"</span>.to_owned(),
-<a href=#895 id=895 data-nosnippet>895</a>            characters: <span class="macro">vec!</span>[<span class="string">"Ashryn"</span>.to_owned()],
-<a href=#896 id=896 data-nosnippet>896</a>        });
-<a href=#897 id=897 data-nosnippet>897</a>        harness.run();
-<a href=#898 id=898 data-nosnippet>898</a>        harness.get_by_label(<span class="string">"Play"</span>).click();
-<a href=#899 id=899 data-nosnippet>899</a>        harness.run();
-<a href=#900 id=900 data-nosnippet>900</a>        <span class="macro">assert!</span>(
-<a href=#901 id=901 data-nosnippet>901</a>            <span class="macro">matches!</span>(harness.state().asked.last(), <span class="prelude-val">Some</span>(HubAction::Ask(HubRequest::Login(login)))
-<a href=#902 id=902 data-nosnippet>902</a>                <span class="kw">if </span>login.character == <span class="string">"Ashryn" </span>&amp;&amp; login.password.expose() == <span class="string">"hunter2"</span>),
-<a href=#903 id=903 data-nosnippet>903</a>            <span class="string">"{:?}"</span>,
-<a href=#904 id=904 data-nosnippet>904</a>            harness.state().asked
-<a href=#905 id=905 data-nosnippet>905</a>        );
-<a href=#906 id=906 data-nosnippet>906</a>    }
-<a href=#907 id=907 data-nosnippet>907</a>}
+<a href=#489 id=489 data-nosnippet>489</a>                    ui.weak(<span class="string">"—"</span>);
+<a href=#490 id=490 data-nosnippet>490</a>                }
+<a href=#491 id=491 data-nosnippet>491</a>                ui.weak(samples.len().to_string());
+<a href=#492 id=492 data-nosnippet>492</a>                ui.end_row();
+<a href=#493 id=493 data-nosnippet>493</a>            }
+<a href=#494 id=494 data-nosnippet>494</a>        });
+<a href=#495 id=495 data-nosnippet>495</a>    ui.horizontal(|ui| {
+<a href=#496 id=496 data-nosnippet>496</a>        ui.label(egui::RichText::new(<span class="string">"quick"</span>).color(colour(ui, Grade::Quick)));
+<a href=#497 id=497 data-nosnippet>497</a>        ui.label(egui::RichText::new(<span class="string">"noticeable"</span>).color(colour(ui, Grade::Noticeable)));
+<a href=#498 id=498 data-nosnippet>498</a>        ui.label(egui::RichText::new(<span class="string">"slow"</span>).color(colour(ui, Grade::Slow)));
+<a href=#499 id=499 data-nosnippet>499</a>        ui.weak(<span class="string">"· a stage's name says what it measures"</span>);
+<a href=#500 id=500 data-nosnippet>500</a>    });
+<a href=#501 id=501 data-nosnippet>501</a>    <span class="kw">if </span>perf.gaps &gt; <span class="number">0 </span>{
+<a href=#502 id=502 data-nosnippet>502</a>        ui.colored_label(
+<a href=#503 id=503 data-nosnippet>503</a>            theme::color(ui.ctx(), T::Wrong),
+<a href=#504 id=504 data-nosnippet>504</a>            <span class="macro">format!</span>(<span class="string">"Fell behind {} times"</span>, perf.gaps),
+<a href=#505 id=505 data-nosnippet>505</a>        );
+<a href=#506 id=506 data-nosnippet>506</a>    }
+<a href=#507 id=507 data-nosnippet>507</a>}
+<a href=#508 id=508 data-nosnippet>508</a>
+<a href=#509 id=509 data-nosnippet>509</a><span class="doccomment">/// The colour a time is said in, as it reads: the green a connection is
+<a href=#510 id=510 data-nosnippet>510</a>/// said in, the warning's, the error's.
+<a href=#511 id=511 data-nosnippet>511</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>graded(context: <span class="kw-2">&amp;</span>egui::Context, grade: hydra_ui::perf::Grade) -&gt; egui::Color32 {
+<a href=#512 id=512 data-nosnippet>512</a>    <span class="kw">use </span>hydra_ui::perf::Grade;
+<a href=#513 id=513 data-nosnippet>513</a>    theme::color(
+<a href=#514 id=514 data-nosnippet>514</a>        context,
+<a href=#515 id=515 data-nosnippet>515</a>        <span class="kw">match </span>grade {
+<a href=#516 id=516 data-nosnippet>516</a>            Grade::Quick =&gt; T::Stamina,
+<a href=#517 id=517 data-nosnippet>517</a>            Grade::Noticeable =&gt; T::Warning,
+<a href=#518 id=518 data-nosnippet>518</a>            Grade::Slow =&gt; T::Wrong,
+<a href=#519 id=519 data-nosnippet>519</a>        },
+<a href=#520 id=520 data-nosnippet>520</a>    )
+<a href=#521 id=521 data-nosnippet>521</a>}
+<a href=#522 id=522 data-nosnippet>522</a>
+<a href=#523 id=523 data-nosnippet>523</a><span class="kw">pub use </span>hydra_board::connection;
+<a href=#524 id=524 data-nosnippet>524</a>
+<a href=#525 id=525 data-nosnippet>525</a><span class="attr">#[cfg(test)]
+<a href=#526 id=526 data-nosnippet>526</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod </span>tests {
+<a href=#527 id=527 data-nosnippet>527</a>    <span class="kw">use </span>egui_kittest::Harness;
+<a href=#528 id=528 data-nosnippet>528</a>    <span class="kw">use </span>egui_kittest::kittest::Queryable <span class="kw">as _</span>;
+<a href=#529 id=529 data-nosnippet>529</a>    <span class="kw">use </span>hydra_board::{Fetch, Update};
+<a href=#530 id=530 data-nosnippet>530</a>    <span class="kw">use </span>hydra_ui::{HubRequest, Listing, RosterCard};
+<a href=#531 id=531 data-nosnippet>531</a>
+<a href=#532 id=532 data-nosnippet>532</a>    <span class="kw">use </span>super::{Hub, HubAction, HubView, Tab};
+<a href=#533 id=533 data-nosnippet>533</a>
+<a href=#534 id=534 data-nosnippet>534</a>    <span class="kw">fn </span>card(character: <span class="kw-2">&amp;</span>str, kept: bool, favourite: bool) -&gt; RosterCard {
+<a href=#535 id=535 data-nosnippet>535</a>        RosterCard {
+<a href=#536 id=536 data-nosnippet>536</a>            character: character.to_owned(),
+<a href=#537 id=537 data-nosnippet>537</a>            account: <span class="macro">format!</span>(<span class="string">"{}acct"</span>, character.to_lowercase()),
+<a href=#538 id=538 data-nosnippet>538</a>            game: <span class="string">"GS3"</span>.to_owned(),
+<a href=#539 id=539 data-nosnippet>539</a>            kept,
+<a href=#540 id=540 data-nosnippet>540</a>            favourite,
+<a href=#541 id=541 data-nosnippet>541</a>            nickname: <span class="prelude-val">None</span>,
+<a href=#542 id=542 data-nosnippet>542</a>        }
+<a href=#543 id=543 data-nosnippet>543</a>    }
+<a href=#544 id=544 data-nosnippet>544</a>
+<a href=#545 id=545 data-nosnippet>545</a>    <span class="doccomment">/// The hub over a roster of two, nobody running, and what it asked.
+<a href=#546 id=546 data-nosnippet>546</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>Scene {
+<a href=#547 id=547 data-nosnippet>547</a>        hub: Hub,
+<a href=#548 id=548 data-nosnippet>548</a>        roster: Vec&lt;RosterCard&gt;,
+<a href=#549 id=549 data-nosnippet>549</a>        listing: <span class="prelude-ty">Option</span>&lt;Listing&gt;,
+<a href=#550 id=550 data-nosnippet>550</a>        update: <span class="prelude-ty">Option</span>&lt;Update&gt;,
+<a href=#551 id=551 data-nosnippet>551</a>        asked: Vec&lt;HubAction&gt;,
+<a href=#552 id=552 data-nosnippet>552</a>    }
+<a href=#553 id=553 data-nosnippet>553</a>
+<a href=#554 id=554 data-nosnippet>554</a>    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>harness&lt;<span class="lifetime">'a</span>&gt;(tab: Tab) -&gt; Harness&lt;<span class="lifetime">'a</span>, Scene&gt; {
+<a href=#555 id=555 data-nosnippet>555</a>        <span class="kw">let </span>scene = Scene {
+<a href=#556 id=556 data-nosnippet>556</a>            hub: Hub {
+<a href=#557 id=557 data-nosnippet>557</a>                tab,
+<a href=#558 id=558 data-nosnippet>558</a>                ..Hub::default()
+<a href=#559 id=559 data-nosnippet>559</a>            },
+<a href=#560 id=560 data-nosnippet>560</a>            roster: <span class="macro">vec!</span>[card(<span class="string">"Nerten"</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>), card(<span class="string">"Nisugi"</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>)],
+<a href=#561 id=561 data-nosnippet>561</a>            listing: <span class="prelude-val">None</span>,
+<a href=#562 id=562 data-nosnippet>562</a>            update: <span class="prelude-val">None</span>,
+<a href=#563 id=563 data-nosnippet>563</a>            asked: Vec::new(),
+<a href=#564 id=564 data-nosnippet>564</a>        };
+<a href=#565 id=565 data-nosnippet>565</a>        <span class="kw">let </span>design = <span class="kw">crate</span>::card::hydras();
+<a href=#566 id=566 data-nosnippet>566</a>        <span class="kw">let </span><span class="kw-2">mut </span>harness = Harness::builder().with_size((<span class="number">700.0</span>, <span class="number">500.0</span>)).build_ui_state(
+<a href=#567 id=567 data-nosnippet>567</a>            <span class="kw">move </span>|ui, scene: <span class="kw-2">&amp;mut </span>Scene| {
+<a href=#568 id=568 data-nosnippet>568</a>                <span class="kw">let </span>merged = hydra_ui::MergedHistory::default();
+<a href=#569 id=569 data-nosnippet>569</a>                <span class="kw">let </span>view = HubView {
+<a href=#570 id=570 data-nosnippet>570</a>                    merged: <span class="kw-2">&amp;</span>merged,
+<a href=#571 id=571 data-nosnippet>571</a>                    seats: <span class="kw-2">&amp;</span>[],
+<a href=#572 id=572 data-nosnippet>572</a>                    offered: <span class="kw-2">&amp;</span>[<span class="string">"Nisugi"</span>.to_owned()],
+<a href=#573 id=573 data-nosnippet>573</a>                    roster: <span class="kw-2">&amp;</span>scene.roster,
+<a href=#574 id=574 data-nosnippet>574</a>                    teams: <span class="kw-2">&amp;</span>[],
+<a href=#575 id=575 data-nosnippet>575</a>                    listing: scene.listing.as_ref(),
+<a href=#576 id=576 data-nosnippet>576</a>                    said: <span class="prelude-val">None</span>,
+<a href=#577 id=577 data-nosnippet>577</a>                    update: scene.update.as_ref(),
+<a href=#578 id=578 data-nosnippet>578</a>                    card: <span class="kw-2">&amp;</span>design,
+<a href=#579 id=579 data-nosnippet>579</a>                };
+<a href=#580 id=580 data-nosnippet>580</a>                <span class="kw">if let </span><span class="prelude-val">Some</span>(asked) = scene.hub.show(ui, <span class="kw-2">&amp;</span>view) {
+<a href=#581 id=581 data-nosnippet>581</a>                    scene.asked.push(asked);
+<a href=#582 id=582 data-nosnippet>582</a>                }
+<a href=#583 id=583 data-nosnippet>583</a>            },
+<a href=#584 id=584 data-nosnippet>584</a>            scene,
+<a href=#585 id=585 data-nosnippet>585</a>        );
+<a href=#586 id=586 data-nosnippet>586</a>        harness.run();
+<a href=#587 id=587 data-nosnippet>587</a>        harness
+<a href=#588 id=588 data-nosnippet>588</a>    }
+<a href=#589 id=589 data-nosnippet>589</a>
+<a href=#590 id=590 data-nosnippet>590</a>    <span class="doccomment">/// Performance, switched on, puts each live card's stages on it; off,
+<a href=#591 id=591 data-nosnippet>591</a>    /// none.
+<a href=#592 id=592 data-nosnippet>592</a>    </span><span class="attr">#[test]
+<a href=#593 id=593 data-nosnippet>593</a>    </span><span class="kw">fn </span>performance_shows_each_live_cards_stages() {
+<a href=#594 id=594 data-nosnippet>594</a>        <span class="kw">let </span>(seat, _lines) = <span class="kw">crate</span>::seat::Seat::idle(<span class="number">1</span>, <span class="string">"Ashryn"</span>);
+<a href=#595 id=595 data-nosnippet>595</a>        seat.story()
+<a href=#596 id=596 data-nosnippet>596</a>            .perf
+<a href=#597 id=597 data-nosnippet>597</a>            .reply
+<a href=#598 id=598 data-nosnippet>598</a>            .push(std::time::Duration::from_millis(<span class="number">120</span>));
+<a href=#599 id=599 data-nosnippet>599</a>        <span class="kw">let </span>seats = <span class="macro">vec!</span>[seat];
+<a href=#600 id=600 data-nosnippet>600</a>        <span class="kw">let </span>design = <span class="kw">crate</span>::card::hydras();
+<a href=#601 id=601 data-nosnippet>601</a>        <span class="kw">let </span><span class="kw-2">mut </span>harness = Harness::builder().with_size((<span class="number">700.0</span>, <span class="number">500.0</span>)).build_ui_state(
+<a href=#602 id=602 data-nosnippet>602</a>            |ui, hub: <span class="kw-2">&amp;mut </span>Hub| {
+<a href=#603 id=603 data-nosnippet>603</a>                <span class="kw">let </span>merged = hydra_ui::MergedHistory::default();
+<a href=#604 id=604 data-nosnippet>604</a>                <span class="kw">let </span>view = HubView {
+<a href=#605 id=605 data-nosnippet>605</a>                    merged: <span class="kw-2">&amp;</span>merged,
+<a href=#606 id=606 data-nosnippet>606</a>                    seats: <span class="kw-2">&amp;</span>seats,
+<a href=#607 id=607 data-nosnippet>607</a>                    offered: <span class="kw-2">&amp;</span>[],
+<a href=#608 id=608 data-nosnippet>608</a>                    roster: <span class="kw-2">&amp;</span>[],
+<a href=#609 id=609 data-nosnippet>609</a>                    teams: <span class="kw-2">&amp;</span>[],
+<a href=#610 id=610 data-nosnippet>610</a>                    listing: <span class="prelude-val">None</span>,
+<a href=#611 id=611 data-nosnippet>611</a>                    said: <span class="prelude-val">None</span>,
+<a href=#612 id=612 data-nosnippet>612</a>                    update: <span class="prelude-val">None</span>,
+<a href=#613 id=613 data-nosnippet>613</a>                    card: <span class="kw-2">&amp;</span>design,
+<a href=#614 id=614 data-nosnippet>614</a>                };
+<a href=#615 id=615 data-nosnippet>615</a>                hub.show(ui, <span class="kw-2">&amp;</span>view);
+<a href=#616 id=616 data-nosnippet>616</a>            },
+<a href=#617 id=617 data-nosnippet>617</a>            Hub::default(),
+<a href=#618 id=618 data-nosnippet>618</a>        );
+<a href=#619 id=619 data-nosnippet>619</a>        harness.run();
+<a href=#620 id=620 data-nosnippet>620</a>        <span class="macro">assert!</span>(harness.query_by_label(<span class="string">"Sent -&gt; reply"</span>).is_none(), <span class="string">"off"</span>);
+<a href=#621 id=621 data-nosnippet>621</a>        harness.get_by_label(<span class="string">"Menu"</span>).click();
+<a href=#622 id=622 data-nosnippet>622</a>        harness.run();
+<a href=#623 id=623 data-nosnippet>623</a>        harness.get_by_label(<span class="string">"Performance"</span>).click();
+<a href=#624 id=624 data-nosnippet>624</a>        harness.run();
+<a href=#625 id=625 data-nosnippet>625</a>        <span class="macro">assert!</span>(harness.query_by_label(<span class="string">"Sent -&gt; reply"</span>).is_some());
+<a href=#626 id=626 data-nosnippet>626</a>        <span class="macro">assert_eq!</span>(
+<a href=#627 id=627 data-nosnippet>627</a>            harness.query_all_by_label(<span class="string">"120 ms"</span>).count(),
+<a href=#628 id=628 data-nosnippet>628</a>            <span class="number">2</span>,
+<a href=#629 id=629 data-nosnippet>629</a>            <span class="string">"one sample: its median and its slow end"
+<a href=#630 id=630 data-nosnippet>630</a>        </span>);
+<a href=#631 id=631 data-nosnippet>631</a>    }
+<a href=#632 id=632 data-nosnippet>632</a>
+<a href=#633 id=633 data-nosnippet>633</a>    <span class="doccomment">/// The roster's characters not running, starred first: one with its
+<a href=#634 id=634 data-nosnippet>634</a>    /// password kept starts with a click; one without asks for it.
+<a href=#635 id=635 data-nosnippet>635</a>    </span><span class="attr">#[test]
+<a href=#636 id=636 data-nosnippet>636</a>    </span><span class="kw">fn </span>offline_starts_a_kept_character_and_asks_for_the_rest() {
+<a href=#637 id=637 data-nosnippet>637</a>        <span class="kw">let </span><span class="kw-2">mut </span>harness = harness(Tab::Offline);
+<a href=#638 id=638 data-nosnippet>638</a>        <span class="macro">assert!</span>(harness.query_by_label(<span class="string">"Offline (2)"</span>).is_some());
+<a href=#639 id=639 data-nosnippet>639</a>        <span class="macro">assert!</span>(harness.query_by_label(<span class="string">"Start Nisugi"</span>).is_some());
+<a href=#640 id=640 data-nosnippet>640</a>        <span class="macro">assert!</span>(
+<a href=#641 id=641 data-nosnippet>641</a>            harness.query_by_label(<span class="string">"Log Nerten in"</span>).is_some(),
+<a href=#642 id=642 data-nosnippet>642</a>            <span class="string">"a password to type"
+<a href=#643 id=643 data-nosnippet>643</a>        </span>);
+<a href=#644 id=644 data-nosnippet>644</a>        harness.get_by_label(<span class="string">"Start Nisugi"</span>).click();
+<a href=#645 id=645 data-nosnippet>645</a>        harness.run();
+<a href=#646 id=646 data-nosnippet>646</a>        <span class="macro">assert_eq!</span>(
+<a href=#647 id=647 data-nosnippet>647</a>            harness.state().asked,
+<a href=#648 id=648 data-nosnippet>648</a>            [HubAction::Ask(HubRequest::Add(<span class="string">"Nisugi"</span>.to_owned()))]
+<a href=#649 id=649 data-nosnippet>649</a>        );
+<a href=#650 id=650 data-nosnippet>650</a>        <span class="kw">let </span>starred: Vec&lt;f32&gt; = [<span class="string">"Nisugi"</span>, <span class="string">"Nerten"</span>]
+<a href=#651 id=651 data-nosnippet>651</a>            .map(|name| harness.get_by_label(name).rect().top())
+<a href=#652 id=652 data-nosnippet>652</a>            .to_vec();
+<a href=#653 id=653 data-nosnippet>653</a>        <span class="macro">assert!</span>(starred[<span class="number">0</span>] &lt; starred[<span class="number">1</span>], <span class="string">"the favourite first"</span>);
+<a href=#654 id=654 data-nosnippet>654</a>    }
+<a href=#655 id=655 data-nosnippet>655</a>
+<a href=#656 id=656 data-nosnippet>656</a>    <span class="doccomment">/// Offline holds every character not playing: one that ended this run,
+<a href=#657 id=657 data-nosnippet>657</a>    /// first, then the roster's not on the table. A live one is not there.
+<a href=#658 id=658 data-nosnippet>658</a>    </span><span class="attr">#[test]
+<a href=#659 id=659 data-nosnippet>659</a>    </span><span class="kw">fn </span>offline_holds_the_closed_and_the_roster_not_running() {
+<a href=#660 id=660 data-nosnippet>660</a>        <span class="kw">let </span>(closed, _lines) = <span class="kw">crate</span>::seat::Seat::idle(<span class="number">1</span>, <span class="string">"Ashryn"</span>);
+<a href=#661 id=661 data-nosnippet>661</a>        closed.end();
+<a href=#662 id=662 data-nosnippet>662</a>        <span class="kw">let </span>(live, _live_lines) = <span class="kw">crate</span>::seat::Seat::idle(<span class="number">2</span>, <span class="string">"Dicate"</span>);
+<a href=#663 id=663 data-nosnippet>663</a>        <span class="kw">let </span>seats = <span class="macro">vec!</span>[closed, live];
+<a href=#664 id=664 data-nosnippet>664</a>        <span class="kw">let </span>roster = <span class="macro">vec!</span>[card(<span class="string">"Nisugi"</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>)];
+<a href=#665 id=665 data-nosnippet>665</a>        <span class="kw">let </span>design = <span class="kw">crate</span>::card::hydras();
+<a href=#666 id=666 data-nosnippet>666</a>        <span class="kw">let </span><span class="kw-2">mut </span>harness = Harness::builder().with_size((<span class="number">700.0</span>, <span class="number">500.0</span>)).build_ui_state(
+<a href=#667 id=667 data-nosnippet>667</a>            |ui, hub: <span class="kw-2">&amp;mut </span>Hub| {
+<a href=#668 id=668 data-nosnippet>668</a>                <span class="kw">let </span>merged = hydra_ui::MergedHistory::default();
+<a href=#669 id=669 data-nosnippet>669</a>                <span class="kw">let </span>view = HubView {
+<a href=#670 id=670 data-nosnippet>670</a>                    merged: <span class="kw-2">&amp;</span>merged,
+<a href=#671 id=671 data-nosnippet>671</a>                    seats: <span class="kw-2">&amp;</span>seats,
+<a href=#672 id=672 data-nosnippet>672</a>                    offered: <span class="kw-2">&amp;</span>[<span class="string">"Nisugi"</span>.to_owned()],
+<a href=#673 id=673 data-nosnippet>673</a>                    roster: <span class="kw-2">&amp;</span>roster,
+<a href=#674 id=674 data-nosnippet>674</a>                    teams: <span class="kw-2">&amp;</span>[],
+<a href=#675 id=675 data-nosnippet>675</a>                    listing: <span class="prelude-val">None</span>,
+<a href=#676 id=676 data-nosnippet>676</a>                    said: <span class="prelude-val">None</span>,
+<a href=#677 id=677 data-nosnippet>677</a>                    update: <span class="prelude-val">None</span>,
+<a href=#678 id=678 data-nosnippet>678</a>                    card: <span class="kw-2">&amp;</span>design,
+<a href=#679 id=679 data-nosnippet>679</a>                };
+<a href=#680 id=680 data-nosnippet>680</a>                hub.show(ui, <span class="kw-2">&amp;</span>view);
+<a href=#681 id=681 data-nosnippet>681</a>            },
+<a href=#682 id=682 data-nosnippet>682</a>            Hub {
+<a href=#683 id=683 data-nosnippet>683</a>                tab: Tab::Offline,
+<a href=#684 id=684 data-nosnippet>684</a>                ..Hub::default()
+<a href=#685 id=685 data-nosnippet>685</a>            },
+<a href=#686 id=686 data-nosnippet>686</a>        );
+<a href=#687 id=687 data-nosnippet>687</a>        harness.run();
+<a href=#688 id=688 data-nosnippet>688</a>        <span class="macro">assert!</span>(harness.query_by_label(<span class="string">"Live (1)"</span>).is_some());
+<a href=#689 id=689 data-nosnippet>689</a>        <span class="macro">assert!</span>(harness.query_by_label(<span class="string">"Offline (2)"</span>).is_some());
+<a href=#690 id=690 data-nosnippet>690</a>        <span class="kw">let </span>tops: Vec&lt;f32&gt; = [<span class="string">"Ashryn"</span>, <span class="string">"Nisugi"</span>]
+<a href=#691 id=691 data-nosnippet>691</a>            .map(|name| harness.get_by_label(name).rect().top())
+<a href=#692 id=692 data-nosnippet>692</a>            .to_vec();
+<a href=#693 id=693 data-nosnippet>693</a>        <span class="macro">assert!</span>(tops[<span class="number">0</span>] &lt; tops[<span class="number">1</span>], <span class="string">"the closed first"</span>);
+<a href=#694 id=694 data-nosnippet>694</a>        <span class="macro">assert!</span>(harness.query_by_label(<span class="string">"Dicate"</span>).is_none(), <span class="string">"live, not here"</span>);
+<a href=#695 id=695 data-nosnippet>695</a>    }
+<a href=#696 id=696 data-nosnippet>696</a>
+<a href=#697 id=697 data-nosnippet>697</a>    <span class="doccomment">/// A newer release out is said under the header, and *Update* asks for
+<a href=#698 id=698 data-nosnippet>698</a>    /// it; fetching, a bar shows how far; fetched, when it runs; failed,
+<a href=#699 id=699 data-nosnippet>699</a>    /// why, and *Try again* asks again.
+<a href=#700 id=700 data-nosnippet>700</a>    </span><span class="attr">#[test]
+<a href=#701 id=701 data-nosnippet>701</a>    </span><span class="kw">fn </span>a_newer_release_is_offered_fetched_and_said_ready() {
+<a href=#702 id=702 data-nosnippet>702</a>        <span class="kw">let </span><span class="kw-2">mut </span>harness = harness(Tab::Live);
+<a href=#703 id=703 data-nosnippet>703</a>        <span class="macro">assert!</span>(harness.query_by_label(<span class="string">"Update"</span>).is_none(), <span class="string">"none out"</span>);
+<a href=#704 id=704 data-nosnippet>704</a>        <span class="kw">let </span>out = |fetch| Update {
+<a href=#705 id=705 data-nosnippet>705</a>            version: <span class="string">"0.1.0-beta.3"</span>.to_owned(),
+<a href=#706 id=706 data-nosnippet>706</a>            page: <span class="string">"https://github.com/Nisugi/hydra/releases/tag/v0.1.0-beta.3"</span>.to_owned(),
+<a href=#707 id=707 data-nosnippet>707</a>            fetch,
+<a href=#708 id=708 data-nosnippet>708</a>        };
+<a href=#709 id=709 data-nosnippet>709</a>        harness.state_mut().update = <span class="prelude-val">Some</span>(out(Fetch::Out));
+<a href=#710 id=710 data-nosnippet>710</a>        harness.run();
+<a href=#711 id=711 data-nosnippet>711</a>        <span class="macro">assert!</span>(
+<a href=#712 id=712 data-nosnippet>712</a>            harness
+<a href=#713 id=713 data-nosnippet>713</a>                .query_by_label(<span class="string">"Hydra 0.1.0-beta.3 is out."</span>)
+<a href=#714 id=714 data-nosnippet>714</a>                .is_some()
+<a href=#715 id=715 data-nosnippet>715</a>        );
+<a href=#716 id=716 data-nosnippet>716</a>        <span class="macro">assert!</span>(harness.query_by_label(<span class="string">"What's new"</span>).is_some());
+<a href=#717 id=717 data-nosnippet>717</a>        harness.get_by_label(<span class="string">"Update"</span>).click();
+<a href=#718 id=718 data-nosnippet>718</a>        harness.run();
+<a href=#719 id=719 data-nosnippet>719</a>        <span class="macro">assert_eq!</span>(harness.state().asked, [HubAction::Update]);
+<a href=#720 id=720 data-nosnippet>720</a>
+<a href=#721 id=721 data-nosnippet>721</a>        harness.state_mut().update = <span class="prelude-val">Some</span>(out(Fetch::Fetching(<span class="number">5</span>, <span class="number">10</span>)));
+<a href=#722 id=722 data-nosnippet>722</a>        harness.run();
+<a href=#723 id=723 data-nosnippet>723</a>        <span class="macro">assert!</span>(
+<a href=#724 id=724 data-nosnippet>724</a>            harness
+<a href=#725 id=725 data-nosnippet>725</a>                .query_by_label(<span class="string">"Fetching Hydra 0.1.0-beta.3"</span>)
+<a href=#726 id=726 data-nosnippet>726</a>                .is_some()
+<a href=#727 id=727 data-nosnippet>727</a>        );
+<a href=#728 id=728 data-nosnippet>728</a>        <span class="macro">assert!</span>(harness.query_by_label(<span class="string">"Update"</span>).is_none(), <span class="string">"asked already"</span>);
+<a href=#729 id=729 data-nosnippet>729</a>
+<a href=#730 id=730 data-nosnippet>730</a>        harness.state_mut().update = <span class="prelude-val">Some</span>(out(Fetch::Ready));
+<a href=#731 id=731 data-nosnippet>731</a>        harness.run();
+<a href=#732 id=732 data-nosnippet>732</a>        <span class="macro">assert!</span>(
+<a href=#733 id=733 data-nosnippet>733</a>            harness
+<a href=#734 id=734 data-nosnippet>734</a>                .query_by_label(<span class="string">"Hydra 0.1.0-beta.3 runs from Hydra's next start."</span>)
+<a href=#735 id=735 data-nosnippet>735</a>                .is_some()
+<a href=#736 id=736 data-nosnippet>736</a>        );
+<a href=#737 id=737 data-nosnippet>737</a>
+<a href=#738 id=738 data-nosnippet>738</a>        harness.state_mut().update = <span class="prelude-val">Some</span>(out(Fetch::Failed(<span class="string">"the network went quiet"</span>.to_owned())));
+<a href=#739 id=739 data-nosnippet>739</a>        harness.run();
+<a href=#740 id=740 data-nosnippet>740</a>        <span class="macro">assert!</span>(
+<a href=#741 id=741 data-nosnippet>741</a>            harness
+<a href=#742 id=742 data-nosnippet>742</a>                .query_by_label(<span class="string">"Hydra 0.1.0-beta.3 could not be fetched: the network went quiet"</span>)
+<a href=#743 id=743 data-nosnippet>743</a>                .is_some()
+<a href=#744 id=744 data-nosnippet>744</a>        );
+<a href=#745 id=745 data-nosnippet>745</a>        harness.get_by_label(<span class="string">"Try again"</span>).click();
+<a href=#746 id=746 data-nosnippet>746</a>        harness.run();
+<a href=#747 id=747 data-nosnippet>747</a>        <span class="macro">assert_eq!</span>(
+<a href=#748 id=748 data-nosnippet>748</a>            harness.state().asked,
+<a href=#749 id=749 data-nosnippet>749</a>            [HubAction::Update, HubAction::Update]
+<a href=#750 id=750 data-nosnippet>750</a>        );
+<a href=#751 id=751 data-nosnippet>751</a>    }
+<a href=#752 id=752 data-nosnippet>752</a>
+<a href=#753 id=753 data-nosnippet>753</a>    <span class="doccomment">/// With nothing playing, *Restart now* restarts at once.
+<a href=#754 id=754 data-nosnippet>754</a>    </span><span class="attr">#[test]
+<a href=#755 id=755 data-nosnippet>755</a>    </span><span class="kw">fn </span>restart_now_with_nothing_playing_asks_nothing() {
+<a href=#756 id=756 data-nosnippet>756</a>        <span class="kw">let </span><span class="kw-2">mut </span>harness = harness(Tab::Live);
+<a href=#757 id=757 data-nosnippet>757</a>        harness.state_mut().update = <span class="prelude-val">Some</span>(Update {
+<a href=#758 id=758 data-nosnippet>758</a>            version: <span class="string">"0.1.0-beta.3"</span>.to_owned(),
+<a href=#759 id=759 data-nosnippet>759</a>            page: String::new(),
+<a href=#760 id=760 data-nosnippet>760</a>            fetch: Fetch::Ready,
+<a href=#761 id=761 data-nosnippet>761</a>        });
+<a href=#762 id=762 data-nosnippet>762</a>        harness.run();
+<a href=#763 id=763 data-nosnippet>763</a>        harness.get_by_label(<span class="string">"Restart now"</span>).click();
+<a href=#764 id=764 data-nosnippet>764</a>        harness.run();
+<a href=#765 id=765 data-nosnippet>765</a>        <span class="macro">assert_eq!</span>(
+<a href=#766 id=766 data-nosnippet>766</a>            harness.state().asked,
+<a href=#767 id=767 data-nosnippet>767</a>            [HubAction::Ask(HubRequest::Restart { again: <span class="bool-val">false </span>})]
+<a href=#768 id=768 data-nosnippet>768</a>        );
+<a href=#769 id=769 data-nosnippet>769</a>    }
+<a href=#770 id=770 data-nosnippet>770</a>
+<a href=#771 id=771 data-nosnippet>771</a>    <span class="doccomment">/// With characters playing, *Restart now* names them and asks first;
+<a href=#772 id=772 data-nosnippet>772</a>    /// they start again afterwards unless the box is unticked, and Cancel
+<a href=#773 id=773 data-nosnippet>773</a>    /// asks nothing.
+<a href=#774 id=774 data-nosnippet>774</a>    </span><span class="attr">#[test]
+<a href=#775 id=775 data-nosnippet>775</a>    </span><span class="kw">fn </span>restart_now_names_who_plays_and_offers_them_again() {
+<a href=#776 id=776 data-nosnippet>776</a>        <span class="kw">let </span>(ashryn, _ashryn_lines) = <span class="kw">crate</span>::seat::Seat::idle(<span class="number">1</span>, <span class="string">"Ashryn"</span>);
+<a href=#777 id=777 data-nosnippet>777</a>        <span class="kw">let </span>(dicate, _dicate_lines) = <span class="kw">crate</span>::seat::Seat::idle(<span class="number">2</span>, <span class="string">"Dicate"</span>);
+<a href=#778 id=778 data-nosnippet>778</a>        <span class="kw">let </span>seats = <span class="macro">vec!</span>[ashryn, dicate];
+<a href=#779 id=779 data-nosnippet>779</a>        <span class="kw">let </span>update = Update {
+<a href=#780 id=780 data-nosnippet>780</a>            version: <span class="string">"0.1.0-beta.3"</span>.to_owned(),
+<a href=#781 id=781 data-nosnippet>781</a>            page: String::new(),
+<a href=#782 id=782 data-nosnippet>782</a>            fetch: Fetch::Ready,
+<a href=#783 id=783 data-nosnippet>783</a>        };
+<a href=#784 id=784 data-nosnippet>784</a>        <span class="kw">let </span>design = <span class="kw">crate</span>::card::hydras();
+<a href=#785 id=785 data-nosnippet>785</a>        <span class="kw">let </span><span class="kw-2">mut </span>harness = Harness::builder().with_size((<span class="number">900.0</span>, <span class="number">500.0</span>)).build_ui_state(
+<a href=#786 id=786 data-nosnippet>786</a>            |ui, (hub, asked): <span class="kw-2">&amp;mut </span>(Hub, Vec&lt;HubAction&gt;)| {
+<a href=#787 id=787 data-nosnippet>787</a>                <span class="kw">let </span>merged = hydra_ui::MergedHistory::default();
+<a href=#788 id=788 data-nosnippet>788</a>                <span class="kw">let </span>view = HubView {
+<a href=#789 id=789 data-nosnippet>789</a>                    merged: <span class="kw-2">&amp;</span>merged,
+<a href=#790 id=790 data-nosnippet>790</a>                    seats: <span class="kw-2">&amp;</span>seats,
+<a href=#791 id=791 data-nosnippet>791</a>                    offered: <span class="kw-2">&amp;</span>[],
+<a href=#792 id=792 data-nosnippet>792</a>                    roster: <span class="kw-2">&amp;</span>[],
+<a href=#793 id=793 data-nosnippet>793</a>                    teams: <span class="kw-2">&amp;</span>[],
+<a href=#794 id=794 data-nosnippet>794</a>                    listing: <span class="prelude-val">None</span>,
+<a href=#795 id=795 data-nosnippet>795</a>                    said: <span class="prelude-val">None</span>,
+<a href=#796 id=796 data-nosnippet>796</a>                    update: <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>update),
+<a href=#797 id=797 data-nosnippet>797</a>                    card: <span class="kw-2">&amp;</span>design,
+<a href=#798 id=798 data-nosnippet>798</a>                };
+<a href=#799 id=799 data-nosnippet>799</a>                asked.extend(hub.show(ui, <span class="kw-2">&amp;</span>view));
+<a href=#800 id=800 data-nosnippet>800</a>            },
+<a href=#801 id=801 data-nosnippet>801</a>            (Hub::default(), Vec::new()),
+<a href=#802 id=802 data-nosnippet>802</a>        );
+<a href=#803 id=803 data-nosnippet>803</a>        harness.run();
+<a href=#804 id=804 data-nosnippet>804</a>        <span class="kw">let </span>question = <span class="string">"Restart Hydra now? Ashryn and Dicate will be disconnected."</span>;
+<a href=#805 id=805 data-nosnippet>805</a>        harness.get_by_label(<span class="string">"Restart now"</span>).click();
+<a href=#806 id=806 data-nosnippet>806</a>        harness.run();
+<a href=#807 id=807 data-nosnippet>807</a>        <span class="macro">assert!</span>(harness.query_by_label(question).is_some());
+<a href=#808 id=808 data-nosnippet>808</a>        harness.get_by_label(<span class="string">"Cancel"</span>).click();
+<a href=#809 id=809 data-nosnippet>809</a>        harness.run();
+<a href=#810 id=810 data-nosnippet>810</a>        <span class="macro">assert!</span>(harness.query_by_label(question).is_none());
+<a href=#811 id=811 data-nosnippet>811</a>        <span class="macro">assert!</span>(harness.state().<span class="number">1</span>.is_empty(), <span class="string">"cancelled"</span>);
+<a href=#812 id=812 data-nosnippet>812</a>
+<a href=#813 id=813 data-nosnippet>813</a>        harness.get_by_label(<span class="string">"Restart now"</span>).click();
+<a href=#814 id=814 data-nosnippet>814</a>        harness.run();
+<a href=#815 id=815 data-nosnippet>815</a>        harness.get_by_label(<span class="string">"Restart"</span>).click();
+<a href=#816 id=816 data-nosnippet>816</a>        harness.run();
+<a href=#817 id=817 data-nosnippet>817</a>        harness.get_by_label(<span class="string">"Restart now"</span>).click();
+<a href=#818 id=818 data-nosnippet>818</a>        harness.run();
+<a href=#819 id=819 data-nosnippet>819</a>        harness.get_by_label(<span class="string">"Start them again afterwards"</span>).click();
+<a href=#820 id=820 data-nosnippet>820</a>        harness.run();
+<a href=#821 id=821 data-nosnippet>821</a>        harness.get_by_label(<span class="string">"Restart"</span>).click();
+<a href=#822 id=822 data-nosnippet>822</a>        harness.run();
+<a href=#823 id=823 data-nosnippet>823</a>        <span class="macro">assert_eq!</span>(
+<a href=#824 id=824 data-nosnippet>824</a>            harness.state().<span class="number">1</span>,
+<a href=#825 id=825 data-nosnippet>825</a>            [
+<a href=#826 id=826 data-nosnippet>826</a>                HubAction::Ask(HubRequest::Restart { again: <span class="bool-val">true </span>}),
+<a href=#827 id=827 data-nosnippet>827</a>                HubAction::Ask(HubRequest::Restart { again: <span class="bool-val">false </span>}),
+<a href=#828 id=828 data-nosnippet>828</a>            ]
+<a href=#829 id=829 data-nosnippet>829</a>        );
+<a href=#830 id=830 data-nosnippet>830</a>    }
+<a href=#831 id=831 data-nosnippet>831</a>
+<a href=#832 id=832 data-nosnippet>832</a>    <span class="doccomment">/// The hub's Menu holds the editors under *Editors*, the Explorer, the
+<a href=#833 id=833 data-nosnippet>833</a>    /// Reports, Settings, Pair and Performance, and no play window's
+<a href=#834 id=834 data-nosnippet>834</a>    /// Layout or Logs: one chosen is asked for, and the menu closes.
+<a href=#835 id=835 data-nosnippet>835</a>    </span><span class="attr">#[test]
+<a href=#836 id=836 data-nosnippet>836</a>    </span><span class="kw">fn </span>the_menu_opens_an_editor() {
+<a href=#837 id=837 data-nosnippet>837</a>        <span class="kw">use </span><span class="kw">crate</span>::main_menu::Choice;
+<a href=#838 id=838 data-nosnippet>838</a>        <span class="kw">use </span><span class="kw">crate</span>::settings_menu::Tool;
+<a href=#839 id=839 data-nosnippet>839</a>        <span class="kw">let </span><span class="kw-2">mut </span>harness = harness(Tab::Live);
+<a href=#840 id=840 data-nosnippet>840</a>        <span class="macro">assert!</span>(harness.query_by_label(<span class="string">"Explorer"</span>).is_none(), <span class="string">"in the menu"</span>);
+<a href=#841 id=841 data-nosnippet>841</a>        harness.get_by_label(<span class="string">"Menu"</span>).click();
+<a href=#842 id=842 data-nosnippet>842</a>        harness.run();
+<a href=#843 id=843 data-nosnippet>843</a>        <span class="comment">// (a list's entry, Editors, is named with its arrow after it)
+<a href=#844 id=844 data-nosnippet>844</a>        </span><span class="kw">for </span>name <span class="kw">in </span><span class="kw">crate</span>::main_menu::tests::hub_entries() {
+<a href=#845 id=845 data-nosnippet>845</a>            <span class="macro">assert!</span>(harness.query_by_label_contains(name).is_some(), <span class="string">"{name}"</span>);
+<a href=#846 id=846 data-nosnippet>846</a>        }
+<a href=#847 id=847 data-nosnippet>847</a>        <span class="kw">for </span>name <span class="kw">in </span>[<span class="string">"Layout"</span>, <span class="string">"Logs"</span>, <span class="string">"Survey"</span>] {
+<a href=#848 id=848 data-nosnippet>848</a>            <span class="kw">if </span>name == <span class="string">"Survey" </span>&amp;&amp; <span class="kw">crate</span>::main_menu::SURVEY {
+<a href=#849 id=849 data-nosnippet>849</a>                <span class="kw">continue</span>;
+<a href=#850 id=850 data-nosnippet>850</a>            }
+<a href=#851 id=851 data-nosnippet>851</a>            <span class="macro">assert!</span>(harness.query_by_label(name).is_none(), <span class="string">"{name}"</span>);
+<a href=#852 id=852 data-nosnippet>852</a>        }
+<a href=#853 id=853 data-nosnippet>853</a>        harness.get_by_label(<span class="string">"Explorer"</span>).click();
+<a href=#854 id=854 data-nosnippet>854</a>        harness.run();
+<a href=#855 id=855 data-nosnippet>855</a>        harness.get_by_label(<span class="string">"Menu"</span>).click();
+<a href=#856 id=856 data-nosnippet>856</a>        harness.run();
+<a href=#857 id=857 data-nosnippet>857</a>        harness.get_by_label_contains(<span class="string">"Editors"</span>).click();
+<a href=#858 id=858 data-nosnippet>858</a>        harness.run();
+<a href=#859 id=859 data-nosnippet>859</a>        harness.get_by_label(<span class="string">"Triggers"</span>).click();
+<a href=#860 id=860 data-nosnippet>860</a>        harness.run();
+<a href=#861 id=861 data-nosnippet>861</a>        <span class="macro">assert_eq!</span>(
+<a href=#862 id=862 data-nosnippet>862</a>            harness.state().asked,
+<a href=#863 id=863 data-nosnippet>863</a>            [
+<a href=#864 id=864 data-nosnippet>864</a>                HubAction::Menu(Choice::Open(Tool::Map)),
+<a href=#865 id=865 data-nosnippet>865</a>                HubAction::Menu(Choice::Editor(<span class="kw">crate</span>::editors_menu::Editor::Triggers))
+<a href=#866 id=866 data-nosnippet>866</a>            ]
+<a href=#867 id=867 data-nosnippet>867</a>        );
+<a href=#868 id=868 data-nosnippet>868</a>        <span class="macro">assert!</span>(harness.query_by_label(<span class="string">"Triggers"</span>).is_none(), <span class="string">"closed"</span>);
+<a href=#869 id=869 data-nosnippet>869</a>    }
+<a href=#870 id=870 data-nosnippet>870</a>
+<a href=#871 id=871 data-nosnippet>871</a>    <span class="doccomment">/// A login by account asks for its characters; the listing that comes
+<a href=#872 id=872 data-nosnippet>872</a>    /// back offers each to play.
+<a href=#873 id=873 data-nosnippet>873</a>    </span><span class="attr">#[test]
+<a href=#874 id=874 data-nosnippet>874</a>    </span><span class="kw">fn </span>a_new_login_lists_the_accounts_characters_to_play() {
+<a href=#875 id=875 data-nosnippet>875</a>        <span class="kw">let </span><span class="kw-2">mut </span>harness = harness(Tab::NewLogin);
+<a href=#876 id=876 data-nosnippet>876</a>        <span class="kw">for </span>(role, text) <span class="kw">in </span>[
+<a href=#877 id=877 data-nosnippet>877</a>            (egui::accesskit::Role::TextInput, <span class="string">"ashacct"</span>),
+<a href=#878 id=878 data-nosnippet>878</a>            (egui::accesskit::Role::PasswordInput, <span class="string">"hunter2"</span>),
+<a href=#879 id=879 data-nosnippet>879</a>        ] {
+<a href=#880 id=880 data-nosnippet>880</a>            harness.get_by_role(role).click();
+<a href=#881 id=881 data-nosnippet>881</a>            harness.run();
+<a href=#882 id=882 data-nosnippet>882</a>            harness.get_by_role(role).type_text(text);
+<a href=#883 id=883 data-nosnippet>883</a>            harness.run();
+<a href=#884 id=884 data-nosnippet>884</a>        }
+<a href=#885 id=885 data-nosnippet>885</a>        harness.get_by_label(<span class="string">"Log in"</span>).click();
+<a href=#886 id=886 data-nosnippet>886</a>        harness.run();
+<a href=#887 id=887 data-nosnippet>887</a>        <span class="kw">let </span>asked = <span class="kw-2">&amp;</span>harness.state().asked;
+<a href=#888 id=888 data-nosnippet>888</a>        <span class="macro">assert!</span>(
+<a href=#889 id=889 data-nosnippet>889</a>            <span class="macro">matches!</span>(<span class="kw-2">&amp;</span>asked[..], [HubAction::Ask(HubRequest::Characters(account))]
+<a href=#890 id=890 data-nosnippet>890</a>                <span class="kw">if </span>account.account == <span class="string">"ashacct" </span>&amp;&amp; account.password.expose() == <span class="string">"hunter2"</span>),
+<a href=#891 id=891 data-nosnippet>891</a>            <span class="string">"{asked:?}"
+<a href=#892 id=892 data-nosnippet>892</a>        </span>);
+<a href=#893 id=893 data-nosnippet>893</a>        harness.state_mut().listing = <span class="prelude-val">Some</span>(Listing {
+<a href=#894 id=894 data-nosnippet>894</a>            account: <span class="string">"ashacct"</span>.to_owned(),
+<a href=#895 id=895 data-nosnippet>895</a>            game: <span class="string">"GS3"</span>.to_owned(),
+<a href=#896 id=896 data-nosnippet>896</a>            characters: <span class="macro">vec!</span>[<span class="string">"Ashryn"</span>.to_owned()],
+<a href=#897 id=897 data-nosnippet>897</a>        });
+<a href=#898 id=898 data-nosnippet>898</a>        harness.run();
+<a href=#899 id=899 data-nosnippet>899</a>        harness.get_by_label(<span class="string">"Play"</span>).click();
+<a href=#900 id=900 data-nosnippet>900</a>        harness.run();
+<a href=#901 id=901 data-nosnippet>901</a>        <span class="macro">assert!</span>(
+<a href=#902 id=902 data-nosnippet>902</a>            <span class="macro">matches!</span>(harness.state().asked.last(), <span class="prelude-val">Some</span>(HubAction::Ask(HubRequest::Login(login)))
+<a href=#903 id=903 data-nosnippet>903</a>                <span class="kw">if </span>login.character == <span class="string">"Ashryn" </span>&amp;&amp; login.password.expose() == <span class="string">"hunter2"</span>),
+<a href=#904 id=904 data-nosnippet>904</a>            <span class="string">"{:?}"</span>,
+<a href=#905 id=905 data-nosnippet>905</a>            harness.state().asked
+<a href=#906 id=906 data-nosnippet>906</a>        );
+<a href=#907 id=907 data-nosnippet>907</a>    }
+<a href=#908 id=908 data-nosnippet>908</a>}
 </code></pre></div></section></main></body></html>

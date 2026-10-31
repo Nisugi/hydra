@@ -59,165 +59,187 @@
 <a href=#59 id=59 data-nosnippet>59</a>/// first, and counted: nothing is dropped without saying so.
 <a href=#60 id=60 data-nosnippet>60</a></span><span class="kw">pub const </span>MAX_PENDING_CHUNKS: usize = <span class="number">64</span>;
 <a href=#61 id=61 data-nosnippet>61</a>
-<a href=#62 id=62 data-nosnippet>62</a><span class="doccomment">/// The combat consumer's state between chunks.
-<a href=#63 id=63 data-nosnippet>63</a></span><span class="attr">#[derive(Clone, Default)]
-<a href=#64 id=64 data-nosnippet>64</a></span><span class="kw">pub struct </span>CombatTracker {
-<a href=#65 id=65 data-nosnippet>65</a>    <span class="doccomment">/// A bare `cast` gesture whose spell result has not arrived yet.
-<a href=#66 id=66 data-nosnippet>66</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) held_cast: <span class="prelude-ty">Option</span>&lt;AttackEvent&gt;,
-<a href=#67 id=67 data-nosnippet>67</a>    <span class="doccomment">/// Pre-flares no swing claimed, held for the next chunk's first swing.
-<a href=#68 id=68 data-nosnippet>68</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) held_pre_flares: Vec&lt;FlareEvent&gt;,
-<a href=#69 id=69 data-nosnippet>69</a>    <span class="doccomment">/// The open single-target multi-round attack.
-<a href=#70 id=70 data-nosnippet>70</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) active_assault: <span class="prelude-ty">Option</span>&lt;ActiveAssault&gt;,
-<a href=#71 id=71 data-nosnippet>71</a>    <span class="doccomment">/// The volley under way: how many hails have fallen since it was
-<a href=#72 id=72 data-nosnippet>72</a>    /// loosed, which is the round its arrows are in. `None` between
-<a href=#73 id=73 data-nosnippet>73</a>    /// volleys.
-<a href=#74 id=74 data-nosnippet>74</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) volley_round: <span class="prelude-ty">Option</span>&lt;u8&gt;,
-<a href=#75 id=75 data-nosnippet>75</a>    <span class="doccomment">/// The last creature stomp: when, and who. Every shake of the ground
-<a href=#76 id=76 data-nosnippet>76</a>    /// within its tremor is that creature's warding roll on the room.
-<a href=#77 id=77 data-nosnippet>77</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) tremors: <span class="prelude-ty">Option</span>&lt;(u32, Actor)&gt;,
-<a href=#78 id=78 data-nosnippet>78</a>    <span class="doccomment">/// The crit tables, when the session has provided them.
-<a href=#79 id=79 data-nosnippet>79</a>    </span>crit: <span class="prelude-ty">Option</span>&lt;Arc&lt;CritTables&gt;&gt;,
-<a href=#80 id=80 data-nosnippet>80</a>    <span class="doccomment">/// Facts not yet drained by a consumer, oldest first.
-<a href=#81 id=81 data-nosnippet>81</a>    </span>pending: VecDeque&lt;ChunkFacts&gt;,
-<a href=#82 id=82 data-nosnippet>82</a>    <span class="doccomment">/// Chunks' facts dropped to the cap before anyone drained them.
-<a href=#83 id=83 data-nosnippet>83</a>    </span>dropped: usize,
-<a href=#84 id=84 data-nosnippet>84</a>    <span class="doccomment">/// How many chunks have been consumed, ever.
-<a href=#85 id=85 data-nosnippet>85</a>    </span>chunks_seen: u64,
-<a href=#86 id=86 data-nosnippet>86</a>}
-<a href=#87 id=87 data-nosnippet>87</a>
-<a href=#88 id=88 data-nosnippet>88</a><span class="kw">impl </span>std::fmt::Debug <span class="kw">for </span>CombatTracker {
-<a href=#89 id=89 data-nosnippet>89</a>    <span class="doccomment">/// `CritTables` is 2,394 compiled patterns and does not print itself;
-<a href=#90 id=90 data-nosnippet>90</a>    /// whether the handle is set is the fact worth showing.
-<a href=#91 id=91 data-nosnippet>91</a>    </span><span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; std::fmt::Result {
-<a href=#92 id=92 data-nosnippet>92</a>        f.debug_struct(<span class="string">"CombatTracker"</span>)
-<a href=#93 id=93 data-nosnippet>93</a>            .field(<span class="string">"held_cast"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.held_cast)
-<a href=#94 id=94 data-nosnippet>94</a>            .field(<span class="string">"held_pre_flares"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.held_pre_flares)
-<a href=#95 id=95 data-nosnippet>95</a>            .field(<span class="string">"active_assault"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.active_assault)
-<a href=#96 id=96 data-nosnippet>96</a>            .field(<span class="string">"volley_round"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.volley_round)
-<a href=#97 id=97 data-nosnippet>97</a>            .field(<span class="string">"tremors"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.tremors)
-<a href=#98 id=98 data-nosnippet>98</a>            .field(<span class="string">"crit_tables"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.crit.is_some())
-<a href=#99 id=99 data-nosnippet>99</a>            .field(<span class="string">"pending"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.pending.len())
-<a href=#100 id=100 data-nosnippet>100</a>            .field(<span class="string">"dropped"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.dropped)
-<a href=#101 id=101 data-nosnippet>101</a>            .field(<span class="string">"chunks_seen"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.chunks_seen)
-<a href=#102 id=102 data-nosnippet>102</a>            .finish()
-<a href=#103 id=103 data-nosnippet>103</a>    }
-<a href=#104 id=104 data-nosnippet>104</a>}
-<a href=#105 id=105 data-nosnippet>105</a>
-<a href=#106 id=106 data-nosnippet>106</a><span class="kw">impl </span>PartialEq <span class="kw">for </span>CombatTracker {
-<a href=#107 id=107 data-nosnippet>107</a>    <span class="doccomment">/// Everything but the tables themselves: whether they are set is
-<a href=#108 id=108 data-nosnippet>108</a>    /// compared, their 2,394 rows are not. `GameState` derives `Eq` over
-<a href=#109 id=109 data-nosnippet>109</a>    /// this, and no `f64` here comes from anywhere but parsed digits.
-<a href=#110 id=110 data-nosnippet>110</a>    </span><span class="kw">fn </span>eq(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; bool {
-<a href=#111 id=111 data-nosnippet>111</a>        <span class="self">self</span>.held_cast == other.held_cast
-<a href=#112 id=112 data-nosnippet>112</a>            &amp;&amp; <span class="self">self</span>.held_pre_flares == other.held_pre_flares
-<a href=#113 id=113 data-nosnippet>113</a>            &amp;&amp; <span class="self">self</span>.active_assault == other.active_assault
-<a href=#114 id=114 data-nosnippet>114</a>            &amp;&amp; <span class="self">self</span>.crit.is_some() == other.crit.is_some()
-<a href=#115 id=115 data-nosnippet>115</a>            &amp;&amp; <span class="self">self</span>.pending == other.pending
-<a href=#116 id=116 data-nosnippet>116</a>            &amp;&amp; <span class="self">self</span>.dropped == other.dropped
-<a href=#117 id=117 data-nosnippet>117</a>            &amp;&amp; <span class="self">self</span>.chunks_seen == other.chunks_seen
-<a href=#118 id=118 data-nosnippet>118</a>    }
-<a href=#119 id=119 data-nosnippet>119</a>}
-<a href=#120 id=120 data-nosnippet>120</a>
-<a href=#121 id=121 data-nosnippet>121</a><span class="kw">impl </span>Eq <span class="kw">for </span>CombatTracker {}
-<a href=#122 id=122 data-nosnippet>122</a>
-<a href=#123 id=123 data-nosnippet>123</a><span class="kw">impl </span>CombatTracker {
-<a href=#124 id=124 data-nosnippet>124</a>    <span class="doccomment">/// Give the tracker its crit tables.
-<a href=#125 id=125 data-nosnippet>125</a>    ///
-<a href=#126 id=126 data-nosnippet>126</a>    /// The session builds one `CritTables` and shares it as an `Arc`. Until
-<a href=#127 id=127 data-nosnippet>127</a>    /// this is called, hits carry no crit.
-<a href=#128 id=128 data-nosnippet>128</a>    </span><span class="kw">pub fn </span>set_crit_tables(<span class="kw-2">&amp;mut </span><span class="self">self</span>, tables: Arc&lt;CritTables&gt;) {
-<a href=#129 id=129 data-nosnippet>129</a>        <span class="self">self</span>.crit = <span class="prelude-val">Some</span>(tables);
-<a href=#130 id=130 data-nosnippet>130</a>    }
-<a href=#131 id=131 data-nosnippet>131</a>
-<a href=#132 id=132 data-nosnippet>132</a>    <span class="doccomment">/// The crit tables, if provided.
-<a href=#133 id=133 data-nosnippet>133</a>    </span><span class="attr">#[must_use]
-<a href=#134 id=134 data-nosnippet>134</a>    </span><span class="kw">pub fn </span>crit_tables(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>CritTables&gt; {
-<a href=#135 id=135 data-nosnippet>135</a>        <span class="self">self</span>.crit.as_deref()
-<a href=#136 id=136 data-nosnippet>136</a>    }
-<a href=#137 id=137 data-nosnippet>137</a>
-<a href=#138 id=138 data-nosnippet>138</a>    <span class="doccomment">/// The open assault, if any.
-<a href=#139 id=139 data-nosnippet>139</a>    </span><span class="attr">#[must_use]
-<a href=#140 id=140 data-nosnippet>140</a>    </span><span class="kw">pub const fn </span>active_assault(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>ActiveAssault&gt; {
-<a href=#141 id=141 data-nosnippet>141</a>        <span class="self">self</span>.active_assault.as_ref()
-<a href=#142 id=142 data-nosnippet>142</a>    }
-<a href=#143 id=143 data-nosnippet>143</a>
-<a href=#144 id=144 data-nosnippet>144</a>    <span class="doccomment">/// Is a bare cast being held for the next chunk?
-<a href=#145 id=145 data-nosnippet>145</a>    </span><span class="attr">#[must_use]
-<a href=#146 id=146 data-nosnippet>146</a>    </span><span class="kw">pub const fn </span>holds_a_cast(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-<a href=#147 id=147 data-nosnippet>147</a>        <span class="self">self</span>.held_cast.is_some()
-<a href=#148 id=148 data-nosnippet>148</a>    }
-<a href=#149 id=149 data-nosnippet>149</a>
-<a href=#150 id=150 data-nosnippet>150</a>    <span class="doccomment">/// How many pre-flares are held for the next chunk.
-<a href=#151 id=151 data-nosnippet>151</a>    </span><span class="attr">#[must_use]
-<a href=#152 id=152 data-nosnippet>152</a>    </span><span class="kw">pub fn </span>held_pre_flare_count(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
-<a href=#153 id=153 data-nosnippet>153</a>        <span class="self">self</span>.held_pre_flares.len()
-<a href=#154 id=154 data-nosnippet>154</a>    }
-<a href=#155 id=155 data-nosnippet>155</a>
-<a href=#156 id=156 data-nosnippet>156</a>    <span class="doccomment">/// Chunks consumed so far.
-<a href=#157 id=157 data-nosnippet>157</a>    </span><span class="attr">#[must_use]
-<a href=#158 id=158 data-nosnippet>158</a>    </span><span class="kw">pub const fn </span>chunks_seen(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u64 {
-<a href=#159 id=159 data-nosnippet>159</a>        <span class="self">self</span>.chunks_seen
-<a href=#160 id=160 data-nosnippet>160</a>    }
-<a href=#161 id=161 data-nosnippet>161</a>
-<a href=#162 id=162 data-nosnippet>162</a>    <span class="doccomment">/// Facts dropped to the pending cap before being drained.
-<a href=#163 id=163 data-nosnippet>163</a>    </span><span class="attr">#[must_use]
-<a href=#164 id=164 data-nosnippet>164</a>    </span><span class="kw">pub const fn </span>dropped(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
-<a href=#165 id=165 data-nosnippet>165</a>        <span class="self">self</span>.dropped
-<a href=#166 id=166 data-nosnippet>166</a>    }
-<a href=#167 id=167 data-nosnippet>167</a>
-<a href=#168 id=168 data-nosnippet>168</a>    <span class="doccomment">/// Take every pending chunk's facts, oldest first.
-<a href=#169 id=169 data-nosnippet>169</a>    </span><span class="kw">pub fn </span>take_facts(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Vec&lt;ChunkFacts&gt; {
-<a href=#170 id=170 data-nosnippet>170</a>        <span class="self">self</span>.pending.drain(..).collect()
-<a href=#171 id=171 data-nosnippet>171</a>    }
-<a href=#172 id=172 data-nosnippet>172</a>
-<a href=#173 id=173 data-nosnippet>173</a>    <span class="doccomment">/// The most recent chunk's facts, without taking them.
-<a href=#174 id=174 data-nosnippet>174</a>    </span><span class="attr">#[must_use]
-<a href=#175 id=175 data-nosnippet>175</a>    </span><span class="kw">pub fn </span>last_facts(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>ChunkFacts&gt; {
-<a href=#176 id=176 data-nosnippet>176</a>        <span class="self">self</span>.pending.back()
-<a href=#177 id=177 data-nosnippet>177</a>    }
-<a href=#178 id=178 data-nosnippet>178</a>
-<a href=#179 id=179 data-nosnippet>179</a>    <span class="doccomment">/// Parse one completed chunk into its facts, without publishing them.
-<a href=#180 id=180 data-nosnippet>180</a>    ///
-<a href=#181 id=181 data-nosnippet>181</a>    /// `at` is the chunk's prompt time -- the server epoch second the prompt
-<a href=#182 id=182 data-nosnippet>182</a>    /// carried -- which stamps every event. `GameState::close_chunk` applies
-<a href=#183 id=183 data-nosnippet>183</a>    /// the facts to the creature registry between this and [`Self::publish`],
-<a href=#184 id=184 data-nosnippet>184</a>    /// in that order: parse, persist, then emit.
-<a href=#185 id=185 data-nosnippet>185</a>    </span><span class="kw">pub fn </span>parse_chunk(<span class="kw-2">&amp;mut </span><span class="self">self</span>, chunk: <span class="kw-2">&amp;</span>Chunk, at: <span class="prelude-ty">Option</span>&lt;u32&gt;) -&gt; ChunkFacts {
-<a href=#186 id=186 data-nosnippet>186</a>        <span class="self">self</span>.chunks_seen = <span class="self">self</span>.chunks_seen.saturating_add(<span class="number">1</span>);
-<a href=#187 id=187 data-nosnippet>187</a>        <span class="kw">super</span>::parse::parse_chunk(<span class="self">self</span>, chunk, at)
+<a href=#62 id=62 data-nosnippet>62</a><span class="doccomment">/// A nearby player's cast in flight: who gestured, the def name of the
+<a href=#63 id=63 data-nosnippet>63</a>/// multi-round spell it turned out to be once a round named it, and when
+<a href=#64 id=64 data-nosnippet>64</a>/// the caster was last seen at it.
+<a href=#65 id=65 data-nosnippet>65</a></span><span class="attr">#[derive(Clone, Debug, PartialEq, Eq)]
+<a href=#66 id=66 data-nosnippet>66</a></span><span class="kw">pub struct </span>ForeignSpell {
+<a href=#67 id=67 data-nosnippet>67</a>    <span class="doccomment">/// The caster, as the gesture named them.
+<a href=#68 id=68 data-nosnippet>68</a>    </span><span class="kw">pub </span>caster: Actor,
+<a href=#69 id=69 data-nosnippet>69</a>    <span class="doccomment">/// The rounds' def name (`divine_wrath`), once a round bound it.
+<a href=#70 id=70 data-nosnippet>70</a>    </span><span class="kw">pub </span>name: <span class="prelude-ty">Option</span>&lt;String&gt;,
+<a href=#71 id=71 data-nosnippet>71</a>    <span class="doccomment">/// The chunk time of the gesture or the last round.
+<a href=#72 id=72 data-nosnippet>72</a>    </span><span class="kw">pub </span>at: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+<a href=#73 id=73 data-nosnippet>73</a>}
+<a href=#74 id=74 data-nosnippet>74</a>
+<a href=#75 id=75 data-nosnippet>75</a><span class="doccomment">/// The combat consumer's state between chunks.
+<a href=#76 id=76 data-nosnippet>76</a></span><span class="attr">#[derive(Clone, Default)]
+<a href=#77 id=77 data-nosnippet>77</a></span><span class="kw">pub struct </span>CombatTracker {
+<a href=#78 id=78 data-nosnippet>78</a>    <span class="doccomment">/// A bare `cast` gesture whose spell result has not arrived yet.
+<a href=#79 id=79 data-nosnippet>79</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) held_cast: <span class="prelude-ty">Option</span>&lt;AttackEvent&gt;,
+<a href=#80 id=80 data-nosnippet>80</a>    <span class="doccomment">/// Pre-flares no swing claimed, held for the next chunk's first swing.
+<a href=#81 id=81 data-nosnippet>81</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) held_pre_flares: Vec&lt;FlareEvent&gt;,
+<a href=#82 id=82 data-nosnippet>82</a>    <span class="doccomment">/// The open single-target multi-round attack.
+<a href=#83 id=83 data-nosnippet>83</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) active_assault: <span class="prelude-ty">Option</span>&lt;ActiveAssault&gt;,
+<a href=#84 id=84 data-nosnippet>84</a>    <span class="doccomment">/// The volley under way: how many hails have fallen since it was
+<a href=#85 id=85 data-nosnippet>85</a>    /// loosed, which is the round its arrows are in. `None` between
+<a href=#86 id=86 data-nosnippet>86</a>    /// volleys.
+<a href=#87 id=87 data-nosnippet>87</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) volley_round: <span class="prelude-ty">Option</span>&lt;u8&gt;,
+<a href=#88 id=88 data-nosnippet>88</a>    <span class="doccomment">/// The last creature stomp: when, and who. Every shake of the ground
+<a href=#89 id=89 data-nosnippet>89</a>    /// within its tremor is that creature's warding roll on the room.
+<a href=#90 id=90 data-nosnippet>90</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) tremors: <span class="prelude-ty">Option</span>&lt;(u32, Actor)&gt;,
+<a href=#91 id=91 data-nosnippet>91</a>    <span class="doccomment">/// A nearby player's multi-round spell under way. Its later rounds name
+<a href=#92 id=92 data-nosnippet>92</a>    /// nobody and come chunks apart, between our own swings: each is the
+<a href=#93 id=93 data-nosnippet>93</a>    /// caster's until the caster's closing line, or the rounds stop.
+<a href=#94 id=94 data-nosnippet>94</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) foreign_spell: <span class="prelude-ty">Option</span>&lt;ForeignSpell&gt;,
+<a href=#95 id=95 data-nosnippet>95</a>    <span class="doccomment">/// Our own opening of a multi-round spell, by def name and chunk
+<a href=#96 id=96 data-nosnippet>96</a>    /// time: its rounds are ours whoever gestured nearby.
+<a href=#97 id=97 data-nosnippet>97</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) own_spell: <span class="prelude-ty">Option</span>&lt;(String, u32)&gt;,
+<a href=#98 id=98 data-nosnippet>98</a>    <span class="doccomment">/// The crit tables, when the session has provided them.
+<a href=#99 id=99 data-nosnippet>99</a>    </span>crit: <span class="prelude-ty">Option</span>&lt;Arc&lt;CritTables&gt;&gt;,
+<a href=#100 id=100 data-nosnippet>100</a>    <span class="doccomment">/// Facts not yet drained by a consumer, oldest first.
+<a href=#101 id=101 data-nosnippet>101</a>    </span>pending: VecDeque&lt;ChunkFacts&gt;,
+<a href=#102 id=102 data-nosnippet>102</a>    <span class="doccomment">/// Chunks' facts dropped to the cap before anyone drained them.
+<a href=#103 id=103 data-nosnippet>103</a>    </span>dropped: usize,
+<a href=#104 id=104 data-nosnippet>104</a>    <span class="doccomment">/// How many chunks have been consumed, ever.
+<a href=#105 id=105 data-nosnippet>105</a>    </span>chunks_seen: u64,
+<a href=#106 id=106 data-nosnippet>106</a>}
+<a href=#107 id=107 data-nosnippet>107</a>
+<a href=#108 id=108 data-nosnippet>108</a><span class="kw">impl </span>std::fmt::Debug <span class="kw">for </span>CombatTracker {
+<a href=#109 id=109 data-nosnippet>109</a>    <span class="doccomment">/// `CritTables` is 2,394 compiled patterns and does not print itself;
+<a href=#110 id=110 data-nosnippet>110</a>    /// whether the handle is set is the fact worth showing.
+<a href=#111 id=111 data-nosnippet>111</a>    </span><span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; std::fmt::Result {
+<a href=#112 id=112 data-nosnippet>112</a>        f.debug_struct(<span class="string">"CombatTracker"</span>)
+<a href=#113 id=113 data-nosnippet>113</a>            .field(<span class="string">"held_cast"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.held_cast)
+<a href=#114 id=114 data-nosnippet>114</a>            .field(<span class="string">"held_pre_flares"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.held_pre_flares)
+<a href=#115 id=115 data-nosnippet>115</a>            .field(<span class="string">"active_assault"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.active_assault)
+<a href=#116 id=116 data-nosnippet>116</a>            .field(<span class="string">"volley_round"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.volley_round)
+<a href=#117 id=117 data-nosnippet>117</a>            .field(<span class="string">"tremors"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.tremors)
+<a href=#118 id=118 data-nosnippet>118</a>            .field(<span class="string">"foreign_spell"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.foreign_spell)
+<a href=#119 id=119 data-nosnippet>119</a>            .field(<span class="string">"own_spell"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.own_spell)
+<a href=#120 id=120 data-nosnippet>120</a>            .field(<span class="string">"crit_tables"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.crit.is_some())
+<a href=#121 id=121 data-nosnippet>121</a>            .field(<span class="string">"pending"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.pending.len())
+<a href=#122 id=122 data-nosnippet>122</a>            .field(<span class="string">"dropped"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.dropped)
+<a href=#123 id=123 data-nosnippet>123</a>            .field(<span class="string">"chunks_seen"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.chunks_seen)
+<a href=#124 id=124 data-nosnippet>124</a>            .finish()
+<a href=#125 id=125 data-nosnippet>125</a>    }
+<a href=#126 id=126 data-nosnippet>126</a>}
+<a href=#127 id=127 data-nosnippet>127</a>
+<a href=#128 id=128 data-nosnippet>128</a><span class="kw">impl </span>PartialEq <span class="kw">for </span>CombatTracker {
+<a href=#129 id=129 data-nosnippet>129</a>    <span class="doccomment">/// Everything but the tables themselves: whether they are set is
+<a href=#130 id=130 data-nosnippet>130</a>    /// compared, their 2,394 rows are not. `GameState` derives `Eq` over
+<a href=#131 id=131 data-nosnippet>131</a>    /// this, and no `f64` here comes from anywhere but parsed digits.
+<a href=#132 id=132 data-nosnippet>132</a>    </span><span class="kw">fn </span>eq(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; bool {
+<a href=#133 id=133 data-nosnippet>133</a>        <span class="self">self</span>.held_cast == other.held_cast
+<a href=#134 id=134 data-nosnippet>134</a>            &amp;&amp; <span class="self">self</span>.held_pre_flares == other.held_pre_flares
+<a href=#135 id=135 data-nosnippet>135</a>            &amp;&amp; <span class="self">self</span>.active_assault == other.active_assault
+<a href=#136 id=136 data-nosnippet>136</a>            &amp;&amp; <span class="self">self</span>.crit.is_some() == other.crit.is_some()
+<a href=#137 id=137 data-nosnippet>137</a>            &amp;&amp; <span class="self">self</span>.pending == other.pending
+<a href=#138 id=138 data-nosnippet>138</a>            &amp;&amp; <span class="self">self</span>.dropped == other.dropped
+<a href=#139 id=139 data-nosnippet>139</a>            &amp;&amp; <span class="self">self</span>.chunks_seen == other.chunks_seen
+<a href=#140 id=140 data-nosnippet>140</a>    }
+<a href=#141 id=141 data-nosnippet>141</a>}
+<a href=#142 id=142 data-nosnippet>142</a>
+<a href=#143 id=143 data-nosnippet>143</a><span class="kw">impl </span>Eq <span class="kw">for </span>CombatTracker {}
+<a href=#144 id=144 data-nosnippet>144</a>
+<a href=#145 id=145 data-nosnippet>145</a><span class="kw">impl </span>CombatTracker {
+<a href=#146 id=146 data-nosnippet>146</a>    <span class="doccomment">/// Give the tracker its crit tables.
+<a href=#147 id=147 data-nosnippet>147</a>    ///
+<a href=#148 id=148 data-nosnippet>148</a>    /// The session builds one `CritTables` and shares it as an `Arc`. Until
+<a href=#149 id=149 data-nosnippet>149</a>    /// this is called, hits carry no crit.
+<a href=#150 id=150 data-nosnippet>150</a>    </span><span class="kw">pub fn </span>set_crit_tables(<span class="kw-2">&amp;mut </span><span class="self">self</span>, tables: Arc&lt;CritTables&gt;) {
+<a href=#151 id=151 data-nosnippet>151</a>        <span class="self">self</span>.crit = <span class="prelude-val">Some</span>(tables);
+<a href=#152 id=152 data-nosnippet>152</a>    }
+<a href=#153 id=153 data-nosnippet>153</a>
+<a href=#154 id=154 data-nosnippet>154</a>    <span class="doccomment">/// The crit tables, if provided.
+<a href=#155 id=155 data-nosnippet>155</a>    </span><span class="attr">#[must_use]
+<a href=#156 id=156 data-nosnippet>156</a>    </span><span class="kw">pub fn </span>crit_tables(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>CritTables&gt; {
+<a href=#157 id=157 data-nosnippet>157</a>        <span class="self">self</span>.crit.as_deref()
+<a href=#158 id=158 data-nosnippet>158</a>    }
+<a href=#159 id=159 data-nosnippet>159</a>
+<a href=#160 id=160 data-nosnippet>160</a>    <span class="doccomment">/// The open assault, if any.
+<a href=#161 id=161 data-nosnippet>161</a>    </span><span class="attr">#[must_use]
+<a href=#162 id=162 data-nosnippet>162</a>    </span><span class="kw">pub const fn </span>active_assault(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>ActiveAssault&gt; {
+<a href=#163 id=163 data-nosnippet>163</a>        <span class="self">self</span>.active_assault.as_ref()
+<a href=#164 id=164 data-nosnippet>164</a>    }
+<a href=#165 id=165 data-nosnippet>165</a>
+<a href=#166 id=166 data-nosnippet>166</a>    <span class="doccomment">/// Is a bare cast being held for the next chunk?
+<a href=#167 id=167 data-nosnippet>167</a>    </span><span class="attr">#[must_use]
+<a href=#168 id=168 data-nosnippet>168</a>    </span><span class="kw">pub const fn </span>holds_a_cast(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+<a href=#169 id=169 data-nosnippet>169</a>        <span class="self">self</span>.held_cast.is_some()
+<a href=#170 id=170 data-nosnippet>170</a>    }
+<a href=#171 id=171 data-nosnippet>171</a>
+<a href=#172 id=172 data-nosnippet>172</a>    <span class="doccomment">/// How many pre-flares are held for the next chunk.
+<a href=#173 id=173 data-nosnippet>173</a>    </span><span class="attr">#[must_use]
+<a href=#174 id=174 data-nosnippet>174</a>    </span><span class="kw">pub fn </span>held_pre_flare_count(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+<a href=#175 id=175 data-nosnippet>175</a>        <span class="self">self</span>.held_pre_flares.len()
+<a href=#176 id=176 data-nosnippet>176</a>    }
+<a href=#177 id=177 data-nosnippet>177</a>
+<a href=#178 id=178 data-nosnippet>178</a>    <span class="doccomment">/// Chunks consumed so far.
+<a href=#179 id=179 data-nosnippet>179</a>    </span><span class="attr">#[must_use]
+<a href=#180 id=180 data-nosnippet>180</a>    </span><span class="kw">pub const fn </span>chunks_seen(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u64 {
+<a href=#181 id=181 data-nosnippet>181</a>        <span class="self">self</span>.chunks_seen
+<a href=#182 id=182 data-nosnippet>182</a>    }
+<a href=#183 id=183 data-nosnippet>183</a>
+<a href=#184 id=184 data-nosnippet>184</a>    <span class="doccomment">/// Facts dropped to the pending cap before being drained.
+<a href=#185 id=185 data-nosnippet>185</a>    </span><span class="attr">#[must_use]
+<a href=#186 id=186 data-nosnippet>186</a>    </span><span class="kw">pub const fn </span>dropped(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+<a href=#187 id=187 data-nosnippet>187</a>        <span class="self">self</span>.dropped
 <a href=#188 id=188 data-nosnippet>188</a>    }
 <a href=#189 id=189 data-nosnippet>189</a>
-<a href=#190 id=190 data-nosnippet>190</a>    <span class="doccomment">/// Queue a chunk's facts for a consumer to drain. Empty facts are not
-<a href=#191 id=191 data-nosnippet>191</a>    /// queued.
-<a href=#192 id=192 data-nosnippet>192</a>    </span><span class="kw">pub fn </span>publish(<span class="kw-2">&amp;mut </span><span class="self">self</span>, facts: ChunkFacts) {
-<a href=#193 id=193 data-nosnippet>193</a>        <span class="kw">if </span>facts.is_empty() {
-<a href=#194 id=194 data-nosnippet>194</a>            <span class="kw">return</span>;
-<a href=#195 id=195 data-nosnippet>195</a>        }
-<a href=#196 id=196 data-nosnippet>196</a>        <span class="kw">if </span><span class="self">self</span>.pending.len() &gt;= MAX_PENDING_CHUNKS {
-<a href=#197 id=197 data-nosnippet>197</a>            <span class="self">self</span>.pending.pop_front();
-<a href=#198 id=198 data-nosnippet>198</a>            <span class="self">self</span>.dropped = <span class="self">self</span>.dropped.saturating_add(<span class="number">1</span>);
-<a href=#199 id=199 data-nosnippet>199</a>        }
-<a href=#200 id=200 data-nosnippet>200</a>        <span class="self">self</span>.pending.push_back(facts);
-<a href=#201 id=201 data-nosnippet>201</a>    }
-<a href=#202 id=202 data-nosnippet>202</a>
-<a href=#203 id=203 data-nosnippet>203</a>    <span class="doccomment">/// Parse and publish in one step: the registry-less path.
-<a href=#204 id=204 data-nosnippet>204</a>    </span><span class="kw">pub fn </span>consume_chunk(<span class="kw-2">&amp;mut </span><span class="self">self</span>, chunk: <span class="kw-2">&amp;</span>Chunk, at: <span class="prelude-ty">Option</span>&lt;u32&gt;) {
-<a href=#205 id=205 data-nosnippet>205</a>        <span class="kw">let </span>facts = <span class="self">self</span>.parse_chunk(chunk, at);
-<a href=#206 id=206 data-nosnippet>206</a>        <span class="self">self</span>.publish(facts);
-<a href=#207 id=207 data-nosnippet>207</a>    }
-<a href=#208 id=208 data-nosnippet>208</a>
-<a href=#209 id=209 data-nosnippet>209</a>    <span class="doccomment">/// Forget everything a new connection has not re-taught.
-<a href=#210 id=210 data-nosnippet>210</a>    ///
-<a href=#211 id=211 data-nosnippet>211</a>    /// A held cast or pre-flare belongs to a chunk the old connection never
-<a href=#212 id=212 data-nosnippet>212</a>    /// finished; an assault bracket cannot outlive the fight it was in.
-<a href=#213 id=213 data-nosnippet>213</a>    /// The model's own reconnect invalidation, run on the session's
-<a href=#214 id=214 data-nosnippet>214</a>    /// reconnect, calls this.
-<a href=#215 id=215 data-nosnippet>215</a>    </span><span class="kw">pub fn </span>invalidate_for_reconnect(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
-<a href=#216 id=216 data-nosnippet>216</a>        <span class="self">self</span>.held_cast = <span class="prelude-val">None</span>;
-<a href=#217 id=217 data-nosnippet>217</a>        <span class="self">self</span>.held_pre_flares.clear();
-<a href=#218 id=218 data-nosnippet>218</a>        <span class="self">self</span>.active_assault = <span class="prelude-val">None</span>;
-<a href=#219 id=219 data-nosnippet>219</a>        <span class="self">self</span>.volley_round = <span class="prelude-val">None</span>;
-<a href=#220 id=220 data-nosnippet>220</a>        <span class="self">self</span>.tremors = <span class="prelude-val">None</span>;
-<a href=#221 id=221 data-nosnippet>221</a>    }
-<a href=#222 id=222 data-nosnippet>222</a>}
+<a href=#190 id=190 data-nosnippet>190</a>    <span class="doccomment">/// Take every pending chunk's facts, oldest first.
+<a href=#191 id=191 data-nosnippet>191</a>    </span><span class="kw">pub fn </span>take_facts(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Vec&lt;ChunkFacts&gt; {
+<a href=#192 id=192 data-nosnippet>192</a>        <span class="self">self</span>.pending.drain(..).collect()
+<a href=#193 id=193 data-nosnippet>193</a>    }
+<a href=#194 id=194 data-nosnippet>194</a>
+<a href=#195 id=195 data-nosnippet>195</a>    <span class="doccomment">/// The most recent chunk's facts, without taking them.
+<a href=#196 id=196 data-nosnippet>196</a>    </span><span class="attr">#[must_use]
+<a href=#197 id=197 data-nosnippet>197</a>    </span><span class="kw">pub fn </span>last_facts(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>ChunkFacts&gt; {
+<a href=#198 id=198 data-nosnippet>198</a>        <span class="self">self</span>.pending.back()
+<a href=#199 id=199 data-nosnippet>199</a>    }
+<a href=#200 id=200 data-nosnippet>200</a>
+<a href=#201 id=201 data-nosnippet>201</a>    <span class="doccomment">/// Parse one completed chunk into its facts, without publishing them.
+<a href=#202 id=202 data-nosnippet>202</a>    ///
+<a href=#203 id=203 data-nosnippet>203</a>    /// `at` is the chunk's prompt time -- the server epoch second the prompt
+<a href=#204 id=204 data-nosnippet>204</a>    /// carried -- which stamps every event. `GameState::close_chunk` applies
+<a href=#205 id=205 data-nosnippet>205</a>    /// the facts to the creature registry between this and [`Self::publish`],
+<a href=#206 id=206 data-nosnippet>206</a>    /// in that order: parse, persist, then emit.
+<a href=#207 id=207 data-nosnippet>207</a>    </span><span class="kw">pub fn </span>parse_chunk(<span class="kw-2">&amp;mut </span><span class="self">self</span>, chunk: <span class="kw-2">&amp;</span>Chunk, at: <span class="prelude-ty">Option</span>&lt;u32&gt;) -&gt; ChunkFacts {
+<a href=#208 id=208 data-nosnippet>208</a>        <span class="self">self</span>.chunks_seen = <span class="self">self</span>.chunks_seen.saturating_add(<span class="number">1</span>);
+<a href=#209 id=209 data-nosnippet>209</a>        <span class="kw">super</span>::parse::parse_chunk(<span class="self">self</span>, chunk, at)
+<a href=#210 id=210 data-nosnippet>210</a>    }
+<a href=#211 id=211 data-nosnippet>211</a>
+<a href=#212 id=212 data-nosnippet>212</a>    <span class="doccomment">/// Queue a chunk's facts for a consumer to drain. Empty facts are not
+<a href=#213 id=213 data-nosnippet>213</a>    /// queued.
+<a href=#214 id=214 data-nosnippet>214</a>    </span><span class="kw">pub fn </span>publish(<span class="kw-2">&amp;mut </span><span class="self">self</span>, facts: ChunkFacts) {
+<a href=#215 id=215 data-nosnippet>215</a>        <span class="kw">if </span>facts.is_empty() {
+<a href=#216 id=216 data-nosnippet>216</a>            <span class="kw">return</span>;
+<a href=#217 id=217 data-nosnippet>217</a>        }
+<a href=#218 id=218 data-nosnippet>218</a>        <span class="kw">if </span><span class="self">self</span>.pending.len() &gt;= MAX_PENDING_CHUNKS {
+<a href=#219 id=219 data-nosnippet>219</a>            <span class="self">self</span>.pending.pop_front();
+<a href=#220 id=220 data-nosnippet>220</a>            <span class="self">self</span>.dropped = <span class="self">self</span>.dropped.saturating_add(<span class="number">1</span>);
+<a href=#221 id=221 data-nosnippet>221</a>        }
+<a href=#222 id=222 data-nosnippet>222</a>        <span class="self">self</span>.pending.push_back(facts);
+<a href=#223 id=223 data-nosnippet>223</a>    }
+<a href=#224 id=224 data-nosnippet>224</a>
+<a href=#225 id=225 data-nosnippet>225</a>    <span class="doccomment">/// Parse and publish in one step: the registry-less path.
+<a href=#226 id=226 data-nosnippet>226</a>    </span><span class="kw">pub fn </span>consume_chunk(<span class="kw-2">&amp;mut </span><span class="self">self</span>, chunk: <span class="kw-2">&amp;</span>Chunk, at: <span class="prelude-ty">Option</span>&lt;u32&gt;) {
+<a href=#227 id=227 data-nosnippet>227</a>        <span class="kw">let </span>facts = <span class="self">self</span>.parse_chunk(chunk, at);
+<a href=#228 id=228 data-nosnippet>228</a>        <span class="self">self</span>.publish(facts);
+<a href=#229 id=229 data-nosnippet>229</a>    }
+<a href=#230 id=230 data-nosnippet>230</a>
+<a href=#231 id=231 data-nosnippet>231</a>    <span class="doccomment">/// Forget everything a new connection has not re-taught.
+<a href=#232 id=232 data-nosnippet>232</a>    ///
+<a href=#233 id=233 data-nosnippet>233</a>    /// A held cast or pre-flare belongs to a chunk the old connection never
+<a href=#234 id=234 data-nosnippet>234</a>    /// finished; an assault bracket cannot outlive the fight it was in.
+<a href=#235 id=235 data-nosnippet>235</a>    /// The model's own reconnect invalidation, run on the session's
+<a href=#236 id=236 data-nosnippet>236</a>    /// reconnect, calls this.
+<a href=#237 id=237 data-nosnippet>237</a>    </span><span class="kw">pub fn </span>invalidate_for_reconnect(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+<a href=#238 id=238 data-nosnippet>238</a>        <span class="self">self</span>.held_cast = <span class="prelude-val">None</span>;
+<a href=#239 id=239 data-nosnippet>239</a>        <span class="self">self</span>.held_pre_flares.clear();
+<a href=#240 id=240 data-nosnippet>240</a>        <span class="self">self</span>.active_assault = <span class="prelude-val">None</span>;
+<a href=#241 id=241 data-nosnippet>241</a>        <span class="self">self</span>.volley_round = <span class="prelude-val">None</span>;
+<a href=#242 id=242 data-nosnippet>242</a>        <span class="self">self</span>.tremors = <span class="prelude-val">None</span>;
+<a href=#243 id=243 data-nosnippet>243</a>    }
+<a href=#244 id=244 data-nosnippet>244</a>}
 </code></pre></div></section></main></body></html>

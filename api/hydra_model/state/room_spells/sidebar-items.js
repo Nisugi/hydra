@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["kind","kinds"],"struct":["Heard","Kind","RoomSpell","RoomSpells"]};

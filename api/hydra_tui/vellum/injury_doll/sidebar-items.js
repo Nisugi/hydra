@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["render_injuries_popup"],"struct":["InjuryDoll"]};

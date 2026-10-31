@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["BETWEEN_TRIES","LEAVING_WAIT","LOCK","LONGEST_LINE","OPEN","PORT","PORT_WAIT","SAY_WAIT","TRIES"],"enum":["Claim"],"fn":["answer","ask_open","claim","claim_once_left","claim_within","said","until_free"],"struct":["Asks","Held"]};
+window.SIDEBAR_ITEMS = {"constant":["LEAVING_WAIT","OPEN","PORT_WAIT","TUI"],"enum":["Asked","Claim"],"fn":["answer","ask_open","claim","claim_once_left","claim_within","terminal","until_free"],"struct":["Asks","Held"]};

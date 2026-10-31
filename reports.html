@@ -35,10 +35,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-50dd7f95.js";
+            window.path_to_searchindex_js = "searchindex-3cff4ebc.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-b5471689.js"></script>
+        <script src="toc-a2047d87.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -188,7 +188,7 @@ top left chooses any character the ledger holds.</p>
 <p>Down the left is the list, by family: <strong>Experience</strong>, <strong>Combat</strong>, and
 <strong>Flares</strong>, which opens to every flare recorded for the character, by
 name. The box above it finds a report by its name or by what it shows:
-type <code>barrier</code> and Intercepts is left, <code>pulses</code> and Timing. Enter runs the
+type <code>barrier</code> and Intercepts is left, <code>pulses</code> and Mind. Enter runs the
 first that fits. A click on a report runs it.</p>
 <p>The strip along the top sets what a report runs over:</p>
 <ul>
@@ -196,7 +196,7 @@ first that fits. A click on a report runs it.</p>
 for the combat reports that take a scope.</li>
 <li><strong>Between</strong>, with a <em>from</em> and a <em>to</em>: two hunt ids for the combat
 reports, or two times for the experience report over a span. A time is
-<code>13:05</code> for today, <code>07-20 13:05</code> for this year, or <code>2026-07-20  13:05:52</code>.</li>
+<code>13:05</code> for today, <code>07-20 13:05</code> for this year, or <code>2026-07-20 13:05:52</code>.</li>
 <li><strong>Name</strong>, for the reports that take one: a creature’s noun.</li>
 </ul>
 <p><strong>Attacks</strong> and <strong>Creatures</strong> list every one over the scope, by damage, a
@@ -210,6 +210,51 @@ has been run, <strong>Refresh</strong> runs the report shown again, and <strong>
 writes it to a file under the data folder’s <code>reports</code>.</p>
 <p>A hunt closing runs the report shown again on its own, so a hunt’s numbers
 are current without a click.</p>
+<h2 id="experience"><a class="header" href="#experience">Experience</a></h2>
+<p>Every absorption pulse is a row: what the bar said was gained, in
+experience and in ascension, the field pool against its cap, the mind’s
+state and the bonuses on. The reports read those rows; the ones across
+time draw a bar a row, so a day or a week is seen at a glance. Each counts
+in whichever gain moved more over its span, which is ascension once a
+character is capped, and says which in its title. The time absorbing is
+the pulses’ own: a break longer than a pulse and a half counts as one
+pulse, so an hour away does not drag a rate down.</p>
+<ul>
+<li><strong>Hours</strong> is the last 24, a bar an hour, newest last, with the mind
+state the hour mostly sat in and how long of it went idle. <code>exp hours 12</code> is the last twelve.</li>
+<li><strong>Week</strong> is seven days, a bar each, with each day’s rate and time
+absorbing, against the seven days before, and the best and worst day.</li>
+<li><strong>Clock</strong> is the average for each hour of the day over fourteen days:
+when the gains come. <code>exp clock 30</code> averages over thirty.</li>
+<li><strong>Mind</strong> is where the time went: each state’s share of it and what a
+pulse absorbed there, how long the pool sat at its cap (a kill past the
+cap absorbs nothing) or empty, and how far apart the pulses came. <code>exp mind week</code>, or two times, widens it.</li>
+<li><strong>Hunts</strong> is one row a hunt, newest first: its length, its kills, what
+was absorbed while it ran and the rate, the creature seen most, and its
+id linked to its combat report. <code>exp hunts 20</code>, <code>exp hunts week</code>.</li>
+<li><strong>Bonus</strong> is each bonus on against off, a pulse’s worth either way, and
+where the span’s gains came from: absorbed, bounties, the brooch.</li>
+<li><strong>Everyone</strong> is every character today on one table, with each one’s
+mind state and last pulse.</li>
+<li><strong>Level</strong> is the level reached and when the next comes at today’s pace,
+this week’s, and the best day’s; at the cap, the pace in what still
+moves.</li>
+</ul>
+<p><strong>Session</strong>, <strong>Today</strong>, <strong>Daily</strong>, <strong>Last pulses</strong>, <strong>Instant</strong> and
+<strong>Between times</strong> add a span up, as before.</p>
+<h2 id="flares"><a class="header" href="#flares">Flares</a></h2>
+<p>A flare’s report says how often it fired over every attack it rode, by
+attack, by the weapon in hand and, for a bow, by volley round; then what
+it did when it fired. The weapon table folds an item’s ids into one row,
+with <strong>by item</strong> opening every id; <strong>effects</strong> opens its rate with each
+effect up and without it, the ten widest gaps among effects up and down
+for a hundred swings each; <strong>fires alongside</strong> lists the flares that fire
+with it.</p>
+<p>The Effects report lists what was up over the hunts, each effect under its
+name: the dialog writes a value or the time left into the text (“Empowered
+(+29)”, “Hypothermia (4) 9 mins”), and those are one row, with a link to the
+effect’s values, each as it was written, how many times it went up and for
+how long.</p>
 <h2 id="gemstones"><a class="header" href="#gemstones">Gemstones</a></h2>
 <p>A hunt is recorded with the gemstones equipped as it opened, since a set
 cannot change in combat. A hunt’s report lists them with their ranks, and
@@ -257,13 +302,16 @@ rows and a name in the table.</p>
 <p>The first time a character is seated with nothing stored, Hydra sends the
 reports that teach its facts once: <code>info full</code>, <code>skills full</code>, the PSM
 lists, <code>inventory enhancive totals</code>, <code>gem list all</code>, <code>society</code> and the
-rest. After that, play keeps them current and nothing is sent at login.
-<code>.sync</code> sends them all again, <code>.sync &lt;group&gt;</code> one of them, and <code>.sync  reset</code> drops what is stored first.</p>
+rest. They are asked quietly, one at a time: their long answers stay out
+of the story, which says only each stage (<code>Sync 2/12: skills full</code>) and
+when all are done. After that, play keeps them current and nothing is
+sent at login.
+<code>.sync</code> sends them all again, <code>.sync &lt;group&gt;</code> one of them, and <code>.sync reset</code> drops what is stored first.</p>
 <h2 id="typed"><a class="header" href="#typed">Typed</a></h2>
 <p>The same reports answer on the command line, in a character’s play window:
 <code>.exp</code> for the experience reports and <code>.cstats</code> for combat. <code>.exp help</code> and
 <code>.cstats help</code> list every one. Three words change the ledger and are only
-ever typed: <code>.exp addgain &lt;n&gt;</code> for a gain the bar did not state, <code>.exp  clean</code> to drop pulses with no gain, and <code>.exp reset</code> to drop every row of
+ever typed: <code>.exp addgain &lt;n&gt;</code> for a gain the bar did not state, <code>.exp clean</code> to drop pulses with no gain, and <code>.exp reset</code> to drop every row of
 that character’s, which asks first.</p>
 <h2 id="filling-the-ledger-from-recordings"><a class="header" href="#filling-the-ledger-from-recordings">Filling the ledger from recordings</a></h2>
 <p>A session Hydra recorded (its <code>.bytes</code> files, when recording is on) can be
@@ -274,6 +322,15 @@ read back into the ledger with Hydra closed:</p>
 holds is recorded. A file is never read twice, a session that overlaps
 hunts or pulses already on file is refused, and a pulse already on file is
 skipped.</p>
+<p>Lich’s own logs read back the same way: point <code>hydra import</code> at a Lich
+<code>logs</code> folder, or any folder under a <code>GSIV-&lt;Name&gt;</code> one, and its <code>.xml</code>
+files are read (the plain <code>.log</code> files beside them hold nothing a report
+can use). The folder names the character and its game; the files Lich
+cut a login into are read as one session, so a hunt across a cut stays
+whole. A log older than the game’s experience numbers on the mind bar
+brings its hunts but no experience.</p>
+<pre><code>hydra import "E:\Gemstone\data\log archive\GSIV-Nisugi\2026\01\xml"
+</code></pre>
 
                     </main>
 

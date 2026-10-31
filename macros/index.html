@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-50dd7f95.js";
+            window.path_to_searchindex_js = "../searchindex-3cff4ebc.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-b5471689.js"></script>
+        <script src="../toc-a2047d87.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -186,6 +186,20 @@ word all point at it.</p>
 every field explained on hover. This chapter goes through <a href="#the-chain-language">the chain
 language</a>, <a href="macros.html">macros</a> and what they keep,
 and <a href="hotbars.html">keybinds and hotbars</a>, the faces.</p>
+<h2 id="aliases"><a class="header" href="#aliases">Aliases</a></h2>
+<p>An <strong>alias</strong> is the plainest of the words: a trigger typed in place of one
+or more commands, with no logic. <code>ls</code> for <code>look</code>; <code>s</code> for <code>get \1 from my  \2</code>, <code>sell \1</code>, <code>stow all</code>, typed as <code>s sword back</code>. Its target is the
+chain language below, less the behaviour words: commands, waits, <code>rt</code> and
+<code>ct</code>, with <code>\?</code> for everything typed after the trigger and <code>\1</code>, <code>\2</code>…
+for its first, second… word. An alias runs typed with Hydra’s symbol
+too, <code>.s sword back</code>, when the word is not one of Hydra’s commands.</p>
+<p>Aliases are kept for everyone and for each character over that, in
+<code>aliases.json</code>. The <strong>Aliases</strong> page of the Editors window lists both,
+with a search; an alias opens as its steps on lines, with a <strong>Try with</strong>
+box that shows what a line would send without sending it, <strong>Save</strong>, a
+switch between the character’s own and everyone’s, and <strong>Take away</strong>.
+<code>.alias edit &lt;trigger&gt;</code> opens the page at a trigger, and <code>.alias</code> on the
+command line adds, removes and lists without the window.</p>
 <h2 id="the-chain-language"><a class="header" href="#the-chain-language">The chain language</a></h2>
 <p>A chain is pieces with a comma between them. Each piece is one of:</p>
 <div class="table-wrapper">
@@ -202,11 +216,12 @@ and <a href="hotbars.html">keybinds and hotbars</a>, the faces.</p>
 </tbody>
 </table>
 </div>
-<pre><code class="language-text">stance off, rt, weapon barrage
+<pre><code class="language-text">stance off, rt, barrage
 </code></pre>
-<p>reads as <em>stance offensive, then wait for roundtime, then weapon
+<p>reads as <em>stance offensive, then wait for roundtime, then
 barrage</em>. Hydra sends nothing for the stance when you already stand in
-it, waits out any roundtime, and only then sends the attack.</p>
+it, and waits out any roundtime before the stance and before the
+attack.</p>
 <p>A comma inside quotes or brackets is kept, so a Lich command keeps its
 Ruby: <code>;e cast(901, "a rat"), look</code> is two pieces. A comma in speech is
 cut, so write it <code>'Hello\, friend</code>. A line break or <code>\r</code> cuts as a comma
@@ -216,22 +231,45 @@ roundtime the game stated does, not after a guess. A wait is at most a
 minute. <code>.stop</code> stops a chain wherever it is.</p>
 <h2 id="the-behaviour-words"><a class="header" href="#the-behaviour-words">The behaviour words</a></h2>
 <p>A behaviour word is a command Hydra carries out by reading the game
-first and the game’s answer after. The first is <strong>stance</strong>.</p>
+first and the game’s answer after, in a chain: a macro, an alias, a
+key. A line typed and sent goes to the game as it is. The first
+behaviour word is <strong>stance</strong>.</p>
 <p><code>stance &lt;x&gt;</code> takes any of the six stances, or the first letters of one:
 <code>stance off</code>, <code>stance def</code>, <code>stance gua</code>.</p>
 <ol>
 <li>Already in the stance asked for: nothing is sent.</li>
-<li>In roundtime: it is waited for, then the stance asked.</li>
-<li>In cast roundtime and asked for anything beyond guarded: the game
-would refuse it and put you in guarded itself. Hydra sends <code>stance guarded</code> first, sees it taken, waits the cast roundtime out, then asks
-for the stance you wanted. A roundtime begun meanwhile is waited for.</li>
+<li>In roundtime: it is waited for, since the game takes no command then.</li>
+<li>Otherwise it is sent at once. Asked for defensive in a cast
+roundtime, the game sets guarded and says why, and that is taken as
+the answer.</li>
 <li>Sent, the stance bar is the truth. The step is done when the bar shows
 the stance. If the game does not show it within a few seconds, the
 chain stops and the story says why.</li>
 </ol>
-<p>Assault words come next, each with the same shape: read, wait, send,
-confirm, and each knowing its own cost so it never sends with less in the
-tank than the manoeuvre takes.</p>
+<h3 id="assaults"><a class="header" href="#assaults">Assaults</a></h3>
+<p><code>barrage</code>, <code>flurry</code>, <code>fury</code>, <code>gthrusts</code>, <code>pummel</code> and <code>thrash</code>, with a
+target or without, are behaviour words too: Hydra sends <code>weapon barrage</code>
+and the rest. An assault strikes a few times a round over several
+seconds, so the chain waits for the assault to end, not for it to begin.</p>
+<ol>
+<li>Not one of your techniques, not enough stamina, cooling down, or
+overexerted: nothing is sent, the chain stops and the story says why.
+What Hydra does not know yet stops nothing.</li>
+<li>Roundtime and cast roundtime are waited out, then the assault sent.</li>
+<li>The chain goes on when the game says the assault is over: its own last
+line, or a line that ends any assault (<code>You complete your assault</code>,
+<code>Distracted, you hesitate</code>, the target already dead). The roundtime
+after each round of strikes ends nothing.</li>
+<li>A refusal, such as <code>Barrage is still in cooldown.</code> or <code>You are still  stunned.</code>, stops the chain with the game’s words.</li>
+<li>With no end in 20 seconds, the chain stops and says so.</li>
+</ol>
+<p>Only the chain waits. Anything else you type, click or run goes to the
+game as ever, and the game decides whether it ends the assault.</p>
+<p>Written with <code>weapon</code>, as <code>weapon barrage</code>, an assault goes to the game
+as written: nothing is checked and the chain does not wait.</p>
+<h3 id="a-wait"><a class="header" href="#a-wait">A <code>...wait</code></a></h3>
+<p>When the game answers a behaviour word with <code>...wait 1 seconds.</code>, Hydra
+waits it out and sends the word again, at most three times.</p>
 
                     </main>
 

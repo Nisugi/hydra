@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Chosen","Next","Opens","ScreenDoes"],"fn":["closes_at","draw","fitted","place","say"],"struct":["MainMenu","Screened"],"trait":["Overlay"]};

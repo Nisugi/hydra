@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["TABLE"],"enum":["Change"],"fn":["base","command","file","from_table","same","spell_number","table"],"struct":["Tracked","TrackedEffects"]};

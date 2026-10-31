@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["KeyChange"],"fn":["made","made_all","made_pair"],"struct":["Place"]};

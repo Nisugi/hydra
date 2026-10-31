@@ -328,7 +328,7 @@
 <a href=#328 id=328 data-nosnippet>328</a>    <span class="kw">let </span>named = to.map(str::trim).filter(|to| !to.is_empty());
 <a href=#329 id=329 data-nosnippet>329</a>    <span class="kw">let </span>color = |named: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;| -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;[u8; <span class="number">3</span>]&gt;, String&gt; {
 <a href=#330 id=330 data-nosnippet>330</a>        named
-<a href=#331 id=331 data-nosnippet>331</a>            .map(|to| <span class="kw">crate</span>::menu::rgb(to).ok_or_else(|| <span class="macro">format!</span>(<span class="string">"`{to}` is not a colour."</span>)))
+<a href=#331 id=331 data-nosnippet>331</a>            .map(|to| hydra_ui::settings::rgb(to).ok_or_else(|| <span class="macro">format!</span>(<span class="string">"`{to}` is not a colour."</span>)))
 <a href=#332 id=332 data-nosnippet>332</a>            .transpose()
 <a href=#333 id=333 data-nosnippet>333</a>    };
 <a href=#334 id=334 data-nosnippet>334</a>    <span class="kw">match </span>key {

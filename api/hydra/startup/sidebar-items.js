@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["ENTRY","LOG","LOG_MOST","RUN"],"fn":["detach","exe","in_an_app","in_the_apps_home","open_log","sign_in_command","start_at_sign_in","starts_at_sign_in"],"static":["EXE"],"struct":["Serve"]};
+window.SIDEBAR_ITEMS = {"constant":["DETACHED","ENTRY","LOG","LOG_MOST","RUN"],"fn":["detach","detached","exe","in_an_app","in_the_apps_home","open_log","quoted","sign_in_command","start_at_sign_in","starts_at_sign_in"],"static":["EXE"],"struct":["Serve"]};

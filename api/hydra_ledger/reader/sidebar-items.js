@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["Reader"]};
+window.SIDEBAR_ITEMS = {"struct":["Reader"],"type":["Sums"]};

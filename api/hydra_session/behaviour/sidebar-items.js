@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["Move"],"fn":["current","next_move","stance"]};
+window.SIDEBAR_ITEMS = {"enum":["Move"],"fn":["current","next_move","stance","taken_as"],"mod":["assault","heard"]};

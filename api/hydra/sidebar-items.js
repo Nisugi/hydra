@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["USAGE"],"fn":["attach_console","lookout_seed","main","serve"],"mod":["connect","gui","instance","play","render","replay","rest","started","startup","status","tray","update"]};
+window.SIDEBAR_ITEMS = {"constant":["USAGE"],"fn":["attach_console","chunks_learn","lookout_seed","main","serve"],"mod":["attention","connect","gui","instance","play","render","replay","rest","started","startup","status","terminal","tray","update"]};

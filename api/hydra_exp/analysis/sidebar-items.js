@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["bonus","clock_of_day","everyone","hours","hunts","level","mind","week"],"struct":["Seat"]};

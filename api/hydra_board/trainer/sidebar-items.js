@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["Ask","Asked","Change","Link","Profiled","Status"],"fn":["typed"],"struct":["GoalProfiles","Trainer","TrainerView"]};
+window.SIDEBAR_ITEMS = {"constant":["STEPS"],"enum":["Ask","Asked","Change","Link","Profiled","Status"],"fn":["heading","points","typed"],"struct":["GoalProfiles","Trainer","TrainerView"]};

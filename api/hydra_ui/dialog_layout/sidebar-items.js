@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["CANVAS_WIDTH"],"fn":["controls_of","declared_height","default_size","place"],"struct":["Control","Hints"],"type":["Place","Placed"]};

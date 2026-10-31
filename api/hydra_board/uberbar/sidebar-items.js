@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["CAP_EXPERIENCE","FACTS_EVERY","ROWS"],"fn":["grouped"],"struct":["Facts","UberbarLook"]};

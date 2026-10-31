@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["KEPT","LAG","STAGES"],"enum":["Grade"],"fn":["took"],"struct":["Perf","Samples","Stage"]};
+window.SIDEBAR_ITEMS = {"constant":["KEPT","LAG","SCREEN_KEYS","STAGES"],"enum":["Grade"],"fn":["took"],"struct":["Perf","Samples","Stage"]};

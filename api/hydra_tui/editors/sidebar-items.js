@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["highlights","hotbars","keys","settings","theme"],"mod":["highlights","hotbars","keys","settings","theme","window"]};

@@ -35,10 +35,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-50dd7f95.js";
+            window.path_to_searchindex_js = "searchindex-3cff4ebc.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-b5471689.js"></script>
+        <script src="toc-a2047d87.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -191,7 +191,66 @@ sorts it.</p>
 <p>One rule is built in: <strong>Combat</strong> copies every line of the story that comes
 while you fight to a stream named <code>combat</code>. Add its window from the play
 window’s <strong>Menu › Layout › Add a widget</strong>, under <em>Streams</em>; the story keeps
-the lines too. Edit the rule, or switch it off, on the Streams page.</p>
+the lines too. Edit the rule, or switch it off, on the Streams page. To
+take fights out of the story, untick <strong>Keep fights in the story</strong> on the
+combat window’s right-click menu.</p>
+<p>A script’s attacks go with their fight: bigshot’s <code>fire</code>, <code>cman</code> or
+<code>incant</code>, as Lich echoes them, when the answer was a fight. Each command
+goes with the answer it got, however long that took: two sent at once are
+answered one after the other, and each goes with its own. A <code>gemstone list</code>
+or a <code>cman</code> that answers with no fight stays in the story. A stance or a
+target, yours or a script’s, goes to combat with its answer while a hostile
+creature is in the room. Your own typed attacks stay where you typed them.
+The rule lists the words it goes by: <strong>Script attacks</strong> and <strong>Setting up</strong>,
+shown while <em>there is fighting</em> is ticked.</p>
+<p>A fear that makes you flee comes in one piece with the room you fled to.
+The fight goes where fights go; the room always stays in the story, so it
+still says where you are.</p>
+<h2 id="searches-and-skins-in-a-window-of-their-own"><a class="header" href="#searches-and-skins-in-a-window-of-their-own">Searches and skins in a window of their own</a></h2>
+<p>A second rule is built in: <strong>Loot</strong> copies every line of a search or a
+skin to a stream named <code>loot</code>, the creature fading away and the prompt with
+it, and the <code>loot</code>, <code>search</code> or <code>skin</code> that asked for it, yours or a
+script’s. Nothing leaves the story. The weapon swaps around a skin are no
+search or skin, and stay where they are. A rules file made before the Loot
+rule was built in is given it once; delete it on the Streams page and it
+stays gone. Its condition, <em>a creature is searched or skinned</em>, is one any
+rule can ask for.</p>
+<h2 id="fights-in-the-story"><a class="header" href="#fights-in-the-story">Fights in the story</a></h2>
+<p>Each fight can be shown in the story as the game said it, told briefly, or
+left out, chosen apart for your own attacks, your other characters’, other
+players’ and creatures’. Told briefly, a fight is the attack’s first line,
+then for each target its rolls and its flares, the damage it took on the
+line that ended its turn, and how it was left:</p>
+<p><img src="images/fights_brief.png" alt="Another player’s kill told briefly"></p>
+<p>The combat window always has every line as the game said it. By default
+your own attacks and creatures’ are shown in full, and your other
+characters’ and other players’ are told briefly.</p>
+<p>Choose on the <strong>Fights</strong> pages of the settings menu. <strong>Fights for every
+character</strong> sets them for everyone; a character’s own <strong>Fights</strong> page
+shows each as it is for that character, and a choice made there is that
+character’s alone until you put it back. Both pages also say whether fights
+and searches stay in the story as well as their windows: for every
+character that is the Combat and Loot rules’ own choice, and a character
+can choose otherwise for itself. <strong>Show the rolls</strong> and <strong>Show the flares</strong>
+leave a brief fight’s roll lines or flare lines out.</p>
+<h2 id="lines-no-reader-knows"><a class="header" href="#lines-no-reader-knows">Lines no reader knows</a></h2>
+<p>Hydra knows a fight from the attacks and their rolls, a search or a skin
+from what it found. Some lines come with neither: a briar lashing a
+creature, a hail of arrows still falling. Hydra learns these from the
+fights it does know. Each sentence the game says is counted under what it
+came with, a fight, a search or skin, or something else known, such as the
+answer to a <code>look</code>. A line seen often enough only with fights takes its
+lines to combat when it comes alone; seen with fights most of the time, it
+is copied there and stays in the story too. A line seen with anything else
+keeps its lines where they are.</p>
+<p>When Hydra gets one wrong, right-click the line in the story or the combat
+window and choose <strong>Part of this fight</strong> or <strong>Not part of this fight</strong>.
+Lines like it go that way from then on, whatever was counted. Each choice
+is kept in <code>chunk_marks.toml</code> in Hydra’s <code>data</code> folder, with the line, the
+character, its player log and the time.</p>
+<p>What Hydra counted is kept in <code>chunk_kinds_prime.bin</code> (one for each game)
+beside it. To count afresh from every recording in the logs folder, shut
+Hydra down and run <code>hydra chunks learn</code>. Your choices are kept.</p>
 <h2 id="send-a-line-somewhere-else"><a class="header" href="#send-a-line-somewhere-else">Send a line somewhere else</a></h2>
 <p>Right-click the line, in a play window or in the log, and choose <strong>Send
 lines like this to…</strong>, then the stream, or <strong>A stream of your own…</strong>.

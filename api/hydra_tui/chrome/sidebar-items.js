@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["TitlePosition"],"fn":["block_with_title","border_type","borders","color_of","frame"]};

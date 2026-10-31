@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Keyed"],"fn":["found_in","marked","spans"],"struct":["Find"]};

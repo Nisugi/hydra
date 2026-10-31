@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["profiles","script","scripts"],"struct":["Profile","Script"],"type":["Others"]};

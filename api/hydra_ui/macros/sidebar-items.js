@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FILE"],"fn":["button_look"],"struct":["MacroDef","MacroFile","MacroState","Runs"]};
+window.SIDEBAR_ITEMS = {"constant":["FILE"],"fn":["adopt","button_look","macro_of","unadopted"],"struct":["MacroDef","MacroFile","MacroState","Runs"]};

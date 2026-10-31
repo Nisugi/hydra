@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["MAX_PENDING_CHUNKS"],"struct":["ActiveAssault","CombatTracker"]};
+window.SIDEBAR_ITEMS = {"constant":["MAX_PENDING_CHUNKS"],"struct":["ActiveAssault","CombatTracker","ForeignSpell"]};

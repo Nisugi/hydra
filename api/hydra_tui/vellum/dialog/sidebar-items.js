@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["BandHit","DialogRowArea"],"fn":["compute_dialog_layout","hit_test_button","hit_test_dropdown","hit_test_field","hit_test_resize_handle","hit_test_title_bar","render_dialog","render_dialog_panel"],"struct":["DialogLayout"]};

@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-50dd7f95.js";
+            window.path_to_searchindex_js = "../searchindex-3cff4ebc.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-b5471689.js"></script>
+        <script src="../toc-a2047d87.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -188,7 +188,7 @@ bound to one of:</p>
 <tr><th>Binding</th><th>What it does</th></tr>
 </thead>
 <tbody>
-<tr><td><code>"commands"</code></td><td>Text sent to the game as it is, all at once, with no logic.</td></tr>
+<tr><td><code>"commands"</code></td><td>Commands sent to the game, a chain: its waits and behaviour words carried out.</td></tr>
 <tr><td><code>{ fill = "text" }</code></td><td>Text put in the command line for you to finish.</td></tr>
 <tr><td><code>{ action = "name" }</code></td><td>One of Hydra’s own actions: switch set, open a drawer, lock.</td></tr>
 <tr><td><code>{ macro = "name" }</code></td><td>Run the macro of that name.</td></tr>
@@ -200,29 +200,36 @@ macro’s own key, set on the Macros page, is listed among the keybinds as
 <code>macro: &lt;name&gt;</code> in the set it names, or in every set when it names none,
 so a key two things claim is seen. A keybind in the keys file wins over a
 macro’s key on the same chord.</p>
-<p>A send keybind is sent at once as it is written, with no logic. For a
-chain that waits or decides, make a macro and bind the key to it.</p>
+<p>A send keybind’s text is a chain, as a macro’s commands are: its waits,
+<code>rt</code>, <code>ct</code> and behaviour words are carried out. For a condition, a
+countdown or a button, make a macro and bind the key to it.</p>
 <h2 id="hotbars"><a class="header" href="#hotbars">Hotbars</a></h2>
-<p>A hotbar is a grid of buttons. A button names a macro, or carries
-commands of its own, and the bar gives it a slot, a size, a label, an
-icon and the colours its states show in. A press runs the macro when its
-condition holds. While it does not, the button is drawn dim, and a press
-sends nothing.</p>
+<p>A hotbar is a grid of slots, and each slot holds a macro. The macro is
+the button: its label, its icon, its colours, what it counts down, the
+looks its states give it, and what a press sends are all set on the
+Macros page. The bar is only the layout: its grid, the size of its
+buttons, and which macro sits in which slot. A macro looks and works the
+same on every bar it is on. A press runs the macro when its condition
+holds. While it does not, the button is drawn dim, and a press sends
+nothing.</p>
 <p>Open the <strong>Editors</strong> window and choose <strong>Hotbars</strong>: <strong>Menu › Editors › Hotbars</strong>.
 Every bar is listed on the left, the character’s own and everyone’s; the
-bar chosen is drawn on the right as its widget draws it, with its buttons
-in a form below. Pictures for buttons are kept on the <strong>Icons</strong> page of
-the same window.</p>
-<p><img src="../images/hotbar_macro.png" alt="The hotbar editor: a button that runs a macro"></p>
-<p>In the form, <strong>Macro</strong> picks the macro the button runs, or none. With
-none, <strong>Sends</strong> is the button’s own commands, in the chain language.
-<strong>Lift into a macro</strong> makes a macro of them, named by the button’s id,
-and has the button run it from then on: the commands live once, on the
-Macros page, and the button is only its face.</p>
-<p>A bar need not be on the screen for its keys to work. A macro’s key is
-the macro’s, and a button’s own hotkey is read from the file whether the
-bar is placed or not. The Hotbar widget on a play window shows the bars
-you choose to see.</p>
+bar chosen is drawn on the right as its widget draws it, and under that
+its slots. Click a slot and pick the macro it holds, or <em>empty</em>; drag a
+slot onto another to move it there. <strong>Macros page</strong> opens the macros, to
+make one or change how it looks. Pictures for buttons are kept on the
+<strong>Icons</strong> page of the same window.</p>
+<p><img src="../images/hotbar_macro.png" alt="The hotbar editor: a bar’s slots, each holding a macro"></p>
+<p>A bar need not be on the screen for its keys to work: a macro’s key is
+the macro’s. The Hotbar widget on a play window shows the bars you choose
+to see.</p>
+<p><strong>Bars made before</strong>, by an earlier Hydra or brought from Vellum, had
+buttons with commands and looks of their own. The first time Hydra
+starts, each such button becomes a macro, named after its label, in the
+macros file beside the bar’s file, and its slot holds that macro. A
+button that already ran a macro gives the macro its label, icon, colours
+and states, where the macro had none. Both files as they were are kept
+beside them, ending <code>.before-macros</code>.</p>
 <h2 id="the-controller"><a class="header" href="#the-controller">The controller</a></h2>
 <p>A controller’s binds are keybinds too, and may press a button or run a
 macro. The <strong>Controller</strong> page of the Editors window holds them.</p>
@@ -233,7 +240,7 @@ macro. The <strong>Controller</strong> page of the Editors window holds them.</p
 <tr><th>Line</th><th>What it does</th></tr>
 </thead>
 <tbody>
-<tr><td><code>.hotbar combat attack</code></td><td>Presses the bar <code>combat</code>’s button <code>attack</code>, as a click would.</td></tr>
+<tr><td><code>.hotbar combat attack</code></td><td>Presses the bar <code>combat</code>’s button that holds the macro <code>attack</code>, as a click would.</td></tr>
 <tr><td><code>.macro barrage</code></td><td>Runs the macro.</td></tr>
 <tr><td><code>.hotbars</code></td><td>Opens the hotbar editor.</td></tr>
 <tr><td><code>.alias</code></td><td>The aliases, where a macro’s word is kept.</td></tr>

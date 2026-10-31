@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["ALT","CAPTURED","CMD","CTRL","FILE","KNOWN","NUMPAD","SHIFT"],"fn":["character_path","path","repeats","types"],"mod":["file","vellum","wizard","wrayth","write"],"struct":["Chord","Imported","KeyRow","Keybinds","Keys"]};

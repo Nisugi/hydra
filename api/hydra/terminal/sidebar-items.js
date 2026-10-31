@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["command","open","open_on","start_line","tui_args"]};

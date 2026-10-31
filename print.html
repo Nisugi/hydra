@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-50dd7f95.js";
+            window.path_to_searchindex_js = "searchindex-3cff4ebc.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-b5471689.js"></script>
+        <script src="toc-a2047d87.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -436,8 +436,8 @@ game.</p>
 everything with the other closed.</p>
 <ul>
 <li><strong>Editors</strong>: a list of every editor, each a page of the <strong>Editors</strong>
-window: Keybinds, Macros, Hotbars, Themes, Triggers, the Controller,
-Packs, Icons and Cards. <strong>Cards</strong> is the design every character’s card
+window: Keybinds, Macros, Aliases, Hotbars, Themes, Triggers, the
+Controller, Packs, Icons and Cards. <strong>Cards</strong> is the design every character’s card
 is drawn from, which parts it shows and where. A trigger answers what
 the game says: it colours or hides a line, plays a sound, shows a
 banner, starts a timer or sends a command. <strong>Packs</strong> are pictures to
@@ -574,7 +574,7 @@ its scripts’ messages appear in the story.</li>
 included.</p>
 <p>Lich does not run in HydraFE’s own Hydra on a phone.</p>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="bring-your-setup-from-wrayth-or-vellum"><a class="header" href="#bring-your-setup-from-wrayth-or-vellum">Bring your setup from Wrayth or Vellum</a></h1>
+<h1 id="bring-your-setup-from-wrayth-vellum-or-the-wizard"><a class="header" href="#bring-your-setup-from-wrayth-vellum-or-the-wizard">Bring your setup from Wrayth, Vellum or the Wizard</a></h1>
 <p>Hydra reads what Wrayth and Vellum keep, so your keys, highlights and bars
 come with you. Some of it comes over with a command typed in a play window,
 some by copying a file into Hydra’s <code>data</code> folder.</p>
@@ -644,6 +644,38 @@ once; <code>.controller reload</code> reads the controller files again.</p>
 <p><code>.doll import &lt;folder&gt;</code> brings a folder of doll pictures into Hydra’s
 <code>dolls</code> folder, each with the calibration Vellum keeps beside it. Pick one
 on the Injuries widget’s page.</p>
+<h2 id="from-the-wizard"><a class="header" href="#from-the-wizard">From the Wizard</a></h2>
+<p><code>.wizard import &lt;folder&gt;</code> brings a Wizard front end folder in, looking one
+folder deep as an unpacked archive is laid out; <code>.wizard import global &lt;folder&gt;</code> makes the aliases everyone’s and the keys every character’s, for
+a player whose characters all share them:</p>
+<ul>
+<li><strong>Scripts</strong> (<code>.Cmd</code>, <code>.Wiz</code>) become this character’s aliases, each named
+for its file with the dot in front, typed as the Wizard ran it: <code>s.Cmd</code>
+becomes <code>.s</code>, and <code>s</code> alone still goes south. <code>put</code> lines are the commands, <code>pause 2</code> a two-second wait,
+<code>waitrt</code> the roundtime, <code>%1</code> and <code>%2</code> the first and second word typed
+after the alias (<code>.s sword back</code>). A script that runs another
+(<code>put .nexus</code>) gets that script’s lines in its place. A script that is
+one loop, a label at the top and a jump back to it after a pause, becomes
+the alias of its lines, and the import says to run it on the clock:
+<code>.every 60 .acorn</code>. A <code>.Wiz</code> whose name a <code>.Cmd</code> also has is named
+<code>&lt;name&gt;-wiz</code>. A script that matches text, jumps elsewhere or keeps a
+counter needs Lich, which runs Wizard scripts as they are, and is named,
+not imported. A script named like one of Hydra’s commands still comes
+in, and its alias wins: <code>.go2</code> runs the script, not Hydra’s travel, and
+the import says so. When a later Hydra brings a command named like one
+of your aliases, the alias keeps winning, and Hydra says so once, the
+first time the character logs in. Importing again takes away the aliases
+an earlier import brought in without the dot, those you have not changed.</li>
+<li><strong>Macros</strong> (<code>.Mac</code>) become this character’s keys: Alt and Ctrl letters,
+and the keypad with or without a modifier. A macro that places the cursor
+(<code>@</code>), prompts (<code>\?</code>) or uses one of the Wizard’s own <code>{tokens}</code> is
+named, not bound.</li>
+<li><strong>Highlight strings and names</strong> (<code>.His</code>, <code>.Nam</code>) become everyone’s
+highlights, in the categories <em>Wizard strings</em> and <em>Wizard names</em>, each
+in its colour from the profile’s <code>.Colors</code> palette, or the Wizard’s own
+sixteen without one. A string the Wizard marks with a leading <code>$</code> paints
+its whole line.</li>
+</ul>
 <h2 id="your-scripts"><a class="header" href="#your-scripts">Your scripts</a></h2>
 <p>Lich comes with you whole: Hydra runs your own Lich behind each character
 you ask it to, with your scripts and their settings. See
@@ -728,7 +760,7 @@ whose name, category or words hold them.</li>
 category.</li>
 <li><code>.trigger remove &lt;name&gt;</code>: take a trigger away.</li>
 <li><code>.trigger import &lt;file&gt;</code>: bring in Wrayth’s or Vellum’s highlights; see
-<a href="#bring-your-setup-from-wrayth-or-vellum">Bring your setup</a>.</li>
+<a href="#bring-your-setup-from-wrayth-vellum-or-the-wizard">Bring your setup</a>.</li>
 </ul>
 <p><code>.highlight</code> is another name for <code>.trigger</code>. Triggers are kept in
 <code>highlights.toml</code>, in Hydra’s <code>data</code> folder.</p>
@@ -996,7 +1028,66 @@ sorts it.</p>
 <p>One rule is built in: <strong>Combat</strong> copies every line of the story that comes
 while you fight to a stream named <code>combat</code>. Add its window from the play
 window’s <strong>Menu › Layout › Add a widget</strong>, under <em>Streams</em>; the story keeps
-the lines too. Edit the rule, or switch it off, on the Streams page.</p>
+the lines too. Edit the rule, or switch it off, on the Streams page. To
+take fights out of the story, untick <strong>Keep fights in the story</strong> on the
+combat window’s right-click menu.</p>
+<p>A script’s attacks go with their fight: bigshot’s <code>fire</code>, <code>cman</code> or
+<code>incant</code>, as Lich echoes them, when the answer was a fight. Each command
+goes with the answer it got, however long that took: two sent at once are
+answered one after the other, and each goes with its own. A <code>gemstone list</code>
+or a <code>cman</code> that answers with no fight stays in the story. A stance or a
+target, yours or a script’s, goes to combat with its answer while a hostile
+creature is in the room. Your own typed attacks stay where you typed them.
+The rule lists the words it goes by: <strong>Script attacks</strong> and <strong>Setting up</strong>,
+shown while <em>there is fighting</em> is ticked.</p>
+<p>A fear that makes you flee comes in one piece with the room you fled to.
+The fight goes where fights go; the room always stays in the story, so it
+still says where you are.</p>
+<h2 id="searches-and-skins-in-a-window-of-their-own"><a class="header" href="#searches-and-skins-in-a-window-of-their-own">Searches and skins in a window of their own</a></h2>
+<p>A second rule is built in: <strong>Loot</strong> copies every line of a search or a
+skin to a stream named <code>loot</code>, the creature fading away and the prompt with
+it, and the <code>loot</code>, <code>search</code> or <code>skin</code> that asked for it, yours or a
+script’s. Nothing leaves the story. The weapon swaps around a skin are no
+search or skin, and stay where they are. A rules file made before the Loot
+rule was built in is given it once; delete it on the Streams page and it
+stays gone. Its condition, <em>a creature is searched or skinned</em>, is one any
+rule can ask for.</p>
+<h2 id="fights-in-the-story"><a class="header" href="#fights-in-the-story">Fights in the story</a></h2>
+<p>Each fight can be shown in the story as the game said it, told briefly, or
+left out, chosen apart for your own attacks, your other characters’, other
+players’ and creatures’. Told briefly, a fight is the attack’s first line,
+then for each target its rolls and its flares, the damage it took on the
+line that ended its turn, and how it was left:</p>
+<p><img src="images/fights_brief.png" alt="Another player’s kill told briefly"></p>
+<p>The combat window always has every line as the game said it. By default
+your own attacks and creatures’ are shown in full, and your other
+characters’ and other players’ are told briefly.</p>
+<p>Choose on the <strong>Fights</strong> pages of the settings menu. <strong>Fights for every
+character</strong> sets them for everyone; a character’s own <strong>Fights</strong> page
+shows each as it is for that character, and a choice made there is that
+character’s alone until you put it back. Both pages also say whether fights
+and searches stay in the story as well as their windows: for every
+character that is the Combat and Loot rules’ own choice, and a character
+can choose otherwise for itself. <strong>Show the rolls</strong> and <strong>Show the flares</strong>
+leave a brief fight’s roll lines or flare lines out.</p>
+<h2 id="lines-no-reader-knows"><a class="header" href="#lines-no-reader-knows">Lines no reader knows</a></h2>
+<p>Hydra knows a fight from the attacks and their rolls, a search or a skin
+from what it found. Some lines come with neither: a briar lashing a
+creature, a hail of arrows still falling. Hydra learns these from the
+fights it does know. Each sentence the game says is counted under what it
+came with, a fight, a search or skin, or something else known, such as the
+answer to a <code>look</code>. A line seen often enough only with fights takes its
+lines to combat when it comes alone; seen with fights most of the time, it
+is copied there and stays in the story too. A line seen with anything else
+keeps its lines where they are.</p>
+<p>When Hydra gets one wrong, right-click the line in the story or the combat
+window and choose <strong>Part of this fight</strong> or <strong>Not part of this fight</strong>.
+Lines like it go that way from then on, whatever was counted. Each choice
+is kept in <code>chunk_marks.toml</code> in Hydra’s <code>data</code> folder, with the line, the
+character, its player log and the time.</p>
+<p>What Hydra counted is kept in <code>chunk_kinds_prime.bin</code> (one for each game)
+beside it. To count afresh from every recording in the logs folder, shut
+Hydra down and run <code>hydra chunks learn</code>. Your choices are kept.</p>
 <h2 id="send-a-line-somewhere-else"><a class="header" href="#send-a-line-somewhere-else">Send a line somewhere else</a></h2>
 <p>Right-click the line, in a play window or in the log, and choose <strong>Send
 lines like this to…</strong>, then the stream, or <strong>A stream of your own…</strong>.
@@ -1137,6 +1228,134 @@ again.</p>
 <code>lookout_prime.bin</code>. It holds a fingerprint of each learned line, not the
 lines: about 200 KB after three weeks. Its choices are <code>lookout.toml</code>,
 beside it, for every game.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="work-mode"><a class="header" href="#work-mode">Work mode</a></h1>
+<p>Hydra in a terminal can look like a terminal at work. Type <code>.work</code> on a
+character’s screen and the whole screen becomes a shell running a job:
+repositories cloned, a build compiling, a log scrolling by. Nothing of the
+game is drawn, the terminal’s title is the shell’s, no sound plays and no
+notification shows, and the tray icon goes away. Type <code>.work</code> again and
+your screen is back as it was, with every line you missed in it.</p>
+<p>The game plays on underneath. Your characters stay logged in, your
+triggers fire, Lich runs, and what you type still goes to the game:
+the prompt at the foot of the fake shell is your real command line in
+disguise. Keybinds and macros work as always.</p>
+<pre><code class="language-text">PS C:\src&gt; git clone https://github.com/lindqvist/shardlog.git
+Cloning into 'shardlog'...
+remote: Enumerating objects: 4281, done.
+remote: Counting objects: 100% (612/612), done.
+remote: Compressing objects: 100% (288/288), done.
+Receiving objects: 100% (4281/4281), 28.70 MiB | 3.05 MiB/s, done.
+Resolving deltas: 100% (2130/2130), done.
+PS C:\src&gt; cd shardlog
+PS C:\src\shardlog&gt; git log --oneline -8
+3f9a1c2 Fix retry logic
+8be04d7 Bump dependency pins
+PS C:\src\shardlog&gt; 
+</code></pre>
+<h2 id="the-command"><a class="header" href="#the-command">The command</a></h2>
+<ul>
+<li><code>.work</code> covers the screen, or lifts the cover.</li>
+<li><code>.work on</code> and <code>.work off</code> do one or the other, for a key bound to each.</li>
+<li><code>.work curl</code>, <code>.work build</code>, <code>.work tail</code> or <code>.work ssh</code> cover the screen
+with that scene and keep to it. Bare <code>.work</code> plays one at random each
+time a scene ends.</li>
+<li><code>.work help</code> says all of this.</li>
+</ul>
+<p>Bind a key to any of these in <strong>Menu › Editors › Keys</strong>, as you would bind
+any command.</p>
+<h2 id="the-scenes"><a class="header" href="#the-scenes">The scenes</a></h2>
+<p>A scene is a shell’s job, line by line, at a believable pace, with its
+names drawn afresh each time round. Four come with Hydra:</p>
+<ul>
+<li><strong>curl</strong>: repositories fetched and cloned, their files listed and their
+README read. Dense and long, and anything odd in it looks like part of
+the download.</li>
+<li><strong>build</strong>: a Rust workspace compiled, a test failing, the file opened,
+the test run again.</li>
+<li><strong>tail</strong>: a web server’s access log followed, with bursts and the odd
+error.</li>
+<li><strong>ssh</strong>: a remote host’s journal followed, a service looked at, the disk
+checked.</li>
+</ul>
+<p>Nothing is fetched from anywhere. A progress meter is a formula; the names
+are lists in the scene’s file; the addresses are the documentation ranges
+that belong to nobody. The clock in a log line is the real one, running
+on from when the cover went up.</p>
+<p>The four are written to <code>global/work/</code> in your data folder the first time
+the cover goes up, as <code>curl.toml</code> and so on. Change one there and your
+version is used; add a file of your own and <code>.work &lt;its name&gt;</code> plays it.
+Hydra never writes over a file that is there, so delete one to get the
+shipped version back.</p>
+<h3 id="writing-a-scene"><a class="header" href="#writing-a-scene">Writing a scene</a></h3>
+<pre><code class="language-toml">title = "curl"                 # the terminal's title while this plays
+prompt = "PS C:\\src{dir}&gt; "   # {dir}: where the scene has gone
+rest = 20                      # seconds idle at the prompt before it plays again
+
+[names]                        # {repo}, {user}: one picked each time round
+repo = ["fast-json-rs", "kube-rollout"]
+user = ["mkdev", "lindqvist"]
+
+[[lines]]
+text = "git clone https://github.com/{user}/{repo}.git"
+wait = 1.5                     # seconds after the line before
+jitter = 1                     # at most this much more or less
+color = "plain"                # plain, dim, green, yellow, red, cyan, magenta
+
+[[lines]]
+meter = "git"                  # a progress meter, redrawn in place: git or curl
+lasts = 8                      # seconds to reach the end
+
+[[lines]]
+text = "cd {repo}"
+dir = "\\{repo}"               # the prompt's {dir} from here
+
+[[lines]]
+text = "{date} {clock} {n:100-999} {hash}"
+times = 40                     # the line again this many times, names drawn afresh
+</code></pre>
+<p>The slots: <code>{name}</code> for any list under <code>[names]</code>, kept the same all the
+way round; <code>{n:a-b}</code> a number from a to b, fresh every use; <code>{hash}</code> seven
+hex digits; <code>{clock}</code> the time of day as <code>14:36:10</code>, <code>{date}</code> today as
+<code>28/Oct/2026</code>, <code>{day}</code> as <code>Oct 28</code>; <code>{dir}</code> where the scene has gone. A
+line with <code>clear = true</code> empties the screen first.</p>
+<h2 id="the-one-thing-that-gets-through"><a class="header" href="#the-one-thing-that-gets-through">The one thing that gets through</a></h2>
+<p>A script check is the reason to be at the keyboard, and the cover would
+hide it. So one thing passes: any line <a href="#the-lookout">the lookout</a> has not
+learned is written into the scene as its next line of output, plain,
+with no mark, in the scene’s own colour. To someone looking over your
+shoulder it is one odd line in a wall of output. To you, who know to look,
+it is the warning. Answer by typing, as always; the prompt is your command
+line.</p>
+<p>Keep the lookout learning before you rely on this. A lookout that has not
+learned your routine passes most of your story through the cover.</p>
+<h2 id="covering-itself"><a class="header" href="#covering-itself">Covering itself</a></h2>
+<p>The <strong>Work mode</strong> rows of Hydra’s <strong>General</strong> settings page:</p>
+<ul>
+<li><strong>Work mode prompt</strong>: what your command line is drawn after, over each
+scene’s own. <code>PS C:\src{dir}&gt;</code> or <code>ops@web-03:~{dir}$</code>, with <code>{dir}</code>
+where the scene has gone. A space is put after it.</li>
+<li><strong>Work mode scene</strong>: the scene to play and keep to. Empty, one at random
+each time round.</li>
+<li><strong>Cover on focus lost</strong>: the screen covers itself when the terminal’s
+window loses the focus, as you click away to something else. A click
+back does not lift it: <code>.work</code> does.</li>
+<li><strong>Cover after idle</strong>: seconds without a key before the screen covers
+itself. <code>0</code> never.</li>
+</ul>
+<h2 id="what-it-cannot-hide"><a class="header" href="#what-it-cannot-hide">What it cannot hide</a></h2>
+<ul>
+<li><strong>Mid-word.</strong> The prompt shows what you are typing. <code>attack</code> is <code>attack</code>
+until you press Enter. Give the telling commands an alias.</li>
+<li><strong>The terminal program.</strong> The taskbar, a hover, and a task manager still
+show the terminal program by its own name, and <code>hydra-tui</code> as a process.
+Over SSH from another computer, none of that is there.</li>
+<li><strong>Hydra’s windows.</strong> Sounds, notifications and the tray icon are held
+back only while no Hydra window is open on the same computer. A play
+window open beside the terminal plays its sounds, and shows the game.</li>
+<li><strong>The clock in a log.</strong> It is the real one. A log that says <code>14:36</code> at
+nine in the morning is a log of somewhere else.</li>
+</ul>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="push-to-phone"><a class="header" href="#push-to-phone">Push to phone</a></h1>
 <p>A trigger can put a banner on your iPhone, even with HydraFE closed and the
@@ -1525,6 +1744,20 @@ word all point at it.</p>
 every field explained on hover. This chapter goes through <a href="#the-chain-language">the chain
 language</a>, <a href="#macros">macros</a> and what they keep,
 and <a href="#keybinds-and-hotbars">keybinds and hotbars</a>, the faces.</p>
+<h2 id="aliases"><a class="header" href="#aliases">Aliases</a></h2>
+<p>An <strong>alias</strong> is the plainest of the words: a trigger typed in place of one
+or more commands, with no logic. <code>ls</code> for <code>look</code>; <code>s</code> for <code>get \1 from my  \2</code>, <code>sell \1</code>, <code>stow all</code>, typed as <code>s sword back</code>. Its target is the
+chain language below, less the behaviour words: commands, waits, <code>rt</code> and
+<code>ct</code>, with <code>\?</code> for everything typed after the trigger and <code>\1</code>, <code>\2</code>…
+for its first, second… word. An alias runs typed with Hydra’s symbol
+too, <code>.s sword back</code>, when the word is not one of Hydra’s commands.</p>
+<p>Aliases are kept for everyone and for each character over that, in
+<code>aliases.json</code>. The <strong>Aliases</strong> page of the Editors window lists both,
+with a search; an alias opens as its steps on lines, with a <strong>Try with</strong>
+box that shows what a line would send without sending it, <strong>Save</strong>, a
+switch between the character’s own and everyone’s, and <strong>Take away</strong>.
+<code>.alias edit &lt;trigger&gt;</code> opens the page at a trigger, and <code>.alias</code> on the
+command line adds, removes and lists without the window.</p>
 <h2 id="the-chain-language"><a class="header" href="#the-chain-language">The chain language</a></h2>
 <p>A chain is pieces with a comma between them. Each piece is one of:</p>
 <div class="table-wrapper">
@@ -1541,11 +1774,12 @@ and <a href="#keybinds-and-hotbars">keybinds and hotbars</a>, the faces.</p>
 </tbody>
 </table>
 </div>
-<pre><code class="language-text">stance off, rt, weapon barrage
+<pre><code class="language-text">stance off, rt, barrage
 </code></pre>
-<p>reads as <em>stance offensive, then wait for roundtime, then weapon
+<p>reads as <em>stance offensive, then wait for roundtime, then
 barrage</em>. Hydra sends nothing for the stance when you already stand in
-it, waits out any roundtime, and only then sends the attack.</p>
+it, and waits out any roundtime before the stance and before the
+attack.</p>
 <p>A comma inside quotes or brackets is kept, so a Lich command keeps its
 Ruby: <code>;e cast(901, "a rat"), look</code> is two pieces. A comma in speech is
 cut, so write it <code>'Hello\, friend</code>. A line break or <code>\r</code> cuts as a comma
@@ -1555,22 +1789,45 @@ roundtime the game stated does, not after a guess. A wait is at most a
 minute. <code>.stop</code> stops a chain wherever it is.</p>
 <h2 id="the-behaviour-words"><a class="header" href="#the-behaviour-words">The behaviour words</a></h2>
 <p>A behaviour word is a command Hydra carries out by reading the game
-first and the game’s answer after. The first is <strong>stance</strong>.</p>
+first and the game’s answer after, in a chain: a macro, an alias, a
+key. A line typed and sent goes to the game as it is. The first
+behaviour word is <strong>stance</strong>.</p>
 <p><code>stance &lt;x&gt;</code> takes any of the six stances, or the first letters of one:
 <code>stance off</code>, <code>stance def</code>, <code>stance gua</code>.</p>
 <ol>
 <li>Already in the stance asked for: nothing is sent.</li>
-<li>In roundtime: it is waited for, then the stance asked.</li>
-<li>In cast roundtime and asked for anything beyond guarded: the game
-would refuse it and put you in guarded itself. Hydra sends <code>stance guarded</code> first, sees it taken, waits the cast roundtime out, then asks
-for the stance you wanted. A roundtime begun meanwhile is waited for.</li>
+<li>In roundtime: it is waited for, since the game takes no command then.</li>
+<li>Otherwise it is sent at once. Asked for defensive in a cast
+roundtime, the game sets guarded and says why, and that is taken as
+the answer.</li>
 <li>Sent, the stance bar is the truth. The step is done when the bar shows
 the stance. If the game does not show it within a few seconds, the
 chain stops and the story says why.</li>
 </ol>
-<p>Assault words come next, each with the same shape: read, wait, send,
-confirm, and each knowing its own cost so it never sends with less in the
-tank than the manoeuvre takes.</p>
+<h3 id="assaults"><a class="header" href="#assaults">Assaults</a></h3>
+<p><code>barrage</code>, <code>flurry</code>, <code>fury</code>, <code>gthrusts</code>, <code>pummel</code> and <code>thrash</code>, with a
+target or without, are behaviour words too: Hydra sends <code>weapon barrage</code>
+and the rest. An assault strikes a few times a round over several
+seconds, so the chain waits for the assault to end, not for it to begin.</p>
+<ol>
+<li>Not one of your techniques, not enough stamina, cooling down, or
+overexerted: nothing is sent, the chain stops and the story says why.
+What Hydra does not know yet stops nothing.</li>
+<li>Roundtime and cast roundtime are waited out, then the assault sent.</li>
+<li>The chain goes on when the game says the assault is over: its own last
+line, or a line that ends any assault (<code>You complete your assault</code>,
+<code>Distracted, you hesitate</code>, the target already dead). The roundtime
+after each round of strikes ends nothing.</li>
+<li>A refusal, such as <code>Barrage is still in cooldown.</code> or <code>You are still  stunned.</code>, stops the chain with the game’s words.</li>
+<li>With no end in 20 seconds, the chain stops and says so.</li>
+</ol>
+<p>Only the chain waits. Anything else you type, click or run goes to the
+game as ever, and the game decides whether it ends the assault.</p>
+<p>Written with <code>weapon</code>, as <code>weapon barrage</code>, an assault goes to the game
+as written: nothing is checked and the chain does not wait.</p>
+<h3 id="a-wait"><a class="header" href="#a-wait">A <code>...wait</code></a></h3>
+<p>When the game answers a behaviour word with <code>...wait 1 seconds.</code>, Hydra
+waits it out and sends the word again, at most three times.</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="macros"><a class="header" href="#macros">Macros</a></h1>
 <p>A macro has a name, its commands, and what it keeps: a key that runs it,
@@ -1595,6 +1852,7 @@ when you rest the pointer on it.</p>
 <tr><td>Alias</td><td>A word that runs it from the command line, and from a Lich script. It is kept as one of the character’s aliases; a word already an alias for something else is said when you save, and left as it was.</td></tr>
 <tr><td>Commands</td><td>What it does, a piece per line or with commas between, in <a href="#the-chain-language">the chain language</a>. The syntax is under the box; rest the pointer on it for the whole of it. Under that the commands are read back as a sentence, or refused with why, as you type.</td></tr>
 <tr><td>Runs only when</td><td>The condition. With none, the macro always runs.</td></tr>
+<tr><td>On a hotbar</td><td>How its button looks on every bar it is on: its <strong>Label</strong> (its name unless given), its <strong>Face</strong> (the label, an icon, or both), the <strong>Icon</strong>, and folded under it, its look while no state holds: what it reads, its colours, dimmed.</td></tr>
 <tr><td>Advanced</td><td>Folded: a tooltip for its button, what its button counts down, how often it may run, and the states.</td></tr>
 </tbody>
 </table>
@@ -1646,7 +1904,12 @@ and <code>once</code>.</p>
 <h2 id="states"><a class="header" href="#states">States</a></h2>
 <p>Also under <em>Advanced</em>, for the few who want them: more logic, the first
 state whose condition holds deciding. A state can make the macro
-unavailable, or run other commands instead of its own. The condition
+unavailable, run other commands instead of its own, count down something
+else, and give its button a look of its own: other words, other colours,
+dimmed, another icon. Each state is said as a sentence, starred while it
+decides, and warned when a state above it holds whenever it does, so it
+never decides. <strong>+ State</strong> offers the states the macro’s commands
+suggest, a spell’s mana or roundtime, and one of your own. The condition
 above is enough for most macros.</p>
 <h2 id="in-the-file"><a class="header" href="#in-the-file">In the file</a></h2>
 <pre><code class="language-toml">[[macros]]
@@ -1654,7 +1917,7 @@ name = "barrage"
 commands = """
 stance off
 rt
-weapon barrage
+barrage
 """
 key = "F5"
 set = 1
@@ -1683,14 +1946,12 @@ chain = "stance def"
 <p>A Lich script can run a macro the same way, since a <code>.macro</code> line typed
 by a script is a line typed.</p>
 <h2 id="examples-2"><a class="header" href="#examples-2">Examples</a></h2>
-<p><strong>The stance dance.</strong> Two macros on two keys. <code>F5</code>: <code>stance off, rt, weapon barrage</code>. <code>F6</code>: <code>stance def</code>. Press <code>F6</code> straight after <code>F5</code> and
-Hydra waits the attack’s roundtime out before it asks for defensive. Cast
-a spell between and it goes guarded through the cast roundtime, then
-defensive.</p>
+<p><strong>The stance dance.</strong> Two macros on two keys. <code>F5</code>: <code>stance off, rt,  barrage</code>. <code>F6</code>: <code>stance def</code>. Press <code>F6</code> straight after <code>F5</code> and
+Hydra waits the attack’s roundtime out before it asks for defensive.</p>
 <p><strong>A cast chain.</strong> <code>stance off, prep 901, cast, rt, stance def</code>: the prep
 and the cast go at once, the cast’s roundtime is waited for, then the
 stance comes back.</p>
-<p><strong>A finisher.</strong> <code>weapon barrage</code> that runs only when the target’s health
+<p><strong>A finisher.</strong> <code>barrage</code> that runs only when the target’s health
 is at or under 20%: the button greys until the creature is nearly down.</p>
 <p><strong>A reserve.</strong> <code>barrage</code> that runs only when stamina is at least 60 keeps
 enough for a second manoeuvre you may need more.</p>
@@ -1709,7 +1970,7 @@ bound to one of:</p>
 <tr><th>Binding</th><th>What it does</th></tr>
 </thead>
 <tbody>
-<tr><td><code>"commands"</code></td><td>Text sent to the game as it is, all at once, with no logic.</td></tr>
+<tr><td><code>"commands"</code></td><td>Commands sent to the game, a chain: its waits and behaviour words carried out.</td></tr>
 <tr><td><code>{ fill = "text" }</code></td><td>Text put in the command line for you to finish.</td></tr>
 <tr><td><code>{ action = "name" }</code></td><td>One of Hydra’s own actions: switch set, open a drawer, lock.</td></tr>
 <tr><td><code>{ macro = "name" }</code></td><td>Run the macro of that name.</td></tr>
@@ -1721,29 +1982,36 @@ macro’s own key, set on the Macros page, is listed among the keybinds as
 <code>macro: &lt;name&gt;</code> in the set it names, or in every set when it names none,
 so a key two things claim is seen. A keybind in the keys file wins over a
 macro’s key on the same chord.</p>
-<p>A send keybind is sent at once as it is written, with no logic. For a
-chain that waits or decides, make a macro and bind the key to it.</p>
+<p>A send keybind’s text is a chain, as a macro’s commands are: its waits,
+<code>rt</code>, <code>ct</code> and behaviour words are carried out. For a condition, a
+countdown or a button, make a macro and bind the key to it.</p>
 <h2 id="hotbars"><a class="header" href="#hotbars">Hotbars</a></h2>
-<p>A hotbar is a grid of buttons. A button names a macro, or carries
-commands of its own, and the bar gives it a slot, a size, a label, an
-icon and the colours its states show in. A press runs the macro when its
-condition holds. While it does not, the button is drawn dim, and a press
-sends nothing.</p>
+<p>A hotbar is a grid of slots, and each slot holds a macro. The macro is
+the button: its label, its icon, its colours, what it counts down, the
+looks its states give it, and what a press sends are all set on the
+Macros page. The bar is only the layout: its grid, the size of its
+buttons, and which macro sits in which slot. A macro looks and works the
+same on every bar it is on. A press runs the macro when its condition
+holds. While it does not, the button is drawn dim, and a press sends
+nothing.</p>
 <p>Open the <strong>Editors</strong> window and choose <strong>Hotbars</strong>: <strong>Menu › Editors › Hotbars</strong>.
 Every bar is listed on the left, the character’s own and everyone’s; the
-bar chosen is drawn on the right as its widget draws it, with its buttons
-in a form below. Pictures for buttons are kept on the <strong>Icons</strong> page of
-the same window.</p>
-<p><img src="images/hotbar_macro.png" alt="The hotbar editor: a button that runs a macro"></p>
-<p>In the form, <strong>Macro</strong> picks the macro the button runs, or none. With
-none, <strong>Sends</strong> is the button’s own commands, in the chain language.
-<strong>Lift into a macro</strong> makes a macro of them, named by the button’s id,
-and has the button run it from then on: the commands live once, on the
-Macros page, and the button is only its face.</p>
-<p>A bar need not be on the screen for its keys to work. A macro’s key is
-the macro’s, and a button’s own hotkey is read from the file whether the
-bar is placed or not. The Hotbar widget on a play window shows the bars
-you choose to see.</p>
+bar chosen is drawn on the right as its widget draws it, and under that
+its slots. Click a slot and pick the macro it holds, or <em>empty</em>; drag a
+slot onto another to move it there. <strong>Macros page</strong> opens the macros, to
+make one or change how it looks. Pictures for buttons are kept on the
+<strong>Icons</strong> page of the same window.</p>
+<p><img src="images/hotbar_macro.png" alt="The hotbar editor: a bar’s slots, each holding a macro"></p>
+<p>A bar need not be on the screen for its keys to work: a macro’s key is
+the macro’s. The Hotbar widget on a play window shows the bars you choose
+to see.</p>
+<p><strong>Bars made before</strong>, by an earlier Hydra or brought from Vellum, had
+buttons with commands and looks of their own. The first time Hydra
+starts, each such button becomes a macro, named after its label, in the
+macros file beside the bar’s file, and its slot holds that macro. A
+button that already ran a macro gives the macro its label, icon, colours
+and states, where the macro had none. Both files as they were are kept
+beside them, ending <code>.before-macros</code>.</p>
 <h2 id="the-controller"><a class="header" href="#the-controller">The controller</a></h2>
 <p>A controller’s binds are keybinds too, and may press a button or run a
 macro. The <strong>Controller</strong> page of the Editors window holds them.</p>
@@ -1754,7 +2022,7 @@ macro. The <strong>Controller</strong> page of the Editors window holds them.</p
 <tr><th>Line</th><th>What it does</th></tr>
 </thead>
 <tbody>
-<tr><td><code>.hotbar combat attack</code></td><td>Presses the bar <code>combat</code>’s button <code>attack</code>, as a click would.</td></tr>
+<tr><td><code>.hotbar combat attack</code></td><td>Presses the bar <code>combat</code>’s button that holds the macro <code>attack</code>, as a click would.</td></tr>
 <tr><td><code>.macro barrage</code></td><td>Runs the macro.</td></tr>
 <tr><td><code>.hotbars</code></td><td>Opens the hotbar editor.</td></tr>
 <tr><td><code>.alias</code></td><td>The aliases, where a macro’s word is kept.</td></tr>
@@ -1776,7 +2044,7 @@ top left chooses any character the ledger holds.</p>
 <p>Down the left is the list, by family: <strong>Experience</strong>, <strong>Combat</strong>, and
 <strong>Flares</strong>, which opens to every flare recorded for the character, by
 name. The box above it finds a report by its name or by what it shows:
-type <code>barrier</code> and Intercepts is left, <code>pulses</code> and Timing. Enter runs the
+type <code>barrier</code> and Intercepts is left, <code>pulses</code> and Mind. Enter runs the
 first that fits. A click on a report runs it.</p>
 <p>The strip along the top sets what a report runs over:</p>
 <ul>
@@ -1784,7 +2052,7 @@ first that fits. A click on a report runs it.</p>
 for the combat reports that take a scope.</li>
 <li><strong>Between</strong>, with a <em>from</em> and a <em>to</em>: two hunt ids for the combat
 reports, or two times for the experience report over a span. A time is
-<code>13:05</code> for today, <code>07-20 13:05</code> for this year, or <code>2026-07-20  13:05:52</code>.</li>
+<code>13:05</code> for today, <code>07-20 13:05</code> for this year, or <code>2026-07-20 13:05:52</code>.</li>
 <li><strong>Name</strong>, for the reports that take one: a creature’s noun.</li>
 </ul>
 <p><strong>Attacks</strong> and <strong>Creatures</strong> list every one over the scope, by damage, a
@@ -1798,6 +2066,51 @@ has been run, <strong>Refresh</strong> runs the report shown again, and <strong>
 writes it to a file under the data folder’s <code>reports</code>.</p>
 <p>A hunt closing runs the report shown again on its own, so a hunt’s numbers
 are current without a click.</p>
+<h2 id="experience"><a class="header" href="#experience">Experience</a></h2>
+<p>Every absorption pulse is a row: what the bar said was gained, in
+experience and in ascension, the field pool against its cap, the mind’s
+state and the bonuses on. The reports read those rows; the ones across
+time draw a bar a row, so a day or a week is seen at a glance. Each counts
+in whichever gain moved more over its span, which is ascension once a
+character is capped, and says which in its title. The time absorbing is
+the pulses’ own: a break longer than a pulse and a half counts as one
+pulse, so an hour away does not drag a rate down.</p>
+<ul>
+<li><strong>Hours</strong> is the last 24, a bar an hour, newest last, with the mind
+state the hour mostly sat in and how long of it went idle. <code>exp hours 12</code> is the last twelve.</li>
+<li><strong>Week</strong> is seven days, a bar each, with each day’s rate and time
+absorbing, against the seven days before, and the best and worst day.</li>
+<li><strong>Clock</strong> is the average for each hour of the day over fourteen days:
+when the gains come. <code>exp clock 30</code> averages over thirty.</li>
+<li><strong>Mind</strong> is where the time went: each state’s share of it and what a
+pulse absorbed there, how long the pool sat at its cap (a kill past the
+cap absorbs nothing) or empty, and how far apart the pulses came. <code>exp mind week</code>, or two times, widens it.</li>
+<li><strong>Hunts</strong> is one row a hunt, newest first: its length, its kills, what
+was absorbed while it ran and the rate, the creature seen most, and its
+id linked to its combat report. <code>exp hunts 20</code>, <code>exp hunts week</code>.</li>
+<li><strong>Bonus</strong> is each bonus on against off, a pulse’s worth either way, and
+where the span’s gains came from: absorbed, bounties, the brooch.</li>
+<li><strong>Everyone</strong> is every character today on one table, with each one’s
+mind state and last pulse.</li>
+<li><strong>Level</strong> is the level reached and when the next comes at today’s pace,
+this week’s, and the best day’s; at the cap, the pace in what still
+moves.</li>
+</ul>
+<p><strong>Session</strong>, <strong>Today</strong>, <strong>Daily</strong>, <strong>Last pulses</strong>, <strong>Instant</strong> and
+<strong>Between times</strong> add a span up, as before.</p>
+<h2 id="flares"><a class="header" href="#flares">Flares</a></h2>
+<p>A flare’s report says how often it fired over every attack it rode, by
+attack, by the weapon in hand and, for a bow, by volley round; then what
+it did when it fired. The weapon table folds an item’s ids into one row,
+with <strong>by item</strong> opening every id; <strong>effects</strong> opens its rate with each
+effect up and without it, the ten widest gaps among effects up and down
+for a hundred swings each; <strong>fires alongside</strong> lists the flares that fire
+with it.</p>
+<p>The Effects report lists what was up over the hunts, each effect under its
+name: the dialog writes a value or the time left into the text (“Empowered
+(+29)”, “Hypothermia (4) 9 mins”), and those are one row, with a link to the
+effect’s values, each as it was written, how many times it went up and for
+how long.</p>
 <h2 id="gemstones"><a class="header" href="#gemstones">Gemstones</a></h2>
 <p>A hunt is recorded with the gemstones equipped as it opened, since a set
 cannot change in combat. A hunt’s report lists them with their ranks, and
@@ -1845,13 +2158,16 @@ rows and a name in the table.</p>
 <p>The first time a character is seated with nothing stored, Hydra sends the
 reports that teach its facts once: <code>info full</code>, <code>skills full</code>, the PSM
 lists, <code>inventory enhancive totals</code>, <code>gem list all</code>, <code>society</code> and the
-rest. After that, play keeps them current and nothing is sent at login.
-<code>.sync</code> sends them all again, <code>.sync &lt;group&gt;</code> one of them, and <code>.sync  reset</code> drops what is stored first.</p>
+rest. They are asked quietly, one at a time: their long answers stay out
+of the story, which says only each stage (<code>Sync 2/12: skills full</code>) and
+when all are done. After that, play keeps them current and nothing is
+sent at login.
+<code>.sync</code> sends them all again, <code>.sync &lt;group&gt;</code> one of them, and <code>.sync reset</code> drops what is stored first.</p>
 <h2 id="typed"><a class="header" href="#typed">Typed</a></h2>
 <p>The same reports answer on the command line, in a character’s play window:
 <code>.exp</code> for the experience reports and <code>.cstats</code> for combat. <code>.exp help</code> and
 <code>.cstats help</code> list every one. Three words change the ledger and are only
-ever typed: <code>.exp addgain &lt;n&gt;</code> for a gain the bar did not state, <code>.exp  clean</code> to drop pulses with no gain, and <code>.exp reset</code> to drop every row of
+ever typed: <code>.exp addgain &lt;n&gt;</code> for a gain the bar did not state, <code>.exp clean</code> to drop pulses with no gain, and <code>.exp reset</code> to drop every row of
 that character’s, which asks first.</p>
 <h2 id="filling-the-ledger-from-recordings"><a class="header" href="#filling-the-ledger-from-recordings">Filling the ledger from recordings</a></h2>
 <p>A session Hydra recorded (its <code>.bytes</code> files, when recording is on) can be
@@ -1862,6 +2178,15 @@ read back into the ledger with Hydra closed:</p>
 holds is recorded. A file is never read twice, a session that overlaps
 hunts or pulses already on file is refused, and a pulse already on file is
 skipped.</p>
+<p>Lich’s own logs read back the same way: point <code>hydra import</code> at a Lich
+<code>logs</code> folder, or any folder under a <code>GSIV-&lt;Name&gt;</code> one, and its <code>.xml</code>
+files are read (the plain <code>.log</code> files beside them hold nothing a report
+can use). The folder names the character and its game; the files Lich
+cut a login into are read as one session, so a hunt across a cut stays
+whole. A log older than the game’s experience numbers on the mind bar
+brings its hunts but no experience.</p>
+<pre><code>hydra import "E:\Gemstone\data\log archive\GSIV-Nisugi\2026\01\xml"
+</code></pre>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="login-rewards-and-store-simucoins"><a class="header" href="#login-rewards-and-store-simucoins">Login rewards and store Simucoins</a></h1>
 <p>The game gives a free reward the first time a character logs in each day,
@@ -1935,6 +2260,149 @@ nothing Hydra can read, or offers no bonus (an account with no subscription),
 it looks again after a day. The log line
 <code>[store] ...</code> says what was claimed, and <code>.rewards store</code> shows the last
 claim, the balance and the next date for each account.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="silver-and-bounty-points"><a class="header" href="#silver-and-bounty-points">Silver and bounty points</a></h1>
+<p>Hydra keeps what the game says about your silver and bounty points, one row
+a line in the ledger: silver found on your own searches, by the fossil
+charm, out of a box or with a bounty’s reward; silver a shop paid you, with
+the shop named; silver you paid a shop or handed to someone; a locksmith’s
+fee and tip; every deposit and withdrawal and a note’s surcharge; and the
+bounty points a task earned. Nothing is ever sent to the game to learn
+this; the rows come from the lines you would have read anyway.</p>
+<p>A note withdrawal is the one line that never states its amount. Hydra takes
+it from the <code>withdraw</code> you typed just before, so a note written for a
+withdrawal typed elsewhere (by a script behind Hydra, say) records only its
+surcharge.</p>
+<p>Because of that, a note you deposit by name while standing in a bank
+(<code>deposit note</code>, <code>deposit scrip</code>, <code>deposit chit</code>) is sent as <code>deposit all</code>.
+Coins deposited by amount, and anything typed outside a bank, go as typed.
+A bank is a room the map knows as one.</p>
+<p>Ask for it on the command line:</p>
+<ul>
+<li><code>.silver</code> shows today’s sums for this character: silver in (found and
+sold), out (bought, paid, fees and tips), the net, what was banked
+(deposits less withdrawals), then each kind, picked up from a companion
+among them, and the last ten lines.</li>
+<li><code>.silver all</code> shows every character’s sums today.</li>
+</ul>
+<p>The game’s day turns at midnight Eastern. Both are in <strong>Menu → Reports</strong>,
+under <strong>Silver and bounty points</strong>.</p>
+<p>Silver found is credited to whoever found it. When one of your characters
+searches or mugs, the game tells only that character what the pile holds,
+and the pile on the ground gets one id everyone sees. Hydra follows the
+pile by that id: when another of your characters picks it up, by hand or
+by the fossil charm, that is recorded as <em>picked</em>, with the finder named,
+and not as new silver, so a household’s total counts it once. A pile
+nobody of yours dropped counts for what the charm says it held, and for
+nothing when picked up by hand, since that line states no amount. Two
+finds that land on one pile, a search and a mug in the same breath, stay
+one pile, and the pile is the first finder’s; each find is still credited
+to whoever made it. The coins your own search gathers as it ends are the
+same silver the search stated, counted once.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="loot"><a class="header" href="#loot">Loot</a></h1>
+<p>Hydra keeps what the game says of loot, one row an event in the ledger: a
+creature searched, with its silver and every item it had; a creature
+mugged, with the silver rifled; a box opened, with what it held, and the
+coins gathered out of it; an item appraised at a shop, with what was said
+and offered; an item sold, with what it fetched. Nothing is ever sent to
+the game to learn this.</p>
+<p>An item is one thing throughout. The game names it by an id that lasts one
+session, so Hydra keeps the item as its own row and the ids it has worn,
+and the ruby found on a berserker, appraised at the jeweler’s and sold there
+is one item with three events. Items are shared across your characters by
+those ids: the game names one thing by one id for everyone in the room, so
+what Zoleta found and Nisugi sold is one item, found by her and sold by him.</p>
+<p>Ask for it on the command line:</p>
+<ul>
+<li><code>.loot</code> shows today for this character: searches, mugs and boxes, the
+silver and items found, what was sold, and the last ten items with their
+paths (found on what, appraised for how much, sold for how much where,
+and by whom when it was another of your characters).</li>
+<li><code>.loot all</code> shows every character today: items found and sold, and for
+each seller, how many of the items were found by someone else and what
+those fetched.</li>
+<li><code>.loot creatures</code> shows this month’s creatures by what they carried:
+searches, silver, items, and what the items sold for.</li>
+<li><code>.loot cap</code> shows this month’s items as appraised against what they sold
+for.</li>
+<li><code>.loot gems</code> shows your ascension gemstones against the searches it took:
+this week’s and this month’s searches and finds, the searches since the
+last gemstone, the average a gemstone, whether you may still find one
+(the game allows one a week and three a month; the week turns Sunday
+midnight Eastern, the month on the first), everyone’s standing, and the
+last ten found, each with the creature it came off and the searches
+before it.</li>
+<li><code>.loot dust</code> shows gemstone dust the same way.</li>
+<li><code>.loot keys</code> shows keys and locks found, and <code>.loot legendary</code> legendary
+treasures, each against every creature searched.</li>
+</ul>
+<p>For gemstones and dust only a creature of the ascension hunting grounds
+counts as a search, by the list Hydra carries; the Empyrean Onslaught’s
+invaders are counted beside it, <code>(+12 onslaught)</code>, since whether they count
+is not settled. A creature sent fleeing by an evil eye counts as searched.
+A gemstone at a companion’s feet is recorded as seen, not found; it is
+theirs, and their own Hydra records it as found.</p>
+<p>The game’s day and month are Eastern. All of these are in <strong>Menu →
+Reports</strong>, under <strong>Loot</strong>.</p>
+<p>An item that comes back from the locksmith pool, or that you carry through
+a logout, is a new id to the game and the same item to Hydra. A box handed
+back is the box dropped, by its name and the order the boxes went in. For
+the logout, Hydra asks the game for your whole inventory once you are in
+and again when you type <code>quit</code> or <code>exit</code>, quietly, and matches the two:
+the same thing in the same container keeps its history. A session that
+ends without a quit keeps the inventory from its login, so what you found
+in it starts afresh next time.</p>
+<p>Not yet read: what a mug scatters to the ground beyond its silver, gem and
+skin appraisals you do by hand, and the furrier.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="the-uberbar"><a class="header" href="#the-uberbar">The Uberbar</a></h1>
+<p>One panel of what a hunter glances at, beside the injury doll: the day’s
+numbers on the right, the bars under them. Add it as any widget, from
+<strong>Layout → Add a widget</strong>, under <strong>Character</strong>.</p>
+<p>The labels beside the doll:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Label</th><th>What it says</th></tr>
+</thead>
+<tbody>
+<tr><td>Today</td><td>Experience gained since midnight, Eastern</td></tr>
+<tr><td>AVG/Hr</td><td>Experience an hour, over today’s pulses</td></tr>
+<tr><td>Pulse</td><td>What the last pulse brought</td></tr>
+<tr><td>Room</td><td>The room’s number</td></tr>
+<tr><td>Silver</td><td>Today’s silver, in less out, as the ledger has it</td></tr>
+<tr><td>Bounty</td><td>Today’s bounty points</td></tr>
+<tr><td>Favor</td><td>The Voln favor, when you have any</td></tr>
+</tbody>
+</table>
+</div>
+<p>Under the labels, still beside the doll, the four vitals, each saying its
+numbers alone. The favor sits under the doll. Across the whole panel below,
+the bars, each with the words the Lich uberbar gave it:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Bar</th><th>What it says</th></tr>
+</thead>
+<tbody>
+<tr><td>Ascension</td><td><code>12,345 until next ATP [ 17 ]</code></td></tr>
+<tr><td>Next level</td><td><code>Level: 100  (40%)   12345 TNL</code></td></tr>
+<tr><td>Mind</td><td><code>clear as a bell (988/1405)</code>, the field experience when chosen</td></tr>
+<tr><td>Stance</td><td><code>defensive</code></td></tr>
+<tr><td>Encumbrance</td><td>the game’s word</td></tr>
+<tr><td>Resources</td><td><code>0/50,000</code> and <code>200,000/200,000</code>, side by side</td></tr>
+<tr><td>Shadow essence</td><td><code>Essence 3/5</code>, off until you turn it on</td></tr>
+<tr><td>Capped</td><td><code>12.34 % Capped</code>, once <code>experience</code> has told the total</td></tr>
+</tbody>
+</table>
+</div>
+<p>Every row is a switch on the widget’s own page, so the panel shows what you
+want and no more. The day’s numbers come from the ledger, read every ten
+seconds off the window’s thread; the rest is the game’s, live. The doll
+wears the picture of your first Injuries widget, when you have one.</p>
+<p>The panel follows uberbar_eo’s layout, so a Lich window can go. What it
+does not have: the script’s debug lines, and its loud experience report.</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="for-developers"><a class="header" href="#for-developers">For developers</a></h1>
 <p>Hydra is written in Rust, as a workspace of crates from the game connection

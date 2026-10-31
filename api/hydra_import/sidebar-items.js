@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["import","import_into","instance_of","name_of","sessions","span_of"],"struct":["Session","Summary"],"type":["Say"]};
+window.SIDEBAR_ITEMS = {"fn":["import","import_into","instance_of","lich_name_of","name_of","sessions","span_of"],"struct":["Session","Summary"],"type":["Say"]};

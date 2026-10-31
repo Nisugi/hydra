@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Attacker","BriefLine"],"struct":["Brief","Target"]};

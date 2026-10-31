@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["NO_EXITS"],"enum":["WaysOut"],"fn":["appears_dead","bare","component","fighters","heading","health","health_band","hostile","item_runs","npcs","object","object_run","player_runs","players","prose","status_word","tag","targets","ways_out"],"struct":["Fighter","Target"]};

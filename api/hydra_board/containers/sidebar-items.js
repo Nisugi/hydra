@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Change","Layout"],"fn":["file","shared_file"],"struct":["Arranged","Containers","Detail","SharedLabels"]};

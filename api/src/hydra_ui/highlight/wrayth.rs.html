@@ -195,7 +195,7 @@
 <a href=#195 id=195 data-nosnippet>195</a>
 <a href=#196 id=196 data-nosnippet>196</a><span class="doccomment">/// `words` as a name no highlight in `taken` has: the words, then `(2)`,
 <a href=#197 id=197 data-nosnippet>197</a>/// `(3)`.
-<a href=#198 id=198 data-nosnippet>198</a></span><span class="kw">fn </span>unique(words: <span class="kw-2">&amp;</span>str, taken: <span class="kw-2">&amp;</span>BTreeMap&lt;String, Rule&gt;) -&gt; String {
+<a href=#198 id=198 data-nosnippet>198</a></span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>unique(words: <span class="kw-2">&amp;</span>str, taken: <span class="kw-2">&amp;</span>BTreeMap&lt;String, Rule&gt;) -&gt; String {
 <a href=#199 id=199 data-nosnippet>199</a>    <span class="kw">let </span><span class="kw-2">mut </span>name = words.to_owned();
 <a href=#200 id=200 data-nosnippet>200</a>    <span class="kw">let </span><span class="kw-2">mut </span>count = <span class="number">1</span>;
 <a href=#201 id=201 data-nosnippet>201</a>    <span class="kw">while </span>taken.contains_key(<span class="kw-2">&amp;</span>name) {

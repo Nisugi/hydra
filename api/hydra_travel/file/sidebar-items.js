@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["TRAVEL_SCHEMA_VERSION"],"enum":["Refused","Whose"],"fn":["forget_target","instabilities","load","save_instabilities","save_last_room","save_memories","save_target","take_settings","travel_path"],"struct":["Notes"],"type":["Targets"]};
+window.SIDEBAR_ITEMS = {"constant":["TRAVEL_SCHEMA_VERSION"],"enum":["Refused","Whose"],"fn":["forget_target","instabilities","load","places","save_instabilities","save_last_room","save_memories","save_ships","save_target","take_settings","travel_path"],"struct":["Notes"],"type":["Targets"]};

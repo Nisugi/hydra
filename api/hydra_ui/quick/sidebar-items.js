@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["GAME_PAGES","LINKS","PICK"],"enum":["BarLink","BarPart"],"fn":["pages","parts","rows","sent","set","showing"],"struct":["Page","Picked","QuickLook"]};

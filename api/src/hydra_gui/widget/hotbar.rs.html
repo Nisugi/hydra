@@ -386,51 +386,59 @@
 <a href=#386 id=386 data-nosnippet>386</a>    }
 <a href=#387 id=387 data-nosnippet>387</a>    <span class="kw">if let </span><span class="prelude-val">Some</span>(seconds) = look.countdown {
 <a href=#388 id=388 data-nosnippet>388</a>        <span class="kw">let </span>size = (rect.height() * <span class="number">0.45</span>).clamp(SMALLEST, <span class="number">14.0</span>);
-<a href=#389 id=389 data-nosnippet>389</a>        painter.text(
-<a href=#390 id=390 data-nosnippet>390</a>            rect.right_top() + Vec2::new(-<span class="number">3.0</span>, <span class="number">2.0</span>),
-<a href=#391 id=391 data-nosnippet>391</a>            Align2::RIGHT_TOP,
-<a href=#392 id=392 data-nosnippet>392</a>            seconds.to_string(),
-<a href=#393 id=393 data-nosnippet>393</a>            FontId::monospace(size),
-<a href=#394 id=394 data-nosnippet>394</a>            visuals.warn_fg_color.gamma_multiply(opacity),
-<a href=#395 id=395 data-nosnippet>395</a>        );
-<a href=#396 id=396 data-nosnippet>396</a>    }
-<a href=#397 id=397 data-nosnippet>397</a>}
-<a href=#398 id=398 data-nosnippet>398</a>
-<a href=#399 id=399 data-nosnippet>399</a><span class="doccomment">/// `label` laid out to fit `inside`: wrapped, and smaller until it fits or
-<a href=#400 id=400 data-nosnippet>400</a>/// is as small as it goes.
-<a href=#401 id=401 data-nosnippet>401</a></span><span class="kw">fn </span>fitted(
-<a href=#402 id=402 data-nosnippet>402</a>    painter: <span class="kw-2">&amp;</span>egui::Painter,
-<a href=#403 id=403 data-nosnippet>403</a>    ui: <span class="kw-2">&amp;</span>egui::Ui,
-<a href=#404 id=404 data-nosnippet>404</a>    label: <span class="kw-2">&amp;</span>str,
-<a href=#405 id=405 data-nosnippet>405</a>    inside: Rect,
-<a href=#406 id=406 data-nosnippet>406</a>    colour: Color32,
-<a href=#407 id=407 data-nosnippet>407</a>) -&gt; std::sync::Arc&lt;egui::Galley&gt; {
-<a href=#408 id=408 data-nosnippet>408</a>    <span class="kw">let </span><span class="kw-2">mut </span>size = egui::TextStyle::Button.resolve(ui.style()).size;
-<a href=#409 id=409 data-nosnippet>409</a>    <span class="kw">let </span>width = inside.width().max(<span class="number">1.0</span>);
-<a href=#410 id=410 data-nosnippet>410</a>    <span class="kw">loop </span>{
-<a href=#411 id=411 data-nosnippet>411</a>        <span class="kw">let </span>font = FontId::proportional(size);
-<a href=#412 id=412 data-nosnippet>412</a>        <span class="comment">// Wrapped between words only: a word wider than the face is made
-<a href=#413 id=413 data-nosnippet>413</a>        // smaller, never cut.
-<a href=#414 id=414 data-nosnippet>414</a>        </span><span class="kw">let </span>widest = label
-<a href=#415 id=415 data-nosnippet>415</a>            .split_whitespace()
-<a href=#416 id=416 data-nosnippet>416</a>            .map(|word| {
-<a href=#417 id=417 data-nosnippet>417</a>                painter
-<a href=#418 id=418 data-nosnippet>418</a>                    .layout_no_wrap(word.to_owned(), font.clone(), colour)
-<a href=#419 id=419 data-nosnippet>419</a>                    .size()
-<a href=#420 id=420 data-nosnippet>420</a>                    .x
-<a href=#421 id=421 data-nosnippet>421</a>            })
-<a href=#422 id=422 data-nosnippet>422</a>            .fold(<span class="number">0.0_f32</span>, f32::max);
-<a href=#423 id=423 data-nosnippet>423</a>        <span class="kw">let </span>galley = painter.layout(label.to_owned(), font, colour, width);
-<a href=#424 id=424 data-nosnippet>424</a>        <span class="kw">let </span>fits = widest &lt;= width + <span class="number">0.5
-<a href=#425 id=425 data-nosnippet>425</a>            </span>&amp;&amp; galley.size().x &lt;= width + <span class="number">0.5
-<a href=#426 id=426 data-nosnippet>426</a>            </span>&amp;&amp; galley.size().y &lt;= inside.height() + <span class="number">0.5</span>;
-<a href=#427 id=427 data-nosnippet>427</a>        <span class="kw">if </span>fits || size &lt;= SMALLEST {
-<a href=#428 id=428 data-nosnippet>428</a>            <span class="kw">return </span>galley;
-<a href=#429 id=429 data-nosnippet>429</a>        }
-<a href=#430 id=430 data-nosnippet>430</a>        size = (size - <span class="number">1.0</span>).max(SMALLEST);
-<a href=#431 id=431 data-nosnippet>431</a>    }
-<a href=#432 id=432 data-nosnippet>432</a>}
-<a href=#433 id=433 data-nosnippet>433</a>
-<a href=#434 id=434 data-nosnippet>434</a><span class="attr">#[cfg(test)]
-<a href=#435 id=435 data-nosnippet>435</a></span><span class="kw">mod </span>tests;
+<a href=#389 id=389 data-nosnippet>389</a>        <span class="comment">// The timer's own colour, else the theme's.
+<a href=#390 id=390 data-nosnippet>390</a>        </span><span class="kw">let </span>colour = look
+<a href=#391 id=391 data-nosnippet>391</a>            .countdown_colour
+<a href=#392 id=392 data-nosnippet>392</a>            .as_deref()
+<a href=#393 id=393 data-nosnippet>393</a>            .and_then(hydra_ui::theme::parse_hex)
+<a href=#394 id=394 data-nosnippet>394</a>            .map_or(visuals.warn_fg_color, |[r, g, b]| {
+<a href=#395 id=395 data-nosnippet>395</a>                egui::Color32::from_rgb(r, g, b)
+<a href=#396 id=396 data-nosnippet>396</a>            });
+<a href=#397 id=397 data-nosnippet>397</a>        painter.text(
+<a href=#398 id=398 data-nosnippet>398</a>            rect.right_top() + Vec2::new(-<span class="number">3.0</span>, <span class="number">2.0</span>),
+<a href=#399 id=399 data-nosnippet>399</a>            Align2::RIGHT_TOP,
+<a href=#400 id=400 data-nosnippet>400</a>            seconds.to_string(),
+<a href=#401 id=401 data-nosnippet>401</a>            FontId::monospace(size),
+<a href=#402 id=402 data-nosnippet>402</a>            colour.gamma_multiply(opacity),
+<a href=#403 id=403 data-nosnippet>403</a>        );
+<a href=#404 id=404 data-nosnippet>404</a>    }
+<a href=#405 id=405 data-nosnippet>405</a>}
+<a href=#406 id=406 data-nosnippet>406</a>
+<a href=#407 id=407 data-nosnippet>407</a><span class="doccomment">/// `label` laid out to fit `inside`: wrapped, and smaller until it fits or
+<a href=#408 id=408 data-nosnippet>408</a>/// is as small as it goes.
+<a href=#409 id=409 data-nosnippet>409</a></span><span class="kw">fn </span>fitted(
+<a href=#410 id=410 data-nosnippet>410</a>    painter: <span class="kw-2">&amp;</span>egui::Painter,
+<a href=#411 id=411 data-nosnippet>411</a>    ui: <span class="kw-2">&amp;</span>egui::Ui,
+<a href=#412 id=412 data-nosnippet>412</a>    label: <span class="kw-2">&amp;</span>str,
+<a href=#413 id=413 data-nosnippet>413</a>    inside: Rect,
+<a href=#414 id=414 data-nosnippet>414</a>    colour: Color32,
+<a href=#415 id=415 data-nosnippet>415</a>) -&gt; std::sync::Arc&lt;egui::Galley&gt; {
+<a href=#416 id=416 data-nosnippet>416</a>    <span class="kw">let </span><span class="kw-2">mut </span>size = egui::TextStyle::Button.resolve(ui.style()).size;
+<a href=#417 id=417 data-nosnippet>417</a>    <span class="kw">let </span>width = inside.width().max(<span class="number">1.0</span>);
+<a href=#418 id=418 data-nosnippet>418</a>    <span class="kw">loop </span>{
+<a href=#419 id=419 data-nosnippet>419</a>        <span class="kw">let </span>font = FontId::proportional(size);
+<a href=#420 id=420 data-nosnippet>420</a>        <span class="comment">// Wrapped between words only: a word wider than the face is made
+<a href=#421 id=421 data-nosnippet>421</a>        // smaller, never cut.
+<a href=#422 id=422 data-nosnippet>422</a>        </span><span class="kw">let </span>widest = label
+<a href=#423 id=423 data-nosnippet>423</a>            .split_whitespace()
+<a href=#424 id=424 data-nosnippet>424</a>            .map(|word| {
+<a href=#425 id=425 data-nosnippet>425</a>                painter
+<a href=#426 id=426 data-nosnippet>426</a>                    .layout_no_wrap(word.to_owned(), font.clone(), colour)
+<a href=#427 id=427 data-nosnippet>427</a>                    .size()
+<a href=#428 id=428 data-nosnippet>428</a>                    .x
+<a href=#429 id=429 data-nosnippet>429</a>            })
+<a href=#430 id=430 data-nosnippet>430</a>            .fold(<span class="number">0.0_f32</span>, f32::max);
+<a href=#431 id=431 data-nosnippet>431</a>        <span class="kw">let </span>galley = painter.layout(label.to_owned(), font, colour, width);
+<a href=#432 id=432 data-nosnippet>432</a>        <span class="kw">let </span>fits = widest &lt;= width + <span class="number">0.5
+<a href=#433 id=433 data-nosnippet>433</a>            </span>&amp;&amp; galley.size().x &lt;= width + <span class="number">0.5
+<a href=#434 id=434 data-nosnippet>434</a>            </span>&amp;&amp; galley.size().y &lt;= inside.height() + <span class="number">0.5</span>;
+<a href=#435 id=435 data-nosnippet>435</a>        <span class="kw">if </span>fits || size &lt;= SMALLEST {
+<a href=#436 id=436 data-nosnippet>436</a>            <span class="kw">return </span>galley;
+<a href=#437 id=437 data-nosnippet>437</a>        }
+<a href=#438 id=438 data-nosnippet>438</a>        size = (size - <span class="number">1.0</span>).max(SMALLEST);
+<a href=#439 id=439 data-nosnippet>439</a>    }
+<a href=#440 id=440 data-nosnippet>440</a>}
+<a href=#441 id=441 data-nosnippet>441</a>
+<a href=#442 id=442 data-nosnippet>442</a><span class="attr">#[cfg(test)]
+<a href=#443 id=443 data-nosnippet>443</a></span><span class="kw">mod </span>tests;
 </code></pre></div></section></main></body></html>

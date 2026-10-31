@@ -10,7 +10,7 @@
 <a href=#10 id=10 data-nosnippet>10</a>
 <a href=#11 id=11 data-nosnippet>11</a></span><span class="kw">use </span>egui::{Pos2, Rect, Vec2, pos2, vec2};
 <a href=#12 id=12 data-nosnippet>12</a>
-<a href=#13 id=13 data-nosnippet>13</a><span class="kw">use </span>super::{CHROME, Custom, Holder, Holds, Layout, Placed, Zones};
+<a href=#13 id=13 data-nosnippet>13</a><span class="kw">use </span>super::{CHROME, Custom, CustomGeometry, Holder, Holds, Layout, Placed, Zones};
 <a href=#14 id=14 data-nosnippet>14</a><span class="kw">use </span><span class="kw">crate</span>::widget::{LINE, Widget};
 <a href=#15 id=15 data-nosnippet>15</a>
 <a href=#16 id=16 data-nosnippet>16</a><span class="doccomment">/// Where a new custom window first sits, from the main area's top left.
@@ -51,7 +51,7 @@
 <a href=#51 id=51 data-nosnippet>51</a>    /// that is another character, placed down and right of the last one so
 <a href=#52 id=52 data-nosnippet>52</a>    /// several added in a row stay apart; its id.
 <a href=#53 id=53 data-nosnippet>53</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>add_widget(<span class="kw-2">&amp;mut </span><span class="self">self</span>, widget: Widget, follows: <span class="prelude-ty">Option</span>&lt;String&gt;) -&gt; u32 {
-<a href=#54 id=54 data-nosnippet>54</a>        <span class="kw">let </span>size = widget.size() + CHROME;
+<a href=#54 id=54 data-nosnippet>54</a>        <span class="kw">let </span>size = Vec2::from(widget.size()) + CHROME;
 <a href=#55 id=55 data-nosnippet>55</a>        <span class="kw">let </span>placed = <span class="self">self</span>.place(widget);
 <a href=#56 id=56 data-nosnippet>56</a>        <span class="kw">let </span>id = placed.id;
 <a href=#57 id=57 data-nosnippet>57</a>        <span class="kw">let </span>corner = <span class="self">self</span>.next_corner();
@@ -296,7 +296,7 @@
 <a href=#296 id=296 data-nosnippet>296</a>            <span class="kw">return</span>;
 <a href=#297 id=297 data-nosnippet>297</a>        };
 <a href=#298 id=298 data-nosnippet>298</a>        <span class="kw">let </span>strip = <span class="kw">if </span>tabs.len() &gt; <span class="number">1 </span>{ LINE } <span class="kw">else </span>{ <span class="number">0.0 </span>};
-<a href=#299 id=299 data-nosnippet>299</a>        <span class="kw">let </span>size = shown.widget.size() + CHROME + vec2(<span class="number">0.0</span>, strip);
+<a href=#299 id=299 data-nosnippet>299</a>        <span class="kw">let </span>size = Vec2::from(shown.widget.size()) + CHROME + vec2(<span class="number">0.0</span>, strip);
 <a href=#300 id=300 data-nosnippet>300</a>        <span class="kw">let </span>corner = at - vec2(size.x / <span class="number">2.0</span>, CHROME.y / <span class="number">2.0</span>);
 <a href=#301 id=301 data-nosnippet>301</a>        <span class="kw">let </span>zone = zones.at(at);
 <a href=#302 id=302 data-nosnippet>302</a>        <span class="kw">let </span>holds = <span class="kw">if </span>tabs.len() == <span class="number">1 </span>{
@@ -352,49 +352,61 @@
 <a href=#352 id=352 data-nosnippet>352</a>            .any(|placed| placed.widget == Widget::Input)
 <a href=#353 id=353 data-nosnippet>353</a>    }
 <a href=#354 id=354 data-nosnippet>354</a>
-<a href=#355 id=355 data-nosnippet>355</a>    <span class="doccomment">/// Whether a Travel widget is here, showing or a tab behind another:
-<a href=#356 id=356 data-nosnippet>356</a>    /// the travel file is read once one is.
-<a href=#357 id=357 data-nosnippet>357</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>travels(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-<a href=#358 id=358 data-nosnippet>358</a>        <span class="self">self</span>.placed()
-<a href=#359 id=359 data-nosnippet>359</a>            .into_iter()
-<a href=#360 id=360 data-nosnippet>360</a>            .any(|placed| placed.widget == Widget::Travel)
-<a href=#361 id=361 data-nosnippet>361</a>    }
-<a href=#362 id=362 data-nosnippet>362</a>
-<a href=#363 id=363 data-nosnippet>363</a>    <span class="doccomment">/// Whether a Notes widget is here, showing or a tab behind another: the
-<a href=#364 id=364 data-nosnippet>364</a>    /// notes file is read once one is.
-<a href=#365 id=365 data-nosnippet>365</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>notes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-<a href=#366 id=366 data-nosnippet>366</a>        <span class="self">self</span>.placed()
-<a href=#367 id=367 data-nosnippet>367</a>            .into_iter()
-<a href=#368 id=368 data-nosnippet>368</a>            .any(|placed| placed.widget == Widget::Notes)
-<a href=#369 id=369 data-nosnippet>369</a>    }
-<a href=#370 id=370 data-nosnippet>370</a>
-<a href=#371 id=371 data-nosnippet>371</a>    <span class="doccomment">/// Whether a minimap is here, showing or a tab behind another: the map
-<a href=#372 id=372 data-nosnippet>372</a>    /// is loaded once one is.
-<a href=#373 id=373 data-nosnippet>373</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>maps(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-<a href=#374 id=374 data-nosnippet>374</a>        <span class="self">self</span>.placed()
-<a href=#375 id=375 data-nosnippet>375</a>            .into_iter()
-<a href=#376 id=376 data-nosnippet>376</a>            .any(|placed| placed.widget == Widget::Minimap)
-<a href=#377 id=377 data-nosnippet>377</a>    }
-<a href=#378 id=378 data-nosnippet>378</a>
-<a href=#379 id=379 data-nosnippet>379</a>    <span class="doccomment">/// Where window `id` sits, if it is here, from its zone's top left.
-<a href=#380 id=380 data-nosnippet>380</a>    </span><span class="attr">#[cfg(test)]
-<a href=#381 id=381 data-nosnippet>381</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>rect(<span class="kw-2">&amp;</span><span class="self">self</span>, id: u32) -&gt; <span class="prelude-ty">Option</span>&lt;Rect&gt; {
-<a href=#382 id=382 data-nosnippet>382</a>        <span class="self">self</span>.holder(id).map(Holder::rect)
-<a href=#383 id=383 data-nosnippet>383</a>    }
-<a href=#384 id=384 data-nosnippet>384</a>
-<a href=#385 id=385 data-nosnippet>385</a>    <span class="doccomment">/// Put window `id` at `at`, from its zone's top left.
-<a href=#386 id=386 data-nosnippet>386</a>    </span><span class="attr">#[cfg(test)]
-<a href=#387 id=387 data-nosnippet>387</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>set(<span class="kw-2">&amp;mut </span><span class="self">self</span>, id: u32, at: Rect) {
-<a href=#388 id=388 data-nosnippet>388</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(holder) = <span class="self">self</span>.holders.iter_mut().find(|holder| holder.id == id) {
-<a href=#389 id=389 data-nosnippet>389</a>            holder.set(at);
-<a href=#390 id=390 data-nosnippet>390</a>        }
-<a href=#391 id=391 data-nosnippet>391</a>    }
-<a href=#392 id=392 data-nosnippet>392</a>
-<a href=#393 id=393 data-nosnippet>393</a>    <span class="doccomment">/// The window titled `title`: for a test, which finds a window as a
-<a href=#394 id=394 data-nosnippet>394</a>    /// player does.
-<a href=#395 id=395 data-nosnippet>395</a>    </span><span class="attr">#[cfg(test)]
-<a href=#396 id=396 data-nosnippet>396</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>titled(<span class="kw-2">&amp;</span><span class="self">self</span>, title: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Holder&gt; {
-<a href=#397 id=397 data-nosnippet>397</a>        <span class="self">self</span>.holders.iter().find(|holder| holder.title() == title)
-<a href=#398 id=398 data-nosnippet>398</a>    }
-<a href=#399 id=399 data-nosnippet>399</a>}
+<a href=#355 id=355 data-nosnippet>355</a>    <span class="doccomment">/// Whether an Uberbar widget here shows any of the day's numbers, which
+<a href=#356 id=356 data-nosnippet>356</a>    /// are read from the ledger once one does.
+<a href=#357 id=357 data-nosnippet>357</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>wants_uberbar_facts(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+<a href=#358 id=358 data-nosnippet>358</a>        <span class="self">self</span>.placed().into_iter().any(|placed| {
+<a href=#359 id=359 data-nosnippet>359</a>            placed.widget == Widget::Uberbar
+<a href=#360 id=360 data-nosnippet>360</a>                &amp;&amp; <span class="self">self
+<a href=#361 id=361 data-nosnippet>361</a>                    </span>.uberbars
+<a href=#362 id=362 data-nosnippet>362</a>                    .get(<span class="kw-2">&amp;</span>placed.id)
+<a href=#363 id=363 data-nosnippet>363</a>                    .is_none_or(hydra_board::uberbar::UberbarLook::wants_facts)
+<a href=#364 id=364 data-nosnippet>364</a>        })
+<a href=#365 id=365 data-nosnippet>365</a>    }
+<a href=#366 id=366 data-nosnippet>366</a>
+<a href=#367 id=367 data-nosnippet>367</a>    <span class="doccomment">/// Whether a Travel widget is here, showing or a tab behind another:
+<a href=#368 id=368 data-nosnippet>368</a>    /// the travel file is read once one is.
+<a href=#369 id=369 data-nosnippet>369</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>travels(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+<a href=#370 id=370 data-nosnippet>370</a>        <span class="self">self</span>.placed()
+<a href=#371 id=371 data-nosnippet>371</a>            .into_iter()
+<a href=#372 id=372 data-nosnippet>372</a>            .any(|placed| placed.widget == Widget::Travel)
+<a href=#373 id=373 data-nosnippet>373</a>    }
+<a href=#374 id=374 data-nosnippet>374</a>
+<a href=#375 id=375 data-nosnippet>375</a>    <span class="doccomment">/// Whether a Notes widget is here, showing or a tab behind another: the
+<a href=#376 id=376 data-nosnippet>376</a>    /// notes file is read once one is.
+<a href=#377 id=377 data-nosnippet>377</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>notes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+<a href=#378 id=378 data-nosnippet>378</a>        <span class="self">self</span>.placed()
+<a href=#379 id=379 data-nosnippet>379</a>            .into_iter()
+<a href=#380 id=380 data-nosnippet>380</a>            .any(|placed| placed.widget == Widget::Notes)
+<a href=#381 id=381 data-nosnippet>381</a>    }
+<a href=#382 id=382 data-nosnippet>382</a>
+<a href=#383 id=383 data-nosnippet>383</a>    <span class="doccomment">/// Whether a minimap is here, showing or a tab behind another: the map
+<a href=#384 id=384 data-nosnippet>384</a>    /// is loaded once one is.
+<a href=#385 id=385 data-nosnippet>385</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>maps(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+<a href=#386 id=386 data-nosnippet>386</a>        <span class="self">self</span>.placed()
+<a href=#387 id=387 data-nosnippet>387</a>            .into_iter()
+<a href=#388 id=388 data-nosnippet>388</a>            .any(|placed| placed.widget == Widget::Minimap)
+<a href=#389 id=389 data-nosnippet>389</a>    }
+<a href=#390 id=390 data-nosnippet>390</a>
+<a href=#391 id=391 data-nosnippet>391</a>    <span class="doccomment">/// Where window `id` sits, if it is here, from its zone's top left.
+<a href=#392 id=392 data-nosnippet>392</a>    </span><span class="attr">#[cfg(test)]
+<a href=#393 id=393 data-nosnippet>393</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>rect(<span class="kw-2">&amp;</span><span class="self">self</span>, id: u32) -&gt; <span class="prelude-ty">Option</span>&lt;Rect&gt; {
+<a href=#394 id=394 data-nosnippet>394</a>        <span class="self">self</span>.holder(id).map(Holder::rect)
+<a href=#395 id=395 data-nosnippet>395</a>    }
+<a href=#396 id=396 data-nosnippet>396</a>
+<a href=#397 id=397 data-nosnippet>397</a>    <span class="doccomment">/// Put window `id` at `at`, from its zone's top left.
+<a href=#398 id=398 data-nosnippet>398</a>    </span><span class="attr">#[cfg(test)]
+<a href=#399 id=399 data-nosnippet>399</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>set(<span class="kw-2">&amp;mut </span><span class="self">self</span>, id: u32, at: Rect) {
+<a href=#400 id=400 data-nosnippet>400</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(holder) = <span class="self">self</span>.holders.iter_mut().find(|holder| holder.id == id) {
+<a href=#401 id=401 data-nosnippet>401</a>            holder.set(at);
+<a href=#402 id=402 data-nosnippet>402</a>        }
+<a href=#403 id=403 data-nosnippet>403</a>    }
+<a href=#404 id=404 data-nosnippet>404</a>
+<a href=#405 id=405 data-nosnippet>405</a>    <span class="doccomment">/// The window titled `title`: for a test, which finds a window as a
+<a href=#406 id=406 data-nosnippet>406</a>    /// player does.
+<a href=#407 id=407 data-nosnippet>407</a>    </span><span class="attr">#[cfg(test)]
+<a href=#408 id=408 data-nosnippet>408</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>titled(<span class="kw-2">&amp;</span><span class="self">self</span>, title: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Holder&gt; {
+<a href=#409 id=409 data-nosnippet>409</a>        <span class="self">self</span>.holders.iter().find(|holder| holder.title() == title)
+<a href=#410 id=410 data-nosnippet>410</a>    }
+<a href=#411 id=411 data-nosnippet>411</a>}
 </code></pre></div></section></main></body></html>

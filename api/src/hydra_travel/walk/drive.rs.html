@@ -17,807 +17,833 @@
 <a href=#17 id=17 data-nosnippet>17</a>//!   beside someone dead.
 <a href=#18 id=18 data-nosnippet>18</a>//!
 <a href=#19 id=19 data-nosnippet>19</a>//! A walk that cannot tell where it is for [`LOST_WAIT`] ends, rather than
-<a href=#20 id=20 data-nosnippet>20</a>//! wait for ever.
-<a href=#21 id=21 data-nosnippet>21</a>//!
-<a href=#22 id=22 data-nosnippet>22</a>//! # Nothing is sent into roundtime
+<a href=#20 id=20 data-nosnippet>20</a>//! wait for ever -- unless a crossing is waiting on the game to carry the
+<a href=#21 id=21 data-nosnippet>21</a>//! walker or answer it: a caravan's sleigh is on no map, and the ride is
+<a href=#22 id=22 data-nosnippet>22</a>//! waited out, for [`RIDE_WAIT`] at most.
 <a href=#23 id=23 data-nosnippet>23</a>//!
-<a href=#24 id=24 data-nosnippet>24</a>//! A search is followed by roundtime, and so are climbs and many other
-<a href=#25 id=25 data-nosnippet>25</a>//! steps: a command sent into it is only told to wait. So after any single
-<a href=#26 id=26 data-nosnippet>26</a>//! command -- a search, a climb, a step of a crossing -- nothing more is
-<a href=#27 id=27 data-nosnippet>27</a>//! sent until the game's prompt has closed its answer ([`ANSWER_WAIT`] at
-<a href=#28 id=28 data-nosnippet>28</a>//! most), which is when its roundtime is known; and then nothing until the
-<a href=#29 id=29 data-nosnippet>29</a>//! roundtime is over. Plain moves sent ahead in a batch cause none, and a
-<a href=#30 id=30 data-nosnippet>30</a>//! batch begins only out of roundtime.
-<a href=#31 id=31 data-nosnippet>31</a>//!
-<a href=#32 id=32 data-nosnippet>32</a>//! # What a stop sends
+<a href=#24 id=24 data-nosnippet>24</a>//! # Nothing is sent into roundtime
+<a href=#25 id=25 data-nosnippet>25</a>//!
+<a href=#26 id=26 data-nosnippet>26</a>//! A search is followed by roundtime, and so are climbs and many other
+<a href=#27 id=27 data-nosnippet>27</a>//! steps: a command sent into it is only told to wait. So after any single
+<a href=#28 id=28 data-nosnippet>28</a>//! command -- a search, a climb, a step of a crossing -- nothing more is
+<a href=#29 id=29 data-nosnippet>29</a>//! sent until the game's prompt has closed its answer ([`ANSWER_WAIT`] at
+<a href=#30 id=30 data-nosnippet>30</a>//! most), which is when its roundtime is known; and then nothing until the
+<a href=#31 id=31 data-nosnippet>31</a>//! roundtime is over. Plain moves sent ahead in a batch cause none, and a
+<a href=#32 id=32 data-nosnippet>32</a>//! batch begins only out of roundtime.
 <a href=#33 id=33 data-nosnippet>33</a>//!
-<a href=#34 id=34 data-nosnippet>34</a>//! A stop is not a reason to send more, with **one exception**: what a
-<a href=#35 id=35 data-nosnippet>35</a>//! crossing put away is asked back, **one command each and nothing else**,
-<a href=#36 id=36 data-nosnippet>36</a>//! since where the walker stands it may not even be able to hold a shield;
-<a href=#37 id=37 data-nosnippet>37</a>//! and a key a crossing took out goes back first, so the walk finishes up
-<a href=#38 id=38 data-nosnippet>38</a>//! and leaves the character safe. Nothing is waited for. What was not seen
-<a href=#39 id=39 data-nosnippet>39</a>//! back is in [`Walked`], for the player to be told. A stance or a language
-<a href=#40 id=40 data-nosnippet>40</a>//! is not put back on a stop. A walk that lost its connection sends nothing
-<a href=#41 id=41 data-nosnippet>41</a>//! at all.
-<a href=#42 id=42 data-nosnippet>42</a>
-<a href=#43 id=43 data-nosnippet>43</a></span><span class="kw">mod </span>confluence;
-<a href=#44 id=44 data-nosnippet>44</a><span class="kw">mod </span>deeds;
-<a href=#45 id=45 data-nosnippet>45</a><span class="kw">mod </span>preflight;
-<a href=#46 id=46 data-nosnippet>46</a><span class="kw">mod </span>solve;
-<a href=#47 id=47 data-nosnippet>47</a>
-<a href=#48 id=48 data-nosnippet>48</a><span class="kw">pub use </span>confluence::{ELEMENT, LAST_INSTABILITY};
+<a href=#34 id=34 data-nosnippet>34</a>//! # What a stop sends
+<a href=#35 id=35 data-nosnippet>35</a>//!
+<a href=#36 id=36 data-nosnippet>36</a>//! A stop is not a reason to send more, with **one exception**: what a
+<a href=#37 id=37 data-nosnippet>37</a>//! crossing put away is asked back, **one command each and nothing else**,
+<a href=#38 id=38 data-nosnippet>38</a>//! since where the walker stands it may not even be able to hold a shield;
+<a href=#39 id=39 data-nosnippet>39</a>//! and a key a crossing took out goes back first, so the walk finishes up
+<a href=#40 id=40 data-nosnippet>40</a>//! and leaves the character safe. Nothing is waited for. What was not seen
+<a href=#41 id=41 data-nosnippet>41</a>//! back is in [`Walked`], for the player to be told. A stance or a language
+<a href=#42 id=42 data-nosnippet>42</a>//! is not put back on a stop. A walk that lost its connection sends nothing
+<a href=#43 id=43 data-nosnippet>43</a>//! at all.
+<a href=#44 id=44 data-nosnippet>44</a>
+<a href=#45 id=45 data-nosnippet>45</a></span><span class="kw">mod </span>confluence;
+<a href=#46 id=46 data-nosnippet>46</a><span class="kw">mod </span>deeds;
+<a href=#47 id=47 data-nosnippet>47</a><span class="kw">mod </span>preflight;
+<a href=#48 id=48 data-nosnippet>48</a><span class="kw">mod </span>solve;
 <a href=#49 id=49 data-nosnippet>49</a>
-<a href=#50 id=50 data-nosnippet>50</a><span class="kw">use </span>std::collections::{BTreeMap, HashMap};
-<a href=#51 id=51 data-nosnippet>51</a><span class="kw">use </span>std::time::Duration;
-<a href=#52 id=52 data-nosnippet>52</a>
-<a href=#53 id=53 data-nosnippet>53</a><span class="kw">use </span>cena_map::{Map, Origin <span class="kw">as </span>Whence, RoomId};
-<a href=#54 id=54 data-nosnippet>54</a><span class="kw">use </span>hydra_model::state::group::{<span class="self">self</span>, GroupEvent};
-<a href=#55 id=55 data-nosnippet>55</a><span class="kw">use </span>hydra_model::{ChunkLine, GameState};
-<a href=#56 id=56 data-nosnippet>56</a><span class="kw">use </span>hydra_protocol::Frame;
-<a href=#57 id=57 data-nosnippet>57</a><span class="kw">use </span>hydra_session::{Event, Origin, SessionHandle, State};
-<a href=#58 id=58 data-nosnippet>58</a><span class="kw">use </span>tokio::sync::broadcast::Receiver;
-<a href=#59 id=59 data-nosnippet>59</a><span class="kw">use </span>tokio::sync::broadcast::error::{RecvError, TryRecvError};
-<a href=#60 id=60 data-nosnippet>60</a><span class="kw">use </span>tokio::time::Instant;
-<a href=#61 id=61 data-nosnippet>61</a><span class="kw">use </span>tokio_util::sync::CancellationToken;
-<a href=#62 id=62 data-nosnippet>62</a>
-<a href=#63 id=63 data-nosnippet>63</a><span class="kw">use </span><span class="kw">super</span>::hands::{Stored, take_back};
-<a href=#64 id=64 data-nosnippet>64</a><span class="kw">use </span>super::{Deed, Now, Said, Trip, Why, kept};
-<a href=#65 id=65 data-nosnippet>65</a><span class="kw">use </span><span class="kw">crate</span>::facts::walker_from;
-<a href=#66 id=66 data-nosnippet>66</a><span class="kw">use </span><span class="kw">crate</span>::settings::TravelSettings;
-<a href=#67 id=67 data-nosnippet>67</a>
-<a href=#68 id=68 data-nosnippet>68</a><span class="doccomment">/// How long a [`Said::Hold`] waits for the game before ticking anyway: the
-<a href=#69 id=69 data-nosnippet>69</a>/// trip's own timeouts only run when it is ticked.
-<a href=#70 id=70 data-nosnippet>70</a></span><span class="kw">pub const </span>BEAT: Duration = Duration::from_millis(<span class="number">250</span>);
-<a href=#71 id=71 data-nosnippet>71</a>
-<a href=#72 id=72 data-nosnippet>72</a><span class="doccomment">/// How long, after a single command, the walk waits for the prompt that
-<a href=#73 id=73 data-nosnippet>73</a>/// closes its answer before it sends anything else.
-<a href=#74 id=74 data-nosnippet>74</a></span><span class="kw">pub const </span>ANSWER_WAIT: Duration = Duration::from_secs(<span class="number">3</span>);
-<a href=#75 id=75 data-nosnippet>75</a>
-<a href=#76 id=76 data-nosnippet>76</a><span class="doccomment">/// The longest roundtime waited out before the walk goes on regardless:
-<a href=#77 id=77 data-nosnippet>77</a>/// the game's own `...wait` then answers, and the trip waits as told.
-<a href=#78 id=78 data-nosnippet>78</a></span><span class="kw">const </span>LONGEST_ROUNDTIME: Duration = Duration::from_mins(<span class="number">1</span>);
-<a href=#79 id=79 data-nosnippet>79</a>
-<a href=#80 id=80 data-nosnippet>80</a><span class="doccomment">/// How long the walker may not know where it is before the walk ends.
-<a href=#81 id=81 data-nosnippet>81</a></span><span class="kw">pub const </span>LOST_WAIT: Duration = Duration::from_secs(<span class="number">10</span>);
-<a href=#82 id=82 data-nosnippet>82</a>
-<a href=#83 id=83 data-nosnippet>83</a><span class="doccomment">/// How long one command of a deed may go unanswered: long enough for a
-<a href=#84 id=84 data-nosnippet>84</a>/// society power's answer.
-<a href=#85 id=85 data-nosnippet>85</a></span><span class="kw">pub const </span>DEED_DEADLINE: Duration = Duration::from_secs(<span class="number">3</span>);
-<a href=#86 id=86 data-nosnippet>86</a>
-<a href=#87 id=87 data-nosnippet>87</a><span class="doccomment">/// How long the walker waits for its group before going on without it.
-<a href=#88 id=88 data-nosnippet>88</a></span><span class="kw">pub const </span>FOLLOW_WAIT: Duration = Duration::from_secs(<span class="number">30</span>);
-<a href=#89 id=89 data-nosnippet>89</a>
-<a href=#90 id=90 data-nosnippet>90</a><span class="doccomment">/// What a walk starts from: the character's travel settings, its memories,
-<a href=#91 id=91 data-nosnippet>91</a>/// and where it was last known to be.
-<a href=#92 id=92 data-nosnippet>92</a></span><span class="attr">#[derive(Debug, Clone, Default)]
-<a href=#93 id=93 data-nosnippet>93</a></span><span class="kw">pub struct </span>Setting {
-<a href=#94 id=94 data-nosnippet>94</a>    <span class="doccomment">/// The Travel page's settings.
-<a href=#95 id=95 data-nosnippet>95</a>    </span><span class="kw">pub </span>settings: TravelSettings,
-<a href=#96 id=96 data-nosnippet>96</a>    <span class="doccomment">/// What earlier crossings wrote down.
-<a href=#97 id=97 data-nosnippet>97</a>    </span><span class="kw">pub </span>memories: BTreeMap&lt;String, String&gt;,
-<a href=#98 id=98 data-nosnippet>98</a>    <span class="doccomment">/// The travel file's last room: a tie-breaker, never a fact.
-<a href=#99 id=99 data-nosnippet>99</a>    </span><span class="kw">pub </span>last_room: <span class="prelude-ty">Option</span>&lt;u32&gt;,
-<a href=#100 id=100 data-nosnippet>100</a>    <span class="doccomment">/// The names the player saved, for a routine's walk to a place.
-<a href=#101 id=101 data-nosnippet>101</a>    </span><span class="kw">pub </span>targets: BTreeMap&lt;String, Vec&lt;u32&gt;&gt;,
-<a href=#102 id=102 data-nosnippet>102</a>    <span class="doccomment">/// Into the Elemental Confluence first: by an instability
-<a href=#103 id=103 data-nosnippet>103</a>    /// of the walker's element (`drive::confluence`).
-<a href=#104 id=104 data-nosnippet>104</a>    </span><span class="kw">pub </span>into: <span class="prelude-ty">Option</span>&lt;<span class="kw">super</span>::instability::Into&gt;,
-<a href=#105 id=105 data-nosnippet>105</a>    <span class="doccomment">/// `.go2`'s `--instability=&lt;room&gt;`: the instability to use.
-<a href=#106 id=106 data-nosnippet>106</a>    </span><span class="kw">pub </span>instability_at: <span class="prelude-ty">Option</span>&lt;u32&gt;,
-<a href=#107 id=107 data-nosnippet>107</a>    <span class="doccomment">/// The instabilities seen lately on this game, as the travel file keeps
-<a href=#108 id=108 data-nosnippet>108</a>    /// them.
-<a href=#109 id=109 data-nosnippet>109</a>    </span><span class="kw">pub </span>instabilities: Vec&lt;<span class="kw">super</span>::instability::Seen&gt;,
-<a href=#110 id=110 data-nosnippet>110</a>    <span class="doccomment">/// Seconds since 1970, now: what "lately" is measured from.
-<a href=#111 id=111 data-nosnippet>111</a>    </span><span class="kw">pub </span>now: u64,
-<a href=#112 id=112 data-nosnippet>112</a>}
-<a href=#113 id=113 data-nosnippet>113</a>
-<a href=#114 id=114 data-nosnippet>114</a><span class="doccomment">/// How a walk ended.
-<a href=#115 id=115 data-nosnippet>115</a></span><span class="attr">#[derive(Debug, Clone, PartialEq, Eq)]
-<a href=#116 id=116 data-nosnippet>116</a></span><span class="kw">pub enum </span>Ended {
-<a href=#117 id=117 data-nosnippet>117</a>    <span class="doccomment">/// The walker reached the goal.
-<a href=#118 id=118 data-nosnippet>118</a>    </span>Arrived,
-<a href=#119 id=119 data-nosnippet>119</a>    <span class="doccomment">/// The trip gave up, and why.
-<a href=#120 id=120 data-nosnippet>120</a>    </span>Failed(Why),
-<a href=#121 id=121 data-nosnippet>121</a>    <span class="doccomment">/// The player stopped it.
-<a href=#122 id=122 data-nosnippet>122</a>    </span>Stopped,
-<a href=#123 id=123 data-nosnippet>123</a>    <span class="doccomment">/// One of the player's Lich scripts sent a move, and Hydra let go.
-<a href=#124 id=124 data-nosnippet>124</a>    </span>HandedToLich(String),
-<a href=#125 id=125 data-nosnippet>125</a>    <span class="doccomment">/// The connection dropped, or the session ended.
-<a href=#126 id=126 data-nosnippet>126</a>    </span>Lost,
-<a href=#127 id=127 data-nosnippet>127</a>    <span class="doccomment">/// A rule of the walk stopped it, in words.
-<a href=#128 id=128 data-nosnippet>128</a>    </span>Halted(String),
-<a href=#129 id=129 data-nosnippet>129</a>    <span class="doccomment">/// The map names a spell that is not in the spell table.
-<a href=#130 id=130 data-nosnippet>130</a>    </span>UnknownSpell(String),
-<a href=#131 id=131 data-nosnippet>131</a>}
-<a href=#132 id=132 data-nosnippet>132</a>
-<a href=#133 id=133 data-nosnippet>133</a><span class="doccomment">/// What a finished walk leaves.
-<a href=#134 id=134 data-nosnippet>134</a></span><span class="attr">#[derive(Debug, Clone, PartialEq, Eq)]
-<a href=#135 id=135 data-nosnippet>135</a></span><span class="kw">pub struct </span>Walked {
-<a href=#136 id=136 data-nosnippet>136</a>    <span class="doccomment">/// How it ended.
-<a href=#137 id=137 data-nosnippet>137</a>    </span><span class="kw">pub </span>ended: Ended,
-<a href=#138 id=138 data-nosnippet>138</a>    <span class="doccomment">/// The last room the walk knew itself to be in.
-<a href=#139 id=139 data-nosnippet>139</a>    </span><span class="kw">pub </span>last_room: <span class="prelude-ty">Option</span>&lt;RoomId&gt;,
-<a href=#140 id=140 data-nosnippet>140</a>    <span class="doccomment">/// A typeahead the game's refusal named, to keep as the setting.
-<a href=#141 id=141 data-nosnippet>141</a>    </span><span class="kw">pub </span>typeahead: <span class="prelude-ty">Option</span>&lt;u32&gt;,
-<a href=#142 id=142 data-nosnippet>142</a>    <span class="doccomment">/// Exits the game said do not exist, as `(from, to)`.
-<a href=#143 id=143 data-nosnippet>143</a>    </span><span class="kw">pub </span>wrong_for_the_map: Vec&lt;(RoomId, RoomId)&gt;,
-<a href=#144 id=144 data-nosnippet>144</a>    <span class="doccomment">/// Put away by a crossing and not seen to come back.
-<a href=#145 id=145 data-nosnippet>145</a>    </span><span class="kw">pub </span>still_stored: Vec&lt;Stored&gt;,
-<a href=#146 id=146 data-nosnippet>146</a>    <span class="doccomment">/// The stance a crossing replaced and did not put back.
-<a href=#147 id=147 data-nosnippet>147</a>    </span><span class="kw">pub </span>stance_before: <span class="prelude-ty">Option</span>&lt;String&gt;,
-<a href=#148 id=148 data-nosnippet>148</a>    <span class="doccomment">/// The language a crossing replaced and did not put back.
-<a href=#149 id=149 data-nosnippet>149</a>    </span><span class="kw">pub </span>speech_before: <span class="prelude-ty">Option</span>&lt;String&gt;,
-<a href=#150 id=150 data-nosnippet>150</a>    <span class="doccomment">/// What crossings took out of containers (as the map names each) and
-<a href=#151 id=151 data-nosnippet>151</a>    /// were not seen to put back; and whether a stop's one put-back was
-<a href=#152 id=152 data-nosnippet>152</a>    /// sent for each.
-<a href=#153 id=153 data-nosnippet>153</a>    </span><span class="kw">pub </span>still_out: Vec&lt;(String, bool)&gt;,
-<a href=#154 id=154 data-nosnippet>154</a>    <span class="doccomment">/// The instabilities seen lately, when the walk changed them: to keep.
-<a href=#155 id=155 data-nosnippet>155</a>    </span><span class="kw">pub </span>instabilities: <span class="prelude-ty">Option</span>&lt;Vec&lt;<span class="kw">super</span>::instability::Seen&gt;&gt;,
-<a href=#156 id=156 data-nosnippet>156</a>}
-<a href=#157 id=157 data-nosnippet>157</a>
-<a href=#158 id=158 data-nosnippet>158</a><span class="doccomment">/// Walk to `goal` on `handle`'s character, over `map`, until it arrives,
-<a href=#159 id=159 data-nosnippet>159</a>/// fails or `stop` is cancelled. `shown` is told the route still ahead,
-<a href=#160 id=160 data-nosnippet>160</a>/// from the room the walker is in, each time it changes; `wrote` the
-<a href=#161 id=161 data-nosnippet>161</a>/// memories, each time a crossing changes them, to be kept at once -- a
-<a href=#162 id=162 data-nosnippet>162</a>/// memory lost strands the character.
-<a href=#163 id=163 data-nosnippet>163</a></span><span class="kw">pub async fn </span>walk(
-<a href=#164 id=164 data-nosnippet>164</a>    handle: <span class="kw-2">&amp;</span>SessionHandle,
-<a href=#165 id=165 data-nosnippet>165</a>    map: <span class="kw-2">&amp;</span>Map,
-<a href=#166 id=166 data-nosnippet>166</a>    goal: RoomId,
-<a href=#167 id=167 data-nosnippet>167</a>    setting: Setting,
-<a href=#168 id=168 data-nosnippet>168</a>    stop: <span class="kw-2">&amp;</span>CancellationToken,
-<a href=#169 id=169 data-nosnippet>169</a>    shown: <span class="kw">impl </span>FnMut(<span class="kw-2">&amp;</span>[u32]),
-<a href=#170 id=170 data-nosnippet>170</a>    wrote: <span class="kw">impl </span>FnMut(<span class="kw-2">&amp;</span>BTreeMap&lt;String, String&gt;),
-<a href=#171 id=171 data-nosnippet>171</a>) -&gt; Walked {
-<a href=#172 id=172 data-nosnippet>172</a>    <span class="kw">let </span><span class="kw-2">mut </span>trip = Trip::to(goal);
-<a href=#173 id=173 data-nosnippet>173</a>    <span class="kw">let </span><span class="prelude-val">Some</span>((snapshot, events)) = handle.join().<span class="kw">await else </span>{
-<a href=#174 id=174 data-nosnippet>174</a>        <span class="kw">return </span>gone(<span class="kw-2">&amp;</span>trip);
-<a href=#175 id=175 data-nosnippet>175</a>    };
-<a href=#176 id=176 data-nosnippet>176</a>    <span class="kw">if </span><span class="macro">matches!</span>(snapshot.lifecycle, State::Reconnecting | State::Closed) {
-<a href=#177 id=177 data-nosnippet>177</a>        <span class="kw">return </span>gone(<span class="kw-2">&amp;</span>trip);
-<a href=#178 id=178 data-nosnippet>178</a>    }
-<a href=#179 id=179 data-nosnippet>179</a>    <span class="kw">let </span><span class="kw-2">mut </span>trip_seeded = Trip::seeded(goal, seed_for(<span class="kw-2">&amp;</span>snapshot.state, goal));
-<a href=#180 id=180 data-nosnippet>180</a>    std::mem::swap(<span class="kw-2">&amp;mut </span>trip, <span class="kw-2">&amp;mut </span>trip_seeded);
-<a href=#181 id=181 data-nosnippet>181</a>    <span class="kw">let </span>heard = heard_so_far(<span class="kw-2">&amp;</span>snapshot.state);
-<a href=#182 id=182 data-nosnippet>182</a>    <span class="kw">let </span><span class="kw-2">mut </span>driver = Driver {
-<a href=#183 id=183 data-nosnippet>183</a>        handle,
-<a href=#184 id=184 data-nosnippet>184</a>        stop,
-<a href=#185 id=185 data-nosnippet>185</a>        state: snapshot.state,
-<a href=#186 id=186 data-nosnippet>186</a>        events,
-<a href=#187 id=187 data-nosnippet>187</a>        heard,
-<a href=#188 id=188 data-nosnippet>188</a>        began: Instant::now(),
-<a href=#189 id=189 data-nosnippet>189</a>        was: <span class="prelude-val">None</span>,
-<a href=#190 id=190 data-nosnippet>190</a>        hint: setting.last_room.map(RoomId),
-<a href=#191 id=191 data-nosnippet>191</a>        lost_since: <span class="prelude-val">None</span>,
-<a href=#192 id=192 data-nosnippet>192</a>        typeahead: <span class="prelude-val">None</span>,
-<a href=#193 id=193 data-nosnippet>193</a>        shown,
-<a href=#194 id=194 data-nosnippet>194</a>        last_shown: Vec::new(),
-<a href=#195 id=195 data-nosnippet>195</a>        wrote,
-<a href=#196 id=196 data-nosnippet>196</a>        memories: setting.memories.clone(),
-<a href=#197 id=197 data-nosnippet>197</a>        answer: Vec::new(),
-<a href=#198 id=198 data-nosnippet>198</a>        stored: Vec::new(),
-<a href=#199 id=199 data-nosnippet>199</a>        stance_before: <span class="prelude-val">None</span>,
-<a href=#200 id=200 data-nosnippet>200</a>        speech_before: <span class="prelude-val">None</span>,
-<a href=#201 id=201 data-nosnippet>201</a>        taken: Vec::new(),
-<a href=#202 id=202 data-nosnippet>202</a>        behind: Vec::new(),
-<a href=#203 id=203 data-nosnippet>203</a>        found: HashMap::new(),
-<a href=#204 id=204 data-nosnippet>204</a>        unanswered: <span class="prelude-val">None</span>,
-<a href=#205 id=205 data-nosnippet>205</a>        kept: <span class="kw">super</span>::routines::Kept::default(),
-<a href=#206 id=206 data-nosnippet>206</a>        prompts: <span class="number">0</span>,
-<a href=#207 id=207 data-nosnippet>207</a>        arrived_at_prompt: <span class="prelude-val">None</span>,
-<a href=#208 id=208 data-nosnippet>208</a>        instabilities: setting.instabilities.clone(),
-<a href=#209 id=209 data-nosnippet>209</a>        instabilities_changed: <span class="bool-val">false</span>,
-<a href=#210 id=210 data-nosnippet>210</a>        now: setting.now,
-<a href=#211 id=211 data-nosnippet>211</a>        table: <span class="prelude-val">None</span>,
-<a href=#212 id=212 data-nosnippet>212</a>    };
-<a href=#213 id=213 data-nosnippet>213</a>    <span class="kw">let </span>ended = <span class="kw">match </span>setting.into {
-<a href=#214 id=214 data-nosnippet>214</a>        <span class="prelude-val">Some</span>(into) =&gt; <span class="kw">match </span>driver.enter_the_plane(<span class="kw-2">&amp;mut </span>trip, map, <span class="kw-2">&amp;</span>setting, into).<span class="kw">await </span>{
-<a href=#215 id=215 data-nosnippet>215</a>            <span class="comment">// Inside, and on to a room of the plane.
-<a href=#216 id=216 data-nosnippet>216</a>            </span><span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(room)) =&gt; {
-<a href=#217 id=217 data-nosnippet>217</a>                <span class="kw">let </span><span class="kw-2">mut </span>inside = Trip::seeded(room, trip.draw());
-<a href=#218 id=218 data-nosnippet>218</a>                <span class="kw">let </span>ended = driver.walk(<span class="kw-2">&amp;mut </span>inside, map, <span class="kw-2">&amp;</span>setting).<span class="kw">await</span>;
-<a href=#219 id=219 data-nosnippet>219</a>                trip = inside;
-<a href=#220 id=220 data-nosnippet>220</a>                ended
-<a href=#221 id=221 data-nosnippet>221</a>            }
-<a href=#222 id=222 data-nosnippet>222</a>            <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>) =&gt; Ended::Arrived,
-<a href=#223 id=223 data-nosnippet>223</a>            <span class="prelude-val">Err</span>(ended) =&gt; ended,
-<a href=#224 id=224 data-nosnippet>224</a>        },
-<a href=#225 id=225 data-nosnippet>225</a>        <span class="prelude-val">None </span>=&gt; <span class="kw">match </span>driver.preflight(<span class="kw-2">&amp;mut </span>trip, map, <span class="kw-2">&amp;</span>setting).<span class="kw">await </span>{
-<a href=#226 id=226 data-nosnippet>226</a>            <span class="prelude-val">Ok</span>(()) =&gt; driver.walk(<span class="kw-2">&amp;mut </span>trip, map, <span class="kw-2">&amp;</span>setting).<span class="kw">await</span>,
-<a href=#227 id=227 data-nosnippet>227</a>            <span class="prelude-val">Err</span>(ended) =&gt; ended,
-<a href=#228 id=228 data-nosnippet>228</a>        },
-<a href=#229 id=229 data-nosnippet>229</a>    };
-<a href=#230 id=230 data-nosnippet>230</a>    <span class="kw">if </span><span class="macro">matches!</span>(ended, Ended::Stopped | Ended::Halted(<span class="kw">_</span>)) {
-<a href=#231 id=231 data-nosnippet>231</a>        driver.take_back_once().<span class="kw">await</span>;
-<a href=#232 id=232 data-nosnippet>232</a>    }
-<a href=#233 id=233 data-nosnippet>233</a>    Walked {
-<a href=#234 id=234 data-nosnippet>234</a>        ended,
-<a href=#235 id=235 data-nosnippet>235</a>        last_room: driver.was.map(|(<span class="kw">_</span>, room)| room),
-<a href=#236 id=236 data-nosnippet>236</a>        typeahead: driver.typeahead,
-<a href=#237 id=237 data-nosnippet>237</a>        wrong_for_the_map: trip.wrong_for_the_map().to_vec(),
-<a href=#238 id=238 data-nosnippet>238</a>        <span class="comment">// Still put away: what no hand holds as the walk ends, whatever the
-<a href=#239 id=239 data-nosnippet>239</a>        // record says of when it was taken back.
-<a href=#240 id=240 data-nosnippet>240</a>        </span>still_stored: driver
-<a href=#241 id=241 data-nosnippet>241</a>            .stored
-<a href=#242 id=242 data-nosnippet>242</a>            .into_iter()
-<a href=#243 id=243 data-nosnippet>243</a>            .filter(|stored| driver.state.hand_holding(<span class="kw-2">&amp;</span>stored.id).is_none())
-<a href=#244 id=244 data-nosnippet>244</a>            .collect(),
-<a href=#245 id=245 data-nosnippet>245</a>        stance_before: driver.stance_before,
-<a href=#246 id=246 data-nosnippet>246</a>        speech_before: driver.speech_before,
-<a href=#247 id=247 data-nosnippet>247</a>        still_out: driver
-<a href=#248 id=248 data-nosnippet>248</a>            .taken
-<a href=#249 id=249 data-nosnippet>249</a>            .into_iter()
-<a href=#250 id=250 data-nosnippet>250</a>            .map(|taken| (taken.name, taken.sent_back))
-<a href=#251 id=251 data-nosnippet>251</a>            .collect(),
-<a href=#252 id=252 data-nosnippet>252</a>        instabilities: driver.instabilities_changed.then_some(driver.instabilities),
-<a href=#253 id=253 data-nosnippet>253</a>    }
-<a href=#254 id=254 data-nosnippet>254</a>}
-<a href=#255 id=255 data-nosnippet>255</a>
-<a href=#256 id=256 data-nosnippet>256</a><span class="doccomment">/// A walk that never set out: the session had gone.
-<a href=#257 id=257 data-nosnippet>257</a></span><span class="kw">fn </span>gone(trip: <span class="kw-2">&amp;</span>Trip) -&gt; Walked {
-<a href=#258 id=258 data-nosnippet>258</a>    Walked {
-<a href=#259 id=259 data-nosnippet>259</a>        ended: Ended::Lost,
-<a href=#260 id=260 data-nosnippet>260</a>        last_room: <span class="prelude-val">None</span>,
-<a href=#261 id=261 data-nosnippet>261</a>        typeahead: <span class="prelude-val">None</span>,
-<a href=#262 id=262 data-nosnippet>262</a>        wrong_for_the_map: trip.wrong_for_the_map().to_vec(),
-<a href=#263 id=263 data-nosnippet>263</a>        still_stored: Vec::new(),
-<a href=#264 id=264 data-nosnippet>264</a>        stance_before: <span class="prelude-val">None</span>,
-<a href=#265 id=265 data-nosnippet>265</a>        speech_before: <span class="prelude-val">None</span>,
-<a href=#266 id=266 data-nosnippet>266</a>        still_out: Vec::new(),
-<a href=#267 id=267 data-nosnippet>267</a>        instabilities: <span class="prelude-val">None</span>,
-<a href=#268 id=268 data-nosnippet>268</a>    }
-<a href=#269 id=269 data-nosnippet>269</a>}
-<a href=#270 id=270 data-nosnippet>270</a>
-<a href=#271 id=271 data-nosnippet>271</a><span class="doccomment">/// The seed for the choices a crossing asks of this trip: a wander, a
-<a href=#272 id=272 data-nosnippet>272</a>/// random way out. **Made of what the wire said** -- the game's clock at the
-<a href=#273 id=273 data-nosnippet>273</a>/// last prompt, the room, the goal -- so a replay chooses the same; mixed
-<a href=#274 id=274 data-nosnippet>274</a>/// with `splitmix64`'s finaliser so clocks a second apart are not seeds a
-<a href=#275 id=275 data-nosnippet>275</a>/// bit apart.
-<a href=#276 id=276 data-nosnippet>276</a></span><span class="attr">#[must_use]
-<a href=#277 id=277 data-nosnippet>277</a></span><span class="kw">pub fn </span>seed_for(state: <span class="kw-2">&amp;</span>GameState, goal: RoomId) -&gt; u64 {
-<a href=#278 id=278 data-nosnippet>278</a>    <span class="kw">let </span>room = state.room.id.as_deref().unwrap_or(<span class="string">""</span>);
-<a href=#279 id=279 data-nosnippet>279</a>    <span class="kw">let </span><span class="kw-2">mut </span>seed = u64::from(state.game_time().unwrap_or(<span class="number">0</span>));
-<a href=#280 id=280 data-nosnippet>280</a>    seed = mix(seed ^ u64::from(goal.<span class="number">0</span>).rotate_left(<span class="number">32</span>));
-<a href=#281 id=281 data-nosnippet>281</a>    <span class="kw">for </span>byte <span class="kw">in </span>room.bytes() {
-<a href=#282 id=282 data-nosnippet>282</a>        seed = mix(seed ^ u64::from(byte));
-<a href=#283 id=283 data-nosnippet>283</a>    }
-<a href=#284 id=284 data-nosnippet>284</a>    seed
-<a href=#285 id=285 data-nosnippet>285</a>}
-<a href=#286 id=286 data-nosnippet>286</a>
-<a href=#287 id=287 data-nosnippet>287</a><span class="kw">const fn </span>mix(<span class="kw-2">mut </span>x: u64) -&gt; u64 {
-<a href=#288 id=288 data-nosnippet>288</a>    x = x.wrapping_add(<span class="number">0x9E37_79B9_7F4A_7C15</span>);
-<a href=#289 id=289 data-nosnippet>289</a>    x = (x ^ (x &gt;&gt; <span class="number">30</span>)).wrapping_mul(<span class="number">0xBF58_476D_1CE4_E5B9</span>);
-<a href=#290 id=290 data-nosnippet>290</a>    x = (x ^ (x &gt;&gt; <span class="number">27</span>)).wrapping_mul(<span class="number">0x94D0_49BB_1331_11EB</span>);
-<a href=#291 id=291 data-nosnippet>291</a>    x ^ (x &gt;&gt; <span class="number">31</span>)
-<a href=#292 id=292 data-nosnippet>292</a>}
-<a href=#293 id=293 data-nosnippet>293</a>
-<a href=#294 id=294 data-nosnippet>294</a><span class="doccomment">/// How many lines of the open chunk are already old news: counted with what
-<a href=#295 id=295 data-nosnippet>295</a>/// a long chunk dropped from its front, so a line is heard once however the
-<a href=#296 id=296 data-nosnippet>296</a>/// buffer slides.
-<a href=#297 id=297 data-nosnippet>297</a></span><span class="kw">fn </span>heard_so_far(state: <span class="kw-2">&amp;</span>GameState) -&gt; usize {
-<a href=#298 id=298 data-nosnippet>298</a>    <span class="kw">let </span>chunk = state.open_chunk();
-<a href=#299 id=299 data-nosnippet>299</a>    chunk.dropped() + chunk.lines().len()
-<a href=#300 id=300 data-nosnippet>300</a>}
-<a href=#301 id=301 data-nosnippet>301</a>
-<a href=#302 id=302 data-nosnippet>302</a><span class="doccomment">/// What a crossing took out, the container it came from, as ids; what the
-<a href=#303 id=303 data-nosnippet>303</a>/// map called it; and whether a stop's one put-back was sent.
-<a href=#304 id=304 data-nosnippet>304</a></span><span class="attr">#[derive(Debug, Clone)]
-<a href=#305 id=305 data-nosnippet>305</a></span><span class="kw">struct </span>Taken {
-<a href=#306 id=306 data-nosnippet>306</a>    thing: String,
-<a href=#307 id=307 data-nosnippet>307</a>    container: String,
-<a href=#308 id=308 data-nosnippet>308</a>    name: String,
-<a href=#309 id=309 data-nosnippet>309</a>    sent_back: bool,
-<a href=#310 id=310 data-nosnippet>310</a>    <span class="doccomment">/// Its crossing's put-back is still to come.
-<a href=#311 id=311 data-nosnippet>311</a>    </span>owed: bool,
-<a href=#312 id=312 data-nosnippet>312</a>}
-<a href=#313 id=313 data-nosnippet>313</a>
-<a href=#314 id=314 data-nosnippet>314</a><span class="kw">struct </span>Driver&lt;<span class="lifetime">'a</span>, F, W&gt; {
-<a href=#315 id=315 data-nosnippet>315</a>    handle: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>SessionHandle,
-<a href=#316 id=316 data-nosnippet>316</a>    stop: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>CancellationToken,
-<a href=#317 id=317 data-nosnippet>317</a>    state: GameState,
-<a href=#318 id=318 data-nosnippet>318</a>    events: Receiver&lt;Event&gt;,
-<a href=#319 id=319 data-nosnippet>319</a>    <span class="doccomment">/// How many lines of the model's open chunk the trip has heard.
-<a href=#320 id=320 data-nosnippet>320</a>    </span>heard: usize,
-<a href=#321 id=321 data-nosnippet>321</a>    began: Instant,
-<a href=#322 id=322 data-nosnippet>322</a>    <span class="doccomment">/// The model's arrival count and the room it was located as, last tick.
-<a href=#323 id=323 data-nosnippet>323</a>    </span>was: <span class="prelude-ty">Option</span>&lt;(u32, RoomId)&gt;,
-<a href=#324 id=324 data-nosnippet>324</a>    <span class="doccomment">/// Where the character was last known to be, from an earlier walk.
-<a href=#325 id=325 data-nosnippet>325</a>    </span>hint: <span class="prelude-ty">Option</span>&lt;RoomId&gt;,
-<a href=#326 id=326 data-nosnippet>326</a>    lost_since: <span class="prelude-ty">Option</span>&lt;Instant&gt;,
-<a href=#327 id=327 data-nosnippet>327</a>    typeahead: <span class="prelude-ty">Option</span>&lt;u32&gt;,
-<a href=#328 id=328 data-nosnippet>328</a>    shown: F,
-<a href=#329 id=329 data-nosnippet>329</a>    last_shown: Vec&lt;u32&gt;,
-<a href=#330 id=330 data-nosnippet>330</a>    wrote: W,
-<a href=#331 id=331 data-nosnippet>331</a>    memories: BTreeMap&lt;String, String&gt;,
-<a href=#332 id=332 data-nosnippet>332</a>    <span class="doccomment">/// The lines heard since the last deed's command went out: its answer.
-<a href=#333 id=333 data-nosnippet>333</a>    </span>answer: Vec&lt;ChunkLine&gt;,
-<a href=#334 id=334 data-nosnippet>334</a>    <span class="doccomment">/// What the deeds put away, first first.
-<a href=#335 id=335 data-nosnippet>335</a>    </span>stored: Vec&lt;Stored&gt;,
-<a href=#336 id=336 data-nosnippet>336</a>    stance_before: <span class="prelude-ty">Option</span>&lt;String&gt;,
-<a href=#337 id=337 data-nosnippet>337</a>    speech_before: <span class="prelude-ty">Option</span>&lt;String&gt;,
-<a href=#338 id=338 data-nosnippet>338</a>    <span class="doccomment">/// What the crossings took out, first first: the last is the one a
-<a href=#339 id=339 data-nosnippet>339</a>    /// put-back puts back.
-<a href=#340 id=340 data-nosnippet>340</a>    </span>taken: Vec&lt;Taken&gt;,
-<a href=#341 id=341 data-nosnippet>341</a>    <span class="doccomment">/// Who a crossing is still waiting for, by id.
-<a href=#342 id=342 data-nosnippet>342</a>    </span>behind: Vec&lt;String&gt;,
-<a href=#343 id=343 data-nosnippet>343</a>    <span class="doccomment">/// Facts the walk found out: the day passes held, at the pre-flight,
-<a href=#344 id=344 data-nosnippet>344</a>    /// and a mount, when the game refuses something for it.
-<a href=#345 id=345 data-nosnippet>345</a>    </span>found: HashMap&lt;String, bool&gt;,
-<a href=#346 id=346 data-nosnippet>346</a>    <span class="doccomment">/// When the last single command went out, while its prompt has not come.
-<a href=#347 id=347 data-nosnippet>347</a>    </span>unanswered: <span class="prelude-ty">Option</span>&lt;Instant&gt;,
-<a href=#348 id=348 data-nosnippet>348</a>    <span class="doccomment">/// What routines have learned on this trip: the Confluence's ways, the
-<a href=#349 id=349 data-nosnippet>349</a>    /// maze's.
-<a href=#350 id=350 data-nosnippet>350</a>    </span>kept: <span class="kw">super</span>::routines::Kept,
-<a href=#351 id=351 data-nosnippet>351</a>    <span class="doccomment">/// [`Self::prompts`] as the character last arrived somewhere: the room
-<a href=#352 id=352 data-nosnippet>352</a>    /// is told by the prompt after it.
-<a href=#353 id=353 data-nosnippet>353</a>    </span>arrived_at_prompt: <span class="prelude-ty">Option</span>&lt;u64&gt;,
-<a href=#354 id=354 data-nosnippet>354</a>    <span class="doccomment">/// How many prompts the game has sent: what tells a line's own prompt
-<a href=#355 id=355 data-nosnippet>355</a>    /// from one before it.
-<a href=#356 id=356 data-nosnippet>356</a>    </span>prompts: u64,
-<a href=#357 id=357 data-nosnippet>357</a>    <span class="doccomment">/// The instabilities seen lately, and whether this walk changed them.
-<a href=#358 id=358 data-nosnippet>358</a>    </span>instabilities: Vec&lt;<span class="kw">super</span>::instability::Seen&gt;,
-<a href=#359 id=359 data-nosnippet>359</a>    instabilities_changed: bool,
-<a href=#360 id=360 data-nosnippet>360</a>    <span class="doccomment">/// Seconds since 1970 when the walk set out.
-<a href=#361 id=361 data-nosnippet>361</a>    </span>now: u64,
-<a href=#362 id=362 data-nosnippet>362</a>    <span class="doccomment">/// The map's `instability` table for the instability the walker last
-<a href=#363 id=363 data-nosnippet>363</a>    /// entered the plane by: that room, and the table.
-<a href=#364 id=364 data-nosnippet>364</a>    </span>table: <span class="prelude-ty">Option</span>&lt;(u32, HashMap&lt;u32, f64&gt;)&gt;,
-<a href=#365 id=365 data-nosnippet>365</a>}
-<a href=#366 id=366 data-nosnippet>366</a>
-<a href=#367 id=367 data-nosnippet>367</a><span class="doccomment">/// What one [`Driver::turn`] came to.
-<a href=#368 id=368 data-nosnippet>368</a></span><span class="kw">enum </span>Turn {
-<a href=#369 id=369 data-nosnippet>369</a>    On,
-<a href=#370 id=370 data-nosnippet>370</a>    Arrived,
-<a href=#371 id=371 data-nosnippet>371</a>    <span class="doccomment">/// The steps handed to `Trip::aside` are over, and whether they worked.
-<a href=#372 id=372 data-nosnippet>372</a>    </span>Aside(bool),
-<a href=#373 id=373 data-nosnippet>373</a>}
-<a href=#374 id=374 data-nosnippet>374</a>
-<a href=#375 id=375 data-nosnippet>375</a><span class="kw">impl</span>&lt;F: FnMut(<span class="kw-2">&amp;</span>[u32]), W: FnMut(<span class="kw-2">&amp;</span>BTreeMap&lt;String, String&gt;)&gt; Driver&lt;<span class="lifetime">'_</span>, F, W&gt; {
-<a href=#376 id=376 data-nosnippet>376</a>    <span class="kw">async fn </span>walk(<span class="kw-2">&amp;mut </span><span class="self">self</span>, trip: <span class="kw-2">&amp;mut </span>Trip, map: <span class="kw-2">&amp;</span>Map, setting: <span class="kw-2">&amp;</span>Setting) -&gt; Ended {
-<a href=#377 id=377 data-nosnippet>377</a>        <span class="kw">loop </span>{
-<a href=#378 id=378 data-nosnippet>378</a>            <span class="kw">match </span><span class="self">self</span>.turn(trip, map, setting).<span class="kw">await </span>{
-<a href=#379 id=379 data-nosnippet>379</a>                <span class="prelude-val">Ok</span>(Turn::Arrived) =&gt; <span class="kw">return </span>Ended::Arrived,
-<a href=#380 id=380 data-nosnippet>380</a>                <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; {}
-<a href=#381 id=381 data-nosnippet>381</a>                <span class="prelude-val">Err</span>(ended) =&gt; <span class="kw">return </span>ended,
-<a href=#382 id=382 data-nosnippet>382</a>            }
-<a href=#383 id=383 data-nosnippet>383</a>        }
-<a href=#384 id=384 data-nosnippet>384</a>    }
-<a href=#385 id=385 data-nosnippet>385</a>
-<a href=#386 id=386 data-nosnippet>386</a>    <span class="doccomment">/// One tick of the trip, and what it asked done.
-<a href=#387 id=387 data-nosnippet>387</a>    </span><span class="kw">async fn </span>turn(<span class="kw-2">&amp;mut </span><span class="self">self</span>, trip: <span class="kw-2">&amp;mut </span>Trip, map: <span class="kw-2">&amp;</span>Map, setting: <span class="kw-2">&amp;</span>Setting) -&gt; <span class="prelude-ty">Result</span>&lt;Turn, Ended&gt; {
-<a href=#388 id=388 data-nosnippet>388</a>        <span class="kw">if </span><span class="self">self</span>.stop.is_cancelled() {
-<a href=#389 id=389 data-nosnippet>389</a>            <span class="kw">return </span><span class="prelude-val">Err</span>(Ended::Stopped);
-<a href=#390 id=390 data-nosnippet>390</a>        }
-<a href=#391 id=391 data-nosnippet>391</a>        <span class="self">self</span>.drain(trip).<span class="kw">await</span><span class="question-mark">?</span>;
-<a href=#392 id=392 data-nosnippet>392</a>        <span class="comment">// Dead already when the walk began: nothing new was heard to say so.
-<a href=#393 id=393 data-nosnippet>393</a>        </span><span class="kw">if </span><span class="self">self</span>.dead() {
-<a href=#394 id=394 data-nosnippet>394</a>            <span class="kw">return </span><span class="prelude-val">Err</span>(Ended::Halted(
-<a href=#395 id=395 data-nosnippet>395</a>                <span class="string">"you are dead, so the walk has stopped."</span>.to_owned(),
-<a href=#396 id=396 data-nosnippet>396</a>            ));
-<a href=#397 id=397 data-nosnippet>397</a>        }
-<a href=#398 id=398 data-nosnippet>398</a>        <span class="comment">// A single command's answer first, and then its roundtime.
-<a href=#399 id=399 data-nosnippet>399</a>        </span><span class="kw">if </span><span class="self">self
-<a href=#400 id=400 data-nosnippet>400</a>            </span>.unanswered
-<a href=#401 id=401 data-nosnippet>401</a>            .is_some_and(|sent| sent.elapsed() &lt; ANSWER_WAIT)
-<a href=#402 id=402 data-nosnippet>402</a>        {
-<a href=#403 id=403 data-nosnippet>403</a>            <span class="self">self</span>.hold(trip, BEAT).<span class="kw">await</span><span class="question-mark">?</span>;
-<a href=#404 id=404 data-nosnippet>404</a>            <span class="kw">return </span><span class="prelude-val">Ok</span>(Turn::On);
-<a href=#405 id=405 data-nosnippet>405</a>        }
-<a href=#406 id=406 data-nosnippet>406</a>        <span class="self">self</span>.unanswered = <span class="prelude-val">None</span>;
-<a href=#407 id=407 data-nosnippet>407</a>        <span class="self">self</span>.out_of_roundtime(trip).<span class="kw">await</span><span class="question-mark">?</span>;
-<a href=#408 id=408 data-nosnippet>408</a>        <span class="kw">let </span>before = <span class="self">self</span>.was;
-<a href=#409 id=409 data-nosnippet>409</a>        <span class="kw">let </span>here = <span class="self">self</span>.locate(map);
-<a href=#410 id=410 data-nosnippet>410</a>        <span class="kw">if </span>before.is_some() &amp;&amp; before != <span class="self">self</span>.was {
-<a href=#411 id=411 data-nosnippet>411</a>            <span class="self">self</span>.arrived(<span class="kw-2">&amp;</span>setting.settings).<span class="kw">await</span><span class="question-mark">?</span>;
-<a href=#412 id=412 data-nosnippet>412</a>        }
-<a href=#413 id=413 data-nosnippet>413</a>        <span class="kw">if </span>here.is_some() {
-<a href=#414 id=414 data-nosnippet>414</a>            <span class="self">self</span>.lost_since = <span class="prelude-val">None</span>;
-<a href=#415 id=415 data-nosnippet>415</a>        } <span class="kw">else if </span><span class="self">self</span>.lost_since.get_or_insert_with(Instant::now).elapsed() &gt;= LOST_WAIT {
-<a href=#416 id=416 data-nosnippet>416</a>            <span class="kw">return </span><span class="prelude-val">Err</span>(Ended::Failed(Why::OffTheMap));
-<a href=#417 id=417 data-nosnippet>417</a>        }
-<a href=#418 id=418 data-nosnippet>418</a>        <span class="kw">let </span>now = Now {
-<a href=#419 id=419 data-nosnippet>419</a>            here,
-<a href=#420 id=420 data-nosnippet>420</a>            ms: u64::try_from(<span class="self">self</span>.began.elapsed().as_millis()).unwrap_or(u64::MAX),
-<a href=#421 id=421 data-nosnippet>421</a>        };
-<a href=#422 id=422 data-nosnippet>422</a>        <span class="self">self</span>.price_the_way_out(map, setting);
-<a href=#423 id=423 data-nosnippet>423</a>        <span class="kw">let </span>walker = <span class="self">self</span>.walker(setting);
-<a href=#424 id=424 data-nosnippet>424</a>        <span class="kw">let </span>said = trip.tick(map, <span class="kw-2">&amp;</span>walker, now);
-<a href=#425 id=425 data-nosnippet>425</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(typeahead) = trip.typeahead_learned() {
-<a href=#426 id=426 data-nosnippet>426</a>            <span class="self">self</span>.typeahead = <span class="prelude-val">Some</span>(typeahead);
-<a href=#427 id=427 data-nosnippet>427</a>        }
-<a href=#428 id=428 data-nosnippet>428</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(here) = here {
-<a href=#429 id=429 data-nosnippet>429</a>            <span class="self">self</span>.show(here, <span class="kw-2">&amp;</span>trip.ahead());
-<a href=#430 id=430 data-nosnippet>430</a>        }
-<a href=#431 id=431 data-nosnippet>431</a>        <span class="kw">match </span>said {
-<a href=#432 id=432 data-nosnippet>432</a>            Said::Arrived =&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(Turn::Arrived),
-<a href=#433 id=433 data-nosnippet>433</a>            Said::Failed(why) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(Ended::Failed(why)),
-<a href=#434 id=434 data-nosnippet>434</a>            Said::Aside(worked) =&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(Turn::Aside(worked)),
-<a href=#435 id=435 data-nosnippet>435</a>            Said::Routine(routine) =&gt; {
-<a href=#436 id=436 data-nosnippet>436</a>                <span class="comment">// A routine reads the room it is in: not before the room is
-<a href=#437 id=437 data-nosnippet>437</a>                // told, which ends with the prompt after the arrival. A move
-<a href=#438 id=438 data-nosnippet>438</a>                // sent ahead lands at its `&lt;nav&gt;`, before the room's things.
-<a href=#439 id=439 data-nosnippet>439</a>                </span><span class="self">self</span>.until_the_room_is_told(trip).<span class="kw">await</span><span class="question-mark">?</span>;
-<a href=#440 id=440 data-nosnippet>440</a>                <span class="comment">// A routine moves by asking the trip to, which comes back
-<a href=#441 id=441 data-nosnippet>441</a>                // through here: boxed, as recursion must be.
-<a href=#442 id=442 data-nosnippet>442</a>                </span><span class="kw">if </span>!Box::pin(<span class="self">self</span>.solve(trip, map, setting, <span class="kw-2">&amp;</span>routine)).<span class="kw">await</span><span class="question-mark">? </span>{
-<a href=#443 id=443 data-nosnippet>443</a>                    <span class="comment">// Said, not only gone round: the player sees why the walk
-<a href=#444 id=444 data-nosnippet>444</a>                    // turned aside.
-<a href=#445 id=445 data-nosnippet>445</a>                    </span><span class="self">self</span>.handle.say(
-<a href=#446 id=446 data-nosnippet>446</a>                        hydra_session::Notice::line(
-<a href=#447 id=447 data-nosnippet>447</a>                            hydra_session::NoticeKind::Warn,
-<a href=#448 id=448 data-nosnippet>448</a>                            <span class="macro">format!</span>(
-<a href=#449 id=449 data-nosnippet>449</a>                                <span class="string">"Travel: the {} could not be crossed; going another way."</span>,
-<a href=#450 id=450 data-nosnippet>450</a>                                routine_name(<span class="kw-2">&amp;</span>routine)
-<a href=#451 id=451 data-nosnippet>451</a>                            ),
-<a href=#452 id=452 data-nosnippet>452</a>                        )
-<a href=#453 id=453 data-nosnippet>453</a>                        .answering(),
-<a href=#454 id=454 data-nosnippet>454</a>                    );
-<a href=#455 id=455 data-nosnippet>455</a>                    trip.could_not();
-<a href=#456 id=456 data-nosnippet>456</a>                }
-<a href=#457 id=457 data-nosnippet>457</a>            }
-<a href=#458 id=458 data-nosnippet>458</a>            Said::Hold =&gt; <span class="self">self</span>.hold(trip, BEAT).<span class="kw">await</span><span class="question-mark">?</span>,
-<a href=#459 id=459 data-nosnippet>459</a>            Said::Send(line) =&gt; <span class="kw">match </span>kept::with_items(<span class="kw-2">&amp;</span>line, <span class="kw-2">&amp;</span><span class="self">self</span>.state) {
-<a href=#460 id=460 data-nosnippet>460</a>                <span class="prelude-val">Some</span>(line) =&gt; {
-<a href=#461 id=461 data-nosnippet>461</a>                    <span class="self">self</span>.send(<span class="kw-2">&amp;</span>line).<span class="kw">await</span><span class="question-mark">?</span>;
-<a href=#462 id=462 data-nosnippet>462</a>                    <span class="self">self</span>.unanswered = <span class="prelude-val">Some</span>(Instant::now());
-<a href=#463 id=463 data-nosnippet>463</a>                }
-<a href=#464 id=464 data-nosnippet>464</a>                <span class="comment">// A thing nobody has: the crossing cannot be made.
-<a href=#465 id=465 data-nosnippet>465</a>                </span><span class="prelude-val">None </span>=&gt; trip.cannot_send(),
-<a href=#466 id=466 data-nosnippet>466</a>            },
-<a href=#467 id=467 data-nosnippet>467</a>            Said::SendAll(lines, gap) =&gt; {
-<a href=#468 id=468 data-nosnippet>468</a>                <span class="kw">for </span>line <span class="kw">in </span><span class="kw-2">&amp;</span>lines {
-<a href=#469 id=469 data-nosnippet>469</a>                    <span class="self">self</span>.send(line).<span class="kw">await</span><span class="question-mark">?</span>;
-<a href=#470 id=470 data-nosnippet>470</a>                }
-<a href=#471 id=471 data-nosnippet>471</a>                <span class="kw">let </span>until = Instant::now() + Duration::from_millis(gap);
-<a href=#472 id=472 data-nosnippet>472</a>                <span class="kw">while </span>Instant::now() &lt; until {
-<a href=#473 id=473 data-nosnippet>473</a>                    <span class="self">self</span>.hold(trip, until - Instant::now()).<span class="kw">await</span><span class="question-mark">?</span>;
-<a href=#474 id=474 data-nosnippet>474</a>                }
-<a href=#475 id=475 data-nosnippet>475</a>            }
-<a href=#476 id=476 data-nosnippet>476</a>            Said::Do(Deed::Remember(name, value)) =&gt; {
-<a href=#477 id=477 data-nosnippet>477</a>                <span class="self">self</span>.memories.insert(name, value);
-<a href=#478 id=478 data-nosnippet>478</a>                (<span class="self">self</span>.wrote)(<span class="kw-2">&amp;</span><span class="self">self</span>.memories);
-<a href=#479 id=479 data-nosnippet>479</a>            }
-<a href=#480 id=480 data-nosnippet>480</a>            Said::Do(Deed::Forget(name)) =&gt; {
-<a href=#481 id=481 data-nosnippet>481</a>                <span class="self">self</span>.memories.remove(<span class="kw-2">&amp;</span>name);
-<a href=#482 id=482 data-nosnippet>482</a>                (<span class="self">self</span>.wrote)(<span class="kw-2">&amp;</span><span class="self">self</span>.memories);
-<a href=#483 id=483 data-nosnippet>483</a>            }
-<a href=#484 id=484 data-nosnippet>484</a>            Said::Do(deed) =&gt; <span class="self">self</span>.deed(trip, deed, setting).<span class="kw">await</span><span class="question-mark">?</span>,
-<a href=#485 id=485 data-nosnippet>485</a>        }
-<a href=#486 id=486 data-nosnippet>486</a>        <span class="prelude-val">Ok</span>(Turn::On)
-<a href=#487 id=487 data-nosnippet>487</a>    }
-<a href=#488 id=488 data-nosnippet>488</a>
-<a href=#489 id=489 data-nosnippet>489</a>    <span class="doccomment">/// Until a prompt has followed the last arrival, so what the room holds
-<a href=#490 id=490 data-nosnippet>490</a>    /// has been told; no longer than [`DEED_DEADLINE`].
-<a href=#491 id=491 data-nosnippet>491</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">async fn </span>until_the_room_is_told(<span class="kw-2">&amp;mut </span><span class="self">self</span>, trip: <span class="kw-2">&amp;mut </span>Trip) -&gt; <span class="prelude-ty">Result</span>&lt;(), Ended&gt; {
-<a href=#492 id=492 data-nosnippet>492</a>        <span class="kw">let </span>until = Instant::now() + DEED_DEADLINE;
-<a href=#493 id=493 data-nosnippet>493</a>        <span class="kw">while </span><span class="self">self</span>.arrived_at_prompt.is_some_and(|at| <span class="self">self</span>.prompts &lt;= at) &amp;&amp; Instant::now() &lt; until
-<a href=#494 id=494 data-nosnippet>494</a>        {
-<a href=#495 id=495 data-nosnippet>495</a>            <span class="self">self</span>.hold(trip, until - Instant::now()).<span class="kw">await</span><span class="question-mark">?</span>;
-<a href=#496 id=496 data-nosnippet>496</a>        }
-<a href=#497 id=497 data-nosnippet>497</a>        <span class="prelude-val">Ok</span>(())
-<a href=#498 id=498 data-nosnippet>498</a>    }
-<a href=#499 id=499 data-nosnippet>499</a>
-<a href=#500 id=500 data-nosnippet>500</a>    <span class="doccomment">/// The walker's facts now: the model's, the Travel page's, the
-<a href=#501 id=501 data-nosnippet>501</a>    /// memories, and what the pre-flight found out.
-<a href=#502 id=502 data-nosnippet>502</a>    </span><span class="kw">fn </span>walker(<span class="kw-2">&amp;</span><span class="self">self</span>, setting: <span class="kw-2">&amp;</span>Setting) -&gt; cena_map::Walker {
-<a href=#503 id=503 data-nosnippet>503</a>        <span class="kw">let </span><span class="kw-2">mut </span>walker = walker_from(<span class="kw-2">&amp;</span><span class="self">self</span>.state, <span class="kw-2">&amp;</span>setting.settings, <span class="kw-2">&amp;</span><span class="self">self</span>.memories);
-<a href=#504 id=504 data-nosnippet>504</a>        walker.flags.extend(<span class="self">self</span>.found.clone());
-<a href=#505 id=505 data-nosnippet>505</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>((<span class="kw">_</span>, table)) = <span class="kw-2">&amp;</span><span class="self">self</span>.table {
-<a href=#506 id=506 data-nosnippet>506</a>            walker
-<a href=#507 id=507 data-nosnippet>507</a>                .tables
-<a href=#508 id=508 data-nosnippet>508</a>                .insert(<span class="string">"instability"</span>.to_owned(), table.clone());
-<a href=#509 id=509 data-nosnippet>509</a>        }
-<a href=#510 id=510 data-nosnippet>510</a>        walker
-<a href=#511 id=511 data-nosnippet>511</a>    }
-<a href=#512 id=512 data-nosnippet>512</a>
-<a href=#513 id=513 data-nosnippet>513</a>    <span class="doccomment">/// The map's `instability` table, worked out once for the instability
-<a href=#514 id=514 data-nosnippet>514</a>    /// the walker last entered the plane by ([`LAST_INSTABILITY`]): leaving
-<a href=#515 id=515 data-nosnippet>515</a>    /// the plane puts it back there, so the way out to each town costs the
-<a href=#516 id=516 data-nosnippet>516</a>    /// walk from it. Unknown, and so shut, for a walker Hydra did not see
-<a href=#517 id=517 data-nosnippet>517</a>    /// go in.
-<a href=#518 id=518 data-nosnippet>518</a>    </span><span class="kw">fn </span>price_the_way_out(<span class="kw-2">&amp;mut </span><span class="self">self</span>, map: <span class="kw-2">&amp;</span>Map, setting: <span class="kw-2">&amp;</span>Setting) {
-<a href=#519 id=519 data-nosnippet>519</a>        <span class="kw">let </span><span class="prelude-val">Some</span>(entered) = <span class="self">self
-<a href=#520 id=520 data-nosnippet>520</a>            </span>.memories
-<a href=#521 id=521 data-nosnippet>521</a>            .get(LAST_INSTABILITY)
-<a href=#522 id=522 data-nosnippet>522</a>            .and_then(|room| room.parse::&lt;u32&gt;().ok())
-<a href=#523 id=523 data-nosnippet>523</a>        <span class="kw">else </span>{
-<a href=#524 id=524 data-nosnippet>524</a>            <span class="self">self</span>.table = <span class="prelude-val">None</span>;
-<a href=#525 id=525 data-nosnippet>525</a>            <span class="kw">return</span>;
-<a href=#526 id=526 data-nosnippet>526</a>        };
-<a href=#527 id=527 data-nosnippet>527</a>        <span class="kw">if </span><span class="self">self</span>.table.as_ref().is_some_and(|(at, <span class="kw">_</span>)| <span class="kw-2">*</span>at == entered) {
-<a href=#528 id=528 data-nosnippet>528</a>            <span class="kw">return</span>;
-<a href=#529 id=529 data-nosnippet>529</a>        }
-<a href=#530 id=530 data-nosnippet>530</a>        <span class="kw">let </span>walker = walker_from(<span class="kw-2">&amp;</span><span class="self">self</span>.state, <span class="kw-2">&amp;</span>setting.settings, <span class="kw-2">&amp;</span><span class="self">self</span>.memories);
-<a href=#531 id=531 data-nosnippet>531</a>        <span class="kw">let </span>table = <span class="kw">super</span>::instability::instability_table(
-<a href=#532 id=532 data-nosnippet>532</a>            map,
-<a href=#533 id=533 data-nosnippet>533</a>            RoomId(entered),
-<a href=#534 id=534 data-nosnippet>534</a>            <span class="kw">crate</span>::route::pricing(<span class="kw-2">&amp;</span>walker),
-<a href=#535 id=535 data-nosnippet>535</a>        );
-<a href=#536 id=536 data-nosnippet>536</a>        <span class="self">self</span>.table = <span class="prelude-val">Some</span>((entered, table));
-<a href=#537 id=537 data-nosnippet>537</a>    }
-<a href=#538 id=538 data-nosnippet>538</a>
-<a href=#539 id=539 data-nosnippet>539</a>    <span class="doccomment">/// Tell `shown` the route from `here` on, when it is not what it last
-<a href=#540 id=540 data-nosnippet>540</a>    /// was.
-<a href=#541 id=541 data-nosnippet>541</a>    </span><span class="kw">fn </span>show(<span class="kw-2">&amp;mut </span><span class="self">self</span>, here: RoomId, ahead: <span class="kw-2">&amp;</span>[RoomId]) {
-<a href=#542 id=542 data-nosnippet>542</a>        <span class="kw">let </span>route: Vec&lt;u32&gt; = std::iter::once(here.<span class="number">0</span>)
-<a href=#543 id=543 data-nosnippet>543</a>            .chain(ahead.iter().map(|room| room.<span class="number">0</span>))
-<a href=#544 id=544 data-nosnippet>544</a>            .collect();
-<a href=#545 id=545 data-nosnippet>545</a>        <span class="kw">if </span>route != <span class="self">self</span>.last_shown {
-<a href=#546 id=546 data-nosnippet>546</a>            (<span class="self">self</span>.shown)(<span class="kw-2">&amp;</span>route);
-<a href=#547 id=547 data-nosnippet>547</a>            <span class="self">self</span>.last_shown = route;
-<a href=#548 id=548 data-nosnippet>548</a>        }
-<a href=#549 id=549 data-nosnippet>549</a>    }
-<a href=#550 id=550 data-nosnippet>550</a>
-<a href=#551 id=551 data-nosnippet>551</a>    <span class="doccomment">/// The two rules for a room just walked into:
-<a href=#552 id=552 data-nosnippet>552</a>    /// `delay` seconds are waited, and `stop_for_dead` halts the walk where
-<a href=#553 id=553 data-nosnippet>553</a>    /// someone lies dead. Not asked of the room the walk began in, so
-<a href=#554 id=554 data-nosnippet>554</a>    /// starting again beside the body walks on.
-<a href=#555 id=555 data-nosnippet>555</a>    </span><span class="kw">async fn </span>arrived(<span class="kw-2">&amp;mut </span><span class="self">self</span>, settings: <span class="kw-2">&amp;</span>TravelSettings) -&gt; <span class="prelude-ty">Result</span>&lt;(), Ended&gt; {
-<a href=#556 id=556 data-nosnippet>556</a>        <span class="kw">let </span>dead = |player: <span class="kw-2">&amp;</span>hydra_model::RoomItem| {
-<a href=#557 id=557 data-nosnippet>557</a>            player
-<a href=#558 id=558 data-nosnippet>558</a>                .status
-<a href=#559 id=559 data-nosnippet>559</a>                .as_ref()
-<a href=#560 id=560 data-nosnippet>560</a>                .is_some_and(|status| status.as_str().contains(<span class="string">"dead"</span>))
-<a href=#561 id=561 data-nosnippet>561</a>        };
-<a href=#562 id=562 data-nosnippet>562</a>        <span class="kw">if </span>settings.on(<span class="string">"stop_for_dead"</span>) &amp;&amp; <span class="self">self</span>.state.room.players.iter().any(dead) {
-<a href=#563 id=563 data-nosnippet>563</a>            <span class="kw">return </span><span class="prelude-val">Err</span>(Ended::Halted(
-<a href=#564 id=564 data-nosnippet>564</a>                <span class="string">"someone here is dead, and Stop beside the dead is on."</span>.to_owned(),
-<a href=#565 id=565 data-nosnippet>565</a>            ));
-<a href=#566 id=566 data-nosnippet>566</a>        }
-<a href=#567 id=567 data-nosnippet>567</a>        <span class="kw">let </span>delay = settings
-<a href=#568 id=568 data-nosnippet>568</a>            .<span class="number">0
-<a href=#569 id=569 data-nosnippet>569</a>            </span>.get(<span class="string">"delay"</span>)
-<a href=#570 id=570 data-nosnippet>570</a>            .and_then(|delay| delay.parse::&lt;f64&gt;().ok())
-<a href=#571 id=571 data-nosnippet>571</a>            .filter(|delay| delay.is_finite() &amp;&amp; <span class="kw-2">*</span>delay &gt; <span class="number">0.0</span>);
-<a href=#572 id=572 data-nosnippet>572</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(delay) = delay {
-<a href=#573 id=573 data-nosnippet>573</a>            <span class="kw">let </span>pause = tokio::time::sleep(Duration::from_secs_f64(delay.min(<span class="number">600.0</span>)));
-<a href=#574 id=574 data-nosnippet>574</a>            <span class="macro">tokio::select!</span> {
-<a href=#575 id=575 data-nosnippet>575</a>                biased;
-<a href=#576 id=576 data-nosnippet>576</a>                () = <span class="self">self</span>.stop.cancelled() =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(Ended::Stopped),
-<a href=#577 id=577 data-nosnippet>577</a>                () = pause =&gt; {}
-<a href=#578 id=578 data-nosnippet>578</a>            }
-<a href=#579 id=579 data-nosnippet>579</a>        }
-<a href=#580 id=580 data-nosnippet>580</a>        <span class="prelude-val">Ok</span>(())
-<a href=#581 id=581 data-nosnippet>581</a>    }
-<a href=#582 id=582 data-nosnippet>582</a>
-<a href=#583 id=583 data-nosnippet>583</a>    <span class="doccomment">/// Which room of the map the model's room is, remembering the last one
-<a href=#584 id=584 data-nosnippet>584</a>    /// so that two rooms alike in everything are told apart by the way in.
-<a href=#585 id=585 data-nosnippet>585</a>    /// "Has it moved" is the model's arrival count, which answers for a room
-<a href=#586 id=586 data-nosnippet>586</a>    /// with no number too.
-<a href=#587 id=587 data-nosnippet>587</a>    </span><span class="kw">fn </span>locate(<span class="kw-2">&amp;mut </span><span class="self">self</span>, map: <span class="kw-2">&amp;</span>Map) -&gt; <span class="prelude-ty">Option</span>&lt;RoomId&gt; {
-<a href=#588 id=588 data-nosnippet>588</a>        <span class="kw">let </span>arrivals = <span class="self">self</span>.state.arrivals;
-<a href=#589 id=589 data-nosnippet>589</a>        <span class="kw">let </span>whence = <span class="kw">match </span><span class="self">self</span>.was {
-<a href=#590 id=590 data-nosnippet>590</a>            <span class="prelude-val">Some</span>((then, at)) <span class="kw">if </span>then == arrivals =&gt; Whence::Still(at),
-<a href=#591 id=591 data-nosnippet>591</a>            <span class="prelude-val">Some</span>((<span class="kw">_</span>, at)) =&gt; Whence::Left(at),
-<a href=#592 id=592 data-nosnippet>592</a>            <span class="prelude-val">None </span>=&gt; <span class="self">self</span>.hint.map_or(Whence::Nowhere, Whence::Still),
-<a href=#593 id=593 data-nosnippet>593</a>        };
-<a href=#594 id=594 data-nosnippet>594</a>        <span class="kw">let </span>here = hydra_map::room_of(map, <span class="kw-2">&amp;</span><span class="self">self</span>.state, whence)<span class="question-mark">?</span>;
-<a href=#595 id=595 data-nosnippet>595</a>        <span class="self">self</span>.was = <span class="prelude-val">Some</span>((arrivals, here));
-<a href=#596 id=596 data-nosnippet>596</a>        <span class="prelude-val">Some</span>(here)
-<a href=#597 id=597 data-nosnippet>597</a>    }
-<a href=#598 id=598 data-nosnippet>598</a>
-<a href=#599 id=599 data-nosnippet>599</a>    <span class="doccomment">/// Fold every event already waiting, without waiting for more.
-<a href=#600 id=600 data-nosnippet>600</a>    </span><span class="kw">async fn </span>drain(<span class="kw-2">&amp;mut </span><span class="self">self</span>, trip: <span class="kw-2">&amp;mut </span>Trip) -&gt; <span class="prelude-ty">Result</span>&lt;(), Ended&gt; {
-<a href=#601 id=601 data-nosnippet>601</a>        <span class="kw">loop </span>{
-<a href=#602 id=602 data-nosnippet>602</a>            <span class="kw">match </span><span class="self">self</span>.events.try_recv() {
-<a href=#603 id=603 data-nosnippet>603</a>                <span class="prelude-val">Ok</span>(event) =&gt; <span class="self">self</span>.fold(trip, <span class="kw-2">&amp;</span>event)<span class="question-mark">?</span>,
-<a href=#604 id=604 data-nosnippet>604</a>                <span class="prelude-val">Err</span>(TryRecvError::Lagged(<span class="kw">_</span>)) =&gt; <span class="self">self</span>.rejoin().<span class="kw">await</span><span class="question-mark">?</span>,
-<a href=#605 id=605 data-nosnippet>605</a>                <span class="prelude-val">Err</span>(TryRecvError::Empty) =&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(()),
-<a href=#606 id=606 data-nosnippet>606</a>                <span class="prelude-val">Err</span>(TryRecvError::Closed) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(Ended::Lost),
-<a href=#607 id=607 data-nosnippet>607</a>            }
-<a href=#608 id=608 data-nosnippet>608</a>        }
-<a href=#609 id=609 data-nosnippet>609</a>    }
-<a href=#610 id=610 data-nosnippet>610</a>
-<a href=#611 id=611 data-nosnippet>611</a>    <span class="doccomment">/// Events were lost: the state is taken afresh, with the stream from just
-<a href=#612 id=612 data-nosnippet>612</a>    /// after it, rather than decided from the holes.
-<a href=#613 id=613 data-nosnippet>613</a>    </span><span class="kw">async fn </span>rejoin(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Ended&gt; {
-<a href=#614 id=614 data-nosnippet>614</a>        <span class="kw">let </span>(snapshot, events) = <span class="self">self</span>.handle.join().<span class="kw">await</span>.ok_or(Ended::Lost)<span class="question-mark">?</span>;
-<a href=#615 id=615 data-nosnippet>615</a>        <span class="kw">if </span><span class="macro">matches!</span>(snapshot.lifecycle, State::Reconnecting | State::Closed) {
-<a href=#616 id=616 data-nosnippet>616</a>            <span class="kw">return </span><span class="prelude-val">Err</span>(Ended::Lost);
-<a href=#617 id=617 data-nosnippet>617</a>        }
-<a href=#618 id=618 data-nosnippet>618</a>        <span class="self">self</span>.heard = heard_so_far(<span class="kw-2">&amp;</span>snapshot.state);
-<a href=#619 id=619 data-nosnippet>619</a>        <span class="self">self</span>.state = snapshot.state;
-<a href=#620 id=620 data-nosnippet>620</a>        <span class="self">self</span>.events = events;
-<a href=#621 id=621 data-nosnippet>621</a>        <span class="self">self</span>.was = <span class="prelude-val">None</span>;
-<a href=#622 id=622 data-nosnippet>622</a>        <span class="prelude-val">Ok</span>(())
-<a href=#623 id=623 data-nosnippet>623</a>    }
-<a href=#624 id=624 data-nosnippet>624</a>
-<a href=#625 id=625 data-nosnippet>625</a>    <span class="kw">fn </span>fold(<span class="kw-2">&amp;mut </span><span class="self">self</span>, trip: <span class="kw-2">&amp;mut </span>Trip, event: <span class="kw-2">&amp;</span>Event) -&gt; <span class="prelude-ty">Result</span>&lt;(), Ended&gt; {
-<a href=#626 id=626 data-nosnippet>626</a>        <span class="kw">match </span>event {
-<a href=#627 id=627 data-nosnippet>627</a>            Event::Frame(frame) =&gt; {
-<a href=#628 id=628 data-nosnippet>628</a>                <span class="kw">let </span>arrivals = <span class="self">self</span>.state.arrivals;
-<a href=#629 id=629 data-nosnippet>629</a>                <span class="self">self</span>.state.apply(frame);
-<a href=#630 id=630 data-nosnippet>630</a>                <span class="kw">if </span><span class="self">self</span>.state.arrivals != arrivals {
-<a href=#631 id=631 data-nosnippet>631</a>                    <span class="self">self</span>.arrived_at_prompt = <span class="prelude-val">Some</span>(<span class="self">self</span>.prompts);
-<a href=#632 id=632 data-nosnippet>632</a>                    trip.arrived();
-<a href=#633 id=633 data-nosnippet>633</a>                }
-<a href=#634 id=634 data-nosnippet>634</a>                <span class="comment">// Dead, the walker goes nowhere: a move, a routine's command
-<a href=#635 id=635 data-nosnippet>635</a>                // or a wait would go on and on. Heard here, every one of them
-<a href=#636 id=636 data-nosnippet>636</a>                // stops at once.
-<a href=#637 id=637 data-nosnippet>637</a>                </span><span class="kw">if </span><span class="self">self</span>.dead() {
-<a href=#638 id=638 data-nosnippet>638</a>                    <span class="kw">return </span><span class="prelude-val">Err</span>(Ended::Halted(
-<a href=#639 id=639 data-nosnippet>639</a>                        <span class="string">"you are dead, so the walk has stopped."</span>.to_owned(),
-<a href=#640 id=640 data-nosnippet>640</a>                    ));
-<a href=#641 id=641 data-nosnippet>641</a>                }
-<a href=#642 id=642 data-nosnippet>642</a>                <span class="kw">match </span><span class="kw-2">&amp;**</span>frame {
-<a href=#643 id=643 data-nosnippet>643</a>                    <span class="comment">// The chunk closed, and took its lines with it.
-<a href=#644 id=644 data-nosnippet>644</a>                    </span>Frame::Prompt { .. } =&gt; {
-<a href=#645 id=645 data-nosnippet>645</a>                        <span class="self">self</span>.heard = <span class="number">0</span>;
-<a href=#646 id=646 data-nosnippet>646</a>                        <span class="self">self</span>.prompts += <span class="number">1</span>;
-<a href=#647 id=647 data-nosnippet>647</a>                        <span class="self">self</span>.unanswered = <span class="prelude-val">None</span>;
-<a href=#648 id=648 data-nosnippet>648</a>                        trip.prompted();
-<a href=#649 id=649 data-nosnippet>649</a>                    }
-<a href=#650 id=650 data-nosnippet>650</a>                    Frame::Text(<span class="kw">_</span>) =&gt; <span class="self">self</span>.hear(trip),
-<a href=#651 id=651 data-nosnippet>651</a>                    <span class="kw">_ </span>=&gt; {}
-<a href=#652 id=652 data-nosnippet>652</a>                }
-<a href=#653 id=653 data-nosnippet>653</a>                <span class="prelude-val">Ok</span>(())
-<a href=#654 id=654 data-nosnippet>654</a>            }
-<a href=#655 id=655 data-nosnippet>655</a>            Event::Sent {
-<a href=#656 id=656 data-nosnippet>656</a>                line,
-<a href=#657 id=657 data-nosnippet>657</a>                origin: Origin::Lich,
-<a href=#658 id=658 data-nosnippet>658</a>            } <span class="kw">if </span>is_a_move(line) =&gt; <span class="prelude-val">Err</span>(Ended::HandedToLich(line.clone())),
-<a href=#659 id=659 data-nosnippet>659</a>            Event::StateChanged(State::Reconnecting | State::Closed) =&gt; <span class="prelude-val">Err</span>(Ended::Lost),
-<a href=#660 id=660 data-nosnippet>660</a>            <span class="kw">_ </span>=&gt; <span class="prelude-val">Ok</span>(()),
-<a href=#661 id=661 data-nosnippet>661</a>        }
-<a href=#662 id=662 data-nosnippet>662</a>    }
-<a href=#663 id=663 data-nosnippet>663</a>
-<a href=#664 id=664 data-nosnippet>664</a>    <span class="doccomment">/// Tell the trip the whole lines the model has finished since it last
-<a href=#665 id=665 data-nosnippet>665</a>    /// heard any, keep them as the answer to a deed's command, and strike
-<a href=#666 id=666 data-nosnippet>666</a>    /// off whoever they say has rejoined.
-<a href=#667 id=667 data-nosnippet>667</a>    </span><span class="kw">fn </span>hear(<span class="kw-2">&amp;mut </span><span class="self">self</span>, trip: <span class="kw-2">&amp;mut </span>Trip) {
-<a href=#668 id=668 data-nosnippet>668</a>        <span class="kw">let </span>chunk = <span class="self">self</span>.state.open_chunk();
-<a href=#669 id=669 data-nosnippet>669</a>        <span class="kw">let </span>lines = chunk.lines();
-<a href=#670 id=670 data-nosnippet>670</a>        <span class="kw">let </span>total = chunk.dropped() + lines.len();
-<a href=#671 id=671 data-nosnippet>671</a>        <span class="kw">let </span>fresh = total.saturating_sub(<span class="self">self</span>.heard).min(lines.len());
-<a href=#672 id=672 data-nosnippet>672</a>        <span class="kw">for </span>line <span class="kw">in </span><span class="kw-2">&amp;</span>lines[lines.len() - fresh..] {
-<a href=#673 id=673 data-nosnippet>673</a>            <span class="kw">let </span>text = line.text();
-<a href=#674 id=674 data-nosnippet>674</a>            trip.heard(<span class="kw-2">&amp;</span>text);
-<a href=#675 id=675 data-nosnippet>675</a>            <span class="comment">// The one way the game tells of a mount: by refusing.
-<a href=#676 id=676 data-nosnippet>676</a>            </span><span class="kw">if </span>text.ends_with(<span class="string">"while mounted."</span>) {
-<a href=#677 id=677 data-nosnippet>677</a>                <span class="self">self</span>.found.insert(<span class="string">"mounted"</span>.to_owned(), <span class="bool-val">true</span>);
-<a href=#678 id=678 data-nosnippet>678</a>            }
-<a href=#679 id=679 data-nosnippet>679</a>            <span class="self">self</span>.answer.push(line.clone());
-<a href=#680 id=680 data-nosnippet>680</a>            <span class="kw">if let </span><span class="prelude-val">Some</span>(GroupEvent::Joined(member) | GroupEvent::Added(member)) =
-<a href=#681 id=681 data-nosnippet>681</a>                group::classify(line)
-<a href=#682 id=682 data-nosnippet>682</a>            {
-<a href=#683 id=683 data-nosnippet>683</a>                <span class="self">self</span>.behind.retain(|id| <span class="kw-2">*</span>id != member.id);
-<a href=#684 id=684 data-nosnippet>684</a>            }
-<a href=#685 id=685 data-nosnippet>685</a>        }
-<a href=#686 id=686 data-nosnippet>686</a>        <span class="self">self</span>.heard = total;
-<a href=#687 id=687 data-nosnippet>687</a>    }
-<a href=#688 id=688 data-nosnippet>688</a>
-<a href=#689 id=689 data-nosnippet>689</a>    <span class="doccomment">/// Until the roundtime the game stated is over, or
-<a href=#690 id=690 data-nosnippet>690</a>    /// [`LONGEST_ROUNDTIME`]: folding what comes meanwhile.
-<a href=#691 id=691 data-nosnippet>691</a>    </span><span class="kw">async fn </span>out_of_roundtime(<span class="kw-2">&amp;mut </span><span class="self">self</span>, trip: <span class="kw-2">&amp;mut </span>Trip) -&gt; <span class="prelude-ty">Result</span>&lt;(), Ended&gt; {
-<a href=#692 id=692 data-nosnippet>692</a>        <span class="kw">let </span>until = Instant::now() + LONGEST_ROUNDTIME;
-<a href=#693 id=693 data-nosnippet>693</a>        <span class="kw">while </span><span class="self">self</span>.state.in_roundtime() == <span class="prelude-val">Some</span>(<span class="bool-val">true</span>) &amp;&amp; Instant::now() &lt; until {
-<a href=#694 id=694 data-nosnippet>694</a>            <span class="self">self</span>.hold(trip, BEAT).<span class="kw">await</span><span class="question-mark">?</span>;
-<a href=#695 id=695 data-nosnippet>695</a>        }
-<a href=#696 id=696 data-nosnippet>696</a>        <span class="prelude-val">Ok</span>(())
-<a href=#697 id=697 data-nosnippet>697</a>    }
-<a href=#698 id=698 data-nosnippet>698</a>
-<a href=#699 id=699 data-nosnippet>699</a>    <span class="doccomment">/// Wait for the game's next word, or `most`, whichever is first.
-<a href=#700 id=700 data-nosnippet>700</a>    </span><span class="kw">async fn </span>hold(<span class="kw-2">&amp;mut </span><span class="self">self</span>, trip: <span class="kw-2">&amp;mut </span>Trip, most: Duration) -&gt; <span class="prelude-ty">Result</span>&lt;(), Ended&gt; {
-<a href=#701 id=701 data-nosnippet>701</a>        <span class="kw">let </span>event = <span class="macro">tokio::select!</span> {
-<a href=#702 id=702 data-nosnippet>702</a>            biased;
-<a href=#703 id=703 data-nosnippet>703</a>            () = <span class="self">self</span>.stop.cancelled() =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(Ended::Stopped),
-<a href=#704 id=704 data-nosnippet>704</a>            event = <span class="self">self</span>.events.recv() =&gt; event,
-<a href=#705 id=705 data-nosnippet>705</a>            () = tokio::time::sleep(most) =&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(()),
-<a href=#706 id=706 data-nosnippet>706</a>        };
-<a href=#707 id=707 data-nosnippet>707</a>        <span class="kw">match </span>event {
-<a href=#708 id=708 data-nosnippet>708</a>            <span class="prelude-val">Ok</span>(event) =&gt; <span class="self">self</span>.fold(trip, <span class="kw-2">&amp;</span>event),
-<a href=#709 id=709 data-nosnippet>709</a>            <span class="prelude-val">Err</span>(RecvError::Lagged(<span class="kw">_</span>)) =&gt; <span class="self">self</span>.rejoin().<span class="kw">await</span>,
-<a href=#710 id=710 data-nosnippet>710</a>            <span class="prelude-val">Err</span>(RecvError::Closed) =&gt; <span class="prelude-val">Err</span>(Ended::Lost),
-<a href=#711 id=711 data-nosnippet>711</a>        }
-<a href=#712 id=712 data-nosnippet>712</a>    }
-<a href=#713 id=713 data-nosnippet>713</a>
-<a href=#714 id=714 data-nosnippet>714</a>    <span class="doccomment">/// Write `line` to the game at once: the trip checks every move by the
-<a href=#715 id=715 data-nosnippet>715</a>    /// room it lands in, so nothing waits for an answer here.
-<a href=#716 id=716 data-nosnippet>716</a>    </span><span class="kw">async fn </span>send(<span class="kw-2">&amp;mut </span><span class="self">self</span>, line: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;(), Ended&gt; {
-<a href=#717 id=717 data-nosnippet>717</a>        <span class="kw">if </span><span class="self">self</span>.stop.is_cancelled() {
-<a href=#718 id=718 data-nosnippet>718</a>            <span class="kw">return </span><span class="prelude-val">Err</span>(Ended::Stopped);
-<a href=#719 id=719 data-nosnippet>719</a>        }
-<a href=#720 id=720 data-nosnippet>720</a>        <span class="kw">if </span><span class="self">self</span>.handle.write(line, Origin::Travel).<span class="kw">await </span>{
-<a href=#721 id=721 data-nosnippet>721</a>            <span class="prelude-val">Ok</span>(())
-<a href=#722 id=722 data-nosnippet>722</a>        } <span class="kw">else </span>{
-<a href=#723 id=723 data-nosnippet>723</a>            <span class="prelude-val">Err</span>(Ended::Lost)
-<a href=#724 id=724 data-nosnippet>724</a>        }
-<a href=#725 id=725 data-nosnippet>725</a>    }
-<a href=#726 id=726 data-nosnippet>726</a>
-<a href=#727 id=727 data-nosnippet>727</a>    <span class="doccomment">/// Whether the game says the character is dead.
-<a href=#728 id=728 data-nosnippet>728</a>    </span><span class="kw">fn </span>dead(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-<a href=#729 id=729 data-nosnippet>729</a>        <span class="self">self</span>.state.status.known().dead() == <span class="prelude-val">Some</span>(<span class="bool-val">true</span>)
-<a href=#730 id=730 data-nosnippet>730</a>    }
-<a href=#731 id=731 data-nosnippet>731</a>
-<a href=#732 id=732 data-nosnippet>732</a>    <span class="doccomment">/// The exception to "a stop sends nothing": the key a crossing
-<a href=#733 id=733 data-nosnippet>733</a>    /// took out put back, then one command per stored thing, none waited
-<a href=#734 id=734 data-nosnippet>734</a>    /// for (module docs). They stay on the record, since nothing saw them go.
-<a href=#735 id=735 data-nosnippet>735</a>    </span><span class="kw">async fn </span>take_back_once(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
-<a href=#736 id=736 data-nosnippet>736</a>        <span class="comment">// A dead character can take nothing back.
-<a href=#737 id=737 data-nosnippet>737</a>        </span><span class="kw">if </span><span class="self">self</span>.dead() {
-<a href=#738 id=738 data-nosnippet>738</a>            <span class="kw">return</span>;
-<a href=#739 id=739 data-nosnippet>739</a>        }
-<a href=#740 id=740 data-nosnippet>740</a>        <span class="kw">for </span>taken <span class="kw">in </span><span class="self">self</span>.taken.iter_mut().rev() {
-<a href=#741 id=741 data-nosnippet>741</a>            <span class="kw">let </span>command = <span class="macro">format!</span>(<span class="string">"put #{} in #{}"</span>, taken.thing, taken.container);
-<a href=#742 id=742 data-nosnippet>742</a>            taken.sent_back = <span class="self">self</span>.handle.write(<span class="kw-2">&amp;</span>command, Origin::Travel).<span class="kw">await</span>;
-<a href=#743 id=743 data-nosnippet>743</a>        }
-<a href=#744 id=744 data-nosnippet>744</a>        <span class="kw">for </span>stored <span class="kw">in </span><span class="self">self</span>.stored.iter().rev() {
-<a href=#745 id=745 data-nosnippet>745</a>            <span class="kw">let </span>command = take_back(<span class="kw-2">&amp;</span><span class="self">self</span>.state, stored);
-<a href=#746 id=746 data-nosnippet>746</a>            <span class="kw">let _ </span>= <span class="self">self</span>.handle.write(<span class="kw-2">&amp;</span>command, Origin::Travel).<span class="kw">await</span>;
-<a href=#747 id=747 data-nosnippet>747</a>        }
-<a href=#748 id=748 data-nosnippet>748</a>    }
-<a href=#749 id=749 data-nosnippet>749</a>}
-<a href=#750 id=750 data-nosnippet>750</a>
-<a href=#751 id=751 data-nosnippet>751</a><span class="doccomment">/// Whether `line` moves the character: a direction, or a verb that walks
-<a href=#752 id=752 data-nosnippet>752</a>/// it through something. What a Lich script sends when it walks.
-<a href=#753 id=753 data-nosnippet>753</a></span><span class="attr">#[must_use]
-<a href=#754 id=754 data-nosnippet>754</a></span><span class="kw">pub fn </span>is_a_move(line: <span class="kw-2">&amp;</span>str) -&gt; bool {
-<a href=#755 id=755 data-nosnippet>755</a>    <span class="kw">const </span>WAYS: [<span class="kw-2">&amp;</span>str; <span class="number">26</span>] = [
-<a href=#756 id=756 data-nosnippet>756</a>        <span class="string">"n"</span>,
-<a href=#757 id=757 data-nosnippet>757</a>        <span class="string">"s"</span>,
-<a href=#758 id=758 data-nosnippet>758</a>        <span class="string">"e"</span>,
-<a href=#759 id=759 data-nosnippet>759</a>        <span class="string">"w"</span>,
-<a href=#760 id=760 data-nosnippet>760</a>        <span class="string">"ne"</span>,
-<a href=#761 id=761 data-nosnippet>761</a>        <span class="string">"nw"</span>,
-<a href=#762 id=762 data-nosnippet>762</a>        <span class="string">"se"</span>,
-<a href=#763 id=763 data-nosnippet>763</a>        <span class="string">"sw"</span>,
-<a href=#764 id=764 data-nosnippet>764</a>        <span class="string">"u"</span>,
-<a href=#765 id=765 data-nosnippet>765</a>        <span class="string">"d"</span>,
-<a href=#766 id=766 data-nosnippet>766</a>        <span class="string">"north"</span>,
-<a href=#767 id=767 data-nosnippet>767</a>        <span class="string">"south"</span>,
-<a href=#768 id=768 data-nosnippet>768</a>        <span class="string">"east"</span>,
-<a href=#769 id=769 data-nosnippet>769</a>        <span class="string">"west"</span>,
-<a href=#770 id=770 data-nosnippet>770</a>        <span class="string">"northeast"</span>,
-<a href=#771 id=771 data-nosnippet>771</a>        <span class="string">"northwest"</span>,
-<a href=#772 id=772 data-nosnippet>772</a>        <span class="string">"southeast"</span>,
-<a href=#773 id=773 data-nosnippet>773</a>        <span class="string">"southwest"</span>,
-<a href=#774 id=774 data-nosnippet>774</a>        <span class="string">"up"</span>,
-<a href=#775 id=775 data-nosnippet>775</a>        <span class="string">"down"</span>,
-<a href=#776 id=776 data-nosnippet>776</a>        <span class="string">"out"</span>,
-<a href=#777 id=777 data-nosnippet>777</a>        <span class="string">"go"</span>,
-<a href=#778 id=778 data-nosnippet>778</a>        <span class="string">"climb"</span>,
-<a href=#779 id=779 data-nosnippet>779</a>        <span class="string">"swim"</span>,
-<a href=#780 id=780 data-nosnippet>780</a>        <span class="string">"crawl"</span>,
-<a href=#781 id=781 data-nosnippet>781</a>        <span class="string">"jump"</span>,
-<a href=#782 id=782 data-nosnippet>782</a>    ];
-<a href=#783 id=783 data-nosnippet>783</a>    line.split_whitespace()
-<a href=#784 id=784 data-nosnippet>784</a>        .next()
-<a href=#785 id=785 data-nosnippet>785</a>        .is_some_and(|word| WAYS.iter().any(|way| way.eq_ignore_ascii_case(word)))
-<a href=#786 id=786 data-nosnippet>786</a>}
-<a href=#787 id=787 data-nosnippet>787</a>
-<a href=#788 id=788 data-nosnippet>788</a><span class="doccomment">/// A routine as the player is told of it: its name in the map, in words
-<a href=#789 id=789 data-nosnippet>789</a>/// (`minotaur maze`).
-<a href=#790 id=790 data-nosnippet>790</a></span><span class="kw">fn </span>routine_name(routine: <span class="kw-2">&amp;</span>cena_map::Routine) -&gt; String {
-<a href=#791 id=791 data-nosnippet>791</a>    serde_json::to_value(routine)
-<a href=#792 id=792 data-nosnippet>792</a>        .ok()
-<a href=#793 id=793 data-nosnippet>793</a>        .and_then(|value| {
-<a href=#794 id=794 data-nosnippet>794</a>            value
-<a href=#795 id=795 data-nosnippet>795</a>                .get(<span class="string">"name"</span>)<span class="question-mark">?
-<a href=#796 id=796 data-nosnippet>796</a>                </span>.as_str()
-<a href=#797 id=797 data-nosnippet>797</a>                .map(|name| name.replace(<span class="string">'_'</span>, <span class="string">" "</span>))
-<a href=#798 id=798 data-nosnippet>798</a>        })
-<a href=#799 id=799 data-nosnippet>799</a>        .unwrap_or_else(|| <span class="string">"way"</span>.to_owned())
-<a href=#800 id=800 data-nosnippet>800</a>}
-<a href=#801 id=801 data-nosnippet>801</a>
-<a href=#802 id=802 data-nosnippet>802</a><span class="attr">#[cfg(test)]
-<a href=#803 id=803 data-nosnippet>803</a></span><span class="kw">mod </span>tests {
-<a href=#804 id=804 data-nosnippet>804</a>    <span class="kw">use </span>super::<span class="kw-2">*</span>;
-<a href=#805 id=805 data-nosnippet>805</a>
-<a href=#806 id=806 data-nosnippet>806</a>    <span class="attr">#[test]
-<a href=#807 id=807 data-nosnippet>807</a>    </span><span class="kw">fn </span>a_move_is_a_way_or_a_verb_that_walks() {
-<a href=#808 id=808 data-nosnippet>808</a>        <span class="kw">for </span>line <span class="kw">in </span>[<span class="string">"north"</span>, <span class="string">"N"</span>, <span class="string">"go door"</span>, <span class="string">"climb rope"</span>, <span class="string">"out"</span>, <span class="string">"swim river"</span>] {
-<a href=#809 id=809 data-nosnippet>809</a>            <span class="macro">assert!</span>(is_a_move(line), <span class="string">"{line}"</span>);
-<a href=#810 id=810 data-nosnippet>810</a>        }
-<a href=#811 id=811 data-nosnippet>811</a>        <span class="kw">for </span>line <span class="kw">in </span>[<span class="string">"look"</span>, <span class="string">"get box"</span>, <span class="string">"goodbye"</span>, <span class="string">""</span>, <span class="string">"say north"</span>] {
-<a href=#812 id=812 data-nosnippet>812</a>            <span class="macro">assert!</span>(!is_a_move(line), <span class="string">"{line}"</span>);
-<a href=#813 id=813 data-nosnippet>813</a>        }
-<a href=#814 id=814 data-nosnippet>814</a>    }
-<a href=#815 id=815 data-nosnippet>815</a>
-<a href=#816 id=816 data-nosnippet>816</a>    <span class="attr">#[test]
-<a href=#817 id=817 data-nosnippet>817</a>    </span><span class="kw">fn </span>a_seed_is_the_wires_and_differs_by_goal() {
-<a href=#818 id=818 data-nosnippet>818</a>        <span class="kw">let </span>state = GameState::default();
-<a href=#819 id=819 data-nosnippet>819</a>        <span class="macro">assert_eq!</span>(seed_for(<span class="kw-2">&amp;</span>state, RoomId(<span class="number">1</span>)), seed_for(<span class="kw-2">&amp;</span>state, RoomId(<span class="number">1</span>)));
-<a href=#820 id=820 data-nosnippet>820</a>        <span class="macro">assert_ne!</span>(seed_for(<span class="kw-2">&amp;</span>state, RoomId(<span class="number">1</span>)), seed_for(<span class="kw-2">&amp;</span>state, RoomId(<span class="number">2</span>)));
-<a href=#821 id=821 data-nosnippet>821</a>    }
-<a href=#822 id=822 data-nosnippet>822</a>}
+<a href=#50 id=50 data-nosnippet>50</a><span class="kw">pub use </span>confluence::{ELEMENT, LAST_INSTABILITY};
+<a href=#51 id=51 data-nosnippet>51</a>
+<a href=#52 id=52 data-nosnippet>52</a><span class="kw">use </span>std::collections::{BTreeMap, HashMap};
+<a href=#53 id=53 data-nosnippet>53</a><span class="kw">use </span>std::time::Duration;
+<a href=#54 id=54 data-nosnippet>54</a>
+<a href=#55 id=55 data-nosnippet>55</a><span class="kw">use </span>cena_map::{Map, Origin <span class="kw">as </span>Whence, RoomId};
+<a href=#56 id=56 data-nosnippet>56</a><span class="kw">use </span>hydra_model::state::group::{<span class="self">self</span>, GroupEvent};
+<a href=#57 id=57 data-nosnippet>57</a><span class="kw">use </span>hydra_model::{ChunkLine, GameState};
+<a href=#58 id=58 data-nosnippet>58</a><span class="kw">use </span>hydra_protocol::Frame;
+<a href=#59 id=59 data-nosnippet>59</a><span class="kw">use </span>hydra_session::{Event, Origin, SessionHandle, State};
+<a href=#60 id=60 data-nosnippet>60</a><span class="kw">use </span>tokio::sync::broadcast::Receiver;
+<a href=#61 id=61 data-nosnippet>61</a><span class="kw">use </span>tokio::sync::broadcast::error::{RecvError, TryRecvError};
+<a href=#62 id=62 data-nosnippet>62</a><span class="kw">use </span>tokio::time::Instant;
+<a href=#63 id=63 data-nosnippet>63</a><span class="kw">use </span>tokio_util::sync::CancellationToken;
+<a href=#64 id=64 data-nosnippet>64</a>
+<a href=#65 id=65 data-nosnippet>65</a><span class="kw">use </span><span class="kw">super</span>::hands::{Stored, take_back};
+<a href=#66 id=66 data-nosnippet>66</a><span class="kw">use </span>super::{Deed, Now, Said, Trip, Why, kept};
+<a href=#67 id=67 data-nosnippet>67</a><span class="kw">use </span><span class="kw">crate</span>::facts::walker_from;
+<a href=#68 id=68 data-nosnippet>68</a><span class="kw">use </span><span class="kw">crate</span>::settings::TravelSettings;
+<a href=#69 id=69 data-nosnippet>69</a>
+<a href=#70 id=70 data-nosnippet>70</a><span class="doccomment">/// How long a [`Said::Hold`] waits for the game before ticking anyway: the
+<a href=#71 id=71 data-nosnippet>71</a>/// trip's own timeouts only run when it is ticked.
+<a href=#72 id=72 data-nosnippet>72</a></span><span class="kw">pub const </span>BEAT: Duration = Duration::from_millis(<span class="number">250</span>);
+<a href=#73 id=73 data-nosnippet>73</a>
+<a href=#74 id=74 data-nosnippet>74</a><span class="doccomment">/// How long, after a single command, the walk waits for the prompt that
+<a href=#75 id=75 data-nosnippet>75</a>/// closes its answer before it sends anything else.
+<a href=#76 id=76 data-nosnippet>76</a></span><span class="kw">pub const </span>ANSWER_WAIT: Duration = Duration::from_secs(<span class="number">3</span>);
+<a href=#77 id=77 data-nosnippet>77</a>
+<a href=#78 id=78 data-nosnippet>78</a><span class="doccomment">/// The longest roundtime waited out before the walk goes on regardless:
+<a href=#79 id=79 data-nosnippet>79</a>/// the game's own `...wait` then answers, and the trip waits as told.
+<a href=#80 id=80 data-nosnippet>80</a></span><span class="kw">const </span>LONGEST_ROUNDTIME: Duration = Duration::from_mins(<span class="number">1</span>);
+<a href=#81 id=81 data-nosnippet>81</a>
+<a href=#82 id=82 data-nosnippet>82</a><span class="doccomment">/// How long the walker may not know where it is before the walk ends.
+<a href=#83 id=83 data-nosnippet>83</a></span><span class="kw">pub const </span>LOST_WAIT: Duration = Duration::from_secs(<span class="number">10</span>);
+<a href=#84 id=84 data-nosnippet>84</a>
+<a href=#85 id=85 data-nosnippet>85</a><span class="doccomment">/// [`LOST_WAIT`] while a crossing waits to be carried: as long as the
+<a href=#86 id=86 data-nosnippet>86</a>/// crossing itself would wait for the game's word.
+<a href=#87 id=87 data-nosnippet>87</a></span><span class="kw">pub const </span>RIDE_WAIT: Duration = Duration::from_millis(<span class="kw">super</span>::run::MAX_WAIT_MS);
+<a href=#88 id=88 data-nosnippet>88</a>
+<a href=#89 id=89 data-nosnippet>89</a><span class="doccomment">/// How long one command of a deed may go unanswered: long enough for a
+<a href=#90 id=90 data-nosnippet>90</a>/// society power's answer.
+<a href=#91 id=91 data-nosnippet>91</a></span><span class="kw">pub const </span>DEED_DEADLINE: Duration = Duration::from_secs(<span class="number">3</span>);
+<a href=#92 id=92 data-nosnippet>92</a>
+<a href=#93 id=93 data-nosnippet>93</a><span class="doccomment">/// How long the walker waits for its group before going on without it.
+<a href=#94 id=94 data-nosnippet>94</a></span><span class="kw">pub const </span>FOLLOW_WAIT: Duration = Duration::from_secs(<span class="number">30</span>);
+<a href=#95 id=95 data-nosnippet>95</a>
+<a href=#96 id=96 data-nosnippet>96</a><span class="doccomment">/// What a walk starts from: the character's travel settings, its memories,
+<a href=#97 id=97 data-nosnippet>97</a>/// and where it was last known to be.
+<a href=#98 id=98 data-nosnippet>98</a></span><span class="attr">#[derive(Debug, Clone, Default)]
+<a href=#99 id=99 data-nosnippet>99</a></span><span class="kw">pub struct </span>Setting {
+<a href=#100 id=100 data-nosnippet>100</a>    <span class="doccomment">/// The Travel page's settings.
+<a href=#101 id=101 data-nosnippet>101</a>    </span><span class="kw">pub </span>settings: TravelSettings,
+<a href=#102 id=102 data-nosnippet>102</a>    <span class="doccomment">/// What earlier crossings wrote down.
+<a href=#103 id=103 data-nosnippet>103</a>    </span><span class="kw">pub </span>memories: BTreeMap&lt;String, String&gt;,
+<a href=#104 id=104 data-nosnippet>104</a>    <span class="doccomment">/// The travel file's last room: a tie-breaker, never a fact.
+<a href=#105 id=105 data-nosnippet>105</a>    </span><span class="kw">pub </span>last_room: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+<a href=#106 id=106 data-nosnippet>106</a>    <span class="doccomment">/// The names the player saved, for a routine's walk to a place.
+<a href=#107 id=107 data-nosnippet>107</a>    </span><span class="kw">pub </span>targets: BTreeMap&lt;String, Vec&lt;u32&gt;&gt;,
+<a href=#108 id=108 data-nosnippet>108</a>    <span class="doccomment">/// Into the Elemental Confluence first: by an instability
+<a href=#109 id=109 data-nosnippet>109</a>    /// of the walker's element (`drive::confluence`).
+<a href=#110 id=110 data-nosnippet>110</a>    </span><span class="kw">pub </span>into: <span class="prelude-ty">Option</span>&lt;<span class="kw">super</span>::instability::Into&gt;,
+<a href=#111 id=111 data-nosnippet>111</a>    <span class="doccomment">/// `.go2`'s `--instability=&lt;room&gt;`: the instability to use.
+<a href=#112 id=112 data-nosnippet>112</a>    </span><span class="kw">pub </span>instability_at: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+<a href=#113 id=113 data-nosnippet>113</a>    <span class="doccomment">/// The instabilities seen lately on this game, as the travel file keeps
+<a href=#114 id=114 data-nosnippet>114</a>    /// them.
+<a href=#115 id=115 data-nosnippet>115</a>    </span><span class="kw">pub </span>instabilities: Vec&lt;<span class="kw">super</span>::instability::Seen&gt;,
+<a href=#116 id=116 data-nosnippet>116</a>    <span class="doccomment">/// Seconds since 1970, now: what "lately" is measured from.
+<a href=#117 id=117 data-nosnippet>117</a>    </span><span class="kw">pub </span>now: u64,
+<a href=#118 id=118 data-nosnippet>118</a>}
+<a href=#119 id=119 data-nosnippet>119</a>
+<a href=#120 id=120 data-nosnippet>120</a><span class="doccomment">/// How a walk ended.
+<a href=#121 id=121 data-nosnippet>121</a></span><span class="attr">#[derive(Debug, Clone, PartialEq, Eq)]
+<a href=#122 id=122 data-nosnippet>122</a></span><span class="kw">pub enum </span>Ended {
+<a href=#123 id=123 data-nosnippet>123</a>    <span class="doccomment">/// The walker reached the goal.
+<a href=#124 id=124 data-nosnippet>124</a>    </span>Arrived,
+<a href=#125 id=125 data-nosnippet>125</a>    <span class="doccomment">/// The trip gave up, and why.
+<a href=#126 id=126 data-nosnippet>126</a>    </span>Failed(Why),
+<a href=#127 id=127 data-nosnippet>127</a>    <span class="doccomment">/// The player stopped it.
+<a href=#128 id=128 data-nosnippet>128</a>    </span>Stopped,
+<a href=#129 id=129 data-nosnippet>129</a>    <span class="doccomment">/// One of the player's Lich scripts sent a move, and Hydra let go.
+<a href=#130 id=130 data-nosnippet>130</a>    </span>HandedToLich(String),
+<a href=#131 id=131 data-nosnippet>131</a>    <span class="doccomment">/// The connection dropped, or the session ended.
+<a href=#132 id=132 data-nosnippet>132</a>    </span>Lost,
+<a href=#133 id=133 data-nosnippet>133</a>    <span class="doccomment">/// A rule of the walk stopped it, in words.
+<a href=#134 id=134 data-nosnippet>134</a>    </span>Halted(String),
+<a href=#135 id=135 data-nosnippet>135</a>    <span class="doccomment">/// The map names a spell that is not in the spell table.
+<a href=#136 id=136 data-nosnippet>136</a>    </span>UnknownSpell(String),
+<a href=#137 id=137 data-nosnippet>137</a>}
+<a href=#138 id=138 data-nosnippet>138</a>
+<a href=#139 id=139 data-nosnippet>139</a><span class="doccomment">/// What a finished walk leaves.
+<a href=#140 id=140 data-nosnippet>140</a></span><span class="attr">#[derive(Debug, Clone, PartialEq, Eq)]
+<a href=#141 id=141 data-nosnippet>141</a></span><span class="kw">pub struct </span>Walked {
+<a href=#142 id=142 data-nosnippet>142</a>    <span class="doccomment">/// How it ended.
+<a href=#143 id=143 data-nosnippet>143</a>    </span><span class="kw">pub </span>ended: Ended,
+<a href=#144 id=144 data-nosnippet>144</a>    <span class="doccomment">/// The last room the walk knew itself to be in.
+<a href=#145 id=145 data-nosnippet>145</a>    </span><span class="kw">pub </span>last_room: <span class="prelude-ty">Option</span>&lt;RoomId&gt;,
+<a href=#146 id=146 data-nosnippet>146</a>    <span class="doccomment">/// A typeahead the game's refusal named, to keep as the setting.
+<a href=#147 id=147 data-nosnippet>147</a>    </span><span class="kw">pub </span>typeahead: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+<a href=#148 id=148 data-nosnippet>148</a>    <span class="doccomment">/// Exits the game said do not exist, as `(from, to)`.
+<a href=#149 id=149 data-nosnippet>149</a>    </span><span class="kw">pub </span>wrong_for_the_map: Vec&lt;(RoomId, RoomId)&gt;,
+<a href=#150 id=150 data-nosnippet>150</a>    <span class="doccomment">/// Put away by a crossing and not seen to come back.
+<a href=#151 id=151 data-nosnippet>151</a>    </span><span class="kw">pub </span>still_stored: Vec&lt;Stored&gt;,
+<a href=#152 id=152 data-nosnippet>152</a>    <span class="doccomment">/// The stance a crossing replaced and did not put back.
+<a href=#153 id=153 data-nosnippet>153</a>    </span><span class="kw">pub </span>stance_before: <span class="prelude-ty">Option</span>&lt;String&gt;,
+<a href=#154 id=154 data-nosnippet>154</a>    <span class="doccomment">/// The language a crossing replaced and did not put back.
+<a href=#155 id=155 data-nosnippet>155</a>    </span><span class="kw">pub </span>speech_before: <span class="prelude-ty">Option</span>&lt;String&gt;,
+<a href=#156 id=156 data-nosnippet>156</a>    <span class="doccomment">/// What crossings took out of containers (as the map names each) and
+<a href=#157 id=157 data-nosnippet>157</a>    /// were not seen to put back; and whether a stop's one put-back was
+<a href=#158 id=158 data-nosnippet>158</a>    /// sent for each.
+<a href=#159 id=159 data-nosnippet>159</a>    </span><span class="kw">pub </span>still_out: Vec&lt;(String, bool)&gt;,
+<a href=#160 id=160 data-nosnippet>160</a>    <span class="doccomment">/// The instabilities seen lately, when the walk changed them: to keep.
+<a href=#161 id=161 data-nosnippet>161</a>    </span><span class="kw">pub </span>instabilities: <span class="prelude-ty">Option</span>&lt;Vec&lt;<span class="kw">super</span>::instability::Seen&gt;&gt;,
+<a href=#162 id=162 data-nosnippet>162</a>    <span class="doccomment">/// How long the walk took, from setting out to its end.
+<a href=#163 id=163 data-nosnippet>163</a>    </span><span class="kw">pub </span>took: Duration,
+<a href=#164 id=164 data-nosnippet>164</a>}
+<a href=#165 id=165 data-nosnippet>165</a>
+<a href=#166 id=166 data-nosnippet>166</a><span class="doccomment">/// Walk to `goal` on `handle`'s character, over `map`, until it arrives,
+<a href=#167 id=167 data-nosnippet>167</a>/// fails or `stop` is cancelled. `shown` is told the route still ahead,
+<a href=#168 id=168 data-nosnippet>168</a>/// from the room the walker is in, each time it changes; `wrote` the
+<a href=#169 id=169 data-nosnippet>169</a>/// memories, each time a crossing changes them, to be kept at once -- a
+<a href=#170 id=170 data-nosnippet>170</a>/// memory lost strands the character.
+<a href=#171 id=171 data-nosnippet>171</a></span><span class="kw">pub async fn </span>walk(
+<a href=#172 id=172 data-nosnippet>172</a>    handle: <span class="kw-2">&amp;</span>SessionHandle,
+<a href=#173 id=173 data-nosnippet>173</a>    map: <span class="kw-2">&amp;</span>Map,
+<a href=#174 id=174 data-nosnippet>174</a>    goal: RoomId,
+<a href=#175 id=175 data-nosnippet>175</a>    setting: Setting,
+<a href=#176 id=176 data-nosnippet>176</a>    stop: <span class="kw-2">&amp;</span>CancellationToken,
+<a href=#177 id=177 data-nosnippet>177</a>    shown: <span class="kw">impl </span>FnMut(<span class="kw-2">&amp;</span>[u32]),
+<a href=#178 id=178 data-nosnippet>178</a>    wrote: <span class="kw">impl </span>FnMut(<span class="kw-2">&amp;</span>BTreeMap&lt;String, String&gt;),
+<a href=#179 id=179 data-nosnippet>179</a>) -&gt; Walked {
+<a href=#180 id=180 data-nosnippet>180</a>    <span class="kw">let </span><span class="kw-2">mut </span>trip = Trip::to(goal);
+<a href=#181 id=181 data-nosnippet>181</a>    <span class="kw">let </span><span class="prelude-val">Some</span>((snapshot, events)) = handle.join().<span class="kw">await else </span>{
+<a href=#182 id=182 data-nosnippet>182</a>        <span class="kw">return </span>gone(<span class="kw-2">&amp;</span>trip);
+<a href=#183 id=183 data-nosnippet>183</a>    };
+<a href=#184 id=184 data-nosnippet>184</a>    <span class="kw">if </span><span class="macro">matches!</span>(snapshot.lifecycle, State::Reconnecting | State::Closed) {
+<a href=#185 id=185 data-nosnippet>185</a>        <span class="kw">return </span>gone(<span class="kw-2">&amp;</span>trip);
+<a href=#186 id=186 data-nosnippet>186</a>    }
+<a href=#187 id=187 data-nosnippet>187</a>    <span class="kw">let </span><span class="kw-2">mut </span>trip_seeded = Trip::seeded(goal, seed_for(<span class="kw-2">&amp;</span>snapshot.state, goal));
+<a href=#188 id=188 data-nosnippet>188</a>    std::mem::swap(<span class="kw-2">&amp;mut </span>trip, <span class="kw-2">&amp;mut </span>trip_seeded);
+<a href=#189 id=189 data-nosnippet>189</a>    <span class="kw">let </span>heard = heard_so_far(<span class="kw-2">&amp;</span>snapshot.state);
+<a href=#190 id=190 data-nosnippet>190</a>    <span class="kw">let </span><span class="kw-2">mut </span>driver = Driver {
+<a href=#191 id=191 data-nosnippet>191</a>        handle,
+<a href=#192 id=192 data-nosnippet>192</a>        stop,
+<a href=#193 id=193 data-nosnippet>193</a>        state: snapshot.state,
+<a href=#194 id=194 data-nosnippet>194</a>        events,
+<a href=#195 id=195 data-nosnippet>195</a>        heard,
+<a href=#196 id=196 data-nosnippet>196</a>        began: Instant::now(),
+<a href=#197 id=197 data-nosnippet>197</a>        was: <span class="prelude-val">None</span>,
+<a href=#198 id=198 data-nosnippet>198</a>        hint: setting.last_room.map(RoomId),
+<a href=#199 id=199 data-nosnippet>199</a>        lost_since: <span class="prelude-val">None</span>,
+<a href=#200 id=200 data-nosnippet>200</a>        typeahead: <span class="prelude-val">None</span>,
+<a href=#201 id=201 data-nosnippet>201</a>        shown,
+<a href=#202 id=202 data-nosnippet>202</a>        last_shown: Vec::new(),
+<a href=#203 id=203 data-nosnippet>203</a>        wrote,
+<a href=#204 id=204 data-nosnippet>204</a>        memories: setting.memories.clone(),
+<a href=#205 id=205 data-nosnippet>205</a>        answer: Vec::new(),
+<a href=#206 id=206 data-nosnippet>206</a>        stored: Vec::new(),
+<a href=#207 id=207 data-nosnippet>207</a>        stance_before: <span class="prelude-val">None</span>,
+<a href=#208 id=208 data-nosnippet>208</a>        speech_before: <span class="prelude-val">None</span>,
+<a href=#209 id=209 data-nosnippet>209</a>        taken: Vec::new(),
+<a href=#210 id=210 data-nosnippet>210</a>        behind: Vec::new(),
+<a href=#211 id=211 data-nosnippet>211</a>        found: HashMap::new(),
+<a href=#212 id=212 data-nosnippet>212</a>        unanswered: <span class="prelude-val">None</span>,
+<a href=#213 id=213 data-nosnippet>213</a>        kept: <span class="kw">super</span>::routines::Kept::default(),
+<a href=#214 id=214 data-nosnippet>214</a>        prompts: <span class="number">0</span>,
+<a href=#215 id=215 data-nosnippet>215</a>        arrived_at_prompt: <span class="prelude-val">None</span>,
+<a href=#216 id=216 data-nosnippet>216</a>        instabilities: setting.instabilities.clone(),
+<a href=#217 id=217 data-nosnippet>217</a>        instabilities_changed: <span class="bool-val">false</span>,
+<a href=#218 id=218 data-nosnippet>218</a>        now: setting.now,
+<a href=#219 id=219 data-nosnippet>219</a>        table: <span class="prelude-val">None</span>,
+<a href=#220 id=220 data-nosnippet>220</a>    };
+<a href=#221 id=221 data-nosnippet>221</a>    <span class="kw">let </span>ended = <span class="kw">match </span>setting.into {
+<a href=#222 id=222 data-nosnippet>222</a>        <span class="prelude-val">Some</span>(into) =&gt; <span class="kw">match </span>driver.enter_the_plane(<span class="kw-2">&amp;mut </span>trip, map, <span class="kw-2">&amp;</span>setting, into).<span class="kw">await </span>{
+<a href=#223 id=223 data-nosnippet>223</a>            <span class="comment">// Inside, and on to a room of the plane.
+<a href=#224 id=224 data-nosnippet>224</a>            </span><span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(room)) =&gt; {
+<a href=#225 id=225 data-nosnippet>225</a>                <span class="kw">let </span><span class="kw-2">mut </span>inside = Trip::seeded(room, trip.draw());
+<a href=#226 id=226 data-nosnippet>226</a>                <span class="kw">let </span>ended = driver.walk(<span class="kw-2">&amp;mut </span>inside, map, <span class="kw-2">&amp;</span>setting).<span class="kw">await</span>;
+<a href=#227 id=227 data-nosnippet>227</a>                trip = inside;
+<a href=#228 id=228 data-nosnippet>228</a>                ended
+<a href=#229 id=229 data-nosnippet>229</a>            }
+<a href=#230 id=230 data-nosnippet>230</a>            <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>) =&gt; Ended::Arrived,
+<a href=#231 id=231 data-nosnippet>231</a>            <span class="prelude-val">Err</span>(ended) =&gt; ended,
+<a href=#232 id=232 data-nosnippet>232</a>        },
+<a href=#233 id=233 data-nosnippet>233</a>        <span class="prelude-val">None </span>=&gt; <span class="kw">match </span>driver.preflight(<span class="kw-2">&amp;mut </span>trip, map, <span class="kw-2">&amp;</span>setting).<span class="kw">await </span>{
+<a href=#234 id=234 data-nosnippet>234</a>            <span class="prelude-val">Ok</span>(()) =&gt; driver.walk(<span class="kw-2">&amp;mut </span>trip, map, <span class="kw-2">&amp;</span>setting).<span class="kw">await</span>,
+<a href=#235 id=235 data-nosnippet>235</a>            <span class="prelude-val">Err</span>(ended) =&gt; ended,
+<a href=#236 id=236 data-nosnippet>236</a>        },
+<a href=#237 id=237 data-nosnippet>237</a>    };
+<a href=#238 id=238 data-nosnippet>238</a>    <span class="kw">if </span><span class="macro">matches!</span>(ended, Ended::Stopped | Ended::Halted(<span class="kw">_</span>)) {
+<a href=#239 id=239 data-nosnippet>239</a>        driver.take_back_once().<span class="kw">await</span>;
+<a href=#240 id=240 data-nosnippet>240</a>    }
+<a href=#241 id=241 data-nosnippet>241</a>    Walked {
+<a href=#242 id=242 data-nosnippet>242</a>        ended,
+<a href=#243 id=243 data-nosnippet>243</a>        last_room: driver.was.map(|(<span class="kw">_</span>, room)| room),
+<a href=#244 id=244 data-nosnippet>244</a>        typeahead: driver.typeahead,
+<a href=#245 id=245 data-nosnippet>245</a>        wrong_for_the_map: trip.wrong_for_the_map().to_vec(),
+<a href=#246 id=246 data-nosnippet>246</a>        <span class="comment">// Still put away: what no hand holds as the walk ends, whatever the
+<a href=#247 id=247 data-nosnippet>247</a>        // record says of when it was taken back.
+<a href=#248 id=248 data-nosnippet>248</a>        </span>still_stored: driver
+<a href=#249 id=249 data-nosnippet>249</a>            .stored
+<a href=#250 id=250 data-nosnippet>250</a>            .into_iter()
+<a href=#251 id=251 data-nosnippet>251</a>            .filter(|stored| driver.state.hand_holding(<span class="kw-2">&amp;</span>stored.id).is_none())
+<a href=#252 id=252 data-nosnippet>252</a>            .collect(),
+<a href=#253 id=253 data-nosnippet>253</a>        stance_before: driver.stance_before,
+<a href=#254 id=254 data-nosnippet>254</a>        speech_before: driver.speech_before,
+<a href=#255 id=255 data-nosnippet>255</a>        still_out: driver
+<a href=#256 id=256 data-nosnippet>256</a>            .taken
+<a href=#257 id=257 data-nosnippet>257</a>            .into_iter()
+<a href=#258 id=258 data-nosnippet>258</a>            .map(|taken| (taken.name, taken.sent_back))
+<a href=#259 id=259 data-nosnippet>259</a>            .collect(),
+<a href=#260 id=260 data-nosnippet>260</a>        instabilities: driver.instabilities_changed.then_some(driver.instabilities),
+<a href=#261 id=261 data-nosnippet>261</a>        took: driver.began.elapsed(),
+<a href=#262 id=262 data-nosnippet>262</a>    }
+<a href=#263 id=263 data-nosnippet>263</a>}
+<a href=#264 id=264 data-nosnippet>264</a>
+<a href=#265 id=265 data-nosnippet>265</a><span class="doccomment">/// A walk that never set out: the session had gone.
+<a href=#266 id=266 data-nosnippet>266</a></span><span class="kw">fn </span>gone(trip: <span class="kw-2">&amp;</span>Trip) -&gt; Walked {
+<a href=#267 id=267 data-nosnippet>267</a>    Walked {
+<a href=#268 id=268 data-nosnippet>268</a>        ended: Ended::Lost,
+<a href=#269 id=269 data-nosnippet>269</a>        last_room: <span class="prelude-val">None</span>,
+<a href=#270 id=270 data-nosnippet>270</a>        typeahead: <span class="prelude-val">None</span>,
+<a href=#271 id=271 data-nosnippet>271</a>        wrong_for_the_map: trip.wrong_for_the_map().to_vec(),
+<a href=#272 id=272 data-nosnippet>272</a>        still_stored: Vec::new(),
+<a href=#273 id=273 data-nosnippet>273</a>        stance_before: <span class="prelude-val">None</span>,
+<a href=#274 id=274 data-nosnippet>274</a>        speech_before: <span class="prelude-val">None</span>,
+<a href=#275 id=275 data-nosnippet>275</a>        still_out: Vec::new(),
+<a href=#276 id=276 data-nosnippet>276</a>        instabilities: <span class="prelude-val">None</span>,
+<a href=#277 id=277 data-nosnippet>277</a>        took: Duration::ZERO,
+<a href=#278 id=278 data-nosnippet>278</a>    }
+<a href=#279 id=279 data-nosnippet>279</a>}
+<a href=#280 id=280 data-nosnippet>280</a>
+<a href=#281 id=281 data-nosnippet>281</a><span class="doccomment">/// The seed for the choices a crossing asks of this trip: a wander, a
+<a href=#282 id=282 data-nosnippet>282</a>/// random way out. **Made of what the wire said** -- the game's clock at the
+<a href=#283 id=283 data-nosnippet>283</a>/// last prompt, the room, the goal -- so a replay chooses the same; mixed
+<a href=#284 id=284 data-nosnippet>284</a>/// with `splitmix64`'s finaliser so clocks a second apart are not seeds a
+<a href=#285 id=285 data-nosnippet>285</a>/// bit apart.
+<a href=#286 id=286 data-nosnippet>286</a></span><span class="attr">#[must_use]
+<a href=#287 id=287 data-nosnippet>287</a></span><span class="kw">pub fn </span>seed_for(state: <span class="kw-2">&amp;</span>GameState, goal: RoomId) -&gt; u64 {
+<a href=#288 id=288 data-nosnippet>288</a>    <span class="kw">let </span>room = state.room.id.as_deref().unwrap_or(<span class="string">""</span>);
+<a href=#289 id=289 data-nosnippet>289</a>    <span class="kw">let </span><span class="kw-2">mut </span>seed = u64::from(state.game_time().unwrap_or(<span class="number">0</span>));
+<a href=#290 id=290 data-nosnippet>290</a>    seed = mix(seed ^ u64::from(goal.<span class="number">0</span>).rotate_left(<span class="number">32</span>));
+<a href=#291 id=291 data-nosnippet>291</a>    <span class="kw">for </span>byte <span class="kw">in </span>room.bytes() {
+<a href=#292 id=292 data-nosnippet>292</a>        seed = mix(seed ^ u64::from(byte));
+<a href=#293 id=293 data-nosnippet>293</a>    }
+<a href=#294 id=294 data-nosnippet>294</a>    seed
+<a href=#295 id=295 data-nosnippet>295</a>}
+<a href=#296 id=296 data-nosnippet>296</a>
+<a href=#297 id=297 data-nosnippet>297</a><span class="kw">const fn </span>mix(<span class="kw-2">mut </span>x: u64) -&gt; u64 {
+<a href=#298 id=298 data-nosnippet>298</a>    x = x.wrapping_add(<span class="number">0x9E37_79B9_7F4A_7C15</span>);
+<a href=#299 id=299 data-nosnippet>299</a>    x = (x ^ (x &gt;&gt; <span class="number">30</span>)).wrapping_mul(<span class="number">0xBF58_476D_1CE4_E5B9</span>);
+<a href=#300 id=300 data-nosnippet>300</a>    x = (x ^ (x &gt;&gt; <span class="number">27</span>)).wrapping_mul(<span class="number">0x94D0_49BB_1331_11EB</span>);
+<a href=#301 id=301 data-nosnippet>301</a>    x ^ (x &gt;&gt; <span class="number">31</span>)
+<a href=#302 id=302 data-nosnippet>302</a>}
+<a href=#303 id=303 data-nosnippet>303</a>
+<a href=#304 id=304 data-nosnippet>304</a><span class="doccomment">/// How many lines of the open chunk are already old news: counted with what
+<a href=#305 id=305 data-nosnippet>305</a>/// a long chunk dropped from its front, so a line is heard once however the
+<a href=#306 id=306 data-nosnippet>306</a>/// buffer slides.
+<a href=#307 id=307 data-nosnippet>307</a></span><span class="kw">fn </span>heard_so_far(state: <span class="kw-2">&amp;</span>GameState) -&gt; usize {
+<a href=#308 id=308 data-nosnippet>308</a>    <span class="kw">let </span>chunk = state.open_chunk();
+<a href=#309 id=309 data-nosnippet>309</a>    chunk.dropped() + chunk.lines().len()
+<a href=#310 id=310 data-nosnippet>310</a>}
+<a href=#311 id=311 data-nosnippet>311</a>
+<a href=#312 id=312 data-nosnippet>312</a><span class="doccomment">/// What a crossing took out, the container it came from, as ids; what the
+<a href=#313 id=313 data-nosnippet>313</a>/// map called it; and whether a stop's one put-back was sent.
+<a href=#314 id=314 data-nosnippet>314</a></span><span class="attr">#[derive(Debug, Clone)]
+<a href=#315 id=315 data-nosnippet>315</a></span><span class="kw">struct </span>Taken {
+<a href=#316 id=316 data-nosnippet>316</a>    thing: String,
+<a href=#317 id=317 data-nosnippet>317</a>    container: String,
+<a href=#318 id=318 data-nosnippet>318</a>    name: String,
+<a href=#319 id=319 data-nosnippet>319</a>    sent_back: bool,
+<a href=#320 id=320 data-nosnippet>320</a>    <span class="doccomment">/// Its crossing's put-back is still to come.
+<a href=#321 id=321 data-nosnippet>321</a>    </span>owed: bool,
+<a href=#322 id=322 data-nosnippet>322</a>}
+<a href=#323 id=323 data-nosnippet>323</a>
+<a href=#324 id=324 data-nosnippet>324</a><span class="kw">struct </span>Driver&lt;<span class="lifetime">'a</span>, F, W&gt; {
+<a href=#325 id=325 data-nosnippet>325</a>    handle: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>SessionHandle,
+<a href=#326 id=326 data-nosnippet>326</a>    stop: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>CancellationToken,
+<a href=#327 id=327 data-nosnippet>327</a>    state: GameState,
+<a href=#328 id=328 data-nosnippet>328</a>    events: Receiver&lt;Event&gt;,
+<a href=#329 id=329 data-nosnippet>329</a>    <span class="doccomment">/// How many lines of the model's open chunk the trip has heard.
+<a href=#330 id=330 data-nosnippet>330</a>    </span>heard: usize,
+<a href=#331 id=331 data-nosnippet>331</a>    began: Instant,
+<a href=#332 id=332 data-nosnippet>332</a>    <span class="doccomment">/// The model's arrival count and the room it was located as, last tick.
+<a href=#333 id=333 data-nosnippet>333</a>    </span>was: <span class="prelude-ty">Option</span>&lt;(u32, RoomId)&gt;,
+<a href=#334 id=334 data-nosnippet>334</a>    <span class="doccomment">/// Where the character was last known to be, from an earlier walk.
+<a href=#335 id=335 data-nosnippet>335</a>    </span>hint: <span class="prelude-ty">Option</span>&lt;RoomId&gt;,
+<a href=#336 id=336 data-nosnippet>336</a>    lost_since: <span class="prelude-ty">Option</span>&lt;Instant&gt;,
+<a href=#337 id=337 data-nosnippet>337</a>    typeahead: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+<a href=#338 id=338 data-nosnippet>338</a>    shown: F,
+<a href=#339 id=339 data-nosnippet>339</a>    last_shown: Vec&lt;u32&gt;,
+<a href=#340 id=340 data-nosnippet>340</a>    wrote: W,
+<a href=#341 id=341 data-nosnippet>341</a>    memories: BTreeMap&lt;String, String&gt;,
+<a href=#342 id=342 data-nosnippet>342</a>    <span class="doccomment">/// The lines heard since the last deed's command went out: its answer.
+<a href=#343 id=343 data-nosnippet>343</a>    </span>answer: Vec&lt;ChunkLine&gt;,
+<a href=#344 id=344 data-nosnippet>344</a>    <span class="doccomment">/// What the deeds put away, first first.
+<a href=#345 id=345 data-nosnippet>345</a>    </span>stored: Vec&lt;Stored&gt;,
+<a href=#346 id=346 data-nosnippet>346</a>    stance_before: <span class="prelude-ty">Option</span>&lt;String&gt;,
+<a href=#347 id=347 data-nosnippet>347</a>    speech_before: <span class="prelude-ty">Option</span>&lt;String&gt;,
+<a href=#348 id=348 data-nosnippet>348</a>    <span class="doccomment">/// What the crossings took out, first first: the last is the one a
+<a href=#349 id=349 data-nosnippet>349</a>    /// put-back puts back.
+<a href=#350 id=350 data-nosnippet>350</a>    </span>taken: Vec&lt;Taken&gt;,
+<a href=#351 id=351 data-nosnippet>351</a>    <span class="doccomment">/// Who a crossing is still waiting for, by id.
+<a href=#352 id=352 data-nosnippet>352</a>    </span>behind: Vec&lt;String&gt;,
+<a href=#353 id=353 data-nosnippet>353</a>    <span class="doccomment">/// Facts the walk found out: the day passes held, at the pre-flight,
+<a href=#354 id=354 data-nosnippet>354</a>    /// and a mount, when the game refuses something for it.
+<a href=#355 id=355 data-nosnippet>355</a>    </span>found: HashMap&lt;String, bool&gt;,
+<a href=#356 id=356 data-nosnippet>356</a>    <span class="doccomment">/// When the last single command went out, while its prompt has not come.
+<a href=#357 id=357 data-nosnippet>357</a>    </span>unanswered: <span class="prelude-ty">Option</span>&lt;Instant&gt;,
+<a href=#358 id=358 data-nosnippet>358</a>    <span class="doccomment">/// What routines have learned on this trip: the Confluence's ways, the
+<a href=#359 id=359 data-nosnippet>359</a>    /// maze's.
+<a href=#360 id=360 data-nosnippet>360</a>    </span>kept: <span class="kw">super</span>::routines::Kept,
+<a href=#361 id=361 data-nosnippet>361</a>    <span class="doccomment">/// [`Self::prompts`] as the character last arrived somewhere: the room
+<a href=#362 id=362 data-nosnippet>362</a>    /// is told by the prompt after it.
+<a href=#363 id=363 data-nosnippet>363</a>    </span>arrived_at_prompt: <span class="prelude-ty">Option</span>&lt;u64&gt;,
+<a href=#364 id=364 data-nosnippet>364</a>    <span class="doccomment">/// How many prompts the game has sent: what tells a line's own prompt
+<a href=#365 id=365 data-nosnippet>365</a>    /// from one before it.
+<a href=#366 id=366 data-nosnippet>366</a>    </span>prompts: u64,
+<a href=#367 id=367 data-nosnippet>367</a>    <span class="doccomment">/// The instabilities seen lately, and whether this walk changed them.
+<a href=#368 id=368 data-nosnippet>368</a>    </span>instabilities: Vec&lt;<span class="kw">super</span>::instability::Seen&gt;,
+<a href=#369 id=369 data-nosnippet>369</a>    instabilities_changed: bool,
+<a href=#370 id=370 data-nosnippet>370</a>    <span class="doccomment">/// Seconds since 1970 when the walk set out.
+<a href=#371 id=371 data-nosnippet>371</a>    </span>now: u64,
+<a href=#372 id=372 data-nosnippet>372</a>    <span class="doccomment">/// The map's `instability` table for the instability the walker last
+<a href=#373 id=373 data-nosnippet>373</a>    /// entered the plane by: that room, and the table.
+<a href=#374 id=374 data-nosnippet>374</a>    </span>table: <span class="prelude-ty">Option</span>&lt;(u32, HashMap&lt;u32, f64&gt;)&gt;,
+<a href=#375 id=375 data-nosnippet>375</a>}
+<a href=#376 id=376 data-nosnippet>376</a>
+<a href=#377 id=377 data-nosnippet>377</a><span class="doccomment">/// What one [`Driver::turn`] came to.
+<a href=#378 id=378 data-nosnippet>378</a></span><span class="kw">enum </span>Turn {
+<a href=#379 id=379 data-nosnippet>379</a>    On,
+<a href=#380 id=380 data-nosnippet>380</a>    Arrived,
+<a href=#381 id=381 data-nosnippet>381</a>    <span class="doccomment">/// The steps handed to `Trip::aside` are over, and whether they worked.
+<a href=#382 id=382 data-nosnippet>382</a>    </span>Aside(bool),
+<a href=#383 id=383 data-nosnippet>383</a>}
+<a href=#384 id=384 data-nosnippet>384</a>
+<a href=#385 id=385 data-nosnippet>385</a><span class="kw">impl</span>&lt;F: FnMut(<span class="kw-2">&amp;</span>[u32]), W: FnMut(<span class="kw-2">&amp;</span>BTreeMap&lt;String, String&gt;)&gt; Driver&lt;<span class="lifetime">'_</span>, F, W&gt; {
+<a href=#386 id=386 data-nosnippet>386</a>    <span class="kw">async fn </span>walk(<span class="kw-2">&amp;mut </span><span class="self">self</span>, trip: <span class="kw-2">&amp;mut </span>Trip, map: <span class="kw-2">&amp;</span>Map, setting: <span class="kw-2">&amp;</span>Setting) -&gt; Ended {
+<a href=#387 id=387 data-nosnippet>387</a>        <span class="kw">loop </span>{
+<a href=#388 id=388 data-nosnippet>388</a>            <span class="kw">match </span><span class="self">self</span>.turn(trip, map, setting).<span class="kw">await </span>{
+<a href=#389 id=389 data-nosnippet>389</a>                <span class="prelude-val">Ok</span>(Turn::Arrived) =&gt; <span class="kw">return </span>Ended::Arrived,
+<a href=#390 id=390 data-nosnippet>390</a>                <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; {}
+<a href=#391 id=391 data-nosnippet>391</a>                <span class="prelude-val">Err</span>(ended) =&gt; <span class="kw">return </span>ended,
+<a href=#392 id=392 data-nosnippet>392</a>            }
+<a href=#393 id=393 data-nosnippet>393</a>        }
+<a href=#394 id=394 data-nosnippet>394</a>    }
+<a href=#395 id=395 data-nosnippet>395</a>
+<a href=#396 id=396 data-nosnippet>396</a>    <span class="doccomment">/// One tick of the trip, and what it asked done.
+<a href=#397 id=397 data-nosnippet>397</a>    </span><span class="kw">async fn </span>turn(<span class="kw-2">&amp;mut </span><span class="self">self</span>, trip: <span class="kw-2">&amp;mut </span>Trip, map: <span class="kw-2">&amp;</span>Map, setting: <span class="kw-2">&amp;</span>Setting) -&gt; <span class="prelude-ty">Result</span>&lt;Turn, Ended&gt; {
+<a href=#398 id=398 data-nosnippet>398</a>        <span class="kw">if </span><span class="self">self</span>.stop.is_cancelled() {
+<a href=#399 id=399 data-nosnippet>399</a>            <span class="kw">return </span><span class="prelude-val">Err</span>(Ended::Stopped);
+<a href=#400 id=400 data-nosnippet>400</a>        }
+<a href=#401 id=401 data-nosnippet>401</a>        <span class="self">self</span>.drain(trip).<span class="kw">await</span><span class="question-mark">?</span>;
+<a href=#402 id=402 data-nosnippet>402</a>        <span class="comment">// Dead already when the walk began: nothing new was heard to say so.
+<a href=#403 id=403 data-nosnippet>403</a>        </span><span class="kw">if </span><span class="self">self</span>.dead() {
+<a href=#404 id=404 data-nosnippet>404</a>            <span class="kw">return </span><span class="prelude-val">Err</span>(Ended::Halted(
+<a href=#405 id=405 data-nosnippet>405</a>                <span class="string">"you are dead, so the walk has stopped."</span>.to_owned(),
+<a href=#406 id=406 data-nosnippet>406</a>            ));
+<a href=#407 id=407 data-nosnippet>407</a>        }
+<a href=#408 id=408 data-nosnippet>408</a>        <span class="comment">// A single command's answer first, and then its roundtime.
+<a href=#409 id=409 data-nosnippet>409</a>        </span><span class="kw">if </span><span class="self">self
+<a href=#410 id=410 data-nosnippet>410</a>            </span>.unanswered
+<a href=#411 id=411 data-nosnippet>411</a>            .is_some_and(|sent| sent.elapsed() &lt; ANSWER_WAIT)
+<a href=#412 id=412 data-nosnippet>412</a>        {
+<a href=#413 id=413 data-nosnippet>413</a>            <span class="self">self</span>.hold(trip, BEAT).<span class="kw">await</span><span class="question-mark">?</span>;
+<a href=#414 id=414 data-nosnippet>414</a>            <span class="kw">return </span><span class="prelude-val">Ok</span>(Turn::On);
+<a href=#415 id=415 data-nosnippet>415</a>        }
+<a href=#416 id=416 data-nosnippet>416</a>        <span class="self">self</span>.unanswered = <span class="prelude-val">None</span>;
+<a href=#417 id=417 data-nosnippet>417</a>        <span class="self">self</span>.out_of_roundtime(trip).<span class="kw">await</span><span class="question-mark">?</span>;
+<a href=#418 id=418 data-nosnippet>418</a>        <span class="kw">let </span>before = <span class="self">self</span>.was;
+<a href=#419 id=419 data-nosnippet>419</a>        <span class="kw">let </span>here = <span class="self">self</span>.locate(map);
+<a href=#420 id=420 data-nosnippet>420</a>        <span class="kw">if </span>before.is_some() &amp;&amp; before != <span class="self">self</span>.was {
+<a href=#421 id=421 data-nosnippet>421</a>            <span class="self">self</span>.arrived(<span class="kw-2">&amp;</span>setting.settings).<span class="kw">await</span><span class="question-mark">?</span>;
+<a href=#422 id=422 data-nosnippet>422</a>        }
+<a href=#423 id=423 data-nosnippet>423</a>        <span class="kw">if </span>here.is_some() {
+<a href=#424 id=424 data-nosnippet>424</a>            <span class="self">self</span>.lost_since = <span class="prelude-val">None</span>;
+<a href=#425 id=425 data-nosnippet>425</a>        } <span class="kw">else </span>{
+<a href=#426 id=426 data-nosnippet>426</a>            <span class="kw">let </span>patience = <span class="kw">if </span>trip.awaiting() {
+<a href=#427 id=427 data-nosnippet>427</a>                RIDE_WAIT
+<a href=#428 id=428 data-nosnippet>428</a>            } <span class="kw">else </span>{
+<a href=#429 id=429 data-nosnippet>429</a>                LOST_WAIT
+<a href=#430 id=430 data-nosnippet>430</a>            };
+<a href=#431 id=431 data-nosnippet>431</a>            <span class="kw">if </span><span class="self">self</span>.lost_since.get_or_insert_with(Instant::now).elapsed() &gt;= patience {
+<a href=#432 id=432 data-nosnippet>432</a>                <span class="kw">return </span><span class="prelude-val">Err</span>(Ended::Failed(Why::OffTheMap));
+<a href=#433 id=433 data-nosnippet>433</a>            }
+<a href=#434 id=434 data-nosnippet>434</a>        }
+<a href=#435 id=435 data-nosnippet>435</a>        <span class="kw">let </span>now = Now {
+<a href=#436 id=436 data-nosnippet>436</a>            here,
+<a href=#437 id=437 data-nosnippet>437</a>            ms: u64::try_from(<span class="self">self</span>.began.elapsed().as_millis()).unwrap_or(u64::MAX),
+<a href=#438 id=438 data-nosnippet>438</a>        };
+<a href=#439 id=439 data-nosnippet>439</a>        <span class="self">self</span>.price_the_way_out(map, setting);
+<a href=#440 id=440 data-nosnippet>440</a>        <span class="kw">let </span>walker = <span class="self">self</span>.walker(setting);
+<a href=#441 id=441 data-nosnippet>441</a>        <span class="kw">let </span>said = trip.tick(map, <span class="kw-2">&amp;</span>walker, now);
+<a href=#442 id=442 data-nosnippet>442</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(typeahead) = trip.typeahead_learned() {
+<a href=#443 id=443 data-nosnippet>443</a>            <span class="self">self</span>.typeahead = <span class="prelude-val">Some</span>(typeahead);
+<a href=#444 id=444 data-nosnippet>444</a>        }
+<a href=#445 id=445 data-nosnippet>445</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(here) = here {
+<a href=#446 id=446 data-nosnippet>446</a>            <span class="self">self</span>.show(here, <span class="kw-2">&amp;</span>trip.ahead());
+<a href=#447 id=447 data-nosnippet>447</a>        }
+<a href=#448 id=448 data-nosnippet>448</a>        <span class="kw">match </span>said {
+<a href=#449 id=449 data-nosnippet>449</a>            Said::Arrived =&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(Turn::Arrived),
+<a href=#450 id=450 data-nosnippet>450</a>            Said::Failed(why) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(Ended::Failed(why)),
+<a href=#451 id=451 data-nosnippet>451</a>            Said::Aside(worked) =&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(Turn::Aside(worked)),
+<a href=#452 id=452 data-nosnippet>452</a>            Said::Routine(routine) =&gt; {
+<a href=#453 id=453 data-nosnippet>453</a>                <span class="comment">// A routine reads the room it is in: not before the room is
+<a href=#454 id=454 data-nosnippet>454</a>                // told, which ends with the prompt after the arrival. A move
+<a href=#455 id=455 data-nosnippet>455</a>                // sent ahead lands at its `&lt;nav&gt;`, before the room's things.
+<a href=#456 id=456 data-nosnippet>456</a>                </span><span class="self">self</span>.until_the_room_is_told(trip).<span class="kw">await</span><span class="question-mark">?</span>;
+<a href=#457 id=457 data-nosnippet>457</a>                <span class="comment">// A routine moves by asking the trip to, which comes back
+<a href=#458 id=458 data-nosnippet>458</a>                // through here: boxed, as recursion must be.
+<a href=#459 id=459 data-nosnippet>459</a>                </span><span class="kw">if </span>!Box::pin(<span class="self">self</span>.solve(trip, map, setting, <span class="kw-2">&amp;</span>routine)).<span class="kw">await</span><span class="question-mark">? </span>{
+<a href=#460 id=460 data-nosnippet>460</a>                    <span class="comment">// Said, not only gone round: the player sees why the walk
+<a href=#461 id=461 data-nosnippet>461</a>                    // turned aside.
+<a href=#462 id=462 data-nosnippet>462</a>                    </span><span class="self">self</span>.handle.say(
+<a href=#463 id=463 data-nosnippet>463</a>                        hydra_session::Notice::line(
+<a href=#464 id=464 data-nosnippet>464</a>                            hydra_session::NoticeKind::Warn,
+<a href=#465 id=465 data-nosnippet>465</a>                            <span class="macro">format!</span>(
+<a href=#466 id=466 data-nosnippet>466</a>                                <span class="string">"Travel: the {} could not be crossed; going another way."</span>,
+<a href=#467 id=467 data-nosnippet>467</a>                                routine_name(<span class="kw-2">&amp;</span>routine)
+<a href=#468 id=468 data-nosnippet>468</a>                            ),
+<a href=#469 id=469 data-nosnippet>469</a>                        )
+<a href=#470 id=470 data-nosnippet>470</a>                        .answering(),
+<a href=#471 id=471 data-nosnippet>471</a>                    );
+<a href=#472 id=472 data-nosnippet>472</a>                    trip.could_not();
+<a href=#473 id=473 data-nosnippet>473</a>                }
+<a href=#474 id=474 data-nosnippet>474</a>            }
+<a href=#475 id=475 data-nosnippet>475</a>            Said::Hold =&gt; <span class="self">self</span>.hold(trip, BEAT).<span class="kw">await</span><span class="question-mark">?</span>,
+<a href=#476 id=476 data-nosnippet>476</a>            Said::Send(line) =&gt; <span class="kw">match </span>kept::with_items(<span class="kw-2">&amp;</span>line, <span class="kw-2">&amp;</span><span class="self">self</span>.state) {
+<a href=#477 id=477 data-nosnippet>477</a>                <span class="prelude-val">Some</span>(line) =&gt; {
+<a href=#478 id=478 data-nosnippet>478</a>                    <span class="self">self</span>.send(<span class="kw-2">&amp;</span>line).<span class="kw">await</span><span class="question-mark">?</span>;
+<a href=#479 id=479 data-nosnippet>479</a>                    <span class="self">self</span>.unanswered = <span class="prelude-val">Some</span>(Instant::now());
+<a href=#480 id=480 data-nosnippet>480</a>                }
+<a href=#481 id=481 data-nosnippet>481</a>                <span class="comment">// A thing nobody has: the crossing cannot be made.
+<a href=#482 id=482 data-nosnippet>482</a>                </span><span class="prelude-val">None </span>=&gt; trip.cannot_send(),
+<a href=#483 id=483 data-nosnippet>483</a>            },
+<a href=#484 id=484 data-nosnippet>484</a>            Said::SendAll(lines, gap) =&gt; {
+<a href=#485 id=485 data-nosnippet>485</a>                <span class="kw">for </span>line <span class="kw">in </span><span class="kw-2">&amp;</span>lines {
+<a href=#486 id=486 data-nosnippet>486</a>                    <span class="self">self</span>.send(line).<span class="kw">await</span><span class="question-mark">?</span>;
+<a href=#487 id=487 data-nosnippet>487</a>                }
+<a href=#488 id=488 data-nosnippet>488</a>                <span class="kw">let </span>until = Instant::now() + Duration::from_millis(gap);
+<a href=#489 id=489 data-nosnippet>489</a>                <span class="kw">while </span>Instant::now() &lt; until {
+<a href=#490 id=490 data-nosnippet>490</a>                    <span class="self">self</span>.hold(trip, until - Instant::now()).<span class="kw">await</span><span class="question-mark">?</span>;
+<a href=#491 id=491 data-nosnippet>491</a>                }
+<a href=#492 id=492 data-nosnippet>492</a>            }
+<a href=#493 id=493 data-nosnippet>493</a>            Said::Do(Deed::Remember(name, value)) =&gt; {
+<a href=#494 id=494 data-nosnippet>494</a>                <span class="self">self</span>.memories.insert(name, value);
+<a href=#495 id=495 data-nosnippet>495</a>                (<span class="self">self</span>.wrote)(<span class="kw-2">&amp;</span><span class="self">self</span>.memories);
+<a href=#496 id=496 data-nosnippet>496</a>            }
+<a href=#497 id=497 data-nosnippet>497</a>            Said::Do(Deed::Forget(name)) =&gt; {
+<a href=#498 id=498 data-nosnippet>498</a>                <span class="self">self</span>.memories.remove(<span class="kw-2">&amp;</span>name);
+<a href=#499 id=499 data-nosnippet>499</a>                (<span class="self">self</span>.wrote)(<span class="kw-2">&amp;</span><span class="self">self</span>.memories);
+<a href=#500 id=500 data-nosnippet>500</a>            }
+<a href=#501 id=501 data-nosnippet>501</a>            Said::Do(deed) =&gt; <span class="self">self</span>.deed(trip, deed, setting).<span class="kw">await</span><span class="question-mark">?</span>,
+<a href=#502 id=502 data-nosnippet>502</a>        }
+<a href=#503 id=503 data-nosnippet>503</a>        <span class="prelude-val">Ok</span>(Turn::On)
+<a href=#504 id=504 data-nosnippet>504</a>    }
+<a href=#505 id=505 data-nosnippet>505</a>
+<a href=#506 id=506 data-nosnippet>506</a>    <span class="doccomment">/// Until a prompt has followed the last arrival, so what the room holds
+<a href=#507 id=507 data-nosnippet>507</a>    /// has been told; no longer than [`DEED_DEADLINE`].
+<a href=#508 id=508 data-nosnippet>508</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">async fn </span>until_the_room_is_told(<span class="kw-2">&amp;mut </span><span class="self">self</span>, trip: <span class="kw-2">&amp;mut </span>Trip) -&gt; <span class="prelude-ty">Result</span>&lt;(), Ended&gt; {
+<a href=#509 id=509 data-nosnippet>509</a>        <span class="kw">let </span>until = Instant::now() + DEED_DEADLINE;
+<a href=#510 id=510 data-nosnippet>510</a>        <span class="kw">while </span><span class="self">self</span>.arrived_at_prompt.is_some_and(|at| <span class="self">self</span>.prompts &lt;= at) &amp;&amp; Instant::now() &lt; until
+<a href=#511 id=511 data-nosnippet>511</a>        {
+<a href=#512 id=512 data-nosnippet>512</a>            <span class="self">self</span>.hold(trip, until - Instant::now()).<span class="kw">await</span><span class="question-mark">?</span>;
+<a href=#513 id=513 data-nosnippet>513</a>        }
+<a href=#514 id=514 data-nosnippet>514</a>        <span class="prelude-val">Ok</span>(())
+<a href=#515 id=515 data-nosnippet>515</a>    }
+<a href=#516 id=516 data-nosnippet>516</a>
+<a href=#517 id=517 data-nosnippet>517</a>    <span class="doccomment">/// The walker's facts now: the model's, the Travel page's, the
+<a href=#518 id=518 data-nosnippet>518</a>    /// memories, and what the pre-flight found out.
+<a href=#519 id=519 data-nosnippet>519</a>    </span><span class="kw">fn </span>walker(<span class="kw-2">&amp;</span><span class="self">self</span>, setting: <span class="kw-2">&amp;</span>Setting) -&gt; cena_map::Walker {
+<a href=#520 id=520 data-nosnippet>520</a>        <span class="kw">let </span><span class="kw-2">mut </span>walker = walker_from(<span class="kw-2">&amp;</span><span class="self">self</span>.state, <span class="kw-2">&amp;</span>setting.settings, <span class="kw-2">&amp;</span><span class="self">self</span>.memories);
+<a href=#521 id=521 data-nosnippet>521</a>        walker.flags.extend(<span class="self">self</span>.found.clone());
+<a href=#522 id=522 data-nosnippet>522</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>((<span class="kw">_</span>, table)) = <span class="kw-2">&amp;</span><span class="self">self</span>.table {
+<a href=#523 id=523 data-nosnippet>523</a>            walker
+<a href=#524 id=524 data-nosnippet>524</a>                .tables
+<a href=#525 id=525 data-nosnippet>525</a>                .insert(<span class="string">"instability"</span>.to_owned(), table.clone());
+<a href=#526 id=526 data-nosnippet>526</a>        }
+<a href=#527 id=527 data-nosnippet>527</a>        walker
+<a href=#528 id=528 data-nosnippet>528</a>    }
+<a href=#529 id=529 data-nosnippet>529</a>
+<a href=#530 id=530 data-nosnippet>530</a>    <span class="doccomment">/// The map's `instability` table, worked out once for the instability
+<a href=#531 id=531 data-nosnippet>531</a>    /// the walker last entered the plane by ([`LAST_INSTABILITY`]): leaving
+<a href=#532 id=532 data-nosnippet>532</a>    /// the plane puts it back there, so the way out to each town costs the
+<a href=#533 id=533 data-nosnippet>533</a>    /// walk from it. Unknown, and so shut, for a walker Hydra did not see
+<a href=#534 id=534 data-nosnippet>534</a>    /// go in.
+<a href=#535 id=535 data-nosnippet>535</a>    </span><span class="kw">fn </span>price_the_way_out(<span class="kw-2">&amp;mut </span><span class="self">self</span>, map: <span class="kw-2">&amp;</span>Map, setting: <span class="kw-2">&amp;</span>Setting) {
+<a href=#536 id=536 data-nosnippet>536</a>        <span class="kw">let </span><span class="prelude-val">Some</span>(entered) = <span class="self">self
+<a href=#537 id=537 data-nosnippet>537</a>            </span>.memories
+<a href=#538 id=538 data-nosnippet>538</a>            .get(LAST_INSTABILITY)
+<a href=#539 id=539 data-nosnippet>539</a>            .and_then(|room| room.parse::&lt;u32&gt;().ok())
+<a href=#540 id=540 data-nosnippet>540</a>        <span class="kw">else </span>{
+<a href=#541 id=541 data-nosnippet>541</a>            <span class="self">self</span>.table = <span class="prelude-val">None</span>;
+<a href=#542 id=542 data-nosnippet>542</a>            <span class="kw">return</span>;
+<a href=#543 id=543 data-nosnippet>543</a>        };
+<a href=#544 id=544 data-nosnippet>544</a>        <span class="kw">if </span><span class="self">self</span>.table.as_ref().is_some_and(|(at, <span class="kw">_</span>)| <span class="kw-2">*</span>at == entered) {
+<a href=#545 id=545 data-nosnippet>545</a>            <span class="kw">return</span>;
+<a href=#546 id=546 data-nosnippet>546</a>        }
+<a href=#547 id=547 data-nosnippet>547</a>        <span class="kw">let </span>walker = walker_from(<span class="kw-2">&amp;</span><span class="self">self</span>.state, <span class="kw-2">&amp;</span>setting.settings, <span class="kw-2">&amp;</span><span class="self">self</span>.memories);
+<a href=#548 id=548 data-nosnippet>548</a>        <span class="kw">let </span>table = <span class="kw">super</span>::instability::instability_table(
+<a href=#549 id=549 data-nosnippet>549</a>            map,
+<a href=#550 id=550 data-nosnippet>550</a>            RoomId(entered),
+<a href=#551 id=551 data-nosnippet>551</a>            <span class="kw">crate</span>::route::pricing(<span class="kw-2">&amp;</span>walker),
+<a href=#552 id=552 data-nosnippet>552</a>        );
+<a href=#553 id=553 data-nosnippet>553</a>        <span class="self">self</span>.table = <span class="prelude-val">Some</span>((entered, table));
+<a href=#554 id=554 data-nosnippet>554</a>    }
+<a href=#555 id=555 data-nosnippet>555</a>
+<a href=#556 id=556 data-nosnippet>556</a>    <span class="doccomment">/// Tell `shown` the route from `here` on, when it is not what it last
+<a href=#557 id=557 data-nosnippet>557</a>    /// was.
+<a href=#558 id=558 data-nosnippet>558</a>    </span><span class="kw">fn </span>show(<span class="kw-2">&amp;mut </span><span class="self">self</span>, here: RoomId, ahead: <span class="kw-2">&amp;</span>[RoomId]) {
+<a href=#559 id=559 data-nosnippet>559</a>        <span class="kw">let </span>route: Vec&lt;u32&gt; = std::iter::once(here.<span class="number">0</span>)
+<a href=#560 id=560 data-nosnippet>560</a>            .chain(ahead.iter().map(|room| room.<span class="number">0</span>))
+<a href=#561 id=561 data-nosnippet>561</a>            .collect();
+<a href=#562 id=562 data-nosnippet>562</a>        <span class="kw">if </span>route != <span class="self">self</span>.last_shown {
+<a href=#563 id=563 data-nosnippet>563</a>            (<span class="self">self</span>.shown)(<span class="kw-2">&amp;</span>route);
+<a href=#564 id=564 data-nosnippet>564</a>            <span class="self">self</span>.last_shown = route;
+<a href=#565 id=565 data-nosnippet>565</a>        }
+<a href=#566 id=566 data-nosnippet>566</a>    }
+<a href=#567 id=567 data-nosnippet>567</a>
+<a href=#568 id=568 data-nosnippet>568</a>    <span class="doccomment">/// The two rules for a room just walked into:
+<a href=#569 id=569 data-nosnippet>569</a>    /// `delay` seconds are waited, and `stop_for_dead` halts the walk where
+<a href=#570 id=570 data-nosnippet>570</a>    /// someone lies dead. Not asked of the room the walk began in, so
+<a href=#571 id=571 data-nosnippet>571</a>    /// starting again beside the body walks on.
+<a href=#572 id=572 data-nosnippet>572</a>    </span><span class="kw">async fn </span>arrived(<span class="kw-2">&amp;mut </span><span class="self">self</span>, settings: <span class="kw-2">&amp;</span>TravelSettings) -&gt; <span class="prelude-ty">Result</span>&lt;(), Ended&gt; {
+<a href=#573 id=573 data-nosnippet>573</a>        <span class="kw">let </span>dead = |player: <span class="kw-2">&amp;</span>hydra_model::RoomItem| {
+<a href=#574 id=574 data-nosnippet>574</a>            player
+<a href=#575 id=575 data-nosnippet>575</a>                .status
+<a href=#576 id=576 data-nosnippet>576</a>                .as_ref()
+<a href=#577 id=577 data-nosnippet>577</a>                .is_some_and(|status| status.as_str().contains(<span class="string">"dead"</span>))
+<a href=#578 id=578 data-nosnippet>578</a>        };
+<a href=#579 id=579 data-nosnippet>579</a>        <span class="kw">if </span>settings.on(<span class="string">"stop_for_dead"</span>) &amp;&amp; <span class="self">self</span>.state.room.players.iter().any(dead) {
+<a href=#580 id=580 data-nosnippet>580</a>            <span class="kw">return </span><span class="prelude-val">Err</span>(Ended::Halted(
+<a href=#581 id=581 data-nosnippet>581</a>                <span class="string">"someone here is dead, and Stop beside the dead is on."</span>.to_owned(),
+<a href=#582 id=582 data-nosnippet>582</a>            ));
+<a href=#583 id=583 data-nosnippet>583</a>        }
+<a href=#584 id=584 data-nosnippet>584</a>        <span class="kw">let </span>delay = settings
+<a href=#585 id=585 data-nosnippet>585</a>            .<span class="number">0
+<a href=#586 id=586 data-nosnippet>586</a>            </span>.get(<span class="string">"delay"</span>)
+<a href=#587 id=587 data-nosnippet>587</a>            .and_then(|delay| delay.parse::&lt;f64&gt;().ok())
+<a href=#588 id=588 data-nosnippet>588</a>            .filter(|delay| delay.is_finite() &amp;&amp; <span class="kw-2">*</span>delay &gt; <span class="number">0.0</span>);
+<a href=#589 id=589 data-nosnippet>589</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(delay) = delay {
+<a href=#590 id=590 data-nosnippet>590</a>            <span class="kw">let </span>pause = tokio::time::sleep(Duration::from_secs_f64(delay.min(<span class="number">600.0</span>)));
+<a href=#591 id=591 data-nosnippet>591</a>            <span class="macro">tokio::select!</span> {
+<a href=#592 id=592 data-nosnippet>592</a>                biased;
+<a href=#593 id=593 data-nosnippet>593</a>                () = <span class="self">self</span>.stop.cancelled() =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(Ended::Stopped),
+<a href=#594 id=594 data-nosnippet>594</a>                () = pause =&gt; {}
+<a href=#595 id=595 data-nosnippet>595</a>            }
+<a href=#596 id=596 data-nosnippet>596</a>        }
+<a href=#597 id=597 data-nosnippet>597</a>        <span class="prelude-val">Ok</span>(())
+<a href=#598 id=598 data-nosnippet>598</a>    }
+<a href=#599 id=599 data-nosnippet>599</a>
+<a href=#600 id=600 data-nosnippet>600</a>    <span class="doccomment">/// Which room of the map the model's room is, remembering the last one
+<a href=#601 id=601 data-nosnippet>601</a>    /// so that two rooms alike in everything are told apart by the way in.
+<a href=#602 id=602 data-nosnippet>602</a>    /// "Has it moved" is the model's arrival count, which answers for a room
+<a href=#603 id=603 data-nosnippet>603</a>    /// with no number too.
+<a href=#604 id=604 data-nosnippet>604</a>    </span><span class="kw">fn </span>locate(<span class="kw-2">&amp;mut </span><span class="self">self</span>, map: <span class="kw-2">&amp;</span>Map) -&gt; <span class="prelude-ty">Option</span>&lt;RoomId&gt; {
+<a href=#605 id=605 data-nosnippet>605</a>        <span class="kw">let </span>arrivals = <span class="self">self</span>.state.arrivals;
+<a href=#606 id=606 data-nosnippet>606</a>        <span class="kw">let </span>whence = <span class="kw">match </span><span class="self">self</span>.was {
+<a href=#607 id=607 data-nosnippet>607</a>            <span class="prelude-val">Some</span>((then, at)) <span class="kw">if </span>then == arrivals =&gt; Whence::Still(at),
+<a href=#608 id=608 data-nosnippet>608</a>            <span class="prelude-val">Some</span>((<span class="kw">_</span>, at)) =&gt; Whence::Left(at),
+<a href=#609 id=609 data-nosnippet>609</a>            <span class="prelude-val">None </span>=&gt; <span class="self">self</span>.hint.map_or(Whence::Nowhere, Whence::Still),
+<a href=#610 id=610 data-nosnippet>610</a>        };
+<a href=#611 id=611 data-nosnippet>611</a>        <span class="kw">let </span>here = hydra_map::room_of(map, <span class="kw-2">&amp;</span><span class="self">self</span>.state, whence)<span class="question-mark">?</span>;
+<a href=#612 id=612 data-nosnippet>612</a>        <span class="self">self</span>.was = <span class="prelude-val">Some</span>((arrivals, here));
+<a href=#613 id=613 data-nosnippet>613</a>        <span class="prelude-val">Some</span>(here)
+<a href=#614 id=614 data-nosnippet>614</a>    }
+<a href=#615 id=615 data-nosnippet>615</a>
+<a href=#616 id=616 data-nosnippet>616</a>    <span class="doccomment">/// Fold every event already waiting, without waiting for more.
+<a href=#617 id=617 data-nosnippet>617</a>    </span><span class="kw">async fn </span>drain(<span class="kw-2">&amp;mut </span><span class="self">self</span>, trip: <span class="kw-2">&amp;mut </span>Trip) -&gt; <span class="prelude-ty">Result</span>&lt;(), Ended&gt; {
+<a href=#618 id=618 data-nosnippet>618</a>        <span class="kw">loop </span>{
+<a href=#619 id=619 data-nosnippet>619</a>            <span class="kw">match </span><span class="self">self</span>.events.try_recv() {
+<a href=#620 id=620 data-nosnippet>620</a>                <span class="prelude-val">Ok</span>(event) =&gt; <span class="self">self</span>.fold(trip, <span class="kw-2">&amp;</span>event)<span class="question-mark">?</span>,
+<a href=#621 id=621 data-nosnippet>621</a>                <span class="prelude-val">Err</span>(TryRecvError::Lagged(<span class="kw">_</span>)) =&gt; <span class="self">self</span>.rejoin().<span class="kw">await</span><span class="question-mark">?</span>,
+<a href=#622 id=622 data-nosnippet>622</a>                <span class="prelude-val">Err</span>(TryRecvError::Empty) =&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(()),
+<a href=#623 id=623 data-nosnippet>623</a>                <span class="prelude-val">Err</span>(TryRecvError::Closed) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(Ended::Lost),
+<a href=#624 id=624 data-nosnippet>624</a>            }
+<a href=#625 id=625 data-nosnippet>625</a>        }
+<a href=#626 id=626 data-nosnippet>626</a>    }
+<a href=#627 id=627 data-nosnippet>627</a>
+<a href=#628 id=628 data-nosnippet>628</a>    <span class="doccomment">/// Events were lost: the state is taken afresh, with the stream from just
+<a href=#629 id=629 data-nosnippet>629</a>    /// after it, rather than decided from the holes.
+<a href=#630 id=630 data-nosnippet>630</a>    </span><span class="kw">async fn </span>rejoin(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Ended&gt; {
+<a href=#631 id=631 data-nosnippet>631</a>        <span class="kw">let </span>(snapshot, events) = <span class="self">self</span>.handle.join().<span class="kw">await</span>.ok_or(Ended::Lost)<span class="question-mark">?</span>;
+<a href=#632 id=632 data-nosnippet>632</a>        <span class="kw">if </span><span class="macro">matches!</span>(snapshot.lifecycle, State::Reconnecting | State::Closed) {
+<a href=#633 id=633 data-nosnippet>633</a>            <span class="kw">return </span><span class="prelude-val">Err</span>(Ended::Lost);
+<a href=#634 id=634 data-nosnippet>634</a>        }
+<a href=#635 id=635 data-nosnippet>635</a>        <span class="self">self</span>.heard = heard_so_far(<span class="kw-2">&amp;</span>snapshot.state);
+<a href=#636 id=636 data-nosnippet>636</a>        <span class="self">self</span>.state = snapshot.state;
+<a href=#637 id=637 data-nosnippet>637</a>        <span class="self">self</span>.events = events;
+<a href=#638 id=638 data-nosnippet>638</a>        <span class="self">self</span>.was = <span class="prelude-val">None</span>;
+<a href=#639 id=639 data-nosnippet>639</a>        <span class="prelude-val">Ok</span>(())
+<a href=#640 id=640 data-nosnippet>640</a>    }
+<a href=#641 id=641 data-nosnippet>641</a>
+<a href=#642 id=642 data-nosnippet>642</a>    <span class="kw">fn </span>fold(<span class="kw-2">&amp;mut </span><span class="self">self</span>, trip: <span class="kw-2">&amp;mut </span>Trip, event: <span class="kw-2">&amp;</span>Event) -&gt; <span class="prelude-ty">Result</span>&lt;(), Ended&gt; {
+<a href=#643 id=643 data-nosnippet>643</a>        <span class="kw">match </span>event {
+<a href=#644 id=644 data-nosnippet>644</a>            Event::Frame(frame) =&gt; {
+<a href=#645 id=645 data-nosnippet>645</a>                <span class="kw">let </span>arrivals = <span class="self">self</span>.state.arrivals;
+<a href=#646 id=646 data-nosnippet>646</a>                <span class="self">self</span>.state.apply(frame);
+<a href=#647 id=647 data-nosnippet>647</a>                <span class="kw">if </span><span class="self">self</span>.state.arrivals != arrivals {
+<a href=#648 id=648 data-nosnippet>648</a>                    <span class="self">self</span>.arrived_at_prompt = <span class="prelude-val">Some</span>(<span class="self">self</span>.prompts);
+<a href=#649 id=649 data-nosnippet>649</a>                    trip.arrived();
+<a href=#650 id=650 data-nosnippet>650</a>                }
+<a href=#651 id=651 data-nosnippet>651</a>                <span class="comment">// Dead, the walker goes nowhere: a move, a routine's command
+<a href=#652 id=652 data-nosnippet>652</a>                // or a wait would go on and on. Heard here, every one of them
+<a href=#653 id=653 data-nosnippet>653</a>                // stops at once.
+<a href=#654 id=654 data-nosnippet>654</a>                </span><span class="kw">if </span><span class="self">self</span>.dead() {
+<a href=#655 id=655 data-nosnippet>655</a>                    <span class="kw">return </span><span class="prelude-val">Err</span>(Ended::Halted(
+<a href=#656 id=656 data-nosnippet>656</a>                        <span class="string">"you are dead, so the walk has stopped."</span>.to_owned(),
+<a href=#657 id=657 data-nosnippet>657</a>                    ));
+<a href=#658 id=658 data-nosnippet>658</a>                }
+<a href=#659 id=659 data-nosnippet>659</a>                <span class="kw">match </span><span class="kw-2">&amp;**</span>frame {
+<a href=#660 id=660 data-nosnippet>660</a>                    <span class="comment">// The chunk closed, and took its lines with it.
+<a href=#661 id=661 data-nosnippet>661</a>                    </span>Frame::Prompt { .. } =&gt; {
+<a href=#662 id=662 data-nosnippet>662</a>                        <span class="self">self</span>.heard = <span class="number">0</span>;
+<a href=#663 id=663 data-nosnippet>663</a>                        <span class="self">self</span>.prompts += <span class="number">1</span>;
+<a href=#664 id=664 data-nosnippet>664</a>                        <span class="self">self</span>.unanswered = <span class="prelude-val">None</span>;
+<a href=#665 id=665 data-nosnippet>665</a>                        trip.prompted();
+<a href=#666 id=666 data-nosnippet>666</a>                    }
+<a href=#667 id=667 data-nosnippet>667</a>                    Frame::Text(<span class="kw">_</span>) =&gt; <span class="self">self</span>.hear(trip),
+<a href=#668 id=668 data-nosnippet>668</a>                    <span class="kw">_ </span>=&gt; {}
+<a href=#669 id=669 data-nosnippet>669</a>                }
+<a href=#670 id=670 data-nosnippet>670</a>                <span class="prelude-val">Ok</span>(())
+<a href=#671 id=671 data-nosnippet>671</a>            }
+<a href=#672 id=672 data-nosnippet>672</a>            Event::Sent {
+<a href=#673 id=673 data-nosnippet>673</a>                line,
+<a href=#674 id=674 data-nosnippet>674</a>                origin: Origin::Lich,
+<a href=#675 id=675 data-nosnippet>675</a>            } <span class="kw">if </span>is_a_move(line) =&gt; <span class="prelude-val">Err</span>(Ended::HandedToLich(line.clone())),
+<a href=#676 id=676 data-nosnippet>676</a>            Event::StateChanged(State::Reconnecting | State::Closed) =&gt; <span class="prelude-val">Err</span>(Ended::Lost),
+<a href=#677 id=677 data-nosnippet>677</a>            <span class="kw">_ </span>=&gt; <span class="prelude-val">Ok</span>(()),
+<a href=#678 id=678 data-nosnippet>678</a>        }
+<a href=#679 id=679 data-nosnippet>679</a>    }
+<a href=#680 id=680 data-nosnippet>680</a>
+<a href=#681 id=681 data-nosnippet>681</a>    <span class="doccomment">/// Tell the trip the whole lines the model has finished since it last
+<a href=#682 id=682 data-nosnippet>682</a>    /// heard any, keep them as the answer to a deed's command, and strike
+<a href=#683 id=683 data-nosnippet>683</a>    /// off whoever they say has rejoined.
+<a href=#684 id=684 data-nosnippet>684</a>    </span><span class="kw">fn </span>hear(<span class="kw-2">&amp;mut </span><span class="self">self</span>, trip: <span class="kw-2">&amp;mut </span>Trip) {
+<a href=#685 id=685 data-nosnippet>685</a>        <span class="kw">let </span>chunk = <span class="self">self</span>.state.open_chunk();
+<a href=#686 id=686 data-nosnippet>686</a>        <span class="kw">let </span>lines = chunk.lines();
+<a href=#687 id=687 data-nosnippet>687</a>        <span class="kw">let </span>total = chunk.dropped() + lines.len();
+<a href=#688 id=688 data-nosnippet>688</a>        <span class="kw">let </span>fresh = total.saturating_sub(<span class="self">self</span>.heard).min(lines.len());
+<a href=#689 id=689 data-nosnippet>689</a>        <span class="kw">for </span>line <span class="kw">in </span><span class="kw-2">&amp;</span>lines[lines.len() - fresh..] {
+<a href=#690 id=690 data-nosnippet>690</a>            <span class="kw">let </span>text = line.text();
+<a href=#691 id=691 data-nosnippet>691</a>            trip.heard(<span class="kw-2">&amp;</span>text);
+<a href=#692 id=692 data-nosnippet>692</a>            <span class="comment">// The one way the game tells of a mount: by refusing.
+<a href=#693 id=693 data-nosnippet>693</a>            </span><span class="kw">if </span>text.ends_with(<span class="string">"while mounted."</span>) {
+<a href=#694 id=694 data-nosnippet>694</a>                <span class="self">self</span>.found.insert(<span class="string">"mounted"</span>.to_owned(), <span class="bool-val">true</span>);
+<a href=#695 id=695 data-nosnippet>695</a>            }
+<a href=#696 id=696 data-nosnippet>696</a>            <span class="self">self</span>.answer.push(line.clone());
+<a href=#697 id=697 data-nosnippet>697</a>            <span class="kw">if let </span><span class="prelude-val">Some</span>(GroupEvent::Joined(member) | GroupEvent::Added(member)) =
+<a href=#698 id=698 data-nosnippet>698</a>                group::classify(line)
+<a href=#699 id=699 data-nosnippet>699</a>            {
+<a href=#700 id=700 data-nosnippet>700</a>                <span class="self">self</span>.behind.retain(|id| <span class="kw-2">*</span>id != member.id);
+<a href=#701 id=701 data-nosnippet>701</a>            }
+<a href=#702 id=702 data-nosnippet>702</a>        }
+<a href=#703 id=703 data-nosnippet>703</a>        <span class="self">self</span>.heard = total;
+<a href=#704 id=704 data-nosnippet>704</a>    }
+<a href=#705 id=705 data-nosnippet>705</a>
+<a href=#706 id=706 data-nosnippet>706</a>    <span class="doccomment">/// Until the roundtime the game stated is over, or
+<a href=#707 id=707 data-nosnippet>707</a>    /// [`LONGEST_ROUNDTIME`]: folding what comes meanwhile.
+<a href=#708 id=708 data-nosnippet>708</a>    </span><span class="kw">async fn </span>out_of_roundtime(<span class="kw-2">&amp;mut </span><span class="self">self</span>, trip: <span class="kw-2">&amp;mut </span>Trip) -&gt; <span class="prelude-ty">Result</span>&lt;(), Ended&gt; {
+<a href=#709 id=709 data-nosnippet>709</a>        <span class="kw">let </span>until = Instant::now() + LONGEST_ROUNDTIME;
+<a href=#710 id=710 data-nosnippet>710</a>        <span class="kw">while </span><span class="self">self</span>.state.in_roundtime() == <span class="prelude-val">Some</span>(<span class="bool-val">true</span>) &amp;&amp; Instant::now() &lt; until {
+<a href=#711 id=711 data-nosnippet>711</a>            <span class="comment">// To the tick: whatever comes before it is folded, and looked at.
+<a href=#712 id=712 data-nosnippet>712</a>            </span><span class="self">self</span>.hold(
+<a href=#713 id=713 data-nosnippet>713</a>                trip,
+<a href=#714 id=714 data-nosnippet>714</a>                <span class="self">self</span>.state
+<a href=#715 id=715 data-nosnippet>715</a>                    .until_roundtime_over()
+<a href=#716 id=716 data-nosnippet>716</a>                    .unwrap_or_default()
+<a href=#717 id=717 data-nosnippet>717</a>                    .max(hydra_session::ask::TICK_SLACK)
+<a href=#718 id=718 data-nosnippet>718</a>                    .min(until - Instant::now()),
+<a href=#719 id=719 data-nosnippet>719</a>            )
+<a href=#720 id=720 data-nosnippet>720</a>            .<span class="kw">await</span><span class="question-mark">?</span>;
+<a href=#721 id=721 data-nosnippet>721</a>        }
+<a href=#722 id=722 data-nosnippet>722</a>        <span class="prelude-val">Ok</span>(())
+<a href=#723 id=723 data-nosnippet>723</a>    }
+<a href=#724 id=724 data-nosnippet>724</a>
+<a href=#725 id=725 data-nosnippet>725</a>    <span class="doccomment">/// Wait for the game's next word, or `most`, whichever is first.
+<a href=#726 id=726 data-nosnippet>726</a>    </span><span class="kw">async fn </span>hold(<span class="kw-2">&amp;mut </span><span class="self">self</span>, trip: <span class="kw-2">&amp;mut </span>Trip, most: Duration) -&gt; <span class="prelude-ty">Result</span>&lt;(), Ended&gt; {
+<a href=#727 id=727 data-nosnippet>727</a>        <span class="kw">let </span>event = <span class="macro">tokio::select!</span> {
+<a href=#728 id=728 data-nosnippet>728</a>            biased;
+<a href=#729 id=729 data-nosnippet>729</a>            () = <span class="self">self</span>.stop.cancelled() =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(Ended::Stopped),
+<a href=#730 id=730 data-nosnippet>730</a>            event = <span class="self">self</span>.events.recv() =&gt; event,
+<a href=#731 id=731 data-nosnippet>731</a>            () = tokio::time::sleep(most) =&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(()),
+<a href=#732 id=732 data-nosnippet>732</a>        };
+<a href=#733 id=733 data-nosnippet>733</a>        <span class="kw">match </span>event {
+<a href=#734 id=734 data-nosnippet>734</a>            <span class="prelude-val">Ok</span>(event) =&gt; <span class="self">self</span>.fold(trip, <span class="kw-2">&amp;</span>event),
+<a href=#735 id=735 data-nosnippet>735</a>            <span class="prelude-val">Err</span>(RecvError::Lagged(<span class="kw">_</span>)) =&gt; <span class="self">self</span>.rejoin().<span class="kw">await</span>,
+<a href=#736 id=736 data-nosnippet>736</a>            <span class="prelude-val">Err</span>(RecvError::Closed) =&gt; <span class="prelude-val">Err</span>(Ended::Lost),
+<a href=#737 id=737 data-nosnippet>737</a>        }
+<a href=#738 id=738 data-nosnippet>738</a>    }
+<a href=#739 id=739 data-nosnippet>739</a>
+<a href=#740 id=740 data-nosnippet>740</a>    <span class="doccomment">/// Write `line` to the game at once: the trip checks every move by the
+<a href=#741 id=741 data-nosnippet>741</a>    /// room it lands in, so nothing waits for an answer here.
+<a href=#742 id=742 data-nosnippet>742</a>    </span><span class="kw">async fn </span>send(<span class="kw-2">&amp;mut </span><span class="self">self</span>, line: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;(), Ended&gt; {
+<a href=#743 id=743 data-nosnippet>743</a>        <span class="kw">if </span><span class="self">self</span>.stop.is_cancelled() {
+<a href=#744 id=744 data-nosnippet>744</a>            <span class="kw">return </span><span class="prelude-val">Err</span>(Ended::Stopped);
+<a href=#745 id=745 data-nosnippet>745</a>        }
+<a href=#746 id=746 data-nosnippet>746</a>        <span class="kw">if </span><span class="self">self</span>.handle.write(line, Origin::Travel).<span class="kw">await </span>{
+<a href=#747 id=747 data-nosnippet>747</a>            <span class="prelude-val">Ok</span>(())
+<a href=#748 id=748 data-nosnippet>748</a>        } <span class="kw">else </span>{
+<a href=#749 id=749 data-nosnippet>749</a>            <span class="prelude-val">Err</span>(Ended::Lost)
+<a href=#750 id=750 data-nosnippet>750</a>        }
+<a href=#751 id=751 data-nosnippet>751</a>    }
+<a href=#752 id=752 data-nosnippet>752</a>
+<a href=#753 id=753 data-nosnippet>753</a>    <span class="doccomment">/// Whether the game says the character is dead.
+<a href=#754 id=754 data-nosnippet>754</a>    </span><span class="kw">fn </span>dead(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+<a href=#755 id=755 data-nosnippet>755</a>        <span class="self">self</span>.state.status.known().dead() == <span class="prelude-val">Some</span>(<span class="bool-val">true</span>)
+<a href=#756 id=756 data-nosnippet>756</a>    }
+<a href=#757 id=757 data-nosnippet>757</a>
+<a href=#758 id=758 data-nosnippet>758</a>    <span class="doccomment">/// The exception to "a stop sends nothing": the key a crossing
+<a href=#759 id=759 data-nosnippet>759</a>    /// took out put back, then one command per stored thing, none waited
+<a href=#760 id=760 data-nosnippet>760</a>    /// for (module docs). They stay on the record, since nothing saw them go.
+<a href=#761 id=761 data-nosnippet>761</a>    </span><span class="kw">async fn </span>take_back_once(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+<a href=#762 id=762 data-nosnippet>762</a>        <span class="comment">// A dead character can take nothing back.
+<a href=#763 id=763 data-nosnippet>763</a>        </span><span class="kw">if </span><span class="self">self</span>.dead() {
+<a href=#764 id=764 data-nosnippet>764</a>            <span class="kw">return</span>;
+<a href=#765 id=765 data-nosnippet>765</a>        }
+<a href=#766 id=766 data-nosnippet>766</a>        <span class="kw">for </span>taken <span class="kw">in </span><span class="self">self</span>.taken.iter_mut().rev() {
+<a href=#767 id=767 data-nosnippet>767</a>            <span class="kw">let </span>command = <span class="macro">format!</span>(<span class="string">"put #{} in #{}"</span>, taken.thing, taken.container);
+<a href=#768 id=768 data-nosnippet>768</a>            taken.sent_back = <span class="self">self</span>.handle.write(<span class="kw-2">&amp;</span>command, Origin::Travel).<span class="kw">await</span>;
+<a href=#769 id=769 data-nosnippet>769</a>        }
+<a href=#770 id=770 data-nosnippet>770</a>        <span class="kw">for </span>stored <span class="kw">in </span><span class="self">self</span>.stored.iter().rev() {
+<a href=#771 id=771 data-nosnippet>771</a>            <span class="kw">let </span>command = take_back(<span class="kw-2">&amp;</span><span class="self">self</span>.state, stored);
+<a href=#772 id=772 data-nosnippet>772</a>            <span class="kw">let _ </span>= <span class="self">self</span>.handle.write(<span class="kw-2">&amp;</span>command, Origin::Travel).<span class="kw">await</span>;
+<a href=#773 id=773 data-nosnippet>773</a>        }
+<a href=#774 id=774 data-nosnippet>774</a>    }
+<a href=#775 id=775 data-nosnippet>775</a>}
+<a href=#776 id=776 data-nosnippet>776</a>
+<a href=#777 id=777 data-nosnippet>777</a><span class="doccomment">/// Whether `line` moves the character: a direction, or a verb that walks
+<a href=#778 id=778 data-nosnippet>778</a>/// it through something. What a Lich script sends when it walks.
+<a href=#779 id=779 data-nosnippet>779</a></span><span class="attr">#[must_use]
+<a href=#780 id=780 data-nosnippet>780</a></span><span class="kw">pub fn </span>is_a_move(line: <span class="kw-2">&amp;</span>str) -&gt; bool {
+<a href=#781 id=781 data-nosnippet>781</a>    <span class="kw">const </span>WAYS: [<span class="kw-2">&amp;</span>str; <span class="number">26</span>] = [
+<a href=#782 id=782 data-nosnippet>782</a>        <span class="string">"n"</span>,
+<a href=#783 id=783 data-nosnippet>783</a>        <span class="string">"s"</span>,
+<a href=#784 id=784 data-nosnippet>784</a>        <span class="string">"e"</span>,
+<a href=#785 id=785 data-nosnippet>785</a>        <span class="string">"w"</span>,
+<a href=#786 id=786 data-nosnippet>786</a>        <span class="string">"ne"</span>,
+<a href=#787 id=787 data-nosnippet>787</a>        <span class="string">"nw"</span>,
+<a href=#788 id=788 data-nosnippet>788</a>        <span class="string">"se"</span>,
+<a href=#789 id=789 data-nosnippet>789</a>        <span class="string">"sw"</span>,
+<a href=#790 id=790 data-nosnippet>790</a>        <span class="string">"u"</span>,
+<a href=#791 id=791 data-nosnippet>791</a>        <span class="string">"d"</span>,
+<a href=#792 id=792 data-nosnippet>792</a>        <span class="string">"north"</span>,
+<a href=#793 id=793 data-nosnippet>793</a>        <span class="string">"south"</span>,
+<a href=#794 id=794 data-nosnippet>794</a>        <span class="string">"east"</span>,
+<a href=#795 id=795 data-nosnippet>795</a>        <span class="string">"west"</span>,
+<a href=#796 id=796 data-nosnippet>796</a>        <span class="string">"northeast"</span>,
+<a href=#797 id=797 data-nosnippet>797</a>        <span class="string">"northwest"</span>,
+<a href=#798 id=798 data-nosnippet>798</a>        <span class="string">"southeast"</span>,
+<a href=#799 id=799 data-nosnippet>799</a>        <span class="string">"southwest"</span>,
+<a href=#800 id=800 data-nosnippet>800</a>        <span class="string">"up"</span>,
+<a href=#801 id=801 data-nosnippet>801</a>        <span class="string">"down"</span>,
+<a href=#802 id=802 data-nosnippet>802</a>        <span class="string">"out"</span>,
+<a href=#803 id=803 data-nosnippet>803</a>        <span class="string">"go"</span>,
+<a href=#804 id=804 data-nosnippet>804</a>        <span class="string">"climb"</span>,
+<a href=#805 id=805 data-nosnippet>805</a>        <span class="string">"swim"</span>,
+<a href=#806 id=806 data-nosnippet>806</a>        <span class="string">"crawl"</span>,
+<a href=#807 id=807 data-nosnippet>807</a>        <span class="string">"jump"</span>,
+<a href=#808 id=808 data-nosnippet>808</a>    ];
+<a href=#809 id=809 data-nosnippet>809</a>    line.split_whitespace()
+<a href=#810 id=810 data-nosnippet>810</a>        .next()
+<a href=#811 id=811 data-nosnippet>811</a>        .is_some_and(|word| WAYS.iter().any(|way| way.eq_ignore_ascii_case(word)))
+<a href=#812 id=812 data-nosnippet>812</a>}
+<a href=#813 id=813 data-nosnippet>813</a>
+<a href=#814 id=814 data-nosnippet>814</a><span class="doccomment">/// A routine as the player is told of it: its name in the map, in words
+<a href=#815 id=815 data-nosnippet>815</a>/// (`minotaur maze`).
+<a href=#816 id=816 data-nosnippet>816</a></span><span class="kw">fn </span>routine_name(routine: <span class="kw-2">&amp;</span>cena_map::Routine) -&gt; String {
+<a href=#817 id=817 data-nosnippet>817</a>    serde_json::to_value(routine)
+<a href=#818 id=818 data-nosnippet>818</a>        .ok()
+<a href=#819 id=819 data-nosnippet>819</a>        .and_then(|value| {
+<a href=#820 id=820 data-nosnippet>820</a>            value
+<a href=#821 id=821 data-nosnippet>821</a>                .get(<span class="string">"name"</span>)<span class="question-mark">?
+<a href=#822 id=822 data-nosnippet>822</a>                </span>.as_str()
+<a href=#823 id=823 data-nosnippet>823</a>                .map(|name| name.replace(<span class="string">'_'</span>, <span class="string">" "</span>))
+<a href=#824 id=824 data-nosnippet>824</a>        })
+<a href=#825 id=825 data-nosnippet>825</a>        .unwrap_or_else(|| <span class="string">"way"</span>.to_owned())
+<a href=#826 id=826 data-nosnippet>826</a>}
+<a href=#827 id=827 data-nosnippet>827</a>
+<a href=#828 id=828 data-nosnippet>828</a><span class="attr">#[cfg(test)]
+<a href=#829 id=829 data-nosnippet>829</a></span><span class="kw">mod </span>tests {
+<a href=#830 id=830 data-nosnippet>830</a>    <span class="kw">use </span>super::<span class="kw-2">*</span>;
+<a href=#831 id=831 data-nosnippet>831</a>
+<a href=#832 id=832 data-nosnippet>832</a>    <span class="attr">#[test]
+<a href=#833 id=833 data-nosnippet>833</a>    </span><span class="kw">fn </span>a_move_is_a_way_or_a_verb_that_walks() {
+<a href=#834 id=834 data-nosnippet>834</a>        <span class="kw">for </span>line <span class="kw">in </span>[<span class="string">"north"</span>, <span class="string">"N"</span>, <span class="string">"go door"</span>, <span class="string">"climb rope"</span>, <span class="string">"out"</span>, <span class="string">"swim river"</span>] {
+<a href=#835 id=835 data-nosnippet>835</a>            <span class="macro">assert!</span>(is_a_move(line), <span class="string">"{line}"</span>);
+<a href=#836 id=836 data-nosnippet>836</a>        }
+<a href=#837 id=837 data-nosnippet>837</a>        <span class="kw">for </span>line <span class="kw">in </span>[<span class="string">"look"</span>, <span class="string">"get box"</span>, <span class="string">"goodbye"</span>, <span class="string">""</span>, <span class="string">"say north"</span>] {
+<a href=#838 id=838 data-nosnippet>838</a>            <span class="macro">assert!</span>(!is_a_move(line), <span class="string">"{line}"</span>);
+<a href=#839 id=839 data-nosnippet>839</a>        }
+<a href=#840 id=840 data-nosnippet>840</a>    }
+<a href=#841 id=841 data-nosnippet>841</a>
+<a href=#842 id=842 data-nosnippet>842</a>    <span class="attr">#[test]
+<a href=#843 id=843 data-nosnippet>843</a>    </span><span class="kw">fn </span>a_seed_is_the_wires_and_differs_by_goal() {
+<a href=#844 id=844 data-nosnippet>844</a>        <span class="kw">let </span>state = GameState::default();
+<a href=#845 id=845 data-nosnippet>845</a>        <span class="macro">assert_eq!</span>(seed_for(<span class="kw-2">&amp;</span>state, RoomId(<span class="number">1</span>)), seed_for(<span class="kw-2">&amp;</span>state, RoomId(<span class="number">1</span>)));
+<a href=#846 id=846 data-nosnippet>846</a>        <span class="macro">assert_ne!</span>(seed_for(<span class="kw-2">&amp;</span>state, RoomId(<span class="number">1</span>)), seed_for(<span class="kw-2">&amp;</span>state, RoomId(<span class="number">2</span>)));
+<a href=#847 id=847 data-nosnippet>847</a>    }
+<a href=#848 id=848 data-nosnippet>848</a>}
 </code></pre></div></section></main></body></html>

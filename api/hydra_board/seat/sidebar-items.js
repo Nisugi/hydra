@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["Seat","Wake"],"trait":["Windows"]};
+window.SIDEBAR_ITEMS = {"fn":["next_menu"],"struct":["Seat","Wake"],"trait":["Windows"]};

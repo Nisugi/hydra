@@ -412,178 +412,188 @@
 <a href=#412 id=412 data-nosnippet>412</a>            &amp;&amp; !<span class="self">self</span>.orphan
 <a href=#413 id=413 data-nosnippet>413</a>    }
 <a href=#414 id=414 data-nosnippet>414</a>
-<a href=#415 id=415 data-nosnippet>415</a>    <span class="doccomment">/// Every hit, the attack's own and its flares'.
-<a href=#416 id=416 data-nosnippet>416</a>    </span><span class="kw">pub fn </span>all_hits(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = <span class="kw-2">&amp;</span>Hit&gt; {
-<a href=#417 id=417 data-nosnippet>417</a>        <span class="self">self</span>.hits
-<a href=#418 id=418 data-nosnippet>418</a>            .iter()
-<a href=#419 id=419 data-nosnippet>419</a>            .chain(<span class="self">self</span>.flares.iter().flat_map(|f| f.hits.iter()))
-<a href=#420 id=420 data-nosnippet>420</a>    }
-<a href=#421 id=421 data-nosnippet>421</a>
-<a href=#422 id=422 data-nosnippet>422</a>    <span class="doccomment">/// Total damage across the attack and its flares.
-<a href=#423 id=423 data-nosnippet>423</a>    </span><span class="attr">#[must_use]
-<a href=#424 id=424 data-nosnippet>424</a>    </span><span class="kw">pub fn </span>total_damage(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u32 {
-<a href=#425 id=425 data-nosnippet>425</a>        <span class="self">self</span>.all_hits().map(|h| h.damage).sum()
-<a href=#426 id=426 data-nosnippet>426</a>    }
-<a href=#427 id=427 data-nosnippet>427</a>}
-<a href=#428 id=428 data-nosnippet>428</a>
-<a href=#429 id=429 data-nosnippet>429</a><span class="doccomment">/// Who a status fact is about.
-<a href=#430 id=430 data-nosnippet>430</a></span><span class="attr">#[derive(Debug, Clone, PartialEq, Eq)]
-<a href=#431 id=431 data-nosnippet>431</a></span><span class="kw">pub enum </span>Subject {
-<a href=#432 id=432 data-nosnippet>432</a>    <span class="doccomment">/// A creature, by id and name.
-<a href=#433 id=433 data-nosnippet>433</a>    </span>Creature(Actor),
-<a href=#434 id=434 data-nosnippet>434</a>    <span class="doccomment">/// Us: a second-person line (`You are stunned!`).
-<a href=#435 id=435 data-nosnippet>435</a>    </span>Us,
-<a href=#436 id=436 data-nosnippet>436</a>}
-<a href=#437 id=437 data-nosnippet>437</a>
-<a href=#438 id=438 data-nosnippet>438</a><span class="doccomment">/// Why a spell left its subject.
-<a href=#439 id=439 data-nosnippet>439</a></span><span class="attr">#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-<a href=#440 id=440 data-nosnippet>440</a></span><span class="kw">pub enum </span>LossCause {
-<a href=#441 id=441 data-nosnippet>441</a>    <span class="doccomment">/// A dispel-family flare struck this chunk.
-<a href=#442 id=442 data-nosnippet>442</a>    </span>Dispel,
-<a href=#443 id=443 data-nosnippet>443</a>    <span class="doccomment">/// The subject died this chunk: death cleanup, not expiry.
-<a href=#444 id=444 data-nosnippet>444</a>    </span>Death,
-<a href=#445 id=445 data-nosnippet>445</a>}
-<a href=#446 id=446 data-nosnippet>446</a>
-<a href=#447 id=447 data-nosnippet>447</a><span class="doccomment">/// A fact recognised while parsing, beside the attacks.
-<a href=#448 id=448 data-nosnippet>448</a>///
-<a href=#449 id=449 data-nosnippet>449</a>/// Listed after [`ChunkFacts::events`], so a recorder keying on the open
-<a href=#450 id=450 data-nosnippet>450</a>/// attack files them correctly, and each carries the event it rode, when it
-<a href=#451 id=451 data-nosnippet>451</a>/// rode one.
-<a href=#452 id=452 data-nosnippet>452</a></span><span class="attr">#[derive(Debug, Clone, PartialEq)]
-<a href=#453 id=453 data-nosnippet>453</a></span><span class="kw">pub enum </span>Fact {
-<a href=#454 id=454 data-nosnippet>454</a>    <span class="doccomment">/// A status began or ended.
-<a href=#455 id=455 data-nosnippet>455</a>    </span>Status {
-<a href=#456 id=456 data-nosnippet>456</a>        <span class="doccomment">/// Who.
-<a href=#457 id=457 data-nosnippet>457</a>        </span>subject: Subject,
-<a href=#458 id=458 data-nosnippet>458</a>        <span class="doccomment">/// Which status.
-<a href=#459 id=459 data-nosnippet>459</a>        </span>status: StatusName,
-<a href=#460 id=460 data-nosnippet>460</a>        <span class="doccomment">/// Began or ended.
-<a href=#461 id=461 data-nosnippet>461</a>        </span>action: StatusAction,
-<a href=#462 id=462 data-nosnippet>462</a>        <span class="doccomment">/// The event it rode, when that event touched the subject.
-<a href=#463 id=463 data-nosnippet>463</a>        </span>event: <span class="prelude-ty">Option</span>&lt;usize&gt;,
-<a href=#464 id=464 data-nosnippet>464</a>        <span class="doccomment">/// The 1-based position of the flare it rode on that event.
-<a href=#465 id=465 data-nosnippet>465</a>        </span>flare_seq: <span class="prelude-ty">Option</span>&lt;usize&gt;,
-<a href=#466 id=466 data-nosnippet>466</a>        <span class="doccomment">/// Where the line sat in the chunk.
-<a href=#467 id=467 data-nosnippet>467</a>        </span>line: usize,
-<a href=#468 id=468 data-nosnippet>468</a>    },
-<a href=#469 id=469 data-nosnippet>469</a>    <span class="doccomment">/// A spell wore off.
-<a href=#470 id=470 data-nosnippet>470</a>    </span>SpellLoss {
-<a href=#471 id=471 data-nosnippet>471</a>        <span class="doccomment">/// Who lost it: creature, player, or bare name.
-<a href=#472 id=472 data-nosnippet>472</a>        </span>subject: Actor,
-<a href=#473 id=473 data-nosnippet>473</a>        <span class="doccomment">/// The spell number, `None` for the generic wear-off.
-<a href=#474 id=474 data-nosnippet>474</a>        </span>spell: <span class="prelude-ty">Option</span>&lt;u16&gt;,
-<a href=#475 id=475 data-nosnippet>475</a>        <span class="doccomment">/// Its name.
-<a href=#476 id=476 data-nosnippet>476</a>        </span>spell_name: String,
-<a href=#477 id=477 data-nosnippet>477</a>        <span class="doccomment">/// Why, when the chunk says.
-<a href=#478 id=478 data-nosnippet>478</a>        </span>cause: <span class="prelude-ty">Option</span>&lt;LossCause&gt;,
-<a href=#479 id=479 data-nosnippet>479</a>    },
-<a href=#480 id=480 data-nosnippet>480</a>    <span class="doccomment">/// A UCS fact.
-<a href=#481 id=481 data-nosnippet>481</a>    </span>Ucs {
-<a href=#482 id=482 data-nosnippet>482</a>        <span class="doccomment">/// The creature.
-<a href=#483 id=483 data-nosnippet>483</a>        </span>creature: Actor,
-<a href=#484 id=484 data-nosnippet>484</a>        <span class="doccomment">/// Which.
-<a href=#485 id=485 data-nosnippet>485</a>        </span>kind: UcsKind,
-<a href=#486 id=486 data-nosnippet>486</a>    },
-<a href=#487 id=487 data-nosnippet>487</a>    <span class="doccomment">/// A crit table's stun estimate, beside the `Stunned` status it implies.
-<a href=#488 id=488 data-nosnippet>488</a>    ///
-<a href=#489 id=489 data-nosnippet>489</a>    /// Produced by the registry, not the parse: the
-<a href=#490 id=490 data-nosnippet>490</a>    /// table's row says how long, which no message does.
-<a href=#491 id=491 data-nosnippet>491</a>    </span>Stun {
-<a href=#492 id=492 data-nosnippet>492</a>        <span class="doccomment">/// The creature stunned.
+<a href=#415 id=415 data-nosnippet>415</a>    <span class="doccomment">/// Whether a flare of this attack that names no attacker is ours. The
+<a href=#416 id=416 data-nosnippet>416</a>    /// attack's standing decides the whole blob: a foreign caster's, a
+<a href=#417 id=417 data-nosnippet>417</a>    /// foreign target's, an unowned tick's and the orphan sink's flares are
+<a href=#418 id=418 data-nosnippet>418</a>    /// not ours however they read, while a creature's swing at us keeps
+<a href=#419 id=419 data-nosnippet>419</a>    /// our reactive flares.
+<a href=#420 id=420 data-nosnippet>420</a>    </span><span class="attr">#[must_use]
+<a href=#421 id=421 data-nosnippet>421</a>    </span><span class="kw">pub const fn </span>flares_can_be_ours(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+<a href=#422 id=422 data-nosnippet>422</a>        !<span class="self">self</span>.foreign_caster &amp;&amp; !<span class="self">self</span>.is_foreign_target() &amp;&amp; !<span class="self">self</span>.unowned &amp;&amp; !<span class="self">self</span>.orphan
+<a href=#423 id=423 data-nosnippet>423</a>    }
+<a href=#424 id=424 data-nosnippet>424</a>
+<a href=#425 id=425 data-nosnippet>425</a>    <span class="doccomment">/// Every hit, the attack's own and its flares'.
+<a href=#426 id=426 data-nosnippet>426</a>    </span><span class="kw">pub fn </span>all_hits(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = <span class="kw-2">&amp;</span>Hit&gt; {
+<a href=#427 id=427 data-nosnippet>427</a>        <span class="self">self</span>.hits
+<a href=#428 id=428 data-nosnippet>428</a>            .iter()
+<a href=#429 id=429 data-nosnippet>429</a>            .chain(<span class="self">self</span>.flares.iter().flat_map(|f| f.hits.iter()))
+<a href=#430 id=430 data-nosnippet>430</a>    }
+<a href=#431 id=431 data-nosnippet>431</a>
+<a href=#432 id=432 data-nosnippet>432</a>    <span class="doccomment">/// Total damage across the attack and its flares.
+<a href=#433 id=433 data-nosnippet>433</a>    </span><span class="attr">#[must_use]
+<a href=#434 id=434 data-nosnippet>434</a>    </span><span class="kw">pub fn </span>total_damage(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u32 {
+<a href=#435 id=435 data-nosnippet>435</a>        <span class="self">self</span>.all_hits().map(|h| h.damage).sum()
+<a href=#436 id=436 data-nosnippet>436</a>    }
+<a href=#437 id=437 data-nosnippet>437</a>}
+<a href=#438 id=438 data-nosnippet>438</a>
+<a href=#439 id=439 data-nosnippet>439</a><span class="doccomment">/// Who a status fact is about.
+<a href=#440 id=440 data-nosnippet>440</a></span><span class="attr">#[derive(Debug, Clone, PartialEq, Eq)]
+<a href=#441 id=441 data-nosnippet>441</a></span><span class="kw">pub enum </span>Subject {
+<a href=#442 id=442 data-nosnippet>442</a>    <span class="doccomment">/// A creature, by id and name.
+<a href=#443 id=443 data-nosnippet>443</a>    </span>Creature(Actor),
+<a href=#444 id=444 data-nosnippet>444</a>    <span class="doccomment">/// Us: a second-person line (`You are stunned!`).
+<a href=#445 id=445 data-nosnippet>445</a>    </span>Us,
+<a href=#446 id=446 data-nosnippet>446</a>}
+<a href=#447 id=447 data-nosnippet>447</a>
+<a href=#448 id=448 data-nosnippet>448</a><span class="doccomment">/// Why a spell left its subject.
+<a href=#449 id=449 data-nosnippet>449</a></span><span class="attr">#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+<a href=#450 id=450 data-nosnippet>450</a></span><span class="kw">pub enum </span>LossCause {
+<a href=#451 id=451 data-nosnippet>451</a>    <span class="doccomment">/// A dispel-family flare struck this chunk.
+<a href=#452 id=452 data-nosnippet>452</a>    </span>Dispel,
+<a href=#453 id=453 data-nosnippet>453</a>    <span class="doccomment">/// The subject died this chunk: death cleanup, not expiry.
+<a href=#454 id=454 data-nosnippet>454</a>    </span>Death,
+<a href=#455 id=455 data-nosnippet>455</a>}
+<a href=#456 id=456 data-nosnippet>456</a>
+<a href=#457 id=457 data-nosnippet>457</a><span class="doccomment">/// A fact recognised while parsing, beside the attacks.
+<a href=#458 id=458 data-nosnippet>458</a>///
+<a href=#459 id=459 data-nosnippet>459</a>/// Listed after [`ChunkFacts::events`], so a recorder keying on the open
+<a href=#460 id=460 data-nosnippet>460</a>/// attack files them correctly, and each carries the event it rode, when it
+<a href=#461 id=461 data-nosnippet>461</a>/// rode one.
+<a href=#462 id=462 data-nosnippet>462</a></span><span class="attr">#[derive(Debug, Clone, PartialEq)]
+<a href=#463 id=463 data-nosnippet>463</a></span><span class="kw">pub enum </span>Fact {
+<a href=#464 id=464 data-nosnippet>464</a>    <span class="doccomment">/// A status began or ended.
+<a href=#465 id=465 data-nosnippet>465</a>    </span>Status {
+<a href=#466 id=466 data-nosnippet>466</a>        <span class="doccomment">/// Who.
+<a href=#467 id=467 data-nosnippet>467</a>        </span>subject: Subject,
+<a href=#468 id=468 data-nosnippet>468</a>        <span class="doccomment">/// Which status.
+<a href=#469 id=469 data-nosnippet>469</a>        </span>status: StatusName,
+<a href=#470 id=470 data-nosnippet>470</a>        <span class="doccomment">/// Began or ended.
+<a href=#471 id=471 data-nosnippet>471</a>        </span>action: StatusAction,
+<a href=#472 id=472 data-nosnippet>472</a>        <span class="doccomment">/// The event it rode, when that event touched the subject.
+<a href=#473 id=473 data-nosnippet>473</a>        </span>event: <span class="prelude-ty">Option</span>&lt;usize&gt;,
+<a href=#474 id=474 data-nosnippet>474</a>        <span class="doccomment">/// The 1-based position of the flare it rode on that event.
+<a href=#475 id=475 data-nosnippet>475</a>        </span>flare_seq: <span class="prelude-ty">Option</span>&lt;usize&gt;,
+<a href=#476 id=476 data-nosnippet>476</a>        <span class="doccomment">/// Where the line sat in the chunk.
+<a href=#477 id=477 data-nosnippet>477</a>        </span>line: usize,
+<a href=#478 id=478 data-nosnippet>478</a>    },
+<a href=#479 id=479 data-nosnippet>479</a>    <span class="doccomment">/// A spell wore off.
+<a href=#480 id=480 data-nosnippet>480</a>    </span>SpellLoss {
+<a href=#481 id=481 data-nosnippet>481</a>        <span class="doccomment">/// Who lost it: creature, player, or bare name.
+<a href=#482 id=482 data-nosnippet>482</a>        </span>subject: Actor,
+<a href=#483 id=483 data-nosnippet>483</a>        <span class="doccomment">/// The spell number, `None` for the generic wear-off.
+<a href=#484 id=484 data-nosnippet>484</a>        </span>spell: <span class="prelude-ty">Option</span>&lt;u16&gt;,
+<a href=#485 id=485 data-nosnippet>485</a>        <span class="doccomment">/// Its name.
+<a href=#486 id=486 data-nosnippet>486</a>        </span>spell_name: String,
+<a href=#487 id=487 data-nosnippet>487</a>        <span class="doccomment">/// Why, when the chunk says.
+<a href=#488 id=488 data-nosnippet>488</a>        </span>cause: <span class="prelude-ty">Option</span>&lt;LossCause&gt;,
+<a href=#489 id=489 data-nosnippet>489</a>    },
+<a href=#490 id=490 data-nosnippet>490</a>    <span class="doccomment">/// A UCS fact.
+<a href=#491 id=491 data-nosnippet>491</a>    </span>Ucs {
+<a href=#492 id=492 data-nosnippet>492</a>        <span class="doccomment">/// The creature.
 <a href=#493 id=493 data-nosnippet>493</a>        </span>creature: Actor,
-<a href=#494 id=494 data-nosnippet>494</a>        <span class="doccomment">/// The table's estimate, in rounds.
-<a href=#495 id=495 data-nosnippet>495</a>        </span>rounds: u16,
-<a href=#496 id=496 data-nosnippet>496</a>        <span class="doccomment">/// The event whose crit said so.
-<a href=#497 id=497 data-nosnippet>497</a>        </span>event: usize,
-<a href=#498 id=498 data-nosnippet>498</a>        <span class="doccomment">/// The 1-based flare on that event, for a flare's crit.
-<a href=#499 id=499 data-nosnippet>499</a>        </span>flare_seq: <span class="prelude-ty">Option</span>&lt;usize&gt;,
-<a href=#500 id=500 data-nosnippet>500</a>    },
-<a href=#501 id=501 data-nosnippet>501</a>    <span class="doccomment">/// A crit table's roundtime, in seconds.
-<a href=#502 id=502 data-nosnippet>502</a>    </span>Roundtime {
-<a href=#503 id=503 data-nosnippet>503</a>        <span class="doccomment">/// The creature slowed.
-<a href=#504 id=504 data-nosnippet>504</a>        </span>creature: Actor,
-<a href=#505 id=505 data-nosnippet>505</a>        <span class="doccomment">/// Seconds, already -- not rounds.
-<a href=#506 id=506 data-nosnippet>506</a>        </span>seconds: u8,
-<a href=#507 id=507 data-nosnippet>507</a>        <span class="doccomment">/// The event whose crit said so.
-<a href=#508 id=508 data-nosnippet>508</a>        </span>event: usize,
-<a href=#509 id=509 data-nosnippet>509</a>        <span class="doccomment">/// The 1-based flare on that event, for a flare's crit.
-<a href=#510 id=510 data-nosnippet>510</a>        </span>flare_seq: <span class="prelude-ty">Option</span>&lt;usize&gt;,
-<a href=#511 id=511 data-nosnippet>511</a>    },
-<a href=#512 id=512 data-nosnippet>512</a>    <span class="doccomment">/// A creature a room refresh confirmed dead after an event touched it.
-<a href=#513 id=513 data-nosnippet>513</a>    </span>Dead {
-<a href=#514 id=514 data-nosnippet>514</a>        <span class="doccomment">/// The creature.
-<a href=#515 id=515 data-nosnippet>515</a>        </span>creature: Actor,
-<a href=#516 id=516 data-nosnippet>516</a>    },
-<a href=#517 id=517 data-nosnippet>517</a>}
-<a href=#518 id=518 data-nosnippet>518</a>
-<a href=#519 id=519 data-nosnippet>519</a><span class="doccomment">/// A UCS fact's payload.
-<a href=#520 id=520 data-nosnippet>520</a></span><span class="attr">#[derive(Debug, Clone, PartialEq, Eq)]
-<a href=#521 id=521 data-nosnippet>521</a></span><span class="kw">pub enum </span>UcsKind {
-<a href=#522 id=522 data-nosnippet>522</a>    <span class="doccomment">/// Our tier against it.
-<a href=#523 id=523 data-nosnippet>523</a>    </span>Position(PositionTier),
-<a href=#524 id=524 data-nosnippet>524</a>    <span class="doccomment">/// Its tier against us.
-<a href=#525 id=525 data-nosnippet>525</a>    </span>PositionInbound(PositionTier),
-<a href=#526 id=526 data-nosnippet>526</a>    <span class="doccomment">/// A followup opened.
-<a href=#527 id=527 data-nosnippet>527</a>    </span>Tierup(UcsAttack),
-<a href=#528 id=528 data-nosnippet>528</a>    <span class="doccomment">/// Smite applied.
-<a href=#529 id=529 data-nosnippet>529</a>    </span>SmiteOn,
-<a href=#530 id=530 data-nosnippet>530</a>    <span class="doccomment">/// Smite gone.
-<a href=#531 id=531 data-nosnippet>531</a>    </span>SmiteOff,
-<a href=#532 id=532 data-nosnippet>532</a>}
-<a href=#533 id=533 data-nosnippet>533</a>
-<a href=#534 id=534 data-nosnippet>534</a><span class="doccomment">/// Everything one chunk yielded.
-<a href=#535 id=535 data-nosnippet>535</a></span><span class="attr">#[derive(Debug, Clone, Default, PartialEq)]
-<a href=#536 id=536 data-nosnippet>536</a></span><span class="doccomment">///
-<a href=#537 id=537 data-nosnippet>537</a>/// # One per chunk, never one per fact
-<a href=#538 id=538 data-nosnippet>538</a>///
-<a href=#539 id=539 data-nosnippet>539</a>/// Splitting a chunk into separate topics would make every consumer
-<a href=#540 id=540 data-nosnippet>540</a>/// reassemble it with per-chunk uids, a batch id and an emit-order rule,
-<a href=#541 id=541 data-nosnippet>541</a>/// and reassembly is where bugs live. A consumer of `Event::Combat` reads the
-<a href=#542 id=542 data-nosnippet>542</a>/// chunk the state machine produced instead, and an event's index is its
-<a href=#543 id=543 data-nosnippet>543</a>/// identity.
-<a href=#544 id=544 data-nosnippet>544</a></span><span class="kw">pub struct </span>ChunkFacts {
-<a href=#545 id=545 data-nosnippet>545</a>    <span class="doccomment">/// The attack events, in emit order.
-<a href=#546 id=546 data-nosnippet>546</a>    </span><span class="kw">pub </span>events: Vec&lt;AttackEvent&gt;,
-<a href=#547 id=547 data-nosnippet>547</a>    <span class="doccomment">/// The facts beside them.
-<a href=#548 id=548 data-nosnippet>548</a>    </span><span class="kw">pub </span>facts: Vec&lt;Fact&gt;,
-<a href=#549 id=549 data-nosnippet>549</a>    <span class="doccomment">/// The server time of the prompt that closed the chunk. Facts carry no
-<a href=#550 id=550 data-nosnippet>550</a>    /// time of their own, and a chunk of facts alone -- a confirmed death --
-<a href=#551 id=551 data-nosnippet>551</a>    /// still has to be recorded at one. `None`: no clock was known.
-<a href=#552 id=552 data-nosnippet>552</a>    </span><span class="kw">pub </span>at: <span class="prelude-ty">Option</span>&lt;u32&gt;,
-<a href=#553 id=553 data-nosnippet>553</a>    <span class="doccomment">/// The chunk's lines the reader found to be a flare, a status landing on
-<a href=#554 id=554 data-nosnippet>554</a>    /// the character or a killing blow, for a frontend to colour
-<a href=#555 id=555 data-nosnippet>555</a>    /// ([`super::marks`]).
-<a href=#556 id=556 data-nosnippet>556</a>    </span><span class="kw">pub </span>marks: Vec&lt;<span class="kw">super</span>::marks::LineMark&gt;,
-<a href=#557 id=557 data-nosnippet>557</a>    <span class="doccomment">/// How many living hostile creatures the room held as the chunk closed,
-<a href=#558 id=558 data-nosnippet>558</a>    /// before this chunk's kills were counted: what a flare that spreads to
-<a href=#559 id=559 data-nosnippet>559</a>    /// other targets could have reached.
-<a href=#560 id=560 data-nosnippet>560</a>    </span><span class="kw">pub </span>room_targets: usize,
-<a href=#561 id=561 data-nosnippet>561</a>    <span class="doccomment">/// The character's gemstones, when they changed since the last chunk
-<a href=#562 id=562 data-nosnippet>562</a>    /// that carried them: the first listing, a gemstone equipped or
-<a href=#563 id=563 data-nosnippet>563</a>    /// unequipped. A recorder keeps the last it was handed; a set cannot
-<a href=#564 id=564 data-nosnippet>564</a>    /// change in combat, so a change ends a hunt.
-<a href=#565 id=565 data-nosnippet>565</a>    </span><span class="kw">pub </span>gemstones: <span class="prelude-ty">Option</span>&lt;std::sync::Arc&lt;<span class="kw">crate</span>::state::character::gemstones::Gemstones&gt;&gt;,
-<a href=#566 id=566 data-nosnippet>566</a>    <span class="doccomment">/// The items worn, when the worn list changed since the last chunk that
-<a href=#567 id=567 data-nosnippet>567</a>    /// carried it: the game sends the list with most attacks, so a recorder
-<a href=#568 id=568 data-nosnippet>568</a>    /// keeps the last it was handed as what the swings after wore.
-<a href=#569 id=569 data-nosnippet>569</a>    </span><span class="kw">pub </span>worn: <span class="prelude-ty">Option</span>&lt;std::sync::Arc&lt;Vec&lt;<span class="kw">crate</span>::state::containers::ItemRef&gt;&gt;&gt;,
-<a href=#570 id=570 data-nosnippet>570</a>    <span class="doccomment">/// The effects up, when the set changed since the last chunk that
-<a href=#571 id=571 data-nosnippet>571</a>    /// carried it: a spell cast or ended, a buff, debuff or cooldown come or
-<a href=#572 id=572 data-nosnippet>572</a>    /// gone, the bark formed or crumbled. A recorder keeps the last it was
-<a href=#573 id=573 data-nosnippet>573</a>    /// handed as what was up until the next.
-<a href=#574 id=574 data-nosnippet>574</a>    </span><span class="kw">pub </span>effects: <span class="prelude-ty">Option</span>&lt;std::sync::Arc&lt;Vec&lt;<span class="kw">crate</span>::state::effects::ActiveEffect&gt;&gt;&gt;,
-<a href=#575 id=575 data-nosnippet>575</a>}
-<a href=#576 id=576 data-nosnippet>576</a>
-<a href=#577 id=577 data-nosnippet>577</a><span class="kw">impl </span>ChunkFacts {
-<a href=#578 id=578 data-nosnippet>578</a>    <span class="doccomment">/// Nothing at all: no event, no fact, and no set of gemstones to carry.
-<a href=#579 id=579 data-nosnippet>579</a>    </span><span class="attr">#[must_use]
-<a href=#580 id=580 data-nosnippet>580</a>    </span><span class="kw">pub fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-<a href=#581 id=581 data-nosnippet>581</a>        <span class="comment">// `at` is when, not what: a stamped chunk with nothing in it is empty
-<a href=#582 id=582 data-nosnippet>582</a>        </span><span class="self">self</span>.events.is_empty()
-<a href=#583 id=583 data-nosnippet>583</a>            &amp;&amp; <span class="self">self</span>.facts.is_empty()
-<a href=#584 id=584 data-nosnippet>584</a>            &amp;&amp; <span class="self">self</span>.gemstones.is_none()
-<a href=#585 id=585 data-nosnippet>585</a>            &amp;&amp; <span class="self">self</span>.worn.is_none()
-<a href=#586 id=586 data-nosnippet>586</a>            &amp;&amp; <span class="self">self</span>.effects.is_none()
-<a href=#587 id=587 data-nosnippet>587</a>    }
-<a href=#588 id=588 data-nosnippet>588</a>}
+<a href=#494 id=494 data-nosnippet>494</a>        <span class="doccomment">/// Which.
+<a href=#495 id=495 data-nosnippet>495</a>        </span>kind: UcsKind,
+<a href=#496 id=496 data-nosnippet>496</a>    },
+<a href=#497 id=497 data-nosnippet>497</a>    <span class="doccomment">/// A crit table's stun estimate, beside the `Stunned` status it implies.
+<a href=#498 id=498 data-nosnippet>498</a>    ///
+<a href=#499 id=499 data-nosnippet>499</a>    /// Produced by the registry, not the parse: the
+<a href=#500 id=500 data-nosnippet>500</a>    /// table's row says how long, which no message does.
+<a href=#501 id=501 data-nosnippet>501</a>    </span>Stun {
+<a href=#502 id=502 data-nosnippet>502</a>        <span class="doccomment">/// The creature stunned.
+<a href=#503 id=503 data-nosnippet>503</a>        </span>creature: Actor,
+<a href=#504 id=504 data-nosnippet>504</a>        <span class="doccomment">/// The table's estimate, in rounds.
+<a href=#505 id=505 data-nosnippet>505</a>        </span>rounds: u16,
+<a href=#506 id=506 data-nosnippet>506</a>        <span class="doccomment">/// The event whose crit said so.
+<a href=#507 id=507 data-nosnippet>507</a>        </span>event: usize,
+<a href=#508 id=508 data-nosnippet>508</a>        <span class="doccomment">/// The 1-based flare on that event, for a flare's crit.
+<a href=#509 id=509 data-nosnippet>509</a>        </span>flare_seq: <span class="prelude-ty">Option</span>&lt;usize&gt;,
+<a href=#510 id=510 data-nosnippet>510</a>    },
+<a href=#511 id=511 data-nosnippet>511</a>    <span class="doccomment">/// A crit table's roundtime, in seconds.
+<a href=#512 id=512 data-nosnippet>512</a>    </span>Roundtime {
+<a href=#513 id=513 data-nosnippet>513</a>        <span class="doccomment">/// The creature slowed.
+<a href=#514 id=514 data-nosnippet>514</a>        </span>creature: Actor,
+<a href=#515 id=515 data-nosnippet>515</a>        <span class="doccomment">/// Seconds, already -- not rounds.
+<a href=#516 id=516 data-nosnippet>516</a>        </span>seconds: u8,
+<a href=#517 id=517 data-nosnippet>517</a>        <span class="doccomment">/// The event whose crit said so.
+<a href=#518 id=518 data-nosnippet>518</a>        </span>event: usize,
+<a href=#519 id=519 data-nosnippet>519</a>        <span class="doccomment">/// The 1-based flare on that event, for a flare's crit.
+<a href=#520 id=520 data-nosnippet>520</a>        </span>flare_seq: <span class="prelude-ty">Option</span>&lt;usize&gt;,
+<a href=#521 id=521 data-nosnippet>521</a>    },
+<a href=#522 id=522 data-nosnippet>522</a>    <span class="doccomment">/// A creature a room refresh confirmed dead after an event touched it.
+<a href=#523 id=523 data-nosnippet>523</a>    </span>Dead {
+<a href=#524 id=524 data-nosnippet>524</a>        <span class="doccomment">/// The creature.
+<a href=#525 id=525 data-nosnippet>525</a>        </span>creature: Actor,
+<a href=#526 id=526 data-nosnippet>526</a>    },
+<a href=#527 id=527 data-nosnippet>527</a>}
+<a href=#528 id=528 data-nosnippet>528</a>
+<a href=#529 id=529 data-nosnippet>529</a><span class="doccomment">/// A UCS fact's payload.
+<a href=#530 id=530 data-nosnippet>530</a></span><span class="attr">#[derive(Debug, Clone, PartialEq, Eq)]
+<a href=#531 id=531 data-nosnippet>531</a></span><span class="kw">pub enum </span>UcsKind {
+<a href=#532 id=532 data-nosnippet>532</a>    <span class="doccomment">/// Our tier against it.
+<a href=#533 id=533 data-nosnippet>533</a>    </span>Position(PositionTier),
+<a href=#534 id=534 data-nosnippet>534</a>    <span class="doccomment">/// Its tier against us.
+<a href=#535 id=535 data-nosnippet>535</a>    </span>PositionInbound(PositionTier),
+<a href=#536 id=536 data-nosnippet>536</a>    <span class="doccomment">/// A followup opened.
+<a href=#537 id=537 data-nosnippet>537</a>    </span>Tierup(UcsAttack),
+<a href=#538 id=538 data-nosnippet>538</a>    <span class="doccomment">/// Smite applied.
+<a href=#539 id=539 data-nosnippet>539</a>    </span>SmiteOn,
+<a href=#540 id=540 data-nosnippet>540</a>    <span class="doccomment">/// Smite gone.
+<a href=#541 id=541 data-nosnippet>541</a>    </span>SmiteOff,
+<a href=#542 id=542 data-nosnippet>542</a>}
+<a href=#543 id=543 data-nosnippet>543</a>
+<a href=#544 id=544 data-nosnippet>544</a><span class="doccomment">/// Everything one chunk yielded.
+<a href=#545 id=545 data-nosnippet>545</a></span><span class="attr">#[derive(Debug, Clone, Default, PartialEq)]
+<a href=#546 id=546 data-nosnippet>546</a></span><span class="doccomment">///
+<a href=#547 id=547 data-nosnippet>547</a>/// # One per chunk, never one per fact
+<a href=#548 id=548 data-nosnippet>548</a>///
+<a href=#549 id=549 data-nosnippet>549</a>/// Splitting a chunk into separate topics would make every consumer
+<a href=#550 id=550 data-nosnippet>550</a>/// reassemble it with per-chunk uids, a batch id and an emit-order rule,
+<a href=#551 id=551 data-nosnippet>551</a>/// and reassembly is where bugs live. A consumer of `Event::Combat` reads the
+<a href=#552 id=552 data-nosnippet>552</a>/// chunk the state machine produced instead, and an event's index is its
+<a href=#553 id=553 data-nosnippet>553</a>/// identity.
+<a href=#554 id=554 data-nosnippet>554</a></span><span class="kw">pub struct </span>ChunkFacts {
+<a href=#555 id=555 data-nosnippet>555</a>    <span class="doccomment">/// The attack events, in emit order.
+<a href=#556 id=556 data-nosnippet>556</a>    </span><span class="kw">pub </span>events: Vec&lt;AttackEvent&gt;,
+<a href=#557 id=557 data-nosnippet>557</a>    <span class="doccomment">/// The facts beside them.
+<a href=#558 id=558 data-nosnippet>558</a>    </span><span class="kw">pub </span>facts: Vec&lt;Fact&gt;,
+<a href=#559 id=559 data-nosnippet>559</a>    <span class="doccomment">/// The server time of the prompt that closed the chunk. Facts carry no
+<a href=#560 id=560 data-nosnippet>560</a>    /// time of their own, and a chunk of facts alone -- a confirmed death --
+<a href=#561 id=561 data-nosnippet>561</a>    /// still has to be recorded at one. `None`: no clock was known.
+<a href=#562 id=562 data-nosnippet>562</a>    </span><span class="kw">pub </span>at: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+<a href=#563 id=563 data-nosnippet>563</a>    <span class="doccomment">/// The chunk's lines the reader found to be a flare, a status landing on
+<a href=#564 id=564 data-nosnippet>564</a>    /// the character or a killing blow, for a frontend to colour
+<a href=#565 id=565 data-nosnippet>565</a>    /// ([`super::marks`]).
+<a href=#566 id=566 data-nosnippet>566</a>    </span><span class="kw">pub </span>marks: Vec&lt;<span class="kw">super</span>::marks::LineMark&gt;,
+<a href=#567 id=567 data-nosnippet>567</a>    <span class="doccomment">/// How many living hostile creatures the room held as the chunk closed,
+<a href=#568 id=568 data-nosnippet>568</a>    /// before this chunk's kills were counted: what a flare that spreads to
+<a href=#569 id=569 data-nosnippet>569</a>    /// other targets could have reached.
+<a href=#570 id=570 data-nosnippet>570</a>    </span><span class="kw">pub </span>room_targets: usize,
+<a href=#571 id=571 data-nosnippet>571</a>    <span class="doccomment">/// The character's gemstones, when they changed since the last chunk
+<a href=#572 id=572 data-nosnippet>572</a>    /// that carried them: the first listing, a gemstone equipped or
+<a href=#573 id=573 data-nosnippet>573</a>    /// unequipped. A recorder keeps the last it was handed; a set cannot
+<a href=#574 id=574 data-nosnippet>574</a>    /// change in combat, so a change ends a hunt.
+<a href=#575 id=575 data-nosnippet>575</a>    </span><span class="kw">pub </span>gemstones: <span class="prelude-ty">Option</span>&lt;std::sync::Arc&lt;<span class="kw">crate</span>::state::character::gemstones::Gemstones&gt;&gt;,
+<a href=#576 id=576 data-nosnippet>576</a>    <span class="doccomment">/// The items worn, when the worn list changed since the last chunk that
+<a href=#577 id=577 data-nosnippet>577</a>    /// carried it: the game sends the list with most attacks, so a recorder
+<a href=#578 id=578 data-nosnippet>578</a>    /// keeps the last it was handed as what the swings after wore.
+<a href=#579 id=579 data-nosnippet>579</a>    </span><span class="kw">pub </span>worn: <span class="prelude-ty">Option</span>&lt;std::sync::Arc&lt;Vec&lt;<span class="kw">crate</span>::state::containers::ItemRef&gt;&gt;&gt;,
+<a href=#580 id=580 data-nosnippet>580</a>    <span class="doccomment">/// The effects up, when the set changed since the last chunk that
+<a href=#581 id=581 data-nosnippet>581</a>    /// carried it: a spell cast or ended, a buff, debuff or cooldown come or
+<a href=#582 id=582 data-nosnippet>582</a>    /// gone, the bark formed or crumbled. A recorder keeps the last it was
+<a href=#583 id=583 data-nosnippet>583</a>    /// handed as what was up until the next.
+<a href=#584 id=584 data-nosnippet>584</a>    </span><span class="kw">pub </span>effects: <span class="prelude-ty">Option</span>&lt;std::sync::Arc&lt;Vec&lt;<span class="kw">crate</span>::state::effects::ActiveEffect&gt;&gt;&gt;,
+<a href=#585 id=585 data-nosnippet>585</a>}
+<a href=#586 id=586 data-nosnippet>586</a>
+<a href=#587 id=587 data-nosnippet>587</a><span class="kw">impl </span>ChunkFacts {
+<a href=#588 id=588 data-nosnippet>588</a>    <span class="doccomment">/// Nothing at all: no event, no fact, and no set of gemstones to carry.
+<a href=#589 id=589 data-nosnippet>589</a>    </span><span class="attr">#[must_use]
+<a href=#590 id=590 data-nosnippet>590</a>    </span><span class="kw">pub fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+<a href=#591 id=591 data-nosnippet>591</a>        <span class="comment">// `at` is when, not what: a stamped chunk with nothing in it is empty
+<a href=#592 id=592 data-nosnippet>592</a>        </span><span class="self">self</span>.events.is_empty()
+<a href=#593 id=593 data-nosnippet>593</a>            &amp;&amp; <span class="self">self</span>.facts.is_empty()
+<a href=#594 id=594 data-nosnippet>594</a>            &amp;&amp; <span class="self">self</span>.gemstones.is_none()
+<a href=#595 id=595 data-nosnippet>595</a>            &amp;&amp; <span class="self">self</span>.worn.is_none()
+<a href=#596 id=596 data-nosnippet>596</a>            &amp;&amp; <span class="self">self</span>.effects.is_none()
+<a href=#597 id=597 data-nosnippet>597</a>    }
+<a href=#598 id=598 data-nosnippet>598</a>}
 </code></pre></div></section></main></body></html>

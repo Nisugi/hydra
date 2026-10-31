@@ -25,17 +25,13 @@
 <a href=#25 id=25 data-nosnippet>25</a>        <span class="kw">let </span>key = <span class="macro">format!</span>(<span class="string">"travel:{}:{}:{}"</span>, seat.game, seat.name, path.display());
 <a href=#26 id=26 data-nosnippet>26</a>        <span class="kw">let </span>(dir, instance, name) = (data.to_owned(), instance.to_owned(), seat.name.clone());
 <a href=#27 id=27 data-nosnippet>27</a>        <span class="kw">let </span>read = <span class="kw">crate</span>::disk::Disk::hydras().kept_at(<span class="kw-2">&amp;</span>key, <span class="kw-2">&amp;</span>path, (now, <span class="prelude-val">None</span>), <span class="kw">move </span>|<span class="kw">_</span>| {
-<a href=#28 id=28 data-nosnippet>28</a>            <span class="prelude-val">Some</span>(Arc::new(
-<a href=#29 id=29 data-nosnippet>29</a>                file::load(<span class="kw-2">&amp;</span>dir, <span class="kw-2">&amp;</span>instance, <span class="kw-2">&amp;</span>name)
-<a href=#30 id=30 data-nosnippet>30</a>                    .map(|notes| notes.targets)
-<a href=#31 id=31 data-nosnippet>31</a>                    .unwrap_or_default(),
-<a href=#32 id=32 data-nosnippet>32</a>            ))
-<a href=#33 id=33 data-nosnippet>33</a>        });
-<a href=#34 id=34 data-nosnippet>34</a>        <span class="kw">let </span>places: Arc&lt;Targets&gt; = read.map_or_else(Arc::default, |(<span class="kw">_</span>, places)| places);
-<a href=#35 id=35 data-nosnippet>35</a>        <span class="prelude-val">Some</span>(TravelView {
-<a href=#36 id=36 data-nosnippet>36</a>            places,
-<a href=#37 id=37 data-nosnippet>37</a>            route: hydra_map::shown_route(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"{}:{}"</span>, seat.game, seat.name)),
-<a href=#38 id=38 data-nosnippet>38</a>        })
-<a href=#39 id=39 data-nosnippet>39</a>    }
-<a href=#40 id=40 data-nosnippet>40</a>}
+<a href=#28 id=28 data-nosnippet>28</a>            <span class="prelude-val">Some</span>(Arc::new(file::places(<span class="kw-2">&amp;</span>dir, <span class="kw-2">&amp;</span>instance, <span class="kw-2">&amp;</span>name)))
+<a href=#29 id=29 data-nosnippet>29</a>        });
+<a href=#30 id=30 data-nosnippet>30</a>        <span class="kw">let </span>places: Arc&lt;Targets&gt; = read.map_or_else(Arc::default, |(<span class="kw">_</span>, places)| places);
+<a href=#31 id=31 data-nosnippet>31</a>        <span class="prelude-val">Some</span>(TravelView {
+<a href=#32 id=32 data-nosnippet>32</a>            places,
+<a href=#33 id=33 data-nosnippet>33</a>            route: hydra_map::shown_route(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"{}:{}"</span>, seat.game, seat.name)),
+<a href=#34 id=34 data-nosnippet>34</a>        })
+<a href=#35 id=35 data-nosnippet>35</a>    }
+<a href=#36 id=36 data-nosnippet>36</a>}
 </code></pre></div></section></main></body></html>

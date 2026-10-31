@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-50dd7f95.js";
+            window.path_to_searchindex_js = "../searchindex-3cff4ebc.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-b5471689.js"></script>
+        <script src="../toc-a2047d87.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -197,6 +197,7 @@ when you rest the pointer on it.</p>
 <tr><td>Alias</td><td>A word that runs it from the command line, and from a Lich script. It is kept as one of the character’s aliases; a word already an alias for something else is said when you save, and left as it was.</td></tr>
 <tr><td>Commands</td><td>What it does, a piece per line or with commas between, in <a href="index.html#the-chain-language">the chain language</a>. The syntax is under the box; rest the pointer on it for the whole of it. Under that the commands are read back as a sentence, or refused with why, as you type.</td></tr>
 <tr><td>Runs only when</td><td>The condition. With none, the macro always runs.</td></tr>
+<tr><td>On a hotbar</td><td>How its button looks on every bar it is on: its <strong>Label</strong> (its name unless given), its <strong>Face</strong> (the label, an icon, or both), the <strong>Icon</strong>, and folded under it, its look while no state holds: what it reads, its colours, dimmed.</td></tr>
 <tr><td>Advanced</td><td>Folded: a tooltip for its button, what its button counts down, how often it may run, and the states.</td></tr>
 </tbody>
 </table>
@@ -248,7 +249,12 @@ and <code>once</code>.</p>
 <h2 id="states"><a class="header" href="#states">States</a></h2>
 <p>Also under <em>Advanced</em>, for the few who want them: more logic, the first
 state whose condition holds deciding. A state can make the macro
-unavailable, or run other commands instead of its own. The condition
+unavailable, run other commands instead of its own, count down something
+else, and give its button a look of its own: other words, other colours,
+dimmed, another icon. Each state is said as a sentence, starred while it
+decides, and warned when a state above it holds whenever it does, so it
+never decides. <strong>+ State</strong> offers the states the macro’s commands
+suggest, a spell’s mana or roundtime, and one of your own. The condition
 above is enough for most macros.</p>
 <h2 id="in-the-file"><a class="header" href="#in-the-file">In the file</a></h2>
 <pre><code class="language-toml">[[macros]]
@@ -256,7 +262,7 @@ name = "barrage"
 commands = """
 stance off
 rt
-weapon barrage
+barrage
 """
 key = "F5"
 set = 1
@@ -285,14 +291,12 @@ chain = "stance def"
 <p>A Lich script can run a macro the same way, since a <code>.macro</code> line typed
 by a script is a line typed.</p>
 <h2 id="examples"><a class="header" href="#examples">Examples</a></h2>
-<p><strong>The stance dance.</strong> Two macros on two keys. <code>F5</code>: <code>stance off, rt, weapon barrage</code>. <code>F6</code>: <code>stance def</code>. Press <code>F6</code> straight after <code>F5</code> and
-Hydra waits the attack’s roundtime out before it asks for defensive. Cast
-a spell between and it goes guarded through the cast roundtime, then
-defensive.</p>
+<p><strong>The stance dance.</strong> Two macros on two keys. <code>F5</code>: <code>stance off, rt,  barrage</code>. <code>F6</code>: <code>stance def</code>. Press <code>F6</code> straight after <code>F5</code> and
+Hydra waits the attack’s roundtime out before it asks for defensive.</p>
 <p><strong>A cast chain.</strong> <code>stance off, prep 901, cast, rt, stance def</code>: the prep
 and the cast go at once, the cast’s roundtime is waited for, then the
 stance comes back.</p>
-<p><strong>A finisher.</strong> <code>weapon barrage</code> that runs only when the target’s health
+<p><strong>A finisher.</strong> <code>barrage</code> that runs only when the target’s health
 is at or under 20%: the button greys until the creature is nearly down.</p>
 <p><strong>A reserve.</strong> <code>barrage</code> that runs only when stamina is at least 60 keeps
 enough for a second manoeuvre you may need more.</p>

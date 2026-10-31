@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["TITLE"],"fn":["opening","run"],"mod":["badge","bar"]};
+window.SIDEBAR_ITEMS = {"constant":["TITLE"],"fn":["opening","run"],"mod":["badge","bar","preview"]};

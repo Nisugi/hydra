@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["CIRCLES"],"fn":["circle_called","circle_color","circle_palette","circles_row","own_timers","read_circles","up"],"struct":["Up"],"type":["Circles"]};

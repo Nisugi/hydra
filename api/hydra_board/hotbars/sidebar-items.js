@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["button_lines","character_path","hotbar_command","hotbars_for","hotbars_paths","named","press"]};
+window.SIDEBAR_ITEMS = {"constant":["HELP"],"fn":["adopt_files","button_lines","character_path","hotbar_command","hotbars_for","hotbars_paths","is_macro_run","named","press","presses_another","put_bar","remove_bar","save_bar","take_bar"]};

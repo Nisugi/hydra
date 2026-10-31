@@ -899,7 +899,7 @@
 <a href=#899 id=899 data-nosnippet>899</a>            ours
 <a href=#900 id=900 data-nosnippet>900</a>        });
 <a href=#901 id=901 data-nosnippet>901</a>        <span class="kw">if let </span><span class="prelude-val">Ok</span>(walked) = walked {
-<a href=#902 id=902 data-nosnippet>902</a>            ended(<span class="kw-2">&amp;</span>handle, <span class="kw-2">&amp;</span>roster_name, <span class="kw-2">&amp;</span>walked, ours);
+<a href=#902 id=902 data-nosnippet>902</a>            ended(<span class="kw-2">&amp;</span>handle, <span class="kw-2">&amp;</span>roster_name, <span class="kw-2">&amp;</span>walked, ours, <span class="prelude-val">None</span>);
 <a href=#903 id=903 data-nosnippet>903</a>        } <span class="kw">else </span>{
 <a href=#904 id=904 data-nosnippet>904</a>            <span class="kw">if </span>ours {
 <a href=#905 id=905 data-nosnippet>905</a>                hydra_map::show_route(<span class="kw-2">&amp;</span>roster_name, <span class="prelude-val">None</span>);
@@ -915,574 +915,614 @@
 <a href=#915 id=915 data-nosnippet>915</a>    });
 <a href=#916 id=916 data-nosnippet>916</a>}
 <a href=#917 id=917 data-nosnippet>917</a>
-<a href=#918 id=918 data-nosnippet>918</a><span class="doccomment">/// What a walk that ended leaves: its route off the minimap when it is
-<a href=#919 id=919 data-nosnippet>919</a>/// over, the last room and a typeahead learned kept, and a word to the
-<a href=#920 id=920 data-nosnippet>920</a>/// player when it did not simply arrive.
-<a href=#921 id=921 data-nosnippet>921</a></span><span class="kw">fn </span>ended(handle: <span class="kw-2">&amp;</span>SessionHandle, roster_name: <span class="kw-2">&amp;</span>str, walked: <span class="kw-2">&amp;</span>Walked, ours: bool) {
-<a href=#922 id=922 data-nosnippet>922</a>    <span class="kw">let </span>dir = <span class="kw">crate</span>::account::data_dir();
-<a href=#923 id=923 data-nosnippet>923</a>    <span class="kw">if let </span>(<span class="prelude-val">Some</span>(room), <span class="prelude-val">Ok</span>((instance, name))) = (walked.last_room, <span class="kw">crate</span>::pages::who(roster_name)) {
-<a href=#924 id=924 data-nosnippet>924</a>        <span class="kw">let _ </span>= file::save_last_room(<span class="kw-2">&amp;</span>dir, instance, name, room.<span class="number">0</span>);
-<a href=#925 id=925 data-nosnippet>925</a>    }
-<a href=#926 id=926 data-nosnippet>926</a>    <span class="kw">if let </span>(<span class="prelude-val">Some</span>(seen), <span class="prelude-val">Ok</span>((instance, <span class="kw">_</span>))) = (<span class="kw-2">&amp;</span>walked.instabilities, <span class="kw">crate</span>::pages::who(roster_name))
-<a href=#927 id=927 data-nosnippet>927</a>    {
-<a href=#928 id=928 data-nosnippet>928</a>        <span class="kw">let _ </span>= file::save_instabilities(<span class="kw-2">&amp;</span>dir, instance, seen);
-<a href=#929 id=929 data-nosnippet>929</a>    }
-<a href=#930 id=930 data-nosnippet>930</a>    <span class="kw">if let </span><span class="prelude-val">Some</span>(typeahead) = walked.typeahead {
-<a href=#931 id=931 data-nosnippet>931</a>        <span class="kw">let _ </span>= <span class="kw">crate</span>::pages::apply(
-<a href=#932 id=932 data-nosnippet>932</a>            <span class="kw-2">&amp;</span>dir,
-<a href=#933 id=933 data-nosnippet>933</a>            <span class="kw-2">&amp;</span>hydra_ui::settings::Change {
-<a href=#934 id=934 data-nosnippet>934</a>                character: roster_name.to_owned(),
-<a href=#935 id=935 data-nosnippet>935</a>                page: <span class="kw">crate</span>::pages::TRAVEL.to_owned(),
-<a href=#936 id=936 data-nosnippet>936</a>                key: <span class="string">"typeahead"</span>.to_owned(),
-<a href=#937 id=937 data-nosnippet>937</a>                to: <span class="prelude-val">Some</span>(typeahead.to_string()),
-<a href=#938 id=938 data-nosnippet>938</a>            },
-<a href=#939 id=939 data-nosnippet>939</a>        );
-<a href=#940 id=940 data-nosnippet>940</a>    }
-<a href=#941 id=941 data-nosnippet>941</a>    <span class="kw">if </span>ours {
-<a href=#942 id=942 data-nosnippet>942</a>        hydra_map::show_route(roster_name, <span class="prelude-val">None</span>);
-<a href=#943 id=943 data-nosnippet>943</a>    }
-<a href=#944 id=944 data-nosnippet>944</a>    <span class="kw">let </span>why = <span class="kw">match </span><span class="kw-2">&amp;</span>walked.ended {
-<a href=#945 id=945 data-nosnippet>945</a>        Ended::Arrived =&gt; <span class="prelude-val">None</span>,
-<a href=#946 id=946 data-nosnippet>946</a>        Ended::Stopped <span class="kw">if </span>!ours =&gt; <span class="prelude-val">None</span>,
-<a href=#947 id=947 data-nosnippet>947</a>        Ended::Stopped =&gt; <span class="prelude-val">Some</span>(<span class="string">"stopped."</span>.to_owned()),
-<a href=#948 id=948 data-nosnippet>948</a>        Ended::Failed(Why::NoRoute) =&gt; {
-<a href=#949 id=949 data-nosnippet>949</a>            <span class="prelude-val">Some</span>(<span class="string">"there is no way there that Hydra can walk this character."</span>.to_owned())
-<a href=#950 id=950 data-nosnippet>950</a>        }
-<a href=#951 id=951 data-nosnippet>951</a>        Ended::Failed(Why::OffTheMap) =&gt; {
-<a href=#952 id=952 data-nosnippet>952</a>            <span class="prelude-val">Some</span>(<span class="string">"I do not know what room this is, so I have stopped."</span>.to_owned())
-<a href=#953 id=953 data-nosnippet>953</a>        }
-<a href=#954 id=954 data-nosnippet>954</a>        Ended::Failed(Why::TooManyReplans) =&gt; {
-<a href=#955 id=955 data-nosnippet>955</a>            <span class="prelude-val">Some</span>(<span class="string">"I keep being carried off the route, so I have stopped."</span>.to_owned())
-<a href=#956 id=956 data-nosnippet>956</a>        }
-<a href=#957 id=957 data-nosnippet>957</a>        Ended::HandedToLich(line) =&gt; <span class="prelude-val">Some</span>(<span class="macro">format!</span>(
-<a href=#958 id=958 data-nosnippet>958</a>            <span class="string">"your Lich sent {line}, so I have stopped walking and left it to Lich."
-<a href=#959 id=959 data-nosnippet>959</a>        </span>)),
-<a href=#960 id=960 data-nosnippet>960</a>        Ended::Lost =&gt; <span class="prelude-val">Some</span>(<span class="string">"stopped, because the connection went away."</span>.to_owned()),
-<a href=#961 id=961 data-nosnippet>961</a>        Ended::Halted(why) =&gt; <span class="prelude-val">Some</span>(why.clone()),
-<a href=#962 id=962 data-nosnippet>962</a>        Ended::UnknownSpell(spell) =&gt; <span class="prelude-val">Some</span>(<span class="macro">format!</span>(
-<a href=#963 id=963 data-nosnippet>963</a>            <span class="string">"the map names a spell, {spell}, that is not in the spell table."
-<a href=#964 id=964 data-nosnippet>964</a>        </span>)),
-<a href=#965 id=965 data-nosnippet>965</a>    };
-<a href=#966 id=966 data-nosnippet>966</a>    <span class="kw">if let </span><span class="prelude-val">Some</span>(why) = why {
-<a href=#967 id=967 data-nosnippet>967</a>        <span class="kw">let </span>kind = <span class="kw">if </span><span class="macro">matches!</span>(walked.ended, Ended::Stopped) {
-<a href=#968 id=968 data-nosnippet>968</a>            NoticeKind::Info
-<a href=#969 id=969 data-nosnippet>969</a>        } <span class="kw">else </span>{
-<a href=#970 id=970 data-nosnippet>970</a>            NoticeKind::Error
-<a href=#971 id=971 data-nosnippet>971</a>        };
-<a href=#972 id=972 data-nosnippet>972</a>        handle.say(Notice::line(kind, <span class="macro">format!</span>(<span class="string">"Travel: {why}"</span>)).answering());
-<a href=#973 id=973 data-nosnippet>973</a>    }
-<a href=#974 id=974 data-nosnippet>974</a>    <span class="kw">for </span>said <span class="kw">in </span>left_undone(walked) {
-<a href=#975 id=975 data-nosnippet>975</a>        handle.say(Notice::line(NoticeKind::Warn, <span class="macro">format!</span>(<span class="string">"Travel: {said}"</span>)).answering());
-<a href=#976 id=976 data-nosnippet>976</a>    }
-<a href=#977 id=977 data-nosnippet>977</a>    <span class="kw">for </span>(from, to) <span class="kw">in </span><span class="kw-2">&amp;</span>walked.wrong_for_the_map {
-<a href=#978 id=978 data-nosnippet>978</a>        handle.say(Notice::line(
-<a href=#979 id=979 data-nosnippet>979</a>            NoticeKind::Warn,
-<a href=#980 id=980 data-nosnippet>980</a>            <span class="macro">format!</span>(
-<a href=#981 id=981 data-nosnippet>981</a>                <span class="string">"Travel: the game says there is no way from {} to {}, which the map has."</span>,
-<a href=#982 id=982 data-nosnippet>982</a>                from.<span class="number">0</span>, to.<span class="number">0
-<a href=#983 id=983 data-nosnippet>983</a>            </span>),
-<a href=#984 id=984 data-nosnippet>984</a>        ));
-<a href=#985 id=985 data-nosnippet>985</a>    }
-<a href=#986 id=986 data-nosnippet>986</a>}
-<a href=#987 id=987 data-nosnippet>987</a>
-<a href=#988 id=988 data-nosnippet>988</a><span class="doccomment">/// What a walk changed and did not put back, as the player is told it: a
-<a href=#989 id=989 data-nosnippet>989</a>/// key out of its container, what is still put away, a stance or a
-<a href=#990 id=990 data-nosnippet>990</a>/// language.
-<a href=#991 id=991 data-nosnippet>991</a></span><span class="kw">fn </span>left_undone(walked: <span class="kw-2">&amp;</span>Walked) -&gt; Vec&lt;String&gt; {
-<a href=#992 id=992 data-nosnippet>992</a>    <span class="kw">let </span><span class="kw-2">mut </span>said = Vec::new();
-<a href=#993 id=993 data-nosnippet>993</a>    <span class="kw">for </span>(name, sent_back) <span class="kw">in </span><span class="kw-2">&amp;</span>walked.still_out {
-<a href=#994 id=994 data-nosnippet>994</a>        said.push(<span class="kw">if </span><span class="kw-2">*</span>sent_back {
-<a href=#995 id=995 data-nosnippet>995</a>            <span class="macro">format!</span>(<span class="string">"your {name} was out; I put it back once, and did not wait to see."</span>)
-<a href=#996 id=996 data-nosnippet>996</a>        } <span class="kw">else </span>{
-<a href=#997 id=997 data-nosnippet>997</a>            <span class="macro">format!</span>(<span class="string">"your {name} is out, and I did not put it back."</span>)
-<a href=#998 id=998 data-nosnippet>998</a>        });
-<a href=#999 id=999 data-nosnippet>999</a>    }
-<a href=#1000 id=1000 data-nosnippet>1000</a>    <span class="kw">if </span>!walked.still_stored.is_empty() {
-<a href=#1001 id=1001 data-nosnippet>1001</a>        <span class="kw">let </span>names: Vec&lt;<span class="kw-2">&amp;</span>str&gt; = walked
-<a href=#1002 id=1002 data-nosnippet>1002</a>            .still_stored
-<a href=#1003 id=1003 data-nosnippet>1003</a>            .iter()
-<a href=#1004 id=1004 data-nosnippet>1004</a>            .map(|stored| stored.name.as_str())
-<a href=#1005 id=1005 data-nosnippet>1005</a>            .collect();
-<a href=#1006 id=1006 data-nosnippet>1006</a>        said.push(<span class="macro">format!</span>(<span class="string">"still put away: {}."</span>, names.join(<span class="string">", "</span>)));
-<a href=#1007 id=1007 data-nosnippet>1007</a>    }
-<a href=#1008 id=1008 data-nosnippet>1008</a>    <span class="kw">for </span>(what, before) <span class="kw">in </span>[
-<a href=#1009 id=1009 data-nosnippet>1009</a>        (<span class="string">"stance"</span>, <span class="kw-2">&amp;</span>walked.stance_before),
-<a href=#1010 id=1010 data-nosnippet>1010</a>        (<span class="string">"language"</span>, <span class="kw-2">&amp;</span>walked.speech_before),
-<a href=#1011 id=1011 data-nosnippet>1011</a>    ] {
-<a href=#1012 id=1012 data-nosnippet>1012</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(before) = before {
-<a href=#1013 id=1013 data-nosnippet>1013</a>            said.push(<span class="macro">format!</span>(
-<a href=#1014 id=1014 data-nosnippet>1014</a>                <span class="string">"your {what} was {before}, and I did not put it back."
-<a href=#1015 id=1015 data-nosnippet>1015</a>            </span>));
-<a href=#1016 id=1016 data-nosnippet>1016</a>        }
-<a href=#1017 id=1017 data-nosnippet>1017</a>    }
-<a href=#1018 id=1018 data-nosnippet>1018</a>    said
-<a href=#1019 id=1019 data-nosnippet>1019</a>}
-<a href=#1020 id=1020 data-nosnippet>1020</a>
-<a href=#1021 id=1021 data-nosnippet>1021</a><span class="doccomment">/// The way to `what`, as a table, and on the minimap.
-<a href=#1022 id=1022 data-nosnippet>1022</a></span><span class="kw">async fn </span>shown(
-<a href=#1023 id=1023 data-nosnippet>1023</a>    handle: <span class="kw-2">&amp;</span>SessionHandle,
-<a href=#1024 id=1024 data-nosnippet>1024</a>    dir: <span class="kw-2">&amp;</span>Path,
-<a href=#1025 id=1025 data-nosnippet>1025</a>    roster_name: <span class="kw-2">&amp;</span>str,
-<a href=#1026 id=1026 data-nosnippet>1026</a>    what: String,
-<a href=#1027 id=1027 data-nosnippet>1027</a>    brief: bool,
-<a href=#1028 id=1028 data-nosnippet>1028</a>    whom: <span class="prelude-ty">Option</span>&lt;String&gt;,
-<a href=#1029 id=1029 data-nosnippet>1029</a>) -&gt; <span class="prelude-ty">Result</span>&lt;Said, String&gt; {
-<a href=#1030 id=1030 data-nosnippet>1030</a>    <span class="kw">let </span>here = here(handle, dir, roster_name).<span class="kw">await</span><span class="question-mark">?</span>;
-<a href=#1031 id=1031 data-nosnippet>1031</a>    <span class="kw">let </span>(instance, name) = <span class="kw">crate</span>::pages::who(roster_name)<span class="question-mark">?</span>;
-<a href=#1032 id=1032 data-nosnippet>1032</a>    <span class="comment">// Where it is, for a tie between rooms that read alike next time.
-<a href=#1033 id=1033 data-nosnippet>1033</a>    </span><span class="kw">let _ </span>= file::save_last_room(dir, instance, name, here.room.<span class="number">0</span>);
-<a href=#1034 id=1034 data-nosnippet>1034</a>    <span class="kw">let </span>character = roster_name.to_owned();
-<a href=#1035 id=1035 data-nosnippet>1035</a>    <span class="comment">// The way by sea, should there be none by land, as `.go2` would go.
-<a href=#1036 id=1036 data-nosnippet>1036</a>    </span><span class="kw">let </span>by_sea = sea::teller(handle, dir, roster_name).<span class="kw">await</span>;
-<a href=#1037 id=1037 data-nosnippet>1037</a>    <span class="kw">let </span>gigas = Gigas::of(handle, dir, roster_name).<span class="kw">await</span>;
-<a href=#1038 id=1038 data-nosnippet>1038</a>    blocking(<span class="kw">move </span>|| {
-<a href=#1039 id=1039 data-nosnippet>1039</a>        <span class="comment">// No exit of the map goes into the plane: the way is found by
-<a href=#1040 id=1040 data-nosnippet>1040</a>        // searching, so there is no route to show.
-<a href=#1041 id=1041 data-nosnippet>1041</a>        </span><span class="kw">if </span>instability::asked(<span class="kw-2">&amp;</span>here.map, here.room, <span class="kw-2">&amp;</span>what, <span class="prelude-val">None</span>).is_some() {
-<a href=#1042 id=1042 data-nosnippet>1042</a>            <span class="kw">return </span><span class="prelude-val">Ok</span>(Said::Lines(<span class="macro">vec!</span>[
-<a href=#1043 id=1043 data-nosnippet>1043</a>                <span class="string">"The way into the Elemental Confluence is found by searching for an \
-<a href=#1044 id=1044 data-nosnippet>1044</a>                 instability of your element, so there is no route to show. .go2 confluence \
-<a href=#1045 id=1045 data-nosnippet>1045</a>                 goes."
-<a href=#1046 id=1046 data-nosnippet>1046</a>                    </span>.to_owned(),
-<a href=#1047 id=1047 data-nosnippet>1047</a>            ]));
-<a href=#1048 id=1048 data-nosnippet>1048</a>        }
-<a href=#1049 id=1049 data-nosnippet>1049</a>        <span class="kw">let </span>meant = route::destination(
-<a href=#1050 id=1050 data-nosnippet>1050</a>            <span class="kw-2">&amp;</span>here.map,
-<a href=#1051 id=1051 data-nosnippet>1051</a>            <span class="kw-2">&amp;</span>here.walker,
-<a href=#1052 id=1052 data-nosnippet>1052</a>            here.room,
-<a href=#1053 id=1053 data-nosnippet>1053</a>            <span class="kw-2">&amp;</span>what,
-<a href=#1054 id=1054 data-nosnippet>1054</a>            <span class="kw-2">&amp;</span>here.notes.targets,
-<a href=#1055 id=1055 data-nosnippet>1055</a>        );
-<a href=#1056 id=1056 data-nosnippet>1056</a>        <span class="kw">let </span>goal = <span class="kw">match </span>meant {
-<a href=#1057 id=1057 data-nosnippet>1057</a>            Meant::Room(goal) =&gt; goal,
-<a href=#1058 id=1058 data-nosnippet>1058</a>            Meant::Several(rooms) =&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(Said::Table(several(<span class="kw-2">&amp;</span>here.map, <span class="kw-2">&amp;</span>what, <span class="kw-2">&amp;</span>rooms))),
-<a href=#1059 id=1059 data-nosnippet>1059</a>            Meant::Nowhere =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">"I do not know a way to {what} from here."</span>)),
-<a href=#1060 id=1060 data-nosnippet>1060</a>        };
-<a href=#1061 id=1061 data-nosnippet>1061</a>        <span class="kw">let </span><span class="prelude-val">Some</span>(legs) = route::itinerary(<span class="kw-2">&amp;</span>here.map, <span class="kw-2">&amp;</span>here.walker, here.room, goal) <span class="kw">else </span>{
-<a href=#1062 id=1062 data-nosnippet>1062</a>            <span class="comment">// No way by land: the journey `.go2` would make by sea.
-<a href=#1063 id=1063 data-nosnippet>1063</a>            </span><span class="kw">let </span><span class="prelude-val">Some</span>(sea) = by_sea(<span class="kw-2">&amp;</span>here, <span class="kw-2">&amp;</span>what) <span class="kw">else </span>{
-<a href=#1064 id=1064 data-nosnippet>1064</a>                <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">"There is no way to {what} ({}) from here."</span>, goal.<span class="number">0</span>));
-<a href=#1065 id=1065 data-nosnippet>1065</a>            };
-<a href=#1066 id=1066 data-nosnippet>1066</a>            <span class="kw">let </span><span class="kw-2">mut </span>lines = sea.lines;
-<a href=#1067 id=1067 data-nosnippet>1067</a>            <span class="kw">if let </span><span class="prelude-val">Some</span>((to, legs)) = <span class="kw-2">&amp;</span>sea.walk {
-<a href=#1068 id=1068 data-nosnippet>1068</a>                lines.extend(gigas.said(<span class="kw-2">&amp;</span>here, <span class="kw-2">*</span>to, legs));
-<a href=#1069 id=1069 data-nosnippet>1069</a>                hydra_map::show_route(
-<a href=#1070 id=1070 data-nosnippet>1070</a>                    <span class="kw-2">&amp;</span>character,
-<a href=#1071 id=1071 data-nosnippet>1071</a>                    <span class="prelude-val">Some</span>(hydra_map::ShownRoute {
-<a href=#1072 id=1072 data-nosnippet>1072</a>                        rooms: std::iter::once(here.room.<span class="number">0</span>)
-<a href=#1073 id=1073 data-nosnippet>1073</a>                            .chain(legs.iter().map(|leg| leg.to.<span class="number">0</span>))
-<a href=#1074 id=1074 data-nosnippet>1074</a>                            .collect(),
-<a href=#1075 id=1075 data-nosnippet>1075</a>                    }),
-<a href=#1076 id=1076 data-nosnippet>1076</a>                );
-<a href=#1077 id=1077 data-nosnippet>1077</a>            }
-<a href=#1078 id=1078 data-nosnippet>1078</a>            <span class="kw">return </span><span class="prelude-val">Ok</span>(Said::Lines(lines));
-<a href=#1079 id=1079 data-nosnippet>1079</a>        };
-<a href=#1080 id=1080 data-nosnippet>1080</a>        <span class="kw">if </span>legs.is_empty() {
-<a href=#1081 id=1081 data-nosnippet>1081</a>            <span class="kw">return </span><span class="prelude-val">Ok</span>(Said::Lines(<span class="macro">vec!</span>[already(goal, whom.as_deref())]));
-<a href=#1082 id=1082 data-nosnippet>1082</a>        }
-<a href=#1083 id=1083 data-nosnippet>1083</a>        <span class="kw">let </span>lines = <span class="kw">if </span>brief {
-<a href=#1084 id=1084 data-nosnippet>1084</a>            <span class="macro">vec!</span>[in_a_line(<span class="kw-2">&amp;</span>here.map, goal, <span class="kw-2">&amp;</span>legs, whom.as_deref())]
-<a href=#1085 id=1085 data-nosnippet>1085</a>        } <span class="kw">else </span>{
-<a href=#1086 id=1086 data-nosnippet>1086</a>            <span class="kw">let </span><span class="kw-2">mut </span>lines = route::table(<span class="kw-2">&amp;</span>here.map, here.room, <span class="kw-2">&amp;</span>legs);
-<a href=#1087 id=1087 data-nosnippet>1087</a>            lines.extend(gigas.said(<span class="kw-2">&amp;</span>here, goal, <span class="kw-2">&amp;</span>legs));
-<a href=#1088 id=1088 data-nosnippet>1088</a>            lines
-<a href=#1089 id=1089 data-nosnippet>1089</a>        };
-<a href=#1090 id=1090 data-nosnippet>1090</a>        hydra_map::show_route(
-<a href=#1091 id=1091 data-nosnippet>1091</a>            <span class="kw-2">&amp;</span>character,
-<a href=#1092 id=1092 data-nosnippet>1092</a>            <span class="prelude-val">Some</span>(hydra_map::ShownRoute {
-<a href=#1093 id=1093 data-nosnippet>1093</a>                rooms: std::iter::once(here.room.<span class="number">0</span>)
-<a href=#1094 id=1094 data-nosnippet>1094</a>                    .chain(legs.iter().map(|leg| leg.to.<span class="number">0</span>))
-<a href=#1095 id=1095 data-nosnippet>1095</a>                    .collect(),
-<a href=#1096 id=1096 data-nosnippet>1096</a>            }),
-<a href=#1097 id=1097 data-nosnippet>1097</a>        );
-<a href=#1098 id=1098 data-nosnippet>1098</a>        <span class="prelude-val">Ok</span>(<span class="kw">if </span>brief {
-<a href=#1099 id=1099 data-nosnippet>1099</a>            Said::Lines(lines)
-<a href=#1100 id=1100 data-nosnippet>1100</a>        } <span class="kw">else </span>{
-<a href=#1101 id=1101 data-nosnippet>1101</a>            Said::Table(lines)
-<a href=#1102 id=1102 data-nosnippet>1102</a>        })
-<a href=#1103 id=1103 data-nosnippet>1103</a>    })
-<a href=#1104 id=1104 data-nosnippet>1104</a>    .<span class="kw">await</span><span class="question-mark">?
-<a href=#1105 id=1105 data-nosnippet>1105</a></span>}
-<a href=#1106 id=1106 data-nosnippet>1106</a>
-<a href=#1107 id=1107 data-nosnippet>1107</a><span class="doccomment">/// What `.route2` knows of the gigas fragments `.go2` would spend: whether
-<a href=#1108 id=1108 data-nosnippet>1108</a>/// the Travel page lets it, the fragments it keeps back, and how many the
-<a href=#1109 id=1109 data-nosnippet>1109</a>/// character carries, as the game last said.
-<a href=#1110 id=1110 data-nosnippet>1110</a></span><span class="kw">struct </span>Gigas {
-<a href=#1111 id=1111 data-nosnippet>1111</a>    on: bool,
-<a href=#1112 id=1112 data-nosnippet>1112</a>    least: u64,
-<a href=#1113 id=1113 data-nosnippet>1113</a>    carried: <span class="prelude-ty">Option</span>&lt;u64&gt;,
-<a href=#1114 id=1114 data-nosnippet>1114</a>}
-<a href=#1115 id=1115 data-nosnippet>1115</a>
-<a href=#1116 id=1116 data-nosnippet>1116</a><span class="kw">impl </span>Gigas {
-<a href=#1117 id=1117 data-nosnippet>1117</a>    <span class="doccomment">/// As the Travel page and the character are now.
-<a href=#1118 id=1118 data-nosnippet>1118</a>    </span><span class="kw">async fn </span>of(handle: <span class="kw-2">&amp;</span>SessionHandle, dir: <span class="kw-2">&amp;</span>Path, roster_name: <span class="kw-2">&amp;</span>str) -&gt; <span class="self">Self </span>{
-<a href=#1119 id=1119 data-nosnippet>1119</a>        <span class="kw">let </span>settings = <span class="kw">crate</span>::pages::travel_settings(dir, roster_name);
-<a href=#1120 id=1120 data-nosnippet>1120</a>        <span class="kw">let </span>carried = handle
-<a href=#1121 id=1121 data-nosnippet>1121</a>            .snapshot()
-<a href=#1122 id=1122 data-nosnippet>1122</a>            .<span class="kw">await
-<a href=#1123 id=1123 data-nosnippet>1123</a>            </span>.and_then(|snapshot| snapshot.state.character.currency.gigas_artifact_fragments);
-<a href=#1124 id=1124 data-nosnippet>1124</a>        <span class="self">Self </span>{
-<a href=#1125 id=1125 data-nosnippet>1125</a>            on: settings.on(<span class="string">"use_gigas_hwtravel"</span>),
-<a href=#1126 id=1126 data-nosnippet>1126</a>            least: hydra_travel::walk::preflight::gigas_least(<span class="kw-2">&amp;</span>settings),
-<a href=#1127 id=1127 data-nosnippet>1127</a>            carried,
-<a href=#1128 id=1128 data-nosnippet>1128</a>        }
-<a href=#1129 id=1129 data-nosnippet>1129</a>    }
-<a href=#1130 id=1130 data-nosnippet>1130</a>
-<a href=#1131 id=1131 data-nosnippet>1131</a>    <span class="doccomment">/// What is said of the way by gigas fragments `.go2` takes in place of
-<a href=#1132 id=1132 data-nosnippet>1132</a>    /// the long way `legs` walks from `here` to `goal`: nothing, where it
-<a href=#1133 id=1133 data-nosnippet>1133</a>    /// does not take the long way or the Travel page does not let it.
-<a href=#1134 id=1134 data-nosnippet>1134</a>    </span><span class="kw">fn </span>said(<span class="kw-2">&amp;</span><span class="self">self</span>, here: <span class="kw-2">&amp;</span>Here, goal: RoomId, legs: <span class="kw-2">&amp;</span>[route::Leg]) -&gt; Vec&lt;String&gt; {
-<a href=#1135 id=1135 data-nosnippet>1135</a>        <span class="kw">if </span>!<span class="self">self</span>.on {
-<a href=#1136 id=1136 data-nosnippet>1136</a>            <span class="kw">return </span>Vec::new();
-<a href=#1137 id=1137 data-nosnippet>1137</a>        }
-<a href=#1138 id=1138 data-nosnippet>1138</a>        <span class="kw">let </span>path: Vec&lt;RoomId&gt; = std::iter::once(here.room)
-<a href=#1139 id=1139 data-nosnippet>1139</a>            .chain(legs.iter().map(|leg| leg.to))
-<a href=#1140 id=1140 data-nosnippet>1140</a>            .collect();
-<a href=#1141 id=1141 data-nosnippet>1141</a>        <span class="kw">let </span><span class="prelude-val">Some</span>(way) = hydra_travel::walk::preflight::gigas_way(<span class="kw-2">&amp;</span>here.map, <span class="kw-2">&amp;</span>path, here.room, goal)
-<a href=#1142 id=1142 data-nosnippet>1142</a>        <span class="kw">else </span>{
-<a href=#1143 id=1143 data-nosnippet>1143</a>            <span class="kw">return </span>Vec::new();
-<a href=#1144 id=1144 data-nosnippet>1144</a>        };
-<a href=#1145 id=1145 data-nosnippet>1145</a>        <span class="kw">let </span>place = here
-<a href=#1146 id=1146 data-nosnippet>1146</a>            .map
-<a href=#1147 id=1147 data-nosnippet>1147</a>            .room(way.teleporter)
-<a href=#1148 id=1148 data-nosnippet>1148</a>            .and_then(|room| room.title.first().cloned())
-<a href=#1149 id=1149 data-nosnippet>1149</a>            .unwrap_or_default();
-<a href=#1150 id=1150 data-nosnippet>1150</a>        <span class="kw">let </span>how = way.commands.join(<span class="string">", "</span>);
-<a href=#1151 id=1151 data-nosnippet>1151</a>        <span class="kw">let </span>least = <span class="self">self</span>.least;
-<a href=#1152 id=1152 data-nosnippet>1152</a>        <span class="macro">vec!</span>[<span class="kw">match </span><span class="self">self</span>.carried {
-<a href=#1153 id=1153 data-nosnippet>1153</a>            <span class="prelude-val">Some</span>(carried) <span class="kw">if </span>carried &lt; least =&gt; <span class="macro">format!</span>(
-<a href=#1154 id=1154 data-nosnippet>1154</a>                <span class="string">"You carry {carried} gigas fragments, fewer than the {least} kept back: .go2 \
-<a href=#1155 id=1155 data-nosnippet>1155</a>                 walks the long way."
-<a href=#1156 id=1156 data-nosnippet>1156</a>            </span>),
-<a href=#1157 id=1157 data-nosnippet>1157</a>            <span class="prelude-val">Some</span>(carried) =&gt; <span class="macro">format!</span>(
-<a href=#1158 id=1158 data-nosnippet>1158</a>                <span class="string">"With your {carried} gigas fragments, .go2 goes by {place} instead ({how}), and \
-<a href=#1159 id=1159 data-nosnippet>1159</a>                 on from where that lands."
-<a href=#1160 id=1160 data-nosnippet>1160</a>            </span>),
-<a href=#1161 id=1161 data-nosnippet>1161</a>            <span class="prelude-val">None </span>=&gt; <span class="macro">format!</span>(
-<a href=#1162 id=1162 data-nosnippet>1162</a>                <span class="string">"With at least {least} gigas fragments, .go2 goes by {place} instead ({how}), \
-<a href=#1163 id=1163 data-nosnippet>1163</a>                 and on from where that lands: it counts them as it sets out."
-<a href=#1164 id=1164 data-nosnippet>1164</a>            </span>),
-<a href=#1165 id=1165 data-nosnippet>1165</a>        }]
-<a href=#1166 id=1166 data-nosnippet>1166</a>    }
-<a href=#1167 id=1167 data-nosnippet>1167</a>}
-<a href=#1168 id=1168 data-nosnippet>1168</a>
-<a href=#1169 id=1169 data-nosnippet>1169</a><span class="doccomment">/// Standing at `goal` already, with `whom` if it is a character's room.
-<a href=#1170 id=1170 data-nosnippet>1170</a></span><span class="kw">fn </span>already(goal: RoomId, whom: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;) -&gt; String {
-<a href=#1171 id=1171 data-nosnippet>1171</a>    <span class="kw">match </span>whom {
-<a href=#1172 id=1172 data-nosnippet>1172</a>        <span class="prelude-val">Some</span>(whom) =&gt; <span class="macro">format!</span>(<span class="string">"You are with {whom} already ({})."</span>, goal.<span class="number">0</span>),
-<a href=#1173 id=1173 data-nosnippet>1173</a>        <span class="prelude-val">None </span>=&gt; <span class="macro">format!</span>(<span class="string">"You are there already ({})."</span>, goal.<span class="number">0</span>),
-<a href=#1174 id=1174 data-nosnippet>1174</a>    }
-<a href=#1175 id=1175 data-nosnippet>1175</a>}
-<a href=#1176 id=1176 data-nosnippet>1176</a>
-<a href=#1177 id=1177 data-nosnippet>1177</a><span class="doccomment">/// The way to `goal` in a line, as a click on the minimap is answered.
-<a href=#1178 id=1178 data-nosnippet>1178</a></span><span class="kw">fn </span>in_a_line(map: <span class="kw-2">&amp;</span>Map, goal: RoomId, legs: <span class="kw-2">&amp;</span>[route::Leg], whom: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;) -&gt; String {
-<a href=#1179 id=1179 data-nosnippet>1179</a>    <span class="kw">let </span>title = map
-<a href=#1180 id=1180 data-nosnippet>1180</a>        .room(goal)
-<a href=#1181 id=1181 data-nosnippet>1181</a>        .and_then(|room| room.title.first().cloned())
-<a href=#1182 id=1182 data-nosnippet>1182</a>        .unwrap_or_default();
-<a href=#1183 id=1183 data-nosnippet>1183</a>    <span class="kw">let </span>seconds = legs.last().map_or(<span class="number">0.0</span>, |leg| leg.so_far);
-<a href=#1184 id=1184 data-nosnippet>1184</a>    <span class="kw">let </span>to = whom.map_or_else(String::new, |whom| <span class="macro">format!</span>(<span class="string">"{whom}, in "</span>));
-<a href=#1185 id=1185 data-nosnippet>1185</a>    <span class="macro">format!</span>(
-<a href=#1186 id=1186 data-nosnippet>1186</a>        <span class="string">"The way to {to}{title} ({}): {} step{}, about {seconds:.0} seconds. Click it again to \
-<a href=#1187 id=1187 data-nosnippet>1187</a>         walk there."</span>,
-<a href=#1188 id=1188 data-nosnippet>1188</a>        goal.<span class="number">0</span>,
-<a href=#1189 id=1189 data-nosnippet>1189</a>        legs.len(),
-<a href=#1190 id=1190 data-nosnippet>1190</a>        <span class="kw">if </span>legs.len() == <span class="number">1 </span>{ <span class="string">"" </span>} <span class="kw">else </span>{ <span class="string">"s" </span>},
-<a href=#1191 id=1191 data-nosnippet>1191</a>    )
-<a href=#1192 id=1192 data-nosnippet>1192</a>}
-<a href=#1193 id=1193 data-nosnippet>1193</a>
-<a href=#1194 id=1194 data-nosnippet>1194</a><span class="doccomment">/// The character `what` names, when it is `to &lt;character&gt;`.
-<a href=#1195 id=1195 data-nosnippet>1195</a></span><span class="kw">fn </span>to_whom(what: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt; {
-<a href=#1196 id=1196 data-nosnippet>1196</a>    <span class="kw">let </span><span class="kw-2">mut </span>words = what.split_whitespace();
-<a href=#1197 id=1197 data-nosnippet>1197</a>    <span class="kw">match </span>(words.next(), words.next(), words.next()) {
-<a href=#1198 id=1198 data-nosnippet>1198</a>        (<span class="prelude-val">Some</span>(to), <span class="prelude-val">Some</span>(name), <span class="prelude-val">None</span>) <span class="kw">if </span>to.eq_ignore_ascii_case(<span class="string">"to"</span>) =&gt; <span class="prelude-val">Some</span>(name),
-<a href=#1199 id=1199 data-nosnippet>1199</a>        <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
-<a href=#1200 id=1200 data-nosnippet>1200</a>    }
-<a href=#1201 id=1201 data-nosnippet>1201</a>}
-<a href=#1202 id=1202 data-nosnippet>1202</a>
-<a href=#1203 id=1203 data-nosnippet>1203</a><span class="doccomment">/// `what`, with `to &lt;character&gt;` made the number of the room that
-<a href=#1204 id=1204 data-nosnippet>1204</a>/// character stands in, and the character's name: another character
-<a href=#1205 id=1205 data-nosnippet>1205</a>/// running here, as `.to` names one.
-<a href=#1206 id=1206 data-nosnippet>1206</a></span><span class="kw">async fn </span>whither(
-<a href=#1207 id=1207 data-nosnippet>1207</a>    characters: <span class="kw-2">&amp;</span>Characters,
-<a href=#1208 id=1208 data-nosnippet>1208</a>    roster_name: <span class="kw-2">&amp;</span>str,
-<a href=#1209 id=1209 data-nosnippet>1209</a>    what: String,
-<a href=#1210 id=1210 data-nosnippet>1210</a>) -&gt; <span class="prelude-ty">Result</span>&lt;(String, <span class="prelude-ty">Option</span>&lt;String&gt;), String&gt; {
-<a href=#1211 id=1211 data-nosnippet>1211</a>    <span class="kw">let </span><span class="prelude-val">Some</span>(name) = to_whom(<span class="kw-2">&amp;</span>what) <span class="kw">else </span>{
-<a href=#1212 id=1212 data-nosnippet>1212</a>        <span class="kw">return </span><span class="prelude-val">Ok</span>((what, <span class="prelude-val">None</span>));
-<a href=#1213 id=1213 data-nosnippet>1213</a>    };
-<a href=#1214 id=1214 data-nosnippet>1214</a>    <span class="kw">let </span>running = characters().<span class="kw">await</span>;
-<a href=#1215 id=1215 data-nosnippet>1215</a>    <span class="kw">let </span>one = <span class="kw">crate</span>::relay::pick(name, <span class="kw-2">&amp;</span>running).map_err(|why| why.replacen(<span class="string">"To: "</span>, <span class="string">""</span>, <span class="number">1</span>))<span class="question-mark">?</span>;
-<a href=#1216 id=1216 data-nosnippet>1216</a>    <span class="kw">let </span>whose = <span class="macro">format!</span>(<span class="string">"{}:{}"</span>, one.game, one.name);
-<a href=#1217 id=1217 data-nosnippet>1217</a>    <span class="kw">if </span>whose.eq_ignore_ascii_case(roster_name) {
-<a href=#1218 id=1218 data-nosnippet>1218</a>        <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">"{} is you."</span>, one.name));
-<a href=#1219 id=1219 data-nosnippet>1219</a>    }
-<a href=#1220 id=1220 data-nosnippet>1220</a>    <span class="kw">let </span>map = map().<span class="kw">await</span><span class="question-mark">?</span>;
-<a href=#1221 id=1221 data-nosnippet>1221</a>    <span class="kw">let </span>(instance, name) = <span class="kw">crate</span>::pages::who(<span class="kw-2">&amp;</span>whose)<span class="question-mark">?</span>;
-<a href=#1222 id=1222 data-nosnippet>1222</a>    <span class="kw">let </span>notes = notes(<span class="kw-2">&amp;</span><span class="kw">crate</span>::account::data_dir(), instance, name)<span class="question-mark">?</span>;
-<a href=#1223 id=1223 data-nosnippet>1223</a>    <span class="kw">let </span>snapshot = one
-<a href=#1224 id=1224 data-nosnippet>1224</a>        .handle
-<a href=#1225 id=1225 data-nosnippet>1225</a>        .snapshot()
-<a href=#1226 id=1226 data-nosnippet>1226</a>        .<span class="kw">await
-<a href=#1227 id=1227 data-nosnippet>1227</a>        </span>.ok_or_else(|| <span class="macro">format!</span>(<span class="string">"{} is not running."</span>, one.name))<span class="question-mark">?</span>;
-<a href=#1228 id=1228 data-nosnippet>1228</a>    <span class="kw">let </span>room = route::here(<span class="kw-2">&amp;</span>map, <span class="kw-2">&amp;</span>snapshot.state, notes.last_room)
-<a href=#1229 id=1229 data-nosnippet>1229</a>        .ok_or_else(|| <span class="macro">format!</span>(<span class="string">"I cannot tell which room {} is in."</span>, one.name))<span class="question-mark">?</span>;
-<a href=#1230 id=1230 data-nosnippet>1230</a>    <span class="prelude-val">Ok</span>((room.<span class="number">0</span>.to_string(), <span class="prelude-val">Some</span>(one.name.clone())))
+<a href=#918 id=918 data-nosnippet>918</a><span class="doccomment">/// How long a trip took, as a clock reads: `0:07`, `2:41`, `1:02:41`.
+<a href=#919 id=919 data-nosnippet>919</a></span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>took_said(took: std::time::Duration) -&gt; String {
+<a href=#920 id=920 data-nosnippet>920</a>    <span class="kw">let </span>seconds = took.as_secs();
+<a href=#921 id=921 data-nosnippet>921</a>    <span class="kw">let </span>(hours, minutes, seconds) = (seconds / <span class="number">3600</span>, seconds / <span class="number">60 </span>% <span class="number">60</span>, seconds % <span class="number">60</span>);
+<a href=#922 id=922 data-nosnippet>922</a>    <span class="kw">if </span>hours &gt; <span class="number">0 </span>{
+<a href=#923 id=923 data-nosnippet>923</a>        <span class="macro">format!</span>(<span class="string">"{hours}:{minutes:02}:{seconds:02}"</span>)
+<a href=#924 id=924 data-nosnippet>924</a>    } <span class="kw">else </span>{
+<a href=#925 id=925 data-nosnippet>925</a>        <span class="macro">format!</span>(<span class="string">"{minutes}:{seconds:02}"</span>)
+<a href=#926 id=926 data-nosnippet>926</a>    }
+<a href=#927 id=927 data-nosnippet>927</a>}
+<a href=#928 id=928 data-nosnippet>928</a>
+<a href=#929 id=929 data-nosnippet>929</a><span class="doccomment">/// What a walk that ended leaves: its route off the minimap when it is
+<a href=#930 id=930 data-nosnippet>930</a>/// over, the last room and a typeahead learned kept, and a word to the
+<a href=#931 id=931 data-nosnippet>931</a>/// player: how long it took when it arrived, why when it did not. A walk
+<a href=#932 id=932 data-nosnippet>932</a>/// that is one part of a journey, begun at `journey`, says nothing of
+<a href=#933 id=933 data-nosnippet>933</a>/// arriving -- the journey says that, for the whole of it -- and times what
+<a href=#934 id=934 data-nosnippet>934</a>/// it says from the journey's start.
+<a href=#935 id=935 data-nosnippet>935</a></span><span class="kw">fn </span>ended(
+<a href=#936 id=936 data-nosnippet>936</a>    handle: <span class="kw-2">&amp;</span>SessionHandle,
+<a href=#937 id=937 data-nosnippet>937</a>    roster_name: <span class="kw-2">&amp;</span>str,
+<a href=#938 id=938 data-nosnippet>938</a>    walked: <span class="kw-2">&amp;</span>Walked,
+<a href=#939 id=939 data-nosnippet>939</a>    ours: bool,
+<a href=#940 id=940 data-nosnippet>940</a>    journey: <span class="prelude-ty">Option</span>&lt;std::time::Instant&gt;,
+<a href=#941 id=941 data-nosnippet>941</a>) {
+<a href=#942 id=942 data-nosnippet>942</a>    <span class="kw">let </span>dir = <span class="kw">crate</span>::account::data_dir();
+<a href=#943 id=943 data-nosnippet>943</a>    <span class="kw">if let </span>(<span class="prelude-val">Some</span>(room), <span class="prelude-val">Ok</span>((instance, name))) = (walked.last_room, <span class="kw">crate</span>::pages::who(roster_name)) {
+<a href=#944 id=944 data-nosnippet>944</a>        <span class="kw">let _ </span>= file::save_last_room(<span class="kw-2">&amp;</span>dir, instance, name, room.<span class="number">0</span>);
+<a href=#945 id=945 data-nosnippet>945</a>    }
+<a href=#946 id=946 data-nosnippet>946</a>    <span class="kw">if let </span>(<span class="prelude-val">Some</span>(seen), <span class="prelude-val">Ok</span>((instance, <span class="kw">_</span>))) = (<span class="kw-2">&amp;</span>walked.instabilities, <span class="kw">crate</span>::pages::who(roster_name))
+<a href=#947 id=947 data-nosnippet>947</a>    {
+<a href=#948 id=948 data-nosnippet>948</a>        <span class="kw">let _ </span>= file::save_instabilities(<span class="kw-2">&amp;</span>dir, instance, seen);
+<a href=#949 id=949 data-nosnippet>949</a>    }
+<a href=#950 id=950 data-nosnippet>950</a>    <span class="kw">if let </span><span class="prelude-val">Some</span>(typeahead) = walked.typeahead {
+<a href=#951 id=951 data-nosnippet>951</a>        <span class="kw">let _ </span>= <span class="kw">crate</span>::pages::apply(
+<a href=#952 id=952 data-nosnippet>952</a>            <span class="kw-2">&amp;</span>dir,
+<a href=#953 id=953 data-nosnippet>953</a>            <span class="kw-2">&amp;</span>hydra_ui::settings::Change {
+<a href=#954 id=954 data-nosnippet>954</a>                character: roster_name.to_owned(),
+<a href=#955 id=955 data-nosnippet>955</a>                page: <span class="kw">crate</span>::pages::TRAVEL.to_owned(),
+<a href=#956 id=956 data-nosnippet>956</a>                key: <span class="string">"typeahead"</span>.to_owned(),
+<a href=#957 id=957 data-nosnippet>957</a>                to: <span class="prelude-val">Some</span>(typeahead.to_string()),
+<a href=#958 id=958 data-nosnippet>958</a>            },
+<a href=#959 id=959 data-nosnippet>959</a>        );
+<a href=#960 id=960 data-nosnippet>960</a>    }
+<a href=#961 id=961 data-nosnippet>961</a>    <span class="kw">if </span>ours {
+<a href=#962 id=962 data-nosnippet>962</a>        hydra_map::show_route(roster_name, <span class="prelude-val">None</span>);
+<a href=#963 id=963 data-nosnippet>963</a>    }
+<a href=#964 id=964 data-nosnippet>964</a>    <span class="kw">let </span>why = <span class="kw">match </span><span class="kw-2">&amp;</span>walked.ended {
+<a href=#965 id=965 data-nosnippet>965</a>        Ended::Arrived =&gt; <span class="prelude-val">None</span>,
+<a href=#966 id=966 data-nosnippet>966</a>        Ended::Stopped <span class="kw">if </span>!ours =&gt; <span class="prelude-val">None</span>,
+<a href=#967 id=967 data-nosnippet>967</a>        Ended::Stopped =&gt; <span class="prelude-val">Some</span>(<span class="string">"stopped."</span>.to_owned()),
+<a href=#968 id=968 data-nosnippet>968</a>        Ended::Failed(Why::NoRoute) =&gt; {
+<a href=#969 id=969 data-nosnippet>969</a>            <span class="prelude-val">Some</span>(<span class="string">"there is no way there that Hydra can walk this character."</span>.to_owned())
+<a href=#970 id=970 data-nosnippet>970</a>        }
+<a href=#971 id=971 data-nosnippet>971</a>        Ended::Failed(Why::OffTheMap) =&gt; {
+<a href=#972 id=972 data-nosnippet>972</a>            <span class="prelude-val">Some</span>(<span class="string">"I do not know what room this is, so I have stopped."</span>.to_owned())
+<a href=#973 id=973 data-nosnippet>973</a>        }
+<a href=#974 id=974 data-nosnippet>974</a>        Ended::Failed(Why::TooManyReplans) =&gt; {
+<a href=#975 id=975 data-nosnippet>975</a>            <span class="prelude-val">Some</span>(<span class="string">"I keep being carried off the route, so I have stopped."</span>.to_owned())
+<a href=#976 id=976 data-nosnippet>976</a>        }
+<a href=#977 id=977 data-nosnippet>977</a>        Ended::HandedToLich(line) =&gt; <span class="prelude-val">Some</span>(<span class="macro">format!</span>(
+<a href=#978 id=978 data-nosnippet>978</a>            <span class="string">"your Lich sent {line}, so I have stopped walking and left it to Lich."
+<a href=#979 id=979 data-nosnippet>979</a>        </span>)),
+<a href=#980 id=980 data-nosnippet>980</a>        Ended::Lost =&gt; <span class="prelude-val">Some</span>(<span class="string">"stopped, because the connection went away."</span>.to_owned()),
+<a href=#981 id=981 data-nosnippet>981</a>        Ended::Halted(why) =&gt; <span class="prelude-val">Some</span>(why.clone()),
+<a href=#982 id=982 data-nosnippet>982</a>        Ended::UnknownSpell(spell) =&gt; <span class="prelude-val">Some</span>(<span class="macro">format!</span>(
+<a href=#983 id=983 data-nosnippet>983</a>            <span class="string">"the map names a spell, {spell}, that is not in the spell table."
+<a href=#984 id=984 data-nosnippet>984</a>        </span>)),
+<a href=#985 id=985 data-nosnippet>985</a>    };
+<a href=#986 id=986 data-nosnippet>986</a>    <span class="kw">let </span>took = took_said(journey.map_or(walked.took, |began| began.elapsed()));
+<a href=#987 id=987 data-nosnippet>987</a>    <span class="kw">match </span>why {
+<a href=#988 id=988 data-nosnippet>988</a>        <span class="comment">// Arrived, and said so with the time it took, ours or Lich's.
+<a href=#989 id=989 data-nosnippet>989</a>        </span><span class="prelude-val">None </span><span class="kw">if </span>walked.ended == Ended::Arrived &amp;&amp; journey.is_none() =&gt; {
+<a href=#990 id=990 data-nosnippet>990</a>            handle.say(
+<a href=#991 id=991 data-nosnippet>991</a>                Notice::line(NoticeKind::Info, <span class="macro">format!</span>(<span class="string">"Travel: arrived in {took}."</span>)).answering(),
+<a href=#992 id=992 data-nosnippet>992</a>            );
+<a href=#993 id=993 data-nosnippet>993</a>        }
+<a href=#994 id=994 data-nosnippet>994</a>        <span class="prelude-val">None </span>=&gt; {}
+<a href=#995 id=995 data-nosnippet>995</a>        <span class="prelude-val">Some</span>(why) =&gt; {
+<a href=#996 id=996 data-nosnippet>996</a>            <span class="kw">let </span>kind = <span class="kw">if </span><span class="macro">matches!</span>(walked.ended, Ended::Stopped) {
+<a href=#997 id=997 data-nosnippet>997</a>                NoticeKind::Info
+<a href=#998 id=998 data-nosnippet>998</a>            } <span class="kw">else </span>{
+<a href=#999 id=999 data-nosnippet>999</a>                NoticeKind::Error
+<a href=#1000 id=1000 data-nosnippet>1000</a>            };
+<a href=#1001 id=1001 data-nosnippet>1001</a>            handle.say(Notice::line(kind, <span class="macro">format!</span>(<span class="string">"Travel: {why} (after {took})"</span>)).answering());
+<a href=#1002 id=1002 data-nosnippet>1002</a>        }
+<a href=#1003 id=1003 data-nosnippet>1003</a>    }
+<a href=#1004 id=1004 data-nosnippet>1004</a>    <span class="kw">for </span>said <span class="kw">in </span>left_undone(walked) {
+<a href=#1005 id=1005 data-nosnippet>1005</a>        handle.say(Notice::line(NoticeKind::Warn, <span class="macro">format!</span>(<span class="string">"Travel: {said}"</span>)).answering());
+<a href=#1006 id=1006 data-nosnippet>1006</a>    }
+<a href=#1007 id=1007 data-nosnippet>1007</a>    <span class="kw">for </span>(from, to) <span class="kw">in </span><span class="kw-2">&amp;</span>walked.wrong_for_the_map {
+<a href=#1008 id=1008 data-nosnippet>1008</a>        handle.say(Notice::line(
+<a href=#1009 id=1009 data-nosnippet>1009</a>            NoticeKind::Warn,
+<a href=#1010 id=1010 data-nosnippet>1010</a>            <span class="macro">format!</span>(
+<a href=#1011 id=1011 data-nosnippet>1011</a>                <span class="string">"Travel: the game says there is no way from {} to {}, which the map has."</span>,
+<a href=#1012 id=1012 data-nosnippet>1012</a>                from.<span class="number">0</span>, to.<span class="number">0
+<a href=#1013 id=1013 data-nosnippet>1013</a>            </span>),
+<a href=#1014 id=1014 data-nosnippet>1014</a>        ));
+<a href=#1015 id=1015 data-nosnippet>1015</a>    }
+<a href=#1016 id=1016 data-nosnippet>1016</a>}
+<a href=#1017 id=1017 data-nosnippet>1017</a>
+<a href=#1018 id=1018 data-nosnippet>1018</a><span class="doccomment">/// What a walk changed and did not put back, as the player is told it: a
+<a href=#1019 id=1019 data-nosnippet>1019</a>/// key out of its container, what is still put away, a stance or a
+<a href=#1020 id=1020 data-nosnippet>1020</a>/// language.
+<a href=#1021 id=1021 data-nosnippet>1021</a></span><span class="kw">fn </span>left_undone(walked: <span class="kw-2">&amp;</span>Walked) -&gt; Vec&lt;String&gt; {
+<a href=#1022 id=1022 data-nosnippet>1022</a>    <span class="kw">let </span><span class="kw-2">mut </span>said = Vec::new();
+<a href=#1023 id=1023 data-nosnippet>1023</a>    <span class="kw">for </span>(name, sent_back) <span class="kw">in </span><span class="kw-2">&amp;</span>walked.still_out {
+<a href=#1024 id=1024 data-nosnippet>1024</a>        said.push(<span class="kw">if </span><span class="kw-2">*</span>sent_back {
+<a href=#1025 id=1025 data-nosnippet>1025</a>            <span class="macro">format!</span>(<span class="string">"your {name} was out; I put it back once, and did not wait to see."</span>)
+<a href=#1026 id=1026 data-nosnippet>1026</a>        } <span class="kw">else </span>{
+<a href=#1027 id=1027 data-nosnippet>1027</a>            <span class="macro">format!</span>(<span class="string">"your {name} is out, and I did not put it back."</span>)
+<a href=#1028 id=1028 data-nosnippet>1028</a>        });
+<a href=#1029 id=1029 data-nosnippet>1029</a>    }
+<a href=#1030 id=1030 data-nosnippet>1030</a>    <span class="kw">if </span>!walked.still_stored.is_empty() {
+<a href=#1031 id=1031 data-nosnippet>1031</a>        <span class="kw">let </span>names: Vec&lt;<span class="kw-2">&amp;</span>str&gt; = walked
+<a href=#1032 id=1032 data-nosnippet>1032</a>            .still_stored
+<a href=#1033 id=1033 data-nosnippet>1033</a>            .iter()
+<a href=#1034 id=1034 data-nosnippet>1034</a>            .map(|stored| stored.name.as_str())
+<a href=#1035 id=1035 data-nosnippet>1035</a>            .collect();
+<a href=#1036 id=1036 data-nosnippet>1036</a>        said.push(<span class="macro">format!</span>(<span class="string">"still put away: {}."</span>, names.join(<span class="string">", "</span>)));
+<a href=#1037 id=1037 data-nosnippet>1037</a>    }
+<a href=#1038 id=1038 data-nosnippet>1038</a>    <span class="kw">for </span>(what, before) <span class="kw">in </span>[
+<a href=#1039 id=1039 data-nosnippet>1039</a>        (<span class="string">"stance"</span>, <span class="kw-2">&amp;</span>walked.stance_before),
+<a href=#1040 id=1040 data-nosnippet>1040</a>        (<span class="string">"language"</span>, <span class="kw-2">&amp;</span>walked.speech_before),
+<a href=#1041 id=1041 data-nosnippet>1041</a>    ] {
+<a href=#1042 id=1042 data-nosnippet>1042</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(before) = before {
+<a href=#1043 id=1043 data-nosnippet>1043</a>            said.push(<span class="macro">format!</span>(
+<a href=#1044 id=1044 data-nosnippet>1044</a>                <span class="string">"your {what} was {before}, and I did not put it back."
+<a href=#1045 id=1045 data-nosnippet>1045</a>            </span>));
+<a href=#1046 id=1046 data-nosnippet>1046</a>        }
+<a href=#1047 id=1047 data-nosnippet>1047</a>    }
+<a href=#1048 id=1048 data-nosnippet>1048</a>    said
+<a href=#1049 id=1049 data-nosnippet>1049</a>}
+<a href=#1050 id=1050 data-nosnippet>1050</a>
+<a href=#1051 id=1051 data-nosnippet>1051</a><span class="doccomment">/// The way to `what`, as a table, and on the minimap.
+<a href=#1052 id=1052 data-nosnippet>1052</a></span><span class="kw">async fn </span>shown(
+<a href=#1053 id=1053 data-nosnippet>1053</a>    handle: <span class="kw-2">&amp;</span>SessionHandle,
+<a href=#1054 id=1054 data-nosnippet>1054</a>    dir: <span class="kw-2">&amp;</span>Path,
+<a href=#1055 id=1055 data-nosnippet>1055</a>    roster_name: <span class="kw-2">&amp;</span>str,
+<a href=#1056 id=1056 data-nosnippet>1056</a>    what: String,
+<a href=#1057 id=1057 data-nosnippet>1057</a>    brief: bool,
+<a href=#1058 id=1058 data-nosnippet>1058</a>    whom: <span class="prelude-ty">Option</span>&lt;String&gt;,
+<a href=#1059 id=1059 data-nosnippet>1059</a>) -&gt; <span class="prelude-ty">Result</span>&lt;Said, String&gt; {
+<a href=#1060 id=1060 data-nosnippet>1060</a>    <span class="kw">let </span>here = here(handle, dir, roster_name).<span class="kw">await</span><span class="question-mark">?</span>;
+<a href=#1061 id=1061 data-nosnippet>1061</a>    <span class="kw">let </span>(instance, name) = <span class="kw">crate</span>::pages::who(roster_name)<span class="question-mark">?</span>;
+<a href=#1062 id=1062 data-nosnippet>1062</a>    <span class="comment">// Where it is, for a tie between rooms that read alike next time.
+<a href=#1063 id=1063 data-nosnippet>1063</a>    </span><span class="kw">let _ </span>= file::save_last_room(dir, instance, name, here.room.<span class="number">0</span>);
+<a href=#1064 id=1064 data-nosnippet>1064</a>    <span class="kw">let </span>character = roster_name.to_owned();
+<a href=#1065 id=1065 data-nosnippet>1065</a>    <span class="comment">// The way by sea, should there be none by land, as `.go2` would go.
+<a href=#1066 id=1066 data-nosnippet>1066</a>    </span><span class="kw">let </span>by_sea = sea::teller(handle, dir, roster_name).<span class="kw">await</span>;
+<a href=#1067 id=1067 data-nosnippet>1067</a>    <span class="kw">let </span>gigas = Gigas::of(handle, dir, roster_name).<span class="kw">await</span>;
+<a href=#1068 id=1068 data-nosnippet>1068</a>    blocking(<span class="kw">move </span>|| {
+<a href=#1069 id=1069 data-nosnippet>1069</a>        <span class="comment">// No exit of the map goes into the plane: the way is found by
+<a href=#1070 id=1070 data-nosnippet>1070</a>        // searching, so there is no route to show.
+<a href=#1071 id=1071 data-nosnippet>1071</a>        </span><span class="kw">if </span>instability::asked(<span class="kw-2">&amp;</span>here.map, here.room, <span class="kw-2">&amp;</span>what, <span class="prelude-val">None</span>).is_some() {
+<a href=#1072 id=1072 data-nosnippet>1072</a>            <span class="kw">return </span><span class="prelude-val">Ok</span>(Said::Lines(<span class="macro">vec!</span>[
+<a href=#1073 id=1073 data-nosnippet>1073</a>                <span class="string">"The way into the Elemental Confluence is found by searching for an \
+<a href=#1074 id=1074 data-nosnippet>1074</a>                 instability of your element, so there is no route to show. .go2 confluence \
+<a href=#1075 id=1075 data-nosnippet>1075</a>                 goes."
+<a href=#1076 id=1076 data-nosnippet>1076</a>                    </span>.to_owned(),
+<a href=#1077 id=1077 data-nosnippet>1077</a>            ]));
+<a href=#1078 id=1078 data-nosnippet>1078</a>        }
+<a href=#1079 id=1079 data-nosnippet>1079</a>        <span class="kw">let </span>meant = route::destination(
+<a href=#1080 id=1080 data-nosnippet>1080</a>            <span class="kw-2">&amp;</span>here.map,
+<a href=#1081 id=1081 data-nosnippet>1081</a>            <span class="kw-2">&amp;</span>here.walker,
+<a href=#1082 id=1082 data-nosnippet>1082</a>            here.room,
+<a href=#1083 id=1083 data-nosnippet>1083</a>            <span class="kw-2">&amp;</span>what,
+<a href=#1084 id=1084 data-nosnippet>1084</a>            <span class="kw-2">&amp;</span>here.notes.targets,
+<a href=#1085 id=1085 data-nosnippet>1085</a>        );
+<a href=#1086 id=1086 data-nosnippet>1086</a>        <span class="kw">let </span>goal = <span class="kw">match </span>meant {
+<a href=#1087 id=1087 data-nosnippet>1087</a>            Meant::Room(goal) =&gt; goal,
+<a href=#1088 id=1088 data-nosnippet>1088</a>            Meant::Several(rooms) =&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(Said::Table(several(<span class="kw-2">&amp;</span>here.map, <span class="kw-2">&amp;</span>what, <span class="kw-2">&amp;</span>rooms))),
+<a href=#1089 id=1089 data-nosnippet>1089</a>            Meant::Nowhere =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">"I do not know a way to {what} from here."</span>)),
+<a href=#1090 id=1090 data-nosnippet>1090</a>        };
+<a href=#1091 id=1091 data-nosnippet>1091</a>        <span class="kw">let </span><span class="prelude-val">Some</span>(legs) = route::itinerary(<span class="kw-2">&amp;</span>here.map, <span class="kw-2">&amp;</span>here.walker, here.room, goal) <span class="kw">else </span>{
+<a href=#1092 id=1092 data-nosnippet>1092</a>            <span class="comment">// No way by land: the journey `.go2` would make by sea.
+<a href=#1093 id=1093 data-nosnippet>1093</a>            </span><span class="kw">let </span><span class="prelude-val">Some</span>(sea) = by_sea(<span class="kw-2">&amp;</span>here, <span class="kw-2">&amp;</span>what) <span class="kw">else </span>{
+<a href=#1094 id=1094 data-nosnippet>1094</a>                <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">"There is no way to {what} ({}) from here."</span>, goal.<span class="number">0</span>));
+<a href=#1095 id=1095 data-nosnippet>1095</a>            };
+<a href=#1096 id=1096 data-nosnippet>1096</a>            <span class="kw">let </span><span class="kw-2">mut </span>lines = sea.lines;
+<a href=#1097 id=1097 data-nosnippet>1097</a>            <span class="kw">if let </span><span class="prelude-val">Some</span>((to, legs)) = <span class="kw-2">&amp;</span>sea.walk {
+<a href=#1098 id=1098 data-nosnippet>1098</a>                lines.extend(gigas.said(<span class="kw-2">&amp;</span>here, <span class="kw-2">*</span>to, legs));
+<a href=#1099 id=1099 data-nosnippet>1099</a>                hydra_map::show_route(
+<a href=#1100 id=1100 data-nosnippet>1100</a>                    <span class="kw-2">&amp;</span>character,
+<a href=#1101 id=1101 data-nosnippet>1101</a>                    <span class="prelude-val">Some</span>(hydra_map::ShownRoute {
+<a href=#1102 id=1102 data-nosnippet>1102</a>                        rooms: std::iter::once(here.room.<span class="number">0</span>)
+<a href=#1103 id=1103 data-nosnippet>1103</a>                            .chain(legs.iter().map(|leg| leg.to.<span class="number">0</span>))
+<a href=#1104 id=1104 data-nosnippet>1104</a>                            .collect(),
+<a href=#1105 id=1105 data-nosnippet>1105</a>                    }),
+<a href=#1106 id=1106 data-nosnippet>1106</a>                );
+<a href=#1107 id=1107 data-nosnippet>1107</a>            }
+<a href=#1108 id=1108 data-nosnippet>1108</a>            <span class="kw">return </span><span class="prelude-val">Ok</span>(Said::Lines(lines));
+<a href=#1109 id=1109 data-nosnippet>1109</a>        };
+<a href=#1110 id=1110 data-nosnippet>1110</a>        <span class="kw">if </span>legs.is_empty() {
+<a href=#1111 id=1111 data-nosnippet>1111</a>            <span class="kw">return </span><span class="prelude-val">Ok</span>(Said::Lines(<span class="macro">vec!</span>[already(goal, whom.as_deref())]));
+<a href=#1112 id=1112 data-nosnippet>1112</a>        }
+<a href=#1113 id=1113 data-nosnippet>1113</a>        <span class="kw">let </span>lines = <span class="kw">if </span>brief {
+<a href=#1114 id=1114 data-nosnippet>1114</a>            <span class="macro">vec!</span>[in_a_line(<span class="kw-2">&amp;</span>here.map, goal, <span class="kw-2">&amp;</span>legs, whom.as_deref())]
+<a href=#1115 id=1115 data-nosnippet>1115</a>        } <span class="kw">else </span>{
+<a href=#1116 id=1116 data-nosnippet>1116</a>            <span class="kw">let </span><span class="kw-2">mut </span>lines = route::table(<span class="kw-2">&amp;</span>here.map, here.room, <span class="kw-2">&amp;</span>legs);
+<a href=#1117 id=1117 data-nosnippet>1117</a>            lines.extend(gigas.said(<span class="kw-2">&amp;</span>here, goal, <span class="kw-2">&amp;</span>legs));
+<a href=#1118 id=1118 data-nosnippet>1118</a>            lines
+<a href=#1119 id=1119 data-nosnippet>1119</a>        };
+<a href=#1120 id=1120 data-nosnippet>1120</a>        hydra_map::show_route(
+<a href=#1121 id=1121 data-nosnippet>1121</a>            <span class="kw-2">&amp;</span>character,
+<a href=#1122 id=1122 data-nosnippet>1122</a>            <span class="prelude-val">Some</span>(hydra_map::ShownRoute {
+<a href=#1123 id=1123 data-nosnippet>1123</a>                rooms: std::iter::once(here.room.<span class="number">0</span>)
+<a href=#1124 id=1124 data-nosnippet>1124</a>                    .chain(legs.iter().map(|leg| leg.to.<span class="number">0</span>))
+<a href=#1125 id=1125 data-nosnippet>1125</a>                    .collect(),
+<a href=#1126 id=1126 data-nosnippet>1126</a>            }),
+<a href=#1127 id=1127 data-nosnippet>1127</a>        );
+<a href=#1128 id=1128 data-nosnippet>1128</a>        <span class="prelude-val">Ok</span>(<span class="kw">if </span>brief {
+<a href=#1129 id=1129 data-nosnippet>1129</a>            Said::Lines(lines)
+<a href=#1130 id=1130 data-nosnippet>1130</a>        } <span class="kw">else </span>{
+<a href=#1131 id=1131 data-nosnippet>1131</a>            Said::Table(lines)
+<a href=#1132 id=1132 data-nosnippet>1132</a>        })
+<a href=#1133 id=1133 data-nosnippet>1133</a>    })
+<a href=#1134 id=1134 data-nosnippet>1134</a>    .<span class="kw">await</span><span class="question-mark">?
+<a href=#1135 id=1135 data-nosnippet>1135</a></span>}
+<a href=#1136 id=1136 data-nosnippet>1136</a>
+<a href=#1137 id=1137 data-nosnippet>1137</a><span class="doccomment">/// What `.route2` knows of the gigas fragments `.go2` would spend: whether
+<a href=#1138 id=1138 data-nosnippet>1138</a>/// the Travel page lets it, the fragments it keeps back, and how many the
+<a href=#1139 id=1139 data-nosnippet>1139</a>/// character carries, as the game last said.
+<a href=#1140 id=1140 data-nosnippet>1140</a></span><span class="kw">struct </span>Gigas {
+<a href=#1141 id=1141 data-nosnippet>1141</a>    on: bool,
+<a href=#1142 id=1142 data-nosnippet>1142</a>    least: u64,
+<a href=#1143 id=1143 data-nosnippet>1143</a>    carried: <span class="prelude-ty">Option</span>&lt;u64&gt;,
+<a href=#1144 id=1144 data-nosnippet>1144</a>}
+<a href=#1145 id=1145 data-nosnippet>1145</a>
+<a href=#1146 id=1146 data-nosnippet>1146</a><span class="kw">impl </span>Gigas {
+<a href=#1147 id=1147 data-nosnippet>1147</a>    <span class="doccomment">/// As the Travel page and the character are now.
+<a href=#1148 id=1148 data-nosnippet>1148</a>    </span><span class="kw">async fn </span>of(handle: <span class="kw-2">&amp;</span>SessionHandle, dir: <span class="kw-2">&amp;</span>Path, roster_name: <span class="kw-2">&amp;</span>str) -&gt; <span class="self">Self </span>{
+<a href=#1149 id=1149 data-nosnippet>1149</a>        <span class="kw">let </span>settings = <span class="kw">crate</span>::pages::travel_settings(dir, roster_name);
+<a href=#1150 id=1150 data-nosnippet>1150</a>        <span class="kw">let </span>carried = handle
+<a href=#1151 id=1151 data-nosnippet>1151</a>            .snapshot()
+<a href=#1152 id=1152 data-nosnippet>1152</a>            .<span class="kw">await
+<a href=#1153 id=1153 data-nosnippet>1153</a>            </span>.and_then(|snapshot| snapshot.state.character.currency.gigas_artifact_fragments);
+<a href=#1154 id=1154 data-nosnippet>1154</a>        <span class="self">Self </span>{
+<a href=#1155 id=1155 data-nosnippet>1155</a>            on: settings.on(<span class="string">"use_gigas_hwtravel"</span>),
+<a href=#1156 id=1156 data-nosnippet>1156</a>            least: hydra_travel::walk::preflight::gigas_least(<span class="kw-2">&amp;</span>settings),
+<a href=#1157 id=1157 data-nosnippet>1157</a>            carried,
+<a href=#1158 id=1158 data-nosnippet>1158</a>        }
+<a href=#1159 id=1159 data-nosnippet>1159</a>    }
+<a href=#1160 id=1160 data-nosnippet>1160</a>
+<a href=#1161 id=1161 data-nosnippet>1161</a>    <span class="doccomment">/// What is said of the way by gigas fragments `.go2` takes in place of
+<a href=#1162 id=1162 data-nosnippet>1162</a>    /// the long way `legs` walks from `here` to `goal`: nothing, where it
+<a href=#1163 id=1163 data-nosnippet>1163</a>    /// does not take the long way or the Travel page does not let it.
+<a href=#1164 id=1164 data-nosnippet>1164</a>    </span><span class="kw">fn </span>said(<span class="kw-2">&amp;</span><span class="self">self</span>, here: <span class="kw-2">&amp;</span>Here, goal: RoomId, legs: <span class="kw-2">&amp;</span>[route::Leg]) -&gt; Vec&lt;String&gt; {
+<a href=#1165 id=1165 data-nosnippet>1165</a>        <span class="kw">if </span>!<span class="self">self</span>.on {
+<a href=#1166 id=1166 data-nosnippet>1166</a>            <span class="kw">return </span>Vec::new();
+<a href=#1167 id=1167 data-nosnippet>1167</a>        }
+<a href=#1168 id=1168 data-nosnippet>1168</a>        <span class="kw">let </span>path: Vec&lt;RoomId&gt; = std::iter::once(here.room)
+<a href=#1169 id=1169 data-nosnippet>1169</a>            .chain(legs.iter().map(|leg| leg.to))
+<a href=#1170 id=1170 data-nosnippet>1170</a>            .collect();
+<a href=#1171 id=1171 data-nosnippet>1171</a>        <span class="kw">let </span><span class="prelude-val">Some</span>(way) = hydra_travel::walk::preflight::gigas_way(<span class="kw-2">&amp;</span>here.map, <span class="kw-2">&amp;</span>path, here.room, goal)
+<a href=#1172 id=1172 data-nosnippet>1172</a>        <span class="kw">else </span>{
+<a href=#1173 id=1173 data-nosnippet>1173</a>            <span class="kw">return </span>Vec::new();
+<a href=#1174 id=1174 data-nosnippet>1174</a>        };
+<a href=#1175 id=1175 data-nosnippet>1175</a>        <span class="kw">let </span>place = here
+<a href=#1176 id=1176 data-nosnippet>1176</a>            .map
+<a href=#1177 id=1177 data-nosnippet>1177</a>            .room(way.teleporter)
+<a href=#1178 id=1178 data-nosnippet>1178</a>            .and_then(|room| room.title.first().cloned())
+<a href=#1179 id=1179 data-nosnippet>1179</a>            .unwrap_or_default();
+<a href=#1180 id=1180 data-nosnippet>1180</a>        <span class="kw">let </span>how = way.commands.join(<span class="string">", "</span>);
+<a href=#1181 id=1181 data-nosnippet>1181</a>        <span class="kw">let </span>least = <span class="self">self</span>.least;
+<a href=#1182 id=1182 data-nosnippet>1182</a>        <span class="macro">vec!</span>[<span class="kw">match </span><span class="self">self</span>.carried {
+<a href=#1183 id=1183 data-nosnippet>1183</a>            <span class="prelude-val">Some</span>(carried) <span class="kw">if </span>carried &lt; least =&gt; <span class="macro">format!</span>(
+<a href=#1184 id=1184 data-nosnippet>1184</a>                <span class="string">"You carry {carried} gigas fragments, fewer than the {least} kept back: .go2 \
+<a href=#1185 id=1185 data-nosnippet>1185</a>                 walks the long way."
+<a href=#1186 id=1186 data-nosnippet>1186</a>            </span>),
+<a href=#1187 id=1187 data-nosnippet>1187</a>            <span class="prelude-val">Some</span>(carried) =&gt; <span class="macro">format!</span>(
+<a href=#1188 id=1188 data-nosnippet>1188</a>                <span class="string">"With your {carried} gigas fragments, .go2 goes by {place} instead ({how}), and \
+<a href=#1189 id=1189 data-nosnippet>1189</a>                 on from where that lands."
+<a href=#1190 id=1190 data-nosnippet>1190</a>            </span>),
+<a href=#1191 id=1191 data-nosnippet>1191</a>            <span class="prelude-val">None </span>=&gt; <span class="macro">format!</span>(
+<a href=#1192 id=1192 data-nosnippet>1192</a>                <span class="string">"With at least {least} gigas fragments, .go2 goes by {place} instead ({how}), \
+<a href=#1193 id=1193 data-nosnippet>1193</a>                 and on from where that lands: it counts them as it sets out."
+<a href=#1194 id=1194 data-nosnippet>1194</a>            </span>),
+<a href=#1195 id=1195 data-nosnippet>1195</a>        }]
+<a href=#1196 id=1196 data-nosnippet>1196</a>    }
+<a href=#1197 id=1197 data-nosnippet>1197</a>}
+<a href=#1198 id=1198 data-nosnippet>1198</a>
+<a href=#1199 id=1199 data-nosnippet>1199</a><span class="doccomment">/// Standing at `goal` already, with `whom` if it is a character's room.
+<a href=#1200 id=1200 data-nosnippet>1200</a></span><span class="kw">fn </span>already(goal: RoomId, whom: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;) -&gt; String {
+<a href=#1201 id=1201 data-nosnippet>1201</a>    <span class="kw">match </span>whom {
+<a href=#1202 id=1202 data-nosnippet>1202</a>        <span class="prelude-val">Some</span>(whom) =&gt; <span class="macro">format!</span>(<span class="string">"You are with {whom} already ({})."</span>, goal.<span class="number">0</span>),
+<a href=#1203 id=1203 data-nosnippet>1203</a>        <span class="prelude-val">None </span>=&gt; <span class="macro">format!</span>(<span class="string">"You are there already ({})."</span>, goal.<span class="number">0</span>),
+<a href=#1204 id=1204 data-nosnippet>1204</a>    }
+<a href=#1205 id=1205 data-nosnippet>1205</a>}
+<a href=#1206 id=1206 data-nosnippet>1206</a>
+<a href=#1207 id=1207 data-nosnippet>1207</a><span class="doccomment">/// The way to `goal` in a line, as a click on the minimap is answered.
+<a href=#1208 id=1208 data-nosnippet>1208</a></span><span class="kw">fn </span>in_a_line(map: <span class="kw-2">&amp;</span>Map, goal: RoomId, legs: <span class="kw-2">&amp;</span>[route::Leg], whom: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;) -&gt; String {
+<a href=#1209 id=1209 data-nosnippet>1209</a>    <span class="kw">let </span>title = map
+<a href=#1210 id=1210 data-nosnippet>1210</a>        .room(goal)
+<a href=#1211 id=1211 data-nosnippet>1211</a>        .and_then(|room| room.title.first().cloned())
+<a href=#1212 id=1212 data-nosnippet>1212</a>        .unwrap_or_default();
+<a href=#1213 id=1213 data-nosnippet>1213</a>    <span class="kw">let </span>seconds = legs.last().map_or(<span class="number">0.0</span>, |leg| leg.so_far);
+<a href=#1214 id=1214 data-nosnippet>1214</a>    <span class="kw">let </span>to = whom.map_or_else(String::new, |whom| <span class="macro">format!</span>(<span class="string">"{whom}, in "</span>));
+<a href=#1215 id=1215 data-nosnippet>1215</a>    <span class="macro">format!</span>(
+<a href=#1216 id=1216 data-nosnippet>1216</a>        <span class="string">"The way to {to}{title} ({}): {} step{}, about {seconds:.0} seconds. Click it again to \
+<a href=#1217 id=1217 data-nosnippet>1217</a>         walk there."</span>,
+<a href=#1218 id=1218 data-nosnippet>1218</a>        goal.<span class="number">0</span>,
+<a href=#1219 id=1219 data-nosnippet>1219</a>        legs.len(),
+<a href=#1220 id=1220 data-nosnippet>1220</a>        <span class="kw">if </span>legs.len() == <span class="number">1 </span>{ <span class="string">"" </span>} <span class="kw">else </span>{ <span class="string">"s" </span>},
+<a href=#1221 id=1221 data-nosnippet>1221</a>    )
+<a href=#1222 id=1222 data-nosnippet>1222</a>}
+<a href=#1223 id=1223 data-nosnippet>1223</a>
+<a href=#1224 id=1224 data-nosnippet>1224</a><span class="doccomment">/// The character `what` names, when it is `to &lt;character&gt;`.
+<a href=#1225 id=1225 data-nosnippet>1225</a></span><span class="kw">fn </span>to_whom(what: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt; {
+<a href=#1226 id=1226 data-nosnippet>1226</a>    <span class="kw">let </span><span class="kw-2">mut </span>words = what.split_whitespace();
+<a href=#1227 id=1227 data-nosnippet>1227</a>    <span class="kw">match </span>(words.next(), words.next(), words.next()) {
+<a href=#1228 id=1228 data-nosnippet>1228</a>        (<span class="prelude-val">Some</span>(to), <span class="prelude-val">Some</span>(name), <span class="prelude-val">None</span>) <span class="kw">if </span>to.eq_ignore_ascii_case(<span class="string">"to"</span>) =&gt; <span class="prelude-val">Some</span>(name),
+<a href=#1229 id=1229 data-nosnippet>1229</a>        <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
+<a href=#1230 id=1230 data-nosnippet>1230</a>    }
 <a href=#1231 id=1231 data-nosnippet>1231</a>}
 <a href=#1232 id=1232 data-nosnippet>1232</a>
-<a href=#1233 id=1233 data-nosnippet>1233</a><span class="doccomment">/// Words that fit several rooms: which, as go2 lists them.
-<a href=#1234 id=1234 data-nosnippet>1234</a></span><span class="kw">fn </span>several(map: <span class="kw-2">&amp;</span>Map, what: <span class="kw-2">&amp;</span>str, rooms: <span class="kw-2">&amp;</span>[RoomId]) -&gt; Vec&lt;String&gt; {
-<a href=#1235 id=1235 data-nosnippet>1235</a>    <span class="kw">let </span><span class="kw-2">mut </span>lines = <span class="macro">vec!</span>[<span class="macro">format!</span>(
-<a href=#1236 id=1236 data-nosnippet>1236</a>        <span class="string">"{what} fits {} rooms; go2 one of them by its number:"</span>,
-<a href=#1237 id=1237 data-nosnippet>1237</a>        rooms.len()
-<a href=#1238 id=1238 data-nosnippet>1238</a>    )];
-<a href=#1239 id=1239 data-nosnippet>1239</a>    lines.extend(rooms.iter().take(SEVERAL_SHOWN).map(|room| {
-<a href=#1240 id=1240 data-nosnippet>1240</a>        <span class="kw">let </span>title = map
-<a href=#1241 id=1241 data-nosnippet>1241</a>            .room(<span class="kw-2">*</span>room)
-<a href=#1242 id=1242 data-nosnippet>1242</a>            .and_then(|room| room.title.first().cloned())
-<a href=#1243 id=1243 data-nosnippet>1243</a>            .unwrap_or_default();
-<a href=#1244 id=1244 data-nosnippet>1244</a>        <span class="macro">format!</span>(<span class="string">"  {:&gt;6}  {title}"</span>, room.<span class="number">0</span>)
-<a href=#1245 id=1245 data-nosnippet>1245</a>    }));
-<a href=#1246 id=1246 data-nosnippet>1246</a>    <span class="kw">if </span>rooms.len() &gt; SEVERAL_SHOWN {
-<a href=#1247 id=1247 data-nosnippet>1247</a>        lines.push(<span class="macro">format!</span>(<span class="string">"  ...and {} more."</span>, rooms.len() - SEVERAL_SHOWN));
-<a href=#1248 id=1248 data-nosnippet>1248</a>    }
-<a href=#1249 id=1249 data-nosnippet>1249</a>    lines
-<a href=#1250 id=1250 data-nosnippet>1250</a>}
-<a href=#1251 id=1251 data-nosnippet>1251</a>
-<a href=#1252 id=1252 data-nosnippet>1252</a><span class="doccomment">/// The names saved, as `.go2 list` says them.
-<a href=#1253 id=1253 data-nosnippet>1253</a></span><span class="kw">fn </span>listed(notes: <span class="kw-2">&amp;</span>Notes) -&gt; Vec&lt;String&gt; {
-<a href=#1254 id=1254 data-nosnippet>1254</a>    <span class="kw">if </span>notes.targets.is_empty() {
-<a href=#1255 id=1255 data-nosnippet>1255</a>        <span class="kw">return </span><span class="macro">vec!</span>[<span class="string">"No names are saved: .go2 save &lt;name&gt; names this room."</span>.to_owned()];
-<a href=#1256 id=1256 data-nosnippet>1256</a>    }
-<a href=#1257 id=1257 data-nosnippet>1257</a>    notes
-<a href=#1258 id=1258 data-nosnippet>1258</a>        .targets
-<a href=#1259 id=1259 data-nosnippet>1259</a>        .iter()
-<a href=#1260 id=1260 data-nosnippet>1260</a>        .map(|(name, rooms)| <span class="macro">format!</span>(<span class="string">"{name:&lt;20} = {rooms:?}"</span>))
-<a href=#1261 id=1261 data-nosnippet>1261</a>        .collect()
-<a href=#1262 id=1262 data-nosnippet>1262</a>}
-<a href=#1263 id=1263 data-nosnippet>1263</a>
-<a href=#1264 id=1264 data-nosnippet>1264</a><span class="doccomment">/// The rooms `.go2 save` names: a number, `u&lt;uid&gt;`, or `current`; none
-<a href=#1265 id=1265 data-nosnippet>1265</a>/// given means `current`.
-<a href=#1266 id=1266 data-nosnippet>1266</a></span><span class="kw">fn </span>rooms_meant(map: <span class="kw-2">&amp;</span>Map, words: <span class="kw-2">&amp;</span>[String], here: <span class="prelude-ty">Option</span>&lt;RoomId&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;u32&gt;, String&gt; {
-<a href=#1267 id=1267 data-nosnippet>1267</a>    <span class="kw">let </span>current = || {
-<a href=#1268 id=1268 data-nosnippet>1268</a>        here.map(|room| room.<span class="number">0</span>)
-<a href=#1269 id=1269 data-nosnippet>1269</a>            .ok_or_else(|| <span class="string">"I cannot tell which room this is."</span>.to_owned())
-<a href=#1270 id=1270 data-nosnippet>1270</a>    };
-<a href=#1271 id=1271 data-nosnippet>1271</a>    <span class="kw">if </span>words.is_empty() {
-<a href=#1272 id=1272 data-nosnippet>1272</a>        <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="macro">vec!</span>[current()<span class="question-mark">?</span>]);
-<a href=#1273 id=1273 data-nosnippet>1273</a>    }
-<a href=#1274 id=1274 data-nosnippet>1274</a>    words
-<a href=#1275 id=1275 data-nosnippet>1275</a>        .iter()
-<a href=#1276 id=1276 data-nosnippet>1276</a>        .map(|word| {
-<a href=#1277 id=1277 data-nosnippet>1277</a>            <span class="kw">if </span>word == <span class="string">"current" </span>{
-<a href=#1278 id=1278 data-nosnippet>1278</a>                <span class="kw">return </span>current();
-<a href=#1279 id=1279 data-nosnippet>1279</a>            }
-<a href=#1280 id=1280 data-nosnippet>1280</a>            <span class="kw">if let </span><span class="prelude-val">Some</span>(uid) = word
-<a href=#1281 id=1281 data-nosnippet>1281</a>                .strip_prefix(<span class="string">'u'</span>)
-<a href=#1282 id=1282 data-nosnippet>1282</a>                .and_then(|digits| digits.parse().ok())
-<a href=#1283 id=1283 data-nosnippet>1283</a>            {
-<a href=#1284 id=1284 data-nosnippet>1284</a>                <span class="kw">return match </span>map.ids_for_uid(Uid(uid)) {
-<a href=#1285 id=1285 data-nosnippet>1285</a>                    [room] =&gt; <span class="prelude-val">Ok</span>(room.<span class="number">0</span>),
-<a href=#1286 id=1286 data-nosnippet>1286</a>                    <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">"{word} is not one room the map knows."</span>)),
-<a href=#1287 id=1287 data-nosnippet>1287</a>                };
-<a href=#1288 id=1288 data-nosnippet>1288</a>            }
-<a href=#1289 id=1289 data-nosnippet>1289</a>            word.parse()
-<a href=#1290 id=1290 data-nosnippet>1290</a>                .ok()
-<a href=#1291 id=1291 data-nosnippet>1291</a>                .filter(|id| map.room(RoomId(<span class="kw-2">*</span>id)).is_some())
-<a href=#1292 id=1292 data-nosnippet>1292</a>                .ok_or_else(|| <span class="macro">format!</span>(<span class="string">"{word} is not a room the map knows."</span>))
-<a href=#1293 id=1293 data-nosnippet>1293</a>        })
-<a href=#1294 id=1294 data-nosnippet>1294</a>        .collect()
-<a href=#1295 id=1295 data-nosnippet>1295</a>}
-<a href=#1296 id=1296 data-nosnippet>1296</a>
-<a href=#1297 id=1297 data-nosnippet>1297</a><span class="doccomment">/// The shared map, loaded off the runtime's threads.
-<a href=#1298 id=1298 data-nosnippet>1298</a></span><span class="kw">async fn </span>map() -&gt; <span class="prelude-ty">Result</span>&lt;Arc&lt;Map&gt;, String&gt; {
-<a href=#1299 id=1299 data-nosnippet>1299</a>    <span class="kw">let </span>loaded = tokio::task::spawn_blocking(hydra_travel::shared_map)
-<a href=#1300 id=1300 data-nosnippet>1300</a>        .<span class="kw">await
-<a href=#1301 id=1301 data-nosnippet>1301</a>        </span>.map_err(|why| <span class="macro">format!</span>(<span class="string">"the map could not be loaded: {why}"</span>))<span class="question-mark">?</span>;
-<a href=#1302 id=1302 data-nosnippet>1302</a>    loaded
-<a href=#1303 id=1303 data-nosnippet>1303</a>        .as_ref()
-<a href=#1304 id=1304 data-nosnippet>1304</a>        .map(|loaded| Arc::clone(<span class="kw-2">&amp;</span>loaded.map))
-<a href=#1305 id=1305 data-nosnippet>1305</a>        .map_err(Clone::clone)
-<a href=#1306 id=1306 data-nosnippet>1306</a>}
-<a href=#1307 id=1307 data-nosnippet>1307</a>
-<a href=#1308 id=1308 data-nosnippet>1308</a><span class="doccomment">/// `work` off the runtime's threads: routes over the whole map take a while.
-<a href=#1309 id=1309 data-nosnippet>1309</a></span><span class="kw">async fn </span>blocking&lt;T: Send + <span class="lifetime">'static</span>&gt;(
-<a href=#1310 id=1310 data-nosnippet>1310</a>    work: <span class="kw">impl </span>FnOnce() -&gt; T + Send + <span class="lifetime">'static</span>,
-<a href=#1311 id=1311 data-nosnippet>1311</a>) -&gt; <span class="prelude-ty">Result</span>&lt;T, String&gt; {
-<a href=#1312 id=1312 data-nosnippet>1312</a>    tokio::task::spawn_blocking(work)
-<a href=#1313 id=1313 data-nosnippet>1313</a>        .<span class="kw">await
-<a href=#1314 id=1314 data-nosnippet>1314</a>        </span>.map_err(|why| <span class="macro">format!</span>(<span class="string">"it could not be worked out: {why}"</span>))
-<a href=#1315 id=1315 data-nosnippet>1315</a>}
-<a href=#1316 id=1316 data-nosnippet>1316</a>
-<a href=#1317 id=1317 data-nosnippet>1317</a><span class="doccomment">/// The travel file's notes for `name` on `instance`.
-<a href=#1318 id=1318 data-nosnippet>1318</a></span><span class="kw">fn </span>notes(dir: <span class="kw-2">&amp;</span>Path, instance: <span class="kw-2">&amp;</span>str, name: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Notes, String&gt; {
-<a href=#1319 id=1319 data-nosnippet>1319</a>    file::load(dir, instance, name).map_err(|why| why.to_string())
-<a href=#1320 id=1320 data-nosnippet>1320</a>}
-<a href=#1321 id=1321 data-nosnippet>1321</a>
-<a href=#1322 id=1322 data-nosnippet>1322</a><span class="doccomment">/// The places the way out of which is priced on which side the character
-<a href=#1323 id=1323 data-nosnippet>1323</a>/// came in by: the place's location on the map, the memory, and what the
-<a href=#1324 id=1324 data-nosnippet>1324</a>/// Travel page calls it.
-<a href=#1325 id=1325 data-nosnippet>1325</a></span><span class="kw">const </span>SIDED: [(<span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span>str); <span class="number">2</span>] = [
-<a href=#1326 id=1326 data-nosnippet>1326</a>    (
-<a href=#1327 id=1327 data-nosnippet>1327</a>        <span class="string">"the Hinterwilds"</span>,
-<a href=#1328 id=1328 data-nosnippet>1328</a>        <span class="string">"hinterwilds_location"</span>,
-<a href=#1329 id=1329 data-nosnippet>1329</a>        <span class="string">"Hinterwilds side"</span>,
-<a href=#1330 id=1330 data-nosnippet>1330</a>    ),
-<a href=#1331 id=1331 data-nosnippet>1331</a>    (<span class="string">"the Red Forest"</span>, <span class="string">"redforest_location"</span>, <span class="string">"Red Forest side"</span>),
-<a href=#1332 id=1332 data-nosnippet>1332</a>];
-<a href=#1333 id=1333 data-nosnippet>1333</a>
-<a href=#1334 id=1334 data-nosnippet>1334</a><span class="doccomment">/// Why there may be no way out of here: the character stands in a place
-<a href=#1335 id=1335 data-nosnippet>1335</a>/// left by the side it came in by, and no side is remembered. Said so the
-<a href=#1336 id=1336 data-nosnippet>1336</a>/// player can set it on the Travel page rather than wonder at the map.
-<a href=#1337 id=1337 data-nosnippet>1337</a></span><span class="kw">fn </span>side_unknown(here: <span class="kw-2">&amp;</span>Here) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
-<a href=#1338 id=1338 data-nosnippet>1338</a>    <span class="kw">let </span>location = here.map.room(here.room)<span class="question-mark">?</span>.location.as_deref()<span class="question-mark">?</span>;
-<a href=#1339 id=1339 data-nosnippet>1339</a>    <span class="kw">let </span>(place, memory, called) = SIDED.iter().find(|(place, ..)| <span class="kw-2">*</span>place == location)<span class="question-mark">?</span>;
-<a href=#1340 id=1340 data-nosnippet>1340</a>    (!here.notes.memories.contains_key(<span class="kw-2">*</span>memory)).then(|| {
-<a href=#1341 id=1341 data-nosnippet>1341</a>        <span class="macro">format!</span>(
-<a href=#1342 id=1342 data-nosnippet>1342</a>            <span class="string">"I do not know which side you came into {place} from, so the way back is not \
-<a href=#1343 id=1343 data-nosnippet>1343</a>             priced. Set {called} on the Travel page, or ride in again."
-<a href=#1344 id=1344 data-nosnippet>1344</a>        </span>)
-<a href=#1345 id=1345 data-nosnippet>1345</a>    })
-<a href=#1346 id=1346 data-nosnippet>1346</a>}
-<a href=#1347 id=1347 data-nosnippet>1347</a>
-<a href=#1348 id=1348 data-nosnippet>1348</a><span class="doccomment">/// The character as it is now.
-<a href=#1349 id=1349 data-nosnippet>1349</a></span><span class="kw">async fn </span>here(handle: <span class="kw-2">&amp;</span>SessionHandle, dir: <span class="kw-2">&amp;</span>Path, roster_name: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Here, String&gt; {
-<a href=#1350 id=1350 data-nosnippet>1350</a>    <span class="kw">let </span>(instance, name) = <span class="kw">crate</span>::pages::who(roster_name)<span class="question-mark">?</span>;
-<a href=#1351 id=1351 data-nosnippet>1351</a>    <span class="kw">let </span>notes = notes(dir, instance, name)<span class="question-mark">?</span>;
-<a href=#1352 id=1352 data-nosnippet>1352</a>    <span class="kw">let </span>settings = <span class="kw">crate</span>::pages::travel_settings(dir, roster_name);
-<a href=#1353 id=1353 data-nosnippet>1353</a>    <span class="kw">let </span>map = map().<span class="kw">await</span><span class="question-mark">?</span>;
-<a href=#1354 id=1354 data-nosnippet>1354</a>    <span class="kw">let </span>snapshot = handle
-<a href=#1355 id=1355 data-nosnippet>1355</a>        .snapshot()
-<a href=#1356 id=1356 data-nosnippet>1356</a>        .<span class="kw">await
-<a href=#1357 id=1357 data-nosnippet>1357</a>        </span>.ok_or_else(|| <span class="string">"the character is not running."</span>.to_owned())<span class="question-mark">?</span>;
-<a href=#1358 id=1358 data-nosnippet>1358</a>    <span class="kw">let </span>walker = facts::walker_from(<span class="kw-2">&amp;</span>snapshot.state, <span class="kw-2">&amp;</span>settings, <span class="kw-2">&amp;</span>notes.memories);
-<a href=#1359 id=1359 data-nosnippet>1359</a>    <span class="kw">let </span>room = route::here(<span class="kw-2">&amp;</span>map, <span class="kw-2">&amp;</span>snapshot.state, notes.last_room)
-<a href=#1360 id=1360 data-nosnippet>1360</a>        .ok_or_else(|| <span class="string">"I cannot tell which room this is yet."</span>.to_owned())<span class="question-mark">?</span>;
-<a href=#1361 id=1361 data-nosnippet>1361</a>    <span class="prelude-val">Ok</span>(Here {
-<a href=#1362 id=1362 data-nosnippet>1362</a>        map,
-<a href=#1363 id=1363 data-nosnippet>1363</a>        walker,
-<a href=#1364 id=1364 data-nosnippet>1364</a>        notes,
-<a href=#1365 id=1365 data-nosnippet>1365</a>        room,
-<a href=#1366 id=1366 data-nosnippet>1366</a>    })
-<a href=#1367 id=1367 data-nosnippet>1367</a>}
-<a href=#1368 id=1368 data-nosnippet>1368</a>
-<a href=#1369 id=1369 data-nosnippet>1369</a><span class="attr">#[cfg(test)]
-<a href=#1370 id=1370 data-nosnippet>1370</a></span><span class="kw">mod </span>tests {
-<a href=#1371 id=1371 data-nosnippet>1371</a>    <span class="kw">use </span>super::{Claim, stop_walk, to_whom, way_named, ways_listed};
-<a href=#1372 id=1372 data-nosnippet>1372</a>
-<a href=#1373 id=1373 data-nosnippet>1373</a>    <span class="doccomment">/// Inside a place left by the side it was entered from, with no side
-<a href=#1374 id=1374 data-nosnippet>1374</a>    /// remembered, a walk with no way out says which setting to set; with
-<a href=#1375 id=1375 data-nosnippet>1375</a>    /// the side remembered, or anywhere else, it says nothing more.
-<a href=#1376 id=1376 data-nosnippet>1376</a>    </span><span class="attr">#[test]
-<a href=#1377 id=1377 data-nosnippet>1377</a>    </span><span class="kw">fn </span>no_way_out_names_the_side_not_known() {
-<a href=#1378 id=1378 data-nosnippet>1378</a>        <span class="kw">use </span>std::sync::Arc;
-<a href=#1379 id=1379 data-nosnippet>1379</a>
-<a href=#1380 id=1380 data-nosnippet>1380</a>        <span class="kw">use </span>hydra_travel::{Map, Room, RoomId, Walker, file::Notes};
-<a href=#1381 id=1381 data-nosnippet>1381</a>
-<a href=#1382 id=1382 data-nosnippet>1382</a>        <span class="kw">use </span>super::{Here, side_unknown};
-<a href=#1383 id=1383 data-nosnippet>1383</a>
-<a href=#1384 id=1384 data-nosnippet>1384</a>        <span class="kw">let </span>rooms: Vec&lt;Room&gt; = serde_json::from_str(
-<a href=#1385 id=1385 data-nosnippet>1385</a>            <span class="string">r#"[{"id":1,"location":"the Hinterwilds"},{"id":2,"location":"Icemule Trace"}]"#</span>,
-<a href=#1386 id=1386 data-nosnippet>1386</a>        )
-<a href=#1387 id=1387 data-nosnippet>1387</a>        .expect(<span class="string">"rooms"</span>);
-<a href=#1388 id=1388 data-nosnippet>1388</a>        <span class="kw">let </span>map = Arc::new(Map::from_rooms(rooms).expect(<span class="string">"a map"</span>));
-<a href=#1389 id=1389 data-nosnippet>1389</a>        <span class="kw">let </span><span class="kw-2">mut </span>here = Here {
-<a href=#1390 id=1390 data-nosnippet>1390</a>            map,
-<a href=#1391 id=1391 data-nosnippet>1391</a>            walker: Walker::default(),
-<a href=#1392 id=1392 data-nosnippet>1392</a>            notes: Notes::default(),
-<a href=#1393 id=1393 data-nosnippet>1393</a>            room: RoomId(<span class="number">1</span>),
-<a href=#1394 id=1394 data-nosnippet>1394</a>        };
-<a href=#1395 id=1395 data-nosnippet>1395</a>        <span class="kw">let </span>why = side_unknown(<span class="kw-2">&amp;</span>here).expect(<span class="string">"not known"</span>);
-<a href=#1396 id=1396 data-nosnippet>1396</a>        <span class="macro">assert!</span>(why.contains(<span class="string">"Hinterwilds side"</span>), <span class="string">"{why}"</span>);
-<a href=#1397 id=1397 data-nosnippet>1397</a>        here.notes
-<a href=#1398 id=1398 data-nosnippet>1398</a>            .memories
-<a href=#1399 id=1399 data-nosnippet>1399</a>            .insert(<span class="string">"hinterwilds_location"</span>.to_owned(), <span class="string">"IM"</span>.to_owned());
-<a href=#1400 id=1400 data-nosnippet>1400</a>        <span class="macro">assert_eq!</span>(side_unknown(<span class="kw-2">&amp;</span>here), <span class="prelude-val">None</span>);
-<a href=#1401 id=1401 data-nosnippet>1401</a>        here.room = RoomId(<span class="number">2</span>);
-<a href=#1402 id=1402 data-nosnippet>1402</a>        here.notes.memories.clear();
-<a href=#1403 id=1403 data-nosnippet>1403</a>        <span class="macro">assert_eq!</span>(side_unknown(<span class="kw-2">&amp;</span>here), <span class="prelude-val">None</span>);
-<a href=#1404 id=1404 data-nosnippet>1404</a>    }
-<a href=#1405 id=1405 data-nosnippet>1405</a>
-<a href=#1406 id=1406 data-nosnippet>1406</a>    <span class="doccomment">/// A way is named by its number or by a word of its label; a word that
-<a href=#1407 id=1407 data-nosnippet>1407</a>    /// names none or more than one is refused.
-<a href=#1408 id=1408 data-nosnippet>1408</a>    </span><span class="attr">#[test]
-<a href=#1409 id=1409 data-nosnippet>1409</a>    </span><span class="kw">fn </span>a_way_is_named_by_number_or_word() {
-<a href=#1410 id=1410 data-nosnippet>1410</a>        <span class="kw">let </span>way = |label: <span class="kw-2">&amp;</span>str, command: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;, to: u32| hydra_map::WayOut {
-<a href=#1411 id=1411 data-nosnippet>1411</a>            label: label.to_owned(),
-<a href=#1412 id=1412 data-nosnippet>1412</a>            command: command.map(str::to_owned),
-<a href=#1413 id=1413 data-nosnippet>1413</a>            to,
-<a href=#1414 id=1414 data-nosnippet>1414</a>        };
-<a href=#1415 id=1415 data-nosnippet>1415</a>        <span class="kw">let </span>ways = [
-<a href=#1416 id=1416 data-nosnippet>1416</a>            way(<span class="string">"gate"</span>, <span class="prelude-val">Some</span>(<span class="string">"go gate"</span>), <span class="number">228</span>),
-<a href=#1417 id=1417 data-nosnippet>1417</a>            way(<span class="string">"Town Square"</span>, <span class="prelude-val">None</span>, <span class="number">229</span>),
-<a href=#1418 id=1418 data-nosnippet>1418</a>            way(<span class="string">"iron door"</span>, <span class="prelude-val">Some</span>(<span class="string">"go door"</span>), <span class="number">230</span>),
-<a href=#1419 id=1419 data-nosnippet>1419</a>        ];
-<a href=#1420 id=1420 data-nosnippet>1420</a>        <span class="macro">assert_eq!</span>(way_named(<span class="kw-2">&amp;</span>ways, <span class="string">"2"</span>), <span class="prelude-val">Ok</span>(<span class="number">1</span>));
-<a href=#1421 id=1421 data-nosnippet>1421</a>        <span class="macro">assert_eq!</span>(way_named(<span class="kw-2">&amp;</span>ways, <span class="string">"square"</span>), <span class="prelude-val">Ok</span>(<span class="number">1</span>));
-<a href=#1422 id=1422 data-nosnippet>1422</a>        <span class="macro">assert_eq!</span>(way_named(<span class="kw-2">&amp;</span>ways, <span class="string">"DOOR"</span>), <span class="prelude-val">Ok</span>(<span class="number">2</span>));
-<a href=#1423 id=1423 data-nosnippet>1423</a>        <span class="macro">assert!</span>(way_named(<span class="kw-2">&amp;</span>ways, <span class="string">"4"</span>).unwrap_err().contains(<span class="string">"3 ways"</span>));
-<a href=#1424 id=1424 data-nosnippet>1424</a>        <span class="macro">assert!</span>(way_named(<span class="kw-2">&amp;</span>ways, <span class="string">"window"</span>).unwrap_err().contains(<span class="string">"no way"</span>));
-<a href=#1425 id=1425 data-nosnippet>1425</a>        <span class="macro">assert!</span>(way_named(<span class="kw-2">&amp;</span>ways, <span class="string">"o"</span>).unwrap_err().contains(<span class="string">"more than one"</span>));
-<a href=#1426 id=1426 data-nosnippet>1426</a>        <span class="kw">let </span>listed = ways_listed(<span class="kw-2">&amp;</span>ways);
-<a href=#1427 id=1427 data-nosnippet>1427</a>        <span class="macro">assert_eq!</span>(listed[<span class="number">0</span>], <span class="string">" 1  gate         go gate"</span>);
-<a href=#1428 id=1428 data-nosnippet>1428</a>        <span class="macro">assert_eq!</span>(listed[<span class="number">1</span>], <span class="string">" 2  Town Square  go2 229"</span>);
-<a href=#1429 id=1429 data-nosnippet>1429</a>    }
-<a href=#1430 id=1430 data-nosnippet>1430</a>
-<a href=#1431 id=1431 data-nosnippet>1431</a>    <span class="doccomment">/// A `.go2` is stopped by a `.stop` that comes while it is still
-<a href=#1432 id=1432 data-nosnippet>1432</a>    /// finding its way, before it sets out.
-<a href=#1433 id=1433 data-nosnippet>1433</a>    </span><span class="attr">#[test]
-<a href=#1434 id=1434 data-nosnippet>1434</a>    </span><span class="kw">fn </span>a_walk_still_setting_out_is_stopped() {
-<a href=#1435 id=1435 data-nosnippet>1435</a>        <span class="kw">let </span>claim = Claim::take(<span class="string">"GS3:Claimtest"</span>);
-<a href=#1436 id=1436 data-nosnippet>1436</a>        <span class="macro">assert!</span>(stop_walk(<span class="string">"GS3:Claimtest"</span>), <span class="string">"there was a walk to stop"</span>);
-<a href=#1437 id=1437 data-nosnippet>1437</a>        <span class="macro">assert!</span>(claim.stopped());
-<a href=#1438 id=1438 data-nosnippet>1438</a>    }
-<a href=#1439 id=1439 data-nosnippet>1439</a>
-<a href=#1440 id=1440 data-nosnippet>1440</a>    <span class="doccomment">/// A `.go2` that never set out leaves nothing behind to stop.
-<a href=#1441 id=1441 data-nosnippet>1441</a>    </span><span class="attr">#[test]
-<a href=#1442 id=1442 data-nosnippet>1442</a>    </span><span class="kw">fn </span>a_walk_that_never_set_out_is_given_up() {
-<a href=#1443 id=1443 data-nosnippet>1443</a>        drop(Claim::take(<span class="string">"GS3:Givenup"</span>));
-<a href=#1444 id=1444 data-nosnippet>1444</a>        <span class="macro">assert!</span>(!stop_walk(<span class="string">"GS3:Givenup"</span>));
-<a href=#1445 id=1445 data-nosnippet>1445</a>    }
-<a href=#1446 id=1446 data-nosnippet>1446</a>
-<a href=#1447 id=1447 data-nosnippet>1447</a>    <span class="doccomment">/// A second `.go2` stops the first, still setting out or walking.
+<a href=#1233 id=1233 data-nosnippet>1233</a><span class="doccomment">/// `what`, with `to &lt;character&gt;` made the number of the room that
+<a href=#1234 id=1234 data-nosnippet>1234</a>/// character stands in, and the character's name: another character
+<a href=#1235 id=1235 data-nosnippet>1235</a>/// running here, as `.to` names one.
+<a href=#1236 id=1236 data-nosnippet>1236</a></span><span class="kw">async fn </span>whither(
+<a href=#1237 id=1237 data-nosnippet>1237</a>    characters: <span class="kw-2">&amp;</span>Characters,
+<a href=#1238 id=1238 data-nosnippet>1238</a>    roster_name: <span class="kw-2">&amp;</span>str,
+<a href=#1239 id=1239 data-nosnippet>1239</a>    what: String,
+<a href=#1240 id=1240 data-nosnippet>1240</a>) -&gt; <span class="prelude-ty">Result</span>&lt;(String, <span class="prelude-ty">Option</span>&lt;String&gt;), String&gt; {
+<a href=#1241 id=1241 data-nosnippet>1241</a>    <span class="kw">let </span><span class="prelude-val">Some</span>(name) = to_whom(<span class="kw-2">&amp;</span>what) <span class="kw">else </span>{
+<a href=#1242 id=1242 data-nosnippet>1242</a>        <span class="kw">return </span><span class="prelude-val">Ok</span>((what, <span class="prelude-val">None</span>));
+<a href=#1243 id=1243 data-nosnippet>1243</a>    };
+<a href=#1244 id=1244 data-nosnippet>1244</a>    <span class="kw">let </span>running = characters().<span class="kw">await</span>;
+<a href=#1245 id=1245 data-nosnippet>1245</a>    <span class="kw">let </span>one = <span class="kw">crate</span>::relay::pick(name, <span class="kw-2">&amp;</span>running).map_err(|why| why.replacen(<span class="string">"To: "</span>, <span class="string">""</span>, <span class="number">1</span>))<span class="question-mark">?</span>;
+<a href=#1246 id=1246 data-nosnippet>1246</a>    <span class="kw">let </span>whose = <span class="macro">format!</span>(<span class="string">"{}:{}"</span>, one.game, one.name);
+<a href=#1247 id=1247 data-nosnippet>1247</a>    <span class="kw">if </span>whose.eq_ignore_ascii_case(roster_name) {
+<a href=#1248 id=1248 data-nosnippet>1248</a>        <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">"{} is you."</span>, one.name));
+<a href=#1249 id=1249 data-nosnippet>1249</a>    }
+<a href=#1250 id=1250 data-nosnippet>1250</a>    <span class="kw">let </span>map = map().<span class="kw">await</span><span class="question-mark">?</span>;
+<a href=#1251 id=1251 data-nosnippet>1251</a>    <span class="kw">let </span>(instance, name) = <span class="kw">crate</span>::pages::who(<span class="kw-2">&amp;</span>whose)<span class="question-mark">?</span>;
+<a href=#1252 id=1252 data-nosnippet>1252</a>    <span class="kw">let </span>notes = notes(<span class="kw-2">&amp;</span><span class="kw">crate</span>::account::data_dir(), instance, name)<span class="question-mark">?</span>;
+<a href=#1253 id=1253 data-nosnippet>1253</a>    <span class="kw">let </span>snapshot = one
+<a href=#1254 id=1254 data-nosnippet>1254</a>        .handle
+<a href=#1255 id=1255 data-nosnippet>1255</a>        .snapshot()
+<a href=#1256 id=1256 data-nosnippet>1256</a>        .<span class="kw">await
+<a href=#1257 id=1257 data-nosnippet>1257</a>        </span>.ok_or_else(|| <span class="macro">format!</span>(<span class="string">"{} is not running."</span>, one.name))<span class="question-mark">?</span>;
+<a href=#1258 id=1258 data-nosnippet>1258</a>    <span class="kw">let </span>room = route::here(<span class="kw-2">&amp;</span>map, <span class="kw-2">&amp;</span>snapshot.state, notes.last_room)
+<a href=#1259 id=1259 data-nosnippet>1259</a>        .ok_or_else(|| <span class="macro">format!</span>(<span class="string">"I cannot tell which room {} is in."</span>, one.name))<span class="question-mark">?</span>;
+<a href=#1260 id=1260 data-nosnippet>1260</a>    <span class="prelude-val">Ok</span>((room.<span class="number">0</span>.to_string(), <span class="prelude-val">Some</span>(one.name.clone())))
+<a href=#1261 id=1261 data-nosnippet>1261</a>}
+<a href=#1262 id=1262 data-nosnippet>1262</a>
+<a href=#1263 id=1263 data-nosnippet>1263</a><span class="doccomment">/// Words that fit several rooms: which, as go2 lists them.
+<a href=#1264 id=1264 data-nosnippet>1264</a></span><span class="kw">fn </span>several(map: <span class="kw-2">&amp;</span>Map, what: <span class="kw-2">&amp;</span>str, rooms: <span class="kw-2">&amp;</span>[RoomId]) -&gt; Vec&lt;String&gt; {
+<a href=#1265 id=1265 data-nosnippet>1265</a>    <span class="kw">let </span><span class="kw-2">mut </span>lines = <span class="macro">vec!</span>[<span class="macro">format!</span>(
+<a href=#1266 id=1266 data-nosnippet>1266</a>        <span class="string">"{what} fits {} rooms; go2 one of them by its number:"</span>,
+<a href=#1267 id=1267 data-nosnippet>1267</a>        rooms.len()
+<a href=#1268 id=1268 data-nosnippet>1268</a>    )];
+<a href=#1269 id=1269 data-nosnippet>1269</a>    lines.extend(rooms.iter().take(SEVERAL_SHOWN).map(|room| {
+<a href=#1270 id=1270 data-nosnippet>1270</a>        <span class="kw">let </span>title = map
+<a href=#1271 id=1271 data-nosnippet>1271</a>            .room(<span class="kw-2">*</span>room)
+<a href=#1272 id=1272 data-nosnippet>1272</a>            .and_then(|room| room.title.first().cloned())
+<a href=#1273 id=1273 data-nosnippet>1273</a>            .unwrap_or_default();
+<a href=#1274 id=1274 data-nosnippet>1274</a>        <span class="macro">format!</span>(<span class="string">"  {:&gt;6}  {title}"</span>, room.<span class="number">0</span>)
+<a href=#1275 id=1275 data-nosnippet>1275</a>    }));
+<a href=#1276 id=1276 data-nosnippet>1276</a>    <span class="kw">if </span>rooms.len() &gt; SEVERAL_SHOWN {
+<a href=#1277 id=1277 data-nosnippet>1277</a>        lines.push(<span class="macro">format!</span>(<span class="string">"  ...and {} more."</span>, rooms.len() - SEVERAL_SHOWN));
+<a href=#1278 id=1278 data-nosnippet>1278</a>    }
+<a href=#1279 id=1279 data-nosnippet>1279</a>    lines
+<a href=#1280 id=1280 data-nosnippet>1280</a>}
+<a href=#1281 id=1281 data-nosnippet>1281</a>
+<a href=#1282 id=1282 data-nosnippet>1282</a><span class="doccomment">/// The names saved, as `.go2 list` says them.
+<a href=#1283 id=1283 data-nosnippet>1283</a></span><span class="kw">fn </span>listed(notes: <span class="kw-2">&amp;</span>Notes) -&gt; Vec&lt;String&gt; {
+<a href=#1284 id=1284 data-nosnippet>1284</a>    <span class="kw">if </span>notes.targets.is_empty() {
+<a href=#1285 id=1285 data-nosnippet>1285</a>        <span class="kw">return </span><span class="macro">vec!</span>[<span class="string">"No names are saved: .go2 save &lt;name&gt; names this room."</span>.to_owned()];
+<a href=#1286 id=1286 data-nosnippet>1286</a>    }
+<a href=#1287 id=1287 data-nosnippet>1287</a>    notes
+<a href=#1288 id=1288 data-nosnippet>1288</a>        .targets
+<a href=#1289 id=1289 data-nosnippet>1289</a>        .iter()
+<a href=#1290 id=1290 data-nosnippet>1290</a>        .map(|(name, rooms)| <span class="macro">format!</span>(<span class="string">"{name:&lt;20} = {rooms:?}"</span>))
+<a href=#1291 id=1291 data-nosnippet>1291</a>        .collect()
+<a href=#1292 id=1292 data-nosnippet>1292</a>}
+<a href=#1293 id=1293 data-nosnippet>1293</a>
+<a href=#1294 id=1294 data-nosnippet>1294</a><span class="doccomment">/// The rooms `.go2 save` names: a number, `u&lt;uid&gt;`, or `current`; none
+<a href=#1295 id=1295 data-nosnippet>1295</a>/// given means `current`.
+<a href=#1296 id=1296 data-nosnippet>1296</a></span><span class="kw">fn </span>rooms_meant(map: <span class="kw-2">&amp;</span>Map, words: <span class="kw-2">&amp;</span>[String], here: <span class="prelude-ty">Option</span>&lt;RoomId&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;u32&gt;, String&gt; {
+<a href=#1297 id=1297 data-nosnippet>1297</a>    <span class="kw">let </span>current = || {
+<a href=#1298 id=1298 data-nosnippet>1298</a>        here.map(|room| room.<span class="number">0</span>)
+<a href=#1299 id=1299 data-nosnippet>1299</a>            .ok_or_else(|| <span class="string">"I cannot tell which room this is."</span>.to_owned())
+<a href=#1300 id=1300 data-nosnippet>1300</a>    };
+<a href=#1301 id=1301 data-nosnippet>1301</a>    <span class="kw">if </span>words.is_empty() {
+<a href=#1302 id=1302 data-nosnippet>1302</a>        <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="macro">vec!</span>[current()<span class="question-mark">?</span>]);
+<a href=#1303 id=1303 data-nosnippet>1303</a>    }
+<a href=#1304 id=1304 data-nosnippet>1304</a>    words
+<a href=#1305 id=1305 data-nosnippet>1305</a>        .iter()
+<a href=#1306 id=1306 data-nosnippet>1306</a>        .map(|word| {
+<a href=#1307 id=1307 data-nosnippet>1307</a>            <span class="kw">if </span>word == <span class="string">"current" </span>{
+<a href=#1308 id=1308 data-nosnippet>1308</a>                <span class="kw">return </span>current();
+<a href=#1309 id=1309 data-nosnippet>1309</a>            }
+<a href=#1310 id=1310 data-nosnippet>1310</a>            <span class="kw">if let </span><span class="prelude-val">Some</span>(uid) = word
+<a href=#1311 id=1311 data-nosnippet>1311</a>                .strip_prefix(<span class="string">'u'</span>)
+<a href=#1312 id=1312 data-nosnippet>1312</a>                .and_then(|digits| digits.parse().ok())
+<a href=#1313 id=1313 data-nosnippet>1313</a>            {
+<a href=#1314 id=1314 data-nosnippet>1314</a>                <span class="kw">return match </span>map.ids_for_uid(Uid(uid)) {
+<a href=#1315 id=1315 data-nosnippet>1315</a>                    [room] =&gt; <span class="prelude-val">Ok</span>(room.<span class="number">0</span>),
+<a href=#1316 id=1316 data-nosnippet>1316</a>                    <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">"{word} is not one room the map knows."</span>)),
+<a href=#1317 id=1317 data-nosnippet>1317</a>                };
+<a href=#1318 id=1318 data-nosnippet>1318</a>            }
+<a href=#1319 id=1319 data-nosnippet>1319</a>            word.parse()
+<a href=#1320 id=1320 data-nosnippet>1320</a>                .ok()
+<a href=#1321 id=1321 data-nosnippet>1321</a>                .filter(|id| map.room(RoomId(<span class="kw-2">*</span>id)).is_some())
+<a href=#1322 id=1322 data-nosnippet>1322</a>                .ok_or_else(|| <span class="macro">format!</span>(<span class="string">"{word} is not a room the map knows."</span>))
+<a href=#1323 id=1323 data-nosnippet>1323</a>        })
+<a href=#1324 id=1324 data-nosnippet>1324</a>        .collect()
+<a href=#1325 id=1325 data-nosnippet>1325</a>}
+<a href=#1326 id=1326 data-nosnippet>1326</a>
+<a href=#1327 id=1327 data-nosnippet>1327</a><span class="doccomment">/// The shared map, loaded off the runtime's threads.
+<a href=#1328 id=1328 data-nosnippet>1328</a></span><span class="kw">async fn </span>map() -&gt; <span class="prelude-ty">Result</span>&lt;Arc&lt;Map&gt;, String&gt; {
+<a href=#1329 id=1329 data-nosnippet>1329</a>    <span class="kw">let </span>loaded = tokio::task::spawn_blocking(hydra_travel::shared_map)
+<a href=#1330 id=1330 data-nosnippet>1330</a>        .<span class="kw">await
+<a href=#1331 id=1331 data-nosnippet>1331</a>        </span>.map_err(|why| <span class="macro">format!</span>(<span class="string">"the map could not be loaded: {why}"</span>))<span class="question-mark">?</span>;
+<a href=#1332 id=1332 data-nosnippet>1332</a>    loaded
+<a href=#1333 id=1333 data-nosnippet>1333</a>        .as_ref()
+<a href=#1334 id=1334 data-nosnippet>1334</a>        .map(|loaded| Arc::clone(<span class="kw-2">&amp;</span>loaded.map))
+<a href=#1335 id=1335 data-nosnippet>1335</a>        .map_err(Clone::clone)
+<a href=#1336 id=1336 data-nosnippet>1336</a>}
+<a href=#1337 id=1337 data-nosnippet>1337</a>
+<a href=#1338 id=1338 data-nosnippet>1338</a><span class="doccomment">/// `work` off the runtime's threads: routes over the whole map take a while.
+<a href=#1339 id=1339 data-nosnippet>1339</a></span><span class="kw">async fn </span>blocking&lt;T: Send + <span class="lifetime">'static</span>&gt;(
+<a href=#1340 id=1340 data-nosnippet>1340</a>    work: <span class="kw">impl </span>FnOnce() -&gt; T + Send + <span class="lifetime">'static</span>,
+<a href=#1341 id=1341 data-nosnippet>1341</a>) -&gt; <span class="prelude-ty">Result</span>&lt;T, String&gt; {
+<a href=#1342 id=1342 data-nosnippet>1342</a>    tokio::task::spawn_blocking(work)
+<a href=#1343 id=1343 data-nosnippet>1343</a>        .<span class="kw">await
+<a href=#1344 id=1344 data-nosnippet>1344</a>        </span>.map_err(|why| <span class="macro">format!</span>(<span class="string">"it could not be worked out: {why}"</span>))
+<a href=#1345 id=1345 data-nosnippet>1345</a>}
+<a href=#1346 id=1346 data-nosnippet>1346</a>
+<a href=#1347 id=1347 data-nosnippet>1347</a><span class="doccomment">/// The travel file's notes for `name` on `instance`.
+<a href=#1348 id=1348 data-nosnippet>1348</a></span><span class="kw">fn </span>notes(dir: <span class="kw-2">&amp;</span>Path, instance: <span class="kw-2">&amp;</span>str, name: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Notes, String&gt; {
+<a href=#1349 id=1349 data-nosnippet>1349</a>    file::load(dir, instance, name).map_err(|why| why.to_string())
+<a href=#1350 id=1350 data-nosnippet>1350</a>}
+<a href=#1351 id=1351 data-nosnippet>1351</a>
+<a href=#1352 id=1352 data-nosnippet>1352</a><span class="doccomment">/// The places the way out of which is priced on which side the character
+<a href=#1353 id=1353 data-nosnippet>1353</a>/// came in by: the place's location on the map, the memory, and what the
+<a href=#1354 id=1354 data-nosnippet>1354</a>/// Travel page calls it.
+<a href=#1355 id=1355 data-nosnippet>1355</a></span><span class="kw">const </span>SIDED: [(<span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span>str); <span class="number">2</span>] = [
+<a href=#1356 id=1356 data-nosnippet>1356</a>    (
+<a href=#1357 id=1357 data-nosnippet>1357</a>        <span class="string">"the Hinterwilds"</span>,
+<a href=#1358 id=1358 data-nosnippet>1358</a>        <span class="string">"hinterwilds_location"</span>,
+<a href=#1359 id=1359 data-nosnippet>1359</a>        <span class="string">"Hinterwilds side"</span>,
+<a href=#1360 id=1360 data-nosnippet>1360</a>    ),
+<a href=#1361 id=1361 data-nosnippet>1361</a>    (<span class="string">"the Red Forest"</span>, <span class="string">"redforest_location"</span>, <span class="string">"Red Forest side"</span>),
+<a href=#1362 id=1362 data-nosnippet>1362</a>];
+<a href=#1363 id=1363 data-nosnippet>1363</a>
+<a href=#1364 id=1364 data-nosnippet>1364</a><span class="doccomment">/// Why there may be no way out of here: the character stands in a place
+<a href=#1365 id=1365 data-nosnippet>1365</a>/// left by the side it came in by, and no side is remembered. Said so the
+<a href=#1366 id=1366 data-nosnippet>1366</a>/// player can set it on the Travel page rather than wonder at the map.
+<a href=#1367 id=1367 data-nosnippet>1367</a></span><span class="kw">fn </span>side_unknown(here: <span class="kw-2">&amp;</span>Here) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
+<a href=#1368 id=1368 data-nosnippet>1368</a>    <span class="kw">let </span>location = here.map.room(here.room)<span class="question-mark">?</span>.location.as_deref()<span class="question-mark">?</span>;
+<a href=#1369 id=1369 data-nosnippet>1369</a>    <span class="kw">let </span>(place, memory, called) = SIDED.iter().find(|(place, ..)| <span class="kw-2">*</span>place == location)<span class="question-mark">?</span>;
+<a href=#1370 id=1370 data-nosnippet>1370</a>    (!here.notes.memories.contains_key(<span class="kw-2">*</span>memory)).then(|| {
+<a href=#1371 id=1371 data-nosnippet>1371</a>        <span class="macro">format!</span>(
+<a href=#1372 id=1372 data-nosnippet>1372</a>            <span class="string">"I do not know which side you came into {place} from, so the way back is not \
+<a href=#1373 id=1373 data-nosnippet>1373</a>             priced. Set {called} on the Travel page, or ride in again."
+<a href=#1374 id=1374 data-nosnippet>1374</a>        </span>)
+<a href=#1375 id=1375 data-nosnippet>1375</a>    })
+<a href=#1376 id=1376 data-nosnippet>1376</a>}
+<a href=#1377 id=1377 data-nosnippet>1377</a>
+<a href=#1378 id=1378 data-nosnippet>1378</a><span class="doccomment">/// The character as it is now.
+<a href=#1379 id=1379 data-nosnippet>1379</a></span><span class="kw">async fn </span>here(handle: <span class="kw-2">&amp;</span>SessionHandle, dir: <span class="kw-2">&amp;</span>Path, roster_name: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Here, String&gt; {
+<a href=#1380 id=1380 data-nosnippet>1380</a>    <span class="kw">let </span>(instance, name) = <span class="kw">crate</span>::pages::who(roster_name)<span class="question-mark">?</span>;
+<a href=#1381 id=1381 data-nosnippet>1381</a>    <span class="kw">let </span>notes = notes(dir, instance, name)<span class="question-mark">?</span>;
+<a href=#1382 id=1382 data-nosnippet>1382</a>    <span class="kw">let </span>settings = <span class="kw">crate</span>::pages::travel_settings(dir, roster_name);
+<a href=#1383 id=1383 data-nosnippet>1383</a>    <span class="kw">let </span>map = map().<span class="kw">await</span><span class="question-mark">?</span>;
+<a href=#1384 id=1384 data-nosnippet>1384</a>    <span class="kw">let </span>snapshot = handle
+<a href=#1385 id=1385 data-nosnippet>1385</a>        .snapshot()
+<a href=#1386 id=1386 data-nosnippet>1386</a>        .<span class="kw">await
+<a href=#1387 id=1387 data-nosnippet>1387</a>        </span>.ok_or_else(|| <span class="string">"the character is not running."</span>.to_owned())<span class="question-mark">?</span>;
+<a href=#1388 id=1388 data-nosnippet>1388</a>    <span class="kw">let </span>walker = facts::walker_from(<span class="kw-2">&amp;</span>snapshot.state, <span class="kw-2">&amp;</span>settings, <span class="kw-2">&amp;</span>notes.memories);
+<a href=#1389 id=1389 data-nosnippet>1389</a>    <span class="kw">let </span>room = route::here(<span class="kw-2">&amp;</span>map, <span class="kw-2">&amp;</span>snapshot.state, notes.last_room)
+<a href=#1390 id=1390 data-nosnippet>1390</a>        .ok_or_else(|| <span class="string">"I cannot tell which room this is yet."</span>.to_owned())<span class="question-mark">?</span>;
+<a href=#1391 id=1391 data-nosnippet>1391</a>    <span class="prelude-val">Ok</span>(Here {
+<a href=#1392 id=1392 data-nosnippet>1392</a>        map,
+<a href=#1393 id=1393 data-nosnippet>1393</a>        walker,
+<a href=#1394 id=1394 data-nosnippet>1394</a>        notes,
+<a href=#1395 id=1395 data-nosnippet>1395</a>        room,
+<a href=#1396 id=1396 data-nosnippet>1396</a>    })
+<a href=#1397 id=1397 data-nosnippet>1397</a>}
+<a href=#1398 id=1398 data-nosnippet>1398</a>
+<a href=#1399 id=1399 data-nosnippet>1399</a><span class="attr">#[cfg(test)]
+<a href=#1400 id=1400 data-nosnippet>1400</a></span><span class="kw">mod </span>tests {
+<a href=#1401 id=1401 data-nosnippet>1401</a>    <span class="kw">use </span>super::{Claim, stop_walk, to_whom, took_said, way_named, ways_listed};
+<a href=#1402 id=1402 data-nosnippet>1402</a>
+<a href=#1403 id=1403 data-nosnippet>1403</a>    <span class="doccomment">/// A walk's time reads as a clock: minutes and seconds, hours once
+<a href=#1404 id=1404 data-nosnippet>1404</a>    /// there are any.
+<a href=#1405 id=1405 data-nosnippet>1405</a>    </span><span class="attr">#[test]
+<a href=#1406 id=1406 data-nosnippet>1406</a>    </span><span class="kw">fn </span>a_walks_time_reads_as_a_clock() {
+<a href=#1407 id=1407 data-nosnippet>1407</a>        <span class="kw">let </span>secs = std::time::Duration::from_secs;
+<a href=#1408 id=1408 data-nosnippet>1408</a>        <span class="macro">assert_eq!</span>(took_said(secs(<span class="number">7</span>)), <span class="string">"0:07"</span>);
+<a href=#1409 id=1409 data-nosnippet>1409</a>        <span class="macro">assert_eq!</span>(took_said(secs(<span class="number">161</span>)), <span class="string">"2:41"</span>);
+<a href=#1410 id=1410 data-nosnippet>1410</a>        <span class="macro">assert_eq!</span>(took_said(secs(<span class="number">3761</span>)), <span class="string">"1:02:41"</span>);
+<a href=#1411 id=1411 data-nosnippet>1411</a>    }
+<a href=#1412 id=1412 data-nosnippet>1412</a>
+<a href=#1413 id=1413 data-nosnippet>1413</a>    <span class="doccomment">/// Inside a place left by the side it was entered from, with no side
+<a href=#1414 id=1414 data-nosnippet>1414</a>    /// remembered, a walk with no way out says which setting to set; with
+<a href=#1415 id=1415 data-nosnippet>1415</a>    /// the side remembered, or anywhere else, it says nothing more.
+<a href=#1416 id=1416 data-nosnippet>1416</a>    </span><span class="attr">#[test]
+<a href=#1417 id=1417 data-nosnippet>1417</a>    </span><span class="kw">fn </span>no_way_out_names_the_side_not_known() {
+<a href=#1418 id=1418 data-nosnippet>1418</a>        <span class="kw">use </span>std::sync::Arc;
+<a href=#1419 id=1419 data-nosnippet>1419</a>
+<a href=#1420 id=1420 data-nosnippet>1420</a>        <span class="kw">use </span>hydra_travel::{Map, Room, RoomId, Walker, file::Notes};
+<a href=#1421 id=1421 data-nosnippet>1421</a>
+<a href=#1422 id=1422 data-nosnippet>1422</a>        <span class="kw">use </span>super::{Here, side_unknown};
+<a href=#1423 id=1423 data-nosnippet>1423</a>
+<a href=#1424 id=1424 data-nosnippet>1424</a>        <span class="kw">let </span>rooms: Vec&lt;Room&gt; = serde_json::from_str(
+<a href=#1425 id=1425 data-nosnippet>1425</a>            <span class="string">r#"[{"id":1,"location":"the Hinterwilds"},{"id":2,"location":"Icemule Trace"}]"#</span>,
+<a href=#1426 id=1426 data-nosnippet>1426</a>        )
+<a href=#1427 id=1427 data-nosnippet>1427</a>        .expect(<span class="string">"rooms"</span>);
+<a href=#1428 id=1428 data-nosnippet>1428</a>        <span class="kw">let </span>map = Arc::new(Map::from_rooms(rooms).expect(<span class="string">"a map"</span>));
+<a href=#1429 id=1429 data-nosnippet>1429</a>        <span class="kw">let </span><span class="kw-2">mut </span>here = Here {
+<a href=#1430 id=1430 data-nosnippet>1430</a>            map,
+<a href=#1431 id=1431 data-nosnippet>1431</a>            walker: Walker::default(),
+<a href=#1432 id=1432 data-nosnippet>1432</a>            notes: Notes::default(),
+<a href=#1433 id=1433 data-nosnippet>1433</a>            room: RoomId(<span class="number">1</span>),
+<a href=#1434 id=1434 data-nosnippet>1434</a>        };
+<a href=#1435 id=1435 data-nosnippet>1435</a>        <span class="kw">let </span>why = side_unknown(<span class="kw-2">&amp;</span>here).expect(<span class="string">"not known"</span>);
+<a href=#1436 id=1436 data-nosnippet>1436</a>        <span class="macro">assert!</span>(why.contains(<span class="string">"Hinterwilds side"</span>), <span class="string">"{why}"</span>);
+<a href=#1437 id=1437 data-nosnippet>1437</a>        here.notes
+<a href=#1438 id=1438 data-nosnippet>1438</a>            .memories
+<a href=#1439 id=1439 data-nosnippet>1439</a>            .insert(<span class="string">"hinterwilds_location"</span>.to_owned(), <span class="string">"IM"</span>.to_owned());
+<a href=#1440 id=1440 data-nosnippet>1440</a>        <span class="macro">assert_eq!</span>(side_unknown(<span class="kw-2">&amp;</span>here), <span class="prelude-val">None</span>);
+<a href=#1441 id=1441 data-nosnippet>1441</a>        here.room = RoomId(<span class="number">2</span>);
+<a href=#1442 id=1442 data-nosnippet>1442</a>        here.notes.memories.clear();
+<a href=#1443 id=1443 data-nosnippet>1443</a>        <span class="macro">assert_eq!</span>(side_unknown(<span class="kw-2">&amp;</span>here), <span class="prelude-val">None</span>);
+<a href=#1444 id=1444 data-nosnippet>1444</a>    }
+<a href=#1445 id=1445 data-nosnippet>1445</a>
+<a href=#1446 id=1446 data-nosnippet>1446</a>    <span class="doccomment">/// A way is named by its number or by a word of its label; a word that
+<a href=#1447 id=1447 data-nosnippet>1447</a>    /// names none or more than one is refused.
 <a href=#1448 id=1448 data-nosnippet>1448</a>    </span><span class="attr">#[test]
-<a href=#1449 id=1449 data-nosnippet>1449</a>    </span><span class="kw">fn </span>a_second_go2_stops_the_first() {
-<a href=#1450 id=1450 data-nosnippet>1450</a>        <span class="kw">let </span>first = Claim::take(<span class="string">"GS3:Twice"</span>);
-<a href=#1451 id=1451 data-nosnippet>1451</a>        <span class="kw">let </span>second = Claim::take(<span class="string">"GS3:Twice"</span>);
-<a href=#1452 id=1452 data-nosnippet>1452</a>        <span class="macro">assert!</span>(first.stopped());
-<a href=#1453 id=1453 data-nosnippet>1453</a>        <span class="macro">assert!</span>(!second.stopped());
-<a href=#1454 id=1454 data-nosnippet>1454</a>        drop(first);
-<a href=#1455 id=1455 data-nosnippet>1455</a>        <span class="macro">assert!</span>(
-<a href=#1456 id=1456 data-nosnippet>1456</a>            stop_walk(<span class="string">"GS3:Twice"</span>),
-<a href=#1457 id=1457 data-nosnippet>1457</a>            <span class="string">"the first, dropped, leaves the second's"
-<a href=#1458 id=1458 data-nosnippet>1458</a>        </span>);
-<a href=#1459 id=1459 data-nosnippet>1459</a>    }
-<a href=#1460 id=1460 data-nosnippet>1460</a>
-<a href=#1461 id=1461 data-nosnippet>1461</a>    <span class="doccomment">/// A `.go2` that finds no way -- mistyped, or several places -- stops
-<a href=#1462 id=1462 data-nosnippet>1462</a>    /// nothing: the walk under way goes on. One that sets out replaces it.
-<a href=#1463 id=1463 data-nosnippet>1463</a>    </span><span class="attr">#[test]
-<a href=#1464 id=1464 data-nosnippet>1464</a>    </span><span class="kw">fn </span>only_a_go2_that_sets_out_stops_the_walk_under_way() {
-<a href=#1465 id=1465 data-nosnippet>1465</a>        <span class="kw">let </span><span class="kw-2">mut </span>walking = Claim::take(<span class="string">"GS3:Underway"</span>);
-<a href=#1466 id=1466 data-nosnippet>1466</a>        walking.set_out();
-<a href=#1467 id=1467 data-nosnippet>1467</a>        drop(Claim::take(<span class="string">"GS3:Underway"</span>));
-<a href=#1468 id=1468 data-nosnippet>1468</a>        <span class="macro">assert!</span>(!walking.stopped(), <span class="string">"a .go2 that found no way"</span>);
-<a href=#1469 id=1469 data-nosnippet>1469</a>        <span class="kw">let </span><span class="kw-2">mut </span>next = Claim::take(<span class="string">"GS3:Underway"</span>);
-<a href=#1470 id=1470 data-nosnippet>1470</a>        next.set_out();
-<a href=#1471 id=1471 data-nosnippet>1471</a>        <span class="macro">assert!</span>(walking.stopped(), <span class="string">"replaced"</span>);
-<a href=#1472 id=1472 data-nosnippet>1472</a>        <span class="macro">assert!</span>(!next.stopped());
-<a href=#1473 id=1473 data-nosnippet>1473</a>        <span class="macro">assert!</span>(stop_walk(<span class="string">"GS3:Underway"</span>));
-<a href=#1474 id=1474 data-nosnippet>1474</a>        <span class="macro">assert!</span>(next.stopped());
-<a href=#1475 id=1475 data-nosnippet>1475</a>    }
-<a href=#1476 id=1476 data-nosnippet>1476</a>
-<a href=#1477 id=1477 data-nosnippet>1477</a>    <span class="doccomment">/// `to` and one name is a character; a place with more words, or
-<a href=#1478 id=1478 data-nosnippet>1478</a>    /// without `to`, is a place.
-<a href=#1479 id=1479 data-nosnippet>1479</a>    </span><span class="attr">#[test]
-<a href=#1480 id=1480 data-nosnippet>1480</a>    </span><span class="kw">fn </span>to_and_a_name_is_a_character() {
-<a href=#1481 id=1481 data-nosnippet>1481</a>        <span class="macro">assert_eq!</span>(to_whom(<span class="string">"to Ashryn"</span>), <span class="prelude-val">Some</span>(<span class="string">"Ashryn"</span>));
-<a href=#1482 id=1482 data-nosnippet>1482</a>        <span class="macro">assert_eq!</span>(to_whom(<span class="string">"  TO  GSF:Baelor "</span>), <span class="prelude-val">Some</span>(<span class="string">"GSF:Baelor"</span>));
-<a href=#1483 id=1483 data-nosnippet>1483</a>        <span class="macro">assert_eq!</span>(to_whom(<span class="string">"to the docks"</span>), <span class="prelude-val">None</span>);
-<a href=#1484 id=1484 data-nosnippet>1484</a>        <span class="macro">assert_eq!</span>(to_whom(<span class="string">"bank"</span>), <span class="prelude-val">None</span>);
-<a href=#1485 id=1485 data-nosnippet>1485</a>        <span class="macro">assert_eq!</span>(to_whom(<span class="string">"to"</span>), <span class="prelude-val">None</span>);
-<a href=#1486 id=1486 data-nosnippet>1486</a>    }
-<a href=#1487 id=1487 data-nosnippet>1487</a>}
+<a href=#1449 id=1449 data-nosnippet>1449</a>    </span><span class="kw">fn </span>a_way_is_named_by_number_or_word() {
+<a href=#1450 id=1450 data-nosnippet>1450</a>        <span class="kw">let </span>way = |label: <span class="kw-2">&amp;</span>str, command: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;, to: u32| hydra_map::WayOut {
+<a href=#1451 id=1451 data-nosnippet>1451</a>            label: label.to_owned(),
+<a href=#1452 id=1452 data-nosnippet>1452</a>            command: command.map(str::to_owned),
+<a href=#1453 id=1453 data-nosnippet>1453</a>            to,
+<a href=#1454 id=1454 data-nosnippet>1454</a>        };
+<a href=#1455 id=1455 data-nosnippet>1455</a>        <span class="kw">let </span>ways = [
+<a href=#1456 id=1456 data-nosnippet>1456</a>            way(<span class="string">"gate"</span>, <span class="prelude-val">Some</span>(<span class="string">"go gate"</span>), <span class="number">228</span>),
+<a href=#1457 id=1457 data-nosnippet>1457</a>            way(<span class="string">"Town Square"</span>, <span class="prelude-val">None</span>, <span class="number">229</span>),
+<a href=#1458 id=1458 data-nosnippet>1458</a>            way(<span class="string">"iron door"</span>, <span class="prelude-val">Some</span>(<span class="string">"go door"</span>), <span class="number">230</span>),
+<a href=#1459 id=1459 data-nosnippet>1459</a>        ];
+<a href=#1460 id=1460 data-nosnippet>1460</a>        <span class="macro">assert_eq!</span>(way_named(<span class="kw-2">&amp;</span>ways, <span class="string">"2"</span>), <span class="prelude-val">Ok</span>(<span class="number">1</span>));
+<a href=#1461 id=1461 data-nosnippet>1461</a>        <span class="macro">assert_eq!</span>(way_named(<span class="kw-2">&amp;</span>ways, <span class="string">"square"</span>), <span class="prelude-val">Ok</span>(<span class="number">1</span>));
+<a href=#1462 id=1462 data-nosnippet>1462</a>        <span class="macro">assert_eq!</span>(way_named(<span class="kw-2">&amp;</span>ways, <span class="string">"DOOR"</span>), <span class="prelude-val">Ok</span>(<span class="number">2</span>));
+<a href=#1463 id=1463 data-nosnippet>1463</a>        <span class="macro">assert!</span>(way_named(<span class="kw-2">&amp;</span>ways, <span class="string">"4"</span>).unwrap_err().contains(<span class="string">"3 ways"</span>));
+<a href=#1464 id=1464 data-nosnippet>1464</a>        <span class="macro">assert!</span>(way_named(<span class="kw-2">&amp;</span>ways, <span class="string">"window"</span>).unwrap_err().contains(<span class="string">"no way"</span>));
+<a href=#1465 id=1465 data-nosnippet>1465</a>        <span class="macro">assert!</span>(way_named(<span class="kw-2">&amp;</span>ways, <span class="string">"o"</span>).unwrap_err().contains(<span class="string">"more than one"</span>));
+<a href=#1466 id=1466 data-nosnippet>1466</a>        <span class="kw">let </span>listed = ways_listed(<span class="kw-2">&amp;</span>ways);
+<a href=#1467 id=1467 data-nosnippet>1467</a>        <span class="macro">assert_eq!</span>(listed[<span class="number">0</span>], <span class="string">" 1  gate         go gate"</span>);
+<a href=#1468 id=1468 data-nosnippet>1468</a>        <span class="macro">assert_eq!</span>(listed[<span class="number">1</span>], <span class="string">" 2  Town Square  go2 229"</span>);
+<a href=#1469 id=1469 data-nosnippet>1469</a>    }
+<a href=#1470 id=1470 data-nosnippet>1470</a>
+<a href=#1471 id=1471 data-nosnippet>1471</a>    <span class="doccomment">/// A `.go2` is stopped by a `.stop` that comes while it is still
+<a href=#1472 id=1472 data-nosnippet>1472</a>    /// finding its way, before it sets out.
+<a href=#1473 id=1473 data-nosnippet>1473</a>    </span><span class="attr">#[test]
+<a href=#1474 id=1474 data-nosnippet>1474</a>    </span><span class="kw">fn </span>a_walk_still_setting_out_is_stopped() {
+<a href=#1475 id=1475 data-nosnippet>1475</a>        <span class="kw">let </span>claim = Claim::take(<span class="string">"GS3:Claimtest"</span>);
+<a href=#1476 id=1476 data-nosnippet>1476</a>        <span class="macro">assert!</span>(stop_walk(<span class="string">"GS3:Claimtest"</span>), <span class="string">"there was a walk to stop"</span>);
+<a href=#1477 id=1477 data-nosnippet>1477</a>        <span class="macro">assert!</span>(claim.stopped());
+<a href=#1478 id=1478 data-nosnippet>1478</a>    }
+<a href=#1479 id=1479 data-nosnippet>1479</a>
+<a href=#1480 id=1480 data-nosnippet>1480</a>    <span class="doccomment">/// A `.go2` that never set out leaves nothing behind to stop.
+<a href=#1481 id=1481 data-nosnippet>1481</a>    </span><span class="attr">#[test]
+<a href=#1482 id=1482 data-nosnippet>1482</a>    </span><span class="kw">fn </span>a_walk_that_never_set_out_is_given_up() {
+<a href=#1483 id=1483 data-nosnippet>1483</a>        drop(Claim::take(<span class="string">"GS3:Givenup"</span>));
+<a href=#1484 id=1484 data-nosnippet>1484</a>        <span class="macro">assert!</span>(!stop_walk(<span class="string">"GS3:Givenup"</span>));
+<a href=#1485 id=1485 data-nosnippet>1485</a>    }
+<a href=#1486 id=1486 data-nosnippet>1486</a>
+<a href=#1487 id=1487 data-nosnippet>1487</a>    <span class="doccomment">/// A second `.go2` stops the first, still setting out or walking.
+<a href=#1488 id=1488 data-nosnippet>1488</a>    </span><span class="attr">#[test]
+<a href=#1489 id=1489 data-nosnippet>1489</a>    </span><span class="kw">fn </span>a_second_go2_stops_the_first() {
+<a href=#1490 id=1490 data-nosnippet>1490</a>        <span class="kw">let </span>first = Claim::take(<span class="string">"GS3:Twice"</span>);
+<a href=#1491 id=1491 data-nosnippet>1491</a>        <span class="kw">let </span>second = Claim::take(<span class="string">"GS3:Twice"</span>);
+<a href=#1492 id=1492 data-nosnippet>1492</a>        <span class="macro">assert!</span>(first.stopped());
+<a href=#1493 id=1493 data-nosnippet>1493</a>        <span class="macro">assert!</span>(!second.stopped());
+<a href=#1494 id=1494 data-nosnippet>1494</a>        drop(first);
+<a href=#1495 id=1495 data-nosnippet>1495</a>        <span class="macro">assert!</span>(
+<a href=#1496 id=1496 data-nosnippet>1496</a>            stop_walk(<span class="string">"GS3:Twice"</span>),
+<a href=#1497 id=1497 data-nosnippet>1497</a>            <span class="string">"the first, dropped, leaves the second's"
+<a href=#1498 id=1498 data-nosnippet>1498</a>        </span>);
+<a href=#1499 id=1499 data-nosnippet>1499</a>    }
+<a href=#1500 id=1500 data-nosnippet>1500</a>
+<a href=#1501 id=1501 data-nosnippet>1501</a>    <span class="doccomment">/// A `.go2` that finds no way -- mistyped, or several places -- stops
+<a href=#1502 id=1502 data-nosnippet>1502</a>    /// nothing: the walk under way goes on. One that sets out replaces it.
+<a href=#1503 id=1503 data-nosnippet>1503</a>    </span><span class="attr">#[test]
+<a href=#1504 id=1504 data-nosnippet>1504</a>    </span><span class="kw">fn </span>only_a_go2_that_sets_out_stops_the_walk_under_way() {
+<a href=#1505 id=1505 data-nosnippet>1505</a>        <span class="kw">let </span><span class="kw-2">mut </span>walking = Claim::take(<span class="string">"GS3:Underway"</span>);
+<a href=#1506 id=1506 data-nosnippet>1506</a>        walking.set_out();
+<a href=#1507 id=1507 data-nosnippet>1507</a>        drop(Claim::take(<span class="string">"GS3:Underway"</span>));
+<a href=#1508 id=1508 data-nosnippet>1508</a>        <span class="macro">assert!</span>(!walking.stopped(), <span class="string">"a .go2 that found no way"</span>);
+<a href=#1509 id=1509 data-nosnippet>1509</a>        <span class="kw">let </span><span class="kw-2">mut </span>next = Claim::take(<span class="string">"GS3:Underway"</span>);
+<a href=#1510 id=1510 data-nosnippet>1510</a>        next.set_out();
+<a href=#1511 id=1511 data-nosnippet>1511</a>        <span class="macro">assert!</span>(walking.stopped(), <span class="string">"replaced"</span>);
+<a href=#1512 id=1512 data-nosnippet>1512</a>        <span class="macro">assert!</span>(!next.stopped());
+<a href=#1513 id=1513 data-nosnippet>1513</a>        <span class="macro">assert!</span>(stop_walk(<span class="string">"GS3:Underway"</span>));
+<a href=#1514 id=1514 data-nosnippet>1514</a>        <span class="macro">assert!</span>(next.stopped());
+<a href=#1515 id=1515 data-nosnippet>1515</a>    }
+<a href=#1516 id=1516 data-nosnippet>1516</a>
+<a href=#1517 id=1517 data-nosnippet>1517</a>    <span class="doccomment">/// `to` and one name is a character; a place with more words, or
+<a href=#1518 id=1518 data-nosnippet>1518</a>    /// without `to`, is a place.
+<a href=#1519 id=1519 data-nosnippet>1519</a>    </span><span class="attr">#[test]
+<a href=#1520 id=1520 data-nosnippet>1520</a>    </span><span class="kw">fn </span>to_and_a_name_is_a_character() {
+<a href=#1521 id=1521 data-nosnippet>1521</a>        <span class="macro">assert_eq!</span>(to_whom(<span class="string">"to Ashryn"</span>), <span class="prelude-val">Some</span>(<span class="string">"Ashryn"</span>));
+<a href=#1522 id=1522 data-nosnippet>1522</a>        <span class="macro">assert_eq!</span>(to_whom(<span class="string">"  TO  GSF:Baelor "</span>), <span class="prelude-val">Some</span>(<span class="string">"GSF:Baelor"</span>));
+<a href=#1523 id=1523 data-nosnippet>1523</a>        <span class="macro">assert_eq!</span>(to_whom(<span class="string">"to the docks"</span>), <span class="prelude-val">None</span>);
+<a href=#1524 id=1524 data-nosnippet>1524</a>        <span class="macro">assert_eq!</span>(to_whom(<span class="string">"bank"</span>), <span class="prelude-val">None</span>);
+<a href=#1525 id=1525 data-nosnippet>1525</a>        <span class="macro">assert_eq!</span>(to_whom(<span class="string">"to"</span>), <span class="prelude-val">None</span>);
+<a href=#1526 id=1526 data-nosnippet>1526</a>    }
+<a href=#1527 id=1527 data-nosnippet>1527</a>}
 </code></pre></div></section></main></body></html>

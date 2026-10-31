@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["SETS"],"enum":["Whose"],"struct":["KeyFile"],"type":["Layer"]};

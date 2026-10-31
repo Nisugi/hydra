@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["LOOSE_SEEN","LOOSE_SHARE","MARKS","MOST","STRICT_SEEN","STRICT_SHARE"],"enum":["Kind","Sure","Verdict"],"fn":["hash","lock","mark","open","path","save_all","sentence"],"mod":["learn"],"struct":["Mark","Marks","Table","Tally"],"type":["Shared"]};

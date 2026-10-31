@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["betrayer","container","containers","dialog_panel","inventory","missing","quests","spells"]};

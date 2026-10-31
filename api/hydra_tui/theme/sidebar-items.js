@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["rgb"],"struct":["Colors"]};

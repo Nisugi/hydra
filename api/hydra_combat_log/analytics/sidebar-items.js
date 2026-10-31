@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["Kind"],"fn":["alongside","analytics","barkskin","compare","defense","effects","flare","gear","hp","intercepts"]};
+window.SIDEBAR_ITEMS = {"enum":["Kind"],"fn":["alongside","analytics","barkskin","compare","defense","effect","effect_key","effects","flare","flare_effects","flare_items","gear","hp","intercepts"]};

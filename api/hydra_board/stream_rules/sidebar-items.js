@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["change","fold_redirects","load"],"struct":["Folding","Watched"]};
+window.SIDEBAR_ITEMS = {"fn":["change","fold_redirects","load","mark_fight"],"struct":["Folding","Watched"]};

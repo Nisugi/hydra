@@ -68,40 +68,48 @@
 <a href=#68 id=68 data-nosnippet>68</a>    <span class="doccomment">/// A child started through [`command`] has Hydra's environment, less its
 <a href=#69 id=69 data-nosnippet>69</a>    /// password. Rust 2024 makes setting a variable in this process unsafe,
 <a href=#70 id=70 data-nosnippet>70</a>    /// so this test runs itself again in a process that has one, and that
-<a href=#71 id=71 data-nosnippet>71</a>    /// process starts Ruby and asks what it sees.
-<a href=#72 id=72 data-nosnippet>72</a>    </span><span class="attr">#[tokio::test]
-<a href=#73 id=73 data-nosnippet>73</a>    </span><span class="kw">async fn </span>a_child_is_never_handed_a_password() {
-<a href=#74 id=74 data-nosnippet>74</a>        <span class="kw">if </span>std::env::var_os(PROBE).is_none() {
-<a href=#75 id=75 data-nosnippet>75</a>            <span class="kw">let </span>me = std::env::current_exe().unwrap();
-<a href=#76 id=76 data-nosnippet>76</a>            <span class="kw">let </span>ran = std::process::Command::new(me)
-<a href=#77 id=77 data-nosnippet>77</a>                .args([
-<a href=#78 id=78 data-nosnippet>78</a>                    <span class="string">"--exact"</span>,
-<a href=#79 id=79 data-nosnippet>79</a>                    <span class="string">"child::tests::a_child_is_never_handed_a_password"</span>,
-<a href=#80 id=80 data-nosnippet>80</a>                    <span class="string">"--nocapture"</span>,
-<a href=#81 id=81 data-nosnippet>81</a>                ])
-<a href=#82 id=82 data-nosnippet>82</a>                .env(PROBE, <span class="string">"hunter2"</span>)
-<a href=#83 id=83 data-nosnippet>83</a>                .env(KEPT, <span class="string">"yes"</span>)
-<a href=#84 id=84 data-nosnippet>84</a>                .output()
-<a href=#85 id=85 data-nosnippet>85</a>                .unwrap();
-<a href=#86 id=86 data-nosnippet>86</a>            <span class="kw">let </span>said = String::from_utf8_lossy(<span class="kw-2">&amp;</span>ran.stdout);
-<a href=#87 id=87 data-nosnippet>87</a>            <span class="kw">let </span>why = String::from_utf8_lossy(<span class="kw-2">&amp;</span>ran.stderr);
-<a href=#88 id=88 data-nosnippet>88</a>            <span class="macro">assert!</span>(ran.status.success(), <span class="string">"{said}{why}"</span>);
-<a href=#89 id=89 data-nosnippet>89</a>            <span class="macro">assert!</span>(said.contains(<span class="string">"1 passed"</span>), <span class="string">"the inner run ran: {said}"</span>);
-<a href=#90 id=90 data-nosnippet>90</a>            <span class="kw">return</span>;
-<a href=#91 id=91 data-nosnippet>91</a>        }
-<a href=#92 id=92 data-nosnippet>92</a>        <span class="kw">let </span>ruby = <span class="kw">crate</span>::find_ruby().expect(<span class="string">"Ruby, which the CI runners have"</span>);
-<a href=#93 id=93 data-nosnippet>93</a>        <span class="kw">let </span>seen = command(ruby)
-<a href=#94 id=94 data-nosnippet>94</a>            .args([<span class="string">"-e"</span>, <span class="string">"print ENV.keys.join(\"\\n\")"</span>])
-<a href=#95 id=95 data-nosnippet>95</a>            .output()
-<a href=#96 id=96 data-nosnippet>96</a>            .<span class="kw">await
-<a href=#97 id=97 data-nosnippet>97</a>            </span>.unwrap();
-<a href=#98 id=98 data-nosnippet>98</a>        <span class="kw">let </span>names = String::from_utf8_lossy(<span class="kw-2">&amp;</span>seen.stdout);
-<a href=#99 id=99 data-nosnippet>99</a>        <span class="kw">let </span>names: Vec&lt;<span class="kw-2">&amp;</span>str&gt; = names.lines().collect();
-<a href=#100 id=100 data-nosnippet>100</a>        <span class="macro">assert!</span>(names.contains(<span class="kw-2">&amp;</span>KEPT), <span class="string">"the rest is inherited: {names:?}"</span>);
-<a href=#101 id=101 data-nosnippet>101</a>        <span class="macro">assert!</span>(
-<a href=#102 id=102 data-nosnippet>102</a>            !names.iter().any(|name| is_password(OsStr::new(name))),
-<a href=#103 id=103 data-nosnippet>103</a>            <span class="string">"{names:?}"
-<a href=#104 id=104 data-nosnippet>104</a>        </span>);
-<a href=#105 id=105 data-nosnippet>105</a>    }
-<a href=#106 id=106 data-nosnippet>106</a>}
+<a href=#71 id=71 data-nosnippet>71</a>    /// process starts the system's own lister of the environment, which
+<a href=#72 id=72 data-nosnippet>72</a>    /// every machine has, and reads what it sees.
+<a href=#73 id=73 data-nosnippet>73</a>    </span><span class="attr">#[tokio::test]
+<a href=#74 id=74 data-nosnippet>74</a>    </span><span class="kw">async fn </span>a_child_is_never_handed_a_password() {
+<a href=#75 id=75 data-nosnippet>75</a>        <span class="kw">if </span>std::env::var_os(PROBE).is_none() {
+<a href=#76 id=76 data-nosnippet>76</a>            <span class="kw">let </span>me = std::env::current_exe().unwrap();
+<a href=#77 id=77 data-nosnippet>77</a>            <span class="kw">let </span>ran = std::process::Command::new(me)
+<a href=#78 id=78 data-nosnippet>78</a>                .args([
+<a href=#79 id=79 data-nosnippet>79</a>                    <span class="string">"--exact"</span>,
+<a href=#80 id=80 data-nosnippet>80</a>                    <span class="string">"child::tests::a_child_is_never_handed_a_password"</span>,
+<a href=#81 id=81 data-nosnippet>81</a>                    <span class="string">"--nocapture"</span>,
+<a href=#82 id=82 data-nosnippet>82</a>                ])
+<a href=#83 id=83 data-nosnippet>83</a>                .env(PROBE, <span class="string">"hunter2"</span>)
+<a href=#84 id=84 data-nosnippet>84</a>                .env(KEPT, <span class="string">"yes"</span>)
+<a href=#85 id=85 data-nosnippet>85</a>                .output()
+<a href=#86 id=86 data-nosnippet>86</a>                .unwrap();
+<a href=#87 id=87 data-nosnippet>87</a>            <span class="kw">let </span>said = String::from_utf8_lossy(<span class="kw-2">&amp;</span>ran.stdout);
+<a href=#88 id=88 data-nosnippet>88</a>            <span class="kw">let </span>why = String::from_utf8_lossy(<span class="kw-2">&amp;</span>ran.stderr);
+<a href=#89 id=89 data-nosnippet>89</a>            <span class="macro">assert!</span>(ran.status.success(), <span class="string">"{said}{why}"</span>);
+<a href=#90 id=90 data-nosnippet>90</a>            <span class="macro">assert!</span>(said.contains(<span class="string">"1 passed"</span>), <span class="string">"the inner run ran: {said}"</span>);
+<a href=#91 id=91 data-nosnippet>91</a>            <span class="kw">return</span>;
+<a href=#92 id=92 data-nosnippet>92</a>        }
+<a href=#93 id=93 data-nosnippet>93</a>        <span class="kw">let </span><span class="kw-2">mut </span>lister = <span class="kw">if </span><span class="macro">cfg!</span>(windows) {
+<a href=#94 id=94 data-nosnippet>94</a>            command(<span class="string">"cmd"</span>)
+<a href=#95 id=95 data-nosnippet>95</a>        } <span class="kw">else </span>{
+<a href=#96 id=96 data-nosnippet>96</a>            command(<span class="string">"env"</span>)
+<a href=#97 id=97 data-nosnippet>97</a>        };
+<a href=#98 id=98 data-nosnippet>98</a>        <span class="kw">if </span><span class="macro">cfg!</span>(windows) {
+<a href=#99 id=99 data-nosnippet>99</a>            lister.args([<span class="string">"/c"</span>, <span class="string">"set"</span>]);
+<a href=#100 id=100 data-nosnippet>100</a>        }
+<a href=#101 id=101 data-nosnippet>101</a>        <span class="kw">let </span>seen = lister.output().<span class="kw">await</span>.unwrap();
+<a href=#102 id=102 data-nosnippet>102</a>        <span class="macro">assert!</span>(seen.status.success(), <span class="string">"the environment was listed"</span>);
+<a href=#103 id=103 data-nosnippet>103</a>        <span class="kw">let </span>printed = String::from_utf8_lossy(<span class="kw-2">&amp;</span>seen.stdout);
+<a href=#104 id=104 data-nosnippet>104</a>        <span class="kw">let </span>names: Vec&lt;<span class="kw-2">&amp;</span>str&gt; = printed
+<a href=#105 id=105 data-nosnippet>105</a>            .lines()
+<a href=#106 id=106 data-nosnippet>106</a>            .filter_map(|line| line.split_once(<span class="string">'='</span>).map(|(name, <span class="kw">_</span>)| name))
+<a href=#107 id=107 data-nosnippet>107</a>            .collect();
+<a href=#108 id=108 data-nosnippet>108</a>        <span class="macro">assert!</span>(names.contains(<span class="kw-2">&amp;</span>KEPT), <span class="string">"the rest is inherited: {names:?}"</span>);
+<a href=#109 id=109 data-nosnippet>109</a>        <span class="macro">assert!</span>(
+<a href=#110 id=110 data-nosnippet>110</a>            !names.iter().any(|name| is_password(OsStr::new(name))),
+<a href=#111 id=111 data-nosnippet>111</a>            <span class="string">"{names:?}"
+<a href=#112 id=112 data-nosnippet>112</a>        </span>);
+<a href=#113 id=113 data-nosnippet>113</a>    }
+<a href=#114 id=114 data-nosnippet>114</a>}
 </code></pre></div></section></main></body></html>

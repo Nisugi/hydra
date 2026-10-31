@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["COMBAT","MAX_HELD","SECTION"],"fn":["tag"],"struct":["Capture","Feed","LogSettings","Noticed"]};
+window.SIDEBAR_ITEMS = {"constant":["COMBAT","MAX_HELD","SECTION"],"enum":["Cause"],"fn":["tag"],"struct":["Capture","Chunk","Feed","LogSettings","Noticed"]};

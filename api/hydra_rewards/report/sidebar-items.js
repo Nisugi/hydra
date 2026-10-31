@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["HELP"],"fn":["answer","everyone","own","run","store"]};
+window.SIDEBAR_ITEMS = {"constant":["HELP"],"fn":["answer","answer_report","everyone","own","run","run_report","store"]};

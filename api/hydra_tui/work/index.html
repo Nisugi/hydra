@@ -1,0 +1,57 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Work mode: the terminal’s screen covered, so that a glance at it shows a terminal at work and nothing of the game."><title>hydra_tui::work - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="hydra_tui" data-themes="" data-resource-suffix="" data-rustdoc-version="1.96.1 (31fca3adb 2026-06-26)" data-channel="1.96.1" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc mod"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Module work</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../hydra_tui/index.html">hydra_<wbr>tui</a><span class="version">0.1.0-beta.9</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module work</a></h2><h3><a href="#structs">Module Items</a></h3><ul class="block"><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#enums" title="Enums">Enums</a></li><li><a href="#constants" title="Constants">Constants</a></li><li><a href="#functions" title="Functions">Functions</a></li></ul></section><div id="rustdoc-modnav"><h2 class="in-crate"><a href="../index.html">In crate hydra_<wbr>tui</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../index.html">hydra_tui</a></div><h1>Module <span>work</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/hydra_tui/work.rs.html#1-1240">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Work mode: the terminal’s screen covered, so that a glance at it shows a
+terminal at work and nothing of the game.</p>
+<p><code>.work</code> typed on a character’s screen covers it; <code>.work off</code>, or <code>.work</code>
+again, lifts the cover. <code>.work on</code> covers and <code>.work off</code> lifts, for a
+key bound to one or the other. While covered, nothing of the game is
+drawn, no menu or editor opens, the mouse does nothing, and the title is
+a shell’s; the command line is still the command line, drawn after a
+shell’s prompt, so what is typed goes to the game as always, and the
+characters play on.</p>
+<p>The cover plays a <em>scene</em>: a shell running a job, line by line at a
+believable pace, with its names drawn afresh each time round. Four are
+shipped and written to <code>global/work/</code> in the data folder the first time
+the cover goes up, where a player may change them or add their own:
+<code>curl</code> (repositories fetched and cloned), <code>build</code> (a Rust workspace
+compiled and tested), <code>tail</code> (a web server’s log followed) and <code>ssh</code> (a
+remote host’s journal). <code>.work curl</code> plays that one and keeps to it;
+bare <code>.work</code> plays one at random each time round. Nothing is fetched
+from anywhere: a progress meter is a formula, and the names are lists in
+the scene’s file.</p>
+<p>One thing of the game does pass the cover: a line the lookout picked out
+(<code>hydra_lookout</code>), which may be a script check. It is written into the
+scene as its next line of output, in the scene’s own colour, with no
+mark: one odd line in a wall of output to anyone else, and the warning
+to the player, who knows to look.</p>
+<p>A scene file:</p>
+<div class="example-wrap"><pre class="language-toml"><code>title = &quot;curl&quot;                 # the terminal&#39;s title while this plays
+prompt = &quot;PS C:\\src{dir}&gt; &quot;   # {dir}: where the scene has gone
+rest = 20                      # seconds idle at the prompt before it plays again
+
+[names]                        # {repo}, {user}: one picked each time round
+repo = [&quot;fast-json-rs&quot;, &quot;kube-rollout&quot;]
+user = [&quot;mkdev&quot;, &quot;lindqvist&quot;]
+
+[[lines]]
+text = &quot;git clone https://github.com/{user}/{repo}.git&quot;
+wait = 1.5                     # seconds after the line before
+jitter = 1                     # at most this much more or less
+color = &quot;plain&quot;                # plain, dim, green, yellow, red, cyan, magenta
+
+[[lines]]
+meter = &quot;git&quot;                  # a progress meter, redrawn in place
+lasts = 8                      # seconds to reach the end
+
+[[lines]]
+text = &quot;cd {repo}&quot;
+dir = &quot;\\{repo}&quot;               # the prompt&#39;s {dir} from here
+
+[[lines]]
+text = &quot;{n:100-999} {hash}&quot;    # a number in a range, a short commit hash
+times = 40                     # the line again this many times, names drawn afresh
+
+[[lines]]
+text = &quot;{date} {clock} ok&quot;     # today, and the time of day as the scene has it</code></pre></div>
+<p>The clock is the real one, read when the cover goes up, and runs with
+it: <code>{clock}</code> is <code>14:36:10</code>, <code>{date}</code> is <code>28/Oct/2026</code>, <code>{day}</code> is
+<code>Oct 28</code>.</p>
+</div></details><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.Rng.html" title="struct hydra_tui::work::Rng">Rng</a></dt><dd>Numbers drawn, from a seed: the same seed, the same scene.</dd><dt><a class="struct" href="struct.Scene.html" title="struct hydra_tui::work::Scene">Scene</a></dt><dd>A scene: a shell’s job, line by line.</dd><dt><a class="struct" href="struct.ScriptLine.html" title="struct hydra_tui::work::ScriptLine">Script<wbr>Line</a></dt><dd>One line of a scene.</dd><dt><a class="struct" href="struct.Work.html" title="struct hydra_tui::work::Work">Work</a></dt><dd>The cover, and the scene it plays.</dd></dl><h2 id="enums" class="section-header">Enums<a href="#enums" class="anchor">§</a></h2><dl class="item-table"><dt><a class="enum" href="enum.Asked.html" title="enum hydra_tui::work::Asked">Asked</a></dt><dd>What <code>.work</code> asks.</dd><dt><a class="enum" href="enum.Meter.html" title="enum hydra_tui::work::Meter">Meter</a></dt><dd>A progress meter, redrawn in place until it is done.</dd><dt><a class="enum" href="enum.Tone.html" title="enum hydra_tui::work::Tone">Tone</a></dt><dd>A colour a line is drawn in: a dark terminal’s own.</dd></dl><h2 id="constants" class="section-header">Constants<a href="#constants" class="anchor">§</a></h2><dl class="item-table"><dt><a class="constant" href="constant.HELP.html" title="constant hydra_tui::work::HELP">HELP</a></dt><dd>What <code>.work help</code> says.</dd></dl><h2 id="functions" class="section-header">Functions<a href="#functions" class="anchor">§</a></h2><dl class="item-table"><dt><a class="fn" href="fn.asked.html" title="fn hydra_tui::work::asked">asked</a></dt><dd>The words after <code>.work</code>, read.</dd></dl></section></div></main></body></html>

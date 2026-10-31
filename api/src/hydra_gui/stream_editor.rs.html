@@ -11,7 +11,7 @@
 <a href=#11 id=11 data-nosnippet>11</a>
 <a href=#12 id=12 data-nosnippet>12</a></span><span class="kw">use </span>hydra_model::state::creature::MessageKind;
 <a href=#13 id=13 data-nosnippet>13</a><span class="kw">use </span>hydra_session::player_log::MAIN;
-<a href=#14 id=14 data-nosnippet>14</a><span class="kw">use </span>hydra_session::stream_rules::{Rule, Rules};
+<a href=#14 id=14 data-nosnippet>14</a><span class="kw">use </span>hydra_session::stream_rules::{FIGHT_COMMANDS, LOOT_COMMANDS, Rule, Rules, SETUP_COMMANDS};
 <a href=#15 id=15 data-nosnippet>15</a><span class="kw">use </span>hydra_ui::{RunLink, StyledRun};
 <a href=#16 id=16 data-nosnippet>16</a>
 <a href=#17 id=17 data-nosnippet>17</a><span class="kw">use </span><span class="kw">crate</span>::theme::T;
@@ -216,477 +216,595 @@
 <a href=#216 id=216 data-nosnippet>216</a>    <span class="doccomment">/// The stream its lines come from; empty for any.
 <a href=#217 id=217 data-nosnippet>217</a>    </span>from: String,
 <a href=#218 id=218 data-nosnippet>218</a>    fighting: bool,
-<a href=#219 id=219 data-nosnippet>219</a>    marked: bool,
-<a href=#220 id=220 data-nosnippet>220</a>    <span class="doccomment">/// The kinds of a creature's messages, as the file spells them.
-<a href=#221 id=221 data-nosnippet>221</a>    </span>creature: Vec&lt;String&gt;,
-<a href=#222 id=222 data-nosnippet>222</a>    to: String,
-<a href=#223 id=223 data-nosnippet>223</a>    copy: bool,
-<a href=#224 id=224 data-nosnippet>224</a>    off: bool,
-<a href=#225 id=225 data-nosnippet>225</a>}
-<a href=#226 id=226 data-nosnippet>226</a>
-<a href=#227 id=227 data-nosnippet>227</a><span class="kw">impl </span>Default <span class="kw">for </span>Draft {
-<a href=#228 id=228 data-nosnippet>228</a>    <span class="doccomment">/// A new rule: for the story's lines, putting them nowhere yet.
-<a href=#229 id=229 data-nosnippet>229</a>    </span><span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
-<a href=#230 id=230 data-nosnippet>230</a>        <span class="self">Self </span>{
-<a href=#231 id=231 data-nosnippet>231</a>            name: String::new(),
-<a href=#232 id=232 data-nosnippet>232</a>            pattern: String::new(),
-<a href=#233 id=233 data-nosnippet>233</a>            regex: <span class="bool-val">false</span>,
-<a href=#234 id=234 data-nosnippet>234</a>            from: MAIN.to_owned(),
-<a href=#235 id=235 data-nosnippet>235</a>            fighting: <span class="bool-val">false</span>,
-<a href=#236 id=236 data-nosnippet>236</a>            marked: <span class="bool-val">false</span>,
-<a href=#237 id=237 data-nosnippet>237</a>            creature: Vec::new(),
-<a href=#238 id=238 data-nosnippet>238</a>            to: String::new(),
-<a href=#239 id=239 data-nosnippet>239</a>            copy: <span class="bool-val">false</span>,
-<a href=#240 id=240 data-nosnippet>240</a>            off: <span class="bool-val">false</span>,
-<a href=#241 id=241 data-nosnippet>241</a>        }
-<a href=#242 id=242 data-nosnippet>242</a>    }
-<a href=#243 id=243 data-nosnippet>243</a>}
-<a href=#244 id=244 data-nosnippet>244</a>
-<a href=#245 id=245 data-nosnippet>245</a><span class="kw">impl </span>Draft {
-<a href=#246 id=246 data-nosnippet>246</a>    <span class="doccomment">/// `rule` in the form.
-<a href=#247 id=247 data-nosnippet>247</a>    </span><span class="kw">fn </span>of(rule: <span class="kw-2">&amp;</span>Rule) -&gt; <span class="self">Self </span>{
-<a href=#248 id=248 data-nosnippet>248</a>        <span class="kw">let </span>(pattern, regex) = <span class="kw">match </span>(<span class="kw-2">&amp;</span>rule.regex, <span class="kw-2">&amp;</span>rule.text) {
-<a href=#249 id=249 data-nosnippet>249</a>            (<span class="prelude-val">Some</span>(regex), <span class="kw">_</span>) =&gt; (regex.clone(), <span class="bool-val">true</span>),
-<a href=#250 id=250 data-nosnippet>250</a>            (<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(text)) =&gt; (text.clone(), <span class="bool-val">false</span>),
-<a href=#251 id=251 data-nosnippet>251</a>            (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) =&gt; (String::new(), <span class="bool-val">false</span>),
-<a href=#252 id=252 data-nosnippet>252</a>        };
-<a href=#253 id=253 data-nosnippet>253</a>        <span class="self">Self </span>{
-<a href=#254 id=254 data-nosnippet>254</a>            name: rule.name.clone(),
-<a href=#255 id=255 data-nosnippet>255</a>            pattern,
-<a href=#256 id=256 data-nosnippet>256</a>            regex,
-<a href=#257 id=257 data-nosnippet>257</a>            from: rule.from.clone().unwrap_or_default(),
-<a href=#258 id=258 data-nosnippet>258</a>            fighting: rule.fighting,
-<a href=#259 id=259 data-nosnippet>259</a>            marked: rule.marked,
-<a href=#260 id=260 data-nosnippet>260</a>            creature: rule.creature.clone(),
-<a href=#261 id=261 data-nosnippet>261</a>            to: rule.to.clone(),
-<a href=#262 id=262 data-nosnippet>262</a>            copy: rule.copy,
-<a href=#263 id=263 data-nosnippet>263</a>            off: rule.off,
-<a href=#264 id=264 data-nosnippet>264</a>        }
-<a href=#265 id=265 data-nosnippet>265</a>    }
-<a href=#266 id=266 data-nosnippet>266</a>
-<a href=#267 id=267 data-nosnippet>267</a>    <span class="doccomment">/// The rule the form makes.
-<a href=#268 id=268 data-nosnippet>268</a>    </span><span class="kw">fn </span>rule(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Rule {
-<a href=#269 id=269 data-nosnippet>269</a>        <span class="kw">let </span>pattern = <span class="kw">if </span><span class="self">self</span>.regex {
-<a href=#270 id=270 data-nosnippet>270</a>            <span class="prelude-val">Some</span>(<span class="self">self</span>.pattern.clone()).filter(|regex| !regex.trim().is_empty())
-<a href=#271 id=271 data-nosnippet>271</a>        } <span class="kw">else </span>{
-<a href=#272 id=272 data-nosnippet>272</a>            <span class="prelude-val">Some</span>(<span class="self">self</span>.pattern.trim().to_owned()).filter(|words| !words.is_empty())
-<a href=#273 id=273 data-nosnippet>273</a>        };
-<a href=#274 id=274 data-nosnippet>274</a>        Rule {
-<a href=#275 id=275 data-nosnippet>275</a>            name: <span class="self">self</span>.name.trim().to_owned(),
-<a href=#276 id=276 data-nosnippet>276</a>            text: pattern.clone().filter(|<span class="kw">_</span>| !<span class="self">self</span>.regex),
-<a href=#277 id=277 data-nosnippet>277</a>            regex: pattern.filter(|<span class="kw">_</span>| <span class="self">self</span>.regex),
-<a href=#278 id=278 data-nosnippet>278</a>            from: <span class="prelude-val">Some</span>(<span class="self">self</span>.from.trim().to_owned()).filter(|from| !from.is_empty()),
-<a href=#279 id=279 data-nosnippet>279</a>            fighting: <span class="self">self</span>.fighting,
-<a href=#280 id=280 data-nosnippet>280</a>            marked: <span class="self">self</span>.marked,
-<a href=#281 id=281 data-nosnippet>281</a>            creature: <span class="self">self</span>.creature.clone(),
-<a href=#282 id=282 data-nosnippet>282</a>            to: <span class="self">self</span>.to.trim().to_owned(),
-<a href=#283 id=283 data-nosnippet>283</a>            copy: <span class="self">self</span>.copy,
-<a href=#284 id=284 data-nosnippet>284</a>            off: <span class="self">self</span>.off,
-<a href=#285 id=285 data-nosnippet>285</a>        }
-<a href=#286 id=286 data-nosnippet>286</a>    }
-<a href=#287 id=287 data-nosnippet>287</a>
-<a href=#288 id=288 data-nosnippet>288</a>    <span class="doccomment">/// What the rule does, in a sentence.
-<a href=#289 id=289 data-nosnippet>289</a>    </span><span class="kw">fn </span>sentence(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
-<a href=#290 id=290 data-nosnippet>290</a>        <span class="kw">let </span>rule = <span class="self">self</span>.rule();
-<a href=#291 id=291 data-nosnippet>291</a>        <span class="kw">let </span>from = rule.from.as_deref().map_or_else(
-<a href=#292 id=292 data-nosnippet>292</a>            || <span class="string">"Lines from any stream"</span>.to_owned(),
-<a href=#293 id=293 data-nosnippet>293</a>            |from| <span class="macro">format!</span>(<span class="string">"Lines from {}"</span>, called(from)),
-<a href=#294 id=294 data-nosnippet>294</a>        );
-<a href=#295 id=295 data-nosnippet>295</a>        <span class="kw">let </span><span class="kw-2">mut </span>asks = Vec::new();
-<a href=#296 id=296 data-nosnippet>296</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(words) = <span class="kw-2">&amp;</span>rule.text {
-<a href=#297 id=297 data-nosnippet>297</a>            <span class="kw">let </span>words: Vec&lt;String&gt; = words
-<a href=#298 id=298 data-nosnippet>298</a>                .split(<span class="string">'|'</span>)
-<a href=#299 id=299 data-nosnippet>299</a>                .map(str::trim)
-<a href=#300 id=300 data-nosnippet>300</a>                .filter(|word| !word.is_empty())
-<a href=#301 id=301 data-nosnippet>301</a>                .map(|word| <span class="macro">format!</span>(<span class="string">"\"{word}\""</span>))
-<a href=#302 id=302 data-nosnippet>302</a>                .collect();
-<a href=#303 id=303 data-nosnippet>303</a>            asks.push(<span class="macro">format!</span>(<span class="string">"holding {}"</span>, words.join(<span class="string">" or "</span>)));
-<a href=#304 id=304 data-nosnippet>304</a>        }
-<a href=#305 id=305 data-nosnippet>305</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(regex) = <span class="kw-2">&amp;</span>rule.regex {
-<a href=#306 id=306 data-nosnippet>306</a>            asks.push(<span class="macro">format!</span>(<span class="string">"matching {regex}"</span>));
-<a href=#307 id=307 data-nosnippet>307</a>        }
-<a href=#308 id=308 data-nosnippet>308</a>        <span class="kw">if </span>rule.fighting {
-<a href=#309 id=309 data-nosnippet>309</a>            asks.push(<span class="string">"while there is fighting"</span>.to_owned());
-<a href=#310 id=310 data-nosnippet>310</a>        }
-<a href=#311 id=311 data-nosnippet>311</a>        <span class="kw">if </span>rule.marked {
-<a href=#312 id=312 data-nosnippet>312</a>            asks.push(<span class="string">"that the combat reader marked"</span>.to_owned());
-<a href=#313 id=313 data-nosnippet>313</a>        }
-<a href=#314 id=314 data-nosnippet>314</a>        <span class="kw">if </span>!rule.creature.is_empty() {
-<a href=#315 id=315 data-nosnippet>315</a>            <span class="kw">let </span>kinds: Vec&lt;String&gt; = rule
-<a href=#316 id=316 data-nosnippet>316</a>                .creature
-<a href=#317 id=317 data-nosnippet>317</a>                .iter()
-<a href=#318 id=318 data-nosnippet>318</a>                .map(|kind| kind.replace(<span class="string">'_'</span>, <span class="string">" "</span>))
-<a href=#319 id=319 data-nosnippet>319</a>                .collect();
-<a href=#320 id=320 data-nosnippet>320</a>            asks.push(<span class="macro">format!</span>(<span class="string">"that are a creature's {}"</span>, kinds.join(<span class="string">" or "</span>)));
-<a href=#321 id=321 data-nosnippet>321</a>        }
-<a href=#322 id=322 data-nosnippet>322</a>        <span class="kw">let </span>to = <span class="kw">if </span>rule.to.is_empty() {
-<a href=#323 id=323 data-nosnippet>323</a>            <span class="string">"go nowhere yet: name the stream to put them in"</span>.to_owned()
-<a href=#324 id=324 data-nosnippet>324</a>        } <span class="kw">else if </span>rule.copy {
-<a href=#325 id=325 data-nosnippet>325</a>            <span class="macro">format!</span>(<span class="string">"go to {} as well"</span>, called(<span class="kw-2">&amp;</span>rule.to))
-<a href=#326 id=326 data-nosnippet>326</a>        } <span class="kw">else </span>{
-<a href=#327 id=327 data-nosnippet>327</a>            <span class="macro">format!</span>(<span class="string">"go to {}"</span>, called(<span class="kw-2">&amp;</span>rule.to))
-<a href=#328 id=328 data-nosnippet>328</a>        };
-<a href=#329 id=329 data-nosnippet>329</a>        <span class="kw">let </span>said = <span class="kw">if </span>asks.is_empty() {
-<a href=#330 id=330 data-nosnippet>330</a>            <span class="macro">format!</span>(<span class="string">"{from} {to}."</span>)
-<a href=#331 id=331 data-nosnippet>331</a>        } <span class="kw">else </span>{
-<a href=#332 id=332 data-nosnippet>332</a>            <span class="macro">format!</span>(<span class="string">"{from}, {}, {to}."</span>, asks.join(<span class="string">", "</span>))
-<a href=#333 id=333 data-nosnippet>333</a>        };
-<a href=#334 id=334 data-nosnippet>334</a>        <span class="kw">if </span>rule.off {
-<a href=#335 id=335 data-nosnippet>335</a>            <span class="macro">format!</span>(<span class="string">"Off. {said}"</span>)
-<a href=#336 id=336 data-nosnippet>336</a>        } <span class="kw">else </span>{
-<a href=#337 id=337 data-nosnippet>337</a>            said
-<a href=#338 id=338 data-nosnippet>338</a>        }
-<a href=#339 id=339 data-nosnippet>339</a>    }
-<a href=#340 id=340 data-nosnippet>340</a>}
-<a href=#341 id=341 data-nosnippet>341</a>
-<a href=#342 id=342 data-nosnippet>342</a><span class="doccomment">/// The kinds of a creature's messages, `kinds` those ticked, as the file
-<a href=#343 id=343 data-nosnippet>343</a>/// spells them: a box each.
-<a href=#344 id=344 data-nosnippet>344</a></span><span class="kw">fn </span>creature_kinds(ui: <span class="kw-2">&amp;mut </span>egui::Ui, kinds: <span class="kw-2">&amp;mut </span>Vec&lt;String&gt;) {
-<a href=#345 id=345 data-nosnippet>345</a>    ui.horizontal_wrapped(|ui| {
-<a href=#346 id=346 data-nosnippet>346</a>        <span class="kw">for </span>kind <span class="kw">in </span>MessageKind::ALL {
-<a href=#347 id=347 data-nosnippet>347</a>            <span class="kw">let </span>spelled = kind.as_str();
-<a href=#348 id=348 data-nosnippet>348</a>            <span class="kw">let </span><span class="kw-2">mut </span>on = kinds.iter().any(|kept| kept == spelled);
-<a href=#349 id=349 data-nosnippet>349</a>            <span class="kw">if </span>ui.checkbox(<span class="kw-2">&amp;mut </span>on, spelled.replace(<span class="string">'_'</span>, <span class="string">" "</span>)).changed() {
-<a href=#350 id=350 data-nosnippet>350</a>                kinds.retain(|kept| kept != spelled);
-<a href=#351 id=351 data-nosnippet>351</a>                <span class="kw">if </span>on {
-<a href=#352 id=352 data-nosnippet>352</a>                    kinds.push(spelled.to_owned());
-<a href=#353 id=353 data-nosnippet>353</a>                }
-<a href=#354 id=354 data-nosnippet>354</a>            }
+<a href=#219 id=219 data-nosnippet>219</a>    looting: bool,
+<a href=#220 id=220 data-nosnippet>220</a>    marked: bool,
+<a href=#221 id=221 data-nosnippet>221</a>    <span class="doccomment">/// The kinds of a creature's messages, as the file spells them.
+<a href=#222 id=222 data-nosnippet>222</a>    </span>creature: Vec&lt;String&gt;,
+<a href=#223 id=223 data-nosnippet>223</a>    to: String,
+<a href=#224 id=224 data-nosnippet>224</a>    copy: bool,
+<a href=#225 id=225 data-nosnippet>225</a>    off: bool,
+<a href=#226 id=226 data-nosnippet>226</a>    <span class="doccomment">/// The first words of the commands that go with their chunk, a space
+<a href=#227 id=227 data-nosnippet>227</a>    /// between each: a script's attacks, or anyone's search or skin.
+<a href=#228 id=228 data-nosnippet>228</a>    </span>commands: String,
+<a href=#229 id=229 data-nosnippet>229</a>    <span class="doccomment">/// The first words of the commands that take their chunk while a
+<a href=#230 id=230 data-nosnippet>230</a>    /// hostile creature is by, a space between each.
+<a href=#231 id=231 data-nosnippet>231</a>    </span>setup: String,
+<a href=#232 id=232 data-nosnippet>232</a>}
+<a href=#233 id=233 data-nosnippet>233</a>
+<a href=#234 id=234 data-nosnippet>234</a><span class="doccomment">/// `list` a word at a time, `built_in` when it is `None`.
+<a href=#235 id=235 data-nosnippet>235</a></span><span class="kw">fn </span>words_of(list: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Vec&lt;String&gt;&gt;, built_in: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>str]) -&gt; String {
+<a href=#236 id=236 data-nosnippet>236</a>    <span class="kw">match </span>list {
+<a href=#237 id=237 data-nosnippet>237</a>        <span class="prelude-val">Some</span>(list) =&gt; list.join(<span class="string">" "</span>),
+<a href=#238 id=238 data-nosnippet>238</a>        <span class="prelude-val">None </span>=&gt; built_in.join(<span class="string">" "</span>),
+<a href=#239 id=239 data-nosnippet>239</a>    }
+<a href=#240 id=240 data-nosnippet>240</a>}
+<a href=#241 id=241 data-nosnippet>241</a>
+<a href=#242 id=242 data-nosnippet>242</a><span class="doccomment">/// The words of `text`, `None` when they are `built_in`'s, in any order.
+<a href=#243 id=243 data-nosnippet>243</a></span><span class="kw">fn </span>list_of(text: <span class="kw-2">&amp;</span>str, built_in: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>str]) -&gt; <span class="prelude-ty">Option</span>&lt;Vec&lt;String&gt;&gt; {
+<a href=#244 id=244 data-nosnippet>244</a>    <span class="kw">let </span><span class="kw-2">mut </span>words: Vec&lt;String&gt; = text
+<a href=#245 id=245 data-nosnippet>245</a>        .split([<span class="string">' '</span>, <span class="string">','</span>])
+<a href=#246 id=246 data-nosnippet>246</a>        .map(str::trim)
+<a href=#247 id=247 data-nosnippet>247</a>        .filter(|word| !word.is_empty())
+<a href=#248 id=248 data-nosnippet>248</a>        .map(str::to_ascii_lowercase)
+<a href=#249 id=249 data-nosnippet>249</a>        .collect();
+<a href=#250 id=250 data-nosnippet>250</a>    words.dedup();
+<a href=#251 id=251 data-nosnippet>251</a>    <span class="kw">let </span><span class="kw-2">mut </span>sorted = words.clone();
+<a href=#252 id=252 data-nosnippet>252</a>    sorted.sort();
+<a href=#253 id=253 data-nosnippet>253</a>    <span class="kw">let </span><span class="kw-2">mut </span>built: Vec&lt;<span class="kw-2">&amp;</span>str&gt; = built_in.to_vec();
+<a href=#254 id=254 data-nosnippet>254</a>    built.sort_unstable();
+<a href=#255 id=255 data-nosnippet>255</a>    (sorted != built).then_some(words)
+<a href=#256 id=256 data-nosnippet>256</a>}
+<a href=#257 id=257 data-nosnippet>257</a>
+<a href=#258 id=258 data-nosnippet>258</a><span class="kw">impl </span>Default <span class="kw">for </span>Draft {
+<a href=#259 id=259 data-nosnippet>259</a>    <span class="doccomment">/// A new rule: for the story's lines, putting them nowhere yet.
+<a href=#260 id=260 data-nosnippet>260</a>    </span><span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+<a href=#261 id=261 data-nosnippet>261</a>        <span class="self">Self </span>{
+<a href=#262 id=262 data-nosnippet>262</a>            name: String::new(),
+<a href=#263 id=263 data-nosnippet>263</a>            pattern: String::new(),
+<a href=#264 id=264 data-nosnippet>264</a>            regex: <span class="bool-val">false</span>,
+<a href=#265 id=265 data-nosnippet>265</a>            from: MAIN.to_owned(),
+<a href=#266 id=266 data-nosnippet>266</a>            fighting: <span class="bool-val">false</span>,
+<a href=#267 id=267 data-nosnippet>267</a>            looting: <span class="bool-val">false</span>,
+<a href=#268 id=268 data-nosnippet>268</a>            marked: <span class="bool-val">false</span>,
+<a href=#269 id=269 data-nosnippet>269</a>            creature: Vec::new(),
+<a href=#270 id=270 data-nosnippet>270</a>            to: String::new(),
+<a href=#271 id=271 data-nosnippet>271</a>            copy: <span class="bool-val">false</span>,
+<a href=#272 id=272 data-nosnippet>272</a>            off: <span class="bool-val">false</span>,
+<a href=#273 id=273 data-nosnippet>273</a>            commands: FIGHT_COMMANDS.join(<span class="string">" "</span>),
+<a href=#274 id=274 data-nosnippet>274</a>            setup: SETUP_COMMANDS.join(<span class="string">" "</span>),
+<a href=#275 id=275 data-nosnippet>275</a>        }
+<a href=#276 id=276 data-nosnippet>276</a>    }
+<a href=#277 id=277 data-nosnippet>277</a>}
+<a href=#278 id=278 data-nosnippet>278</a>
+<a href=#279 id=279 data-nosnippet>279</a><span class="kw">impl </span>Draft {
+<a href=#280 id=280 data-nosnippet>280</a>    <span class="doccomment">/// `rule` in the form.
+<a href=#281 id=281 data-nosnippet>281</a>    </span><span class="kw">fn </span>of(rule: <span class="kw-2">&amp;</span>Rule) -&gt; <span class="self">Self </span>{
+<a href=#282 id=282 data-nosnippet>282</a>        <span class="kw">let </span>(pattern, regex) = <span class="kw">match </span>(<span class="kw-2">&amp;</span>rule.regex, <span class="kw-2">&amp;</span>rule.text) {
+<a href=#283 id=283 data-nosnippet>283</a>            (<span class="prelude-val">Some</span>(regex), <span class="kw">_</span>) =&gt; (regex.clone(), <span class="bool-val">true</span>),
+<a href=#284 id=284 data-nosnippet>284</a>            (<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(text)) =&gt; (text.clone(), <span class="bool-val">false</span>),
+<a href=#285 id=285 data-nosnippet>285</a>            (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) =&gt; (String::new(), <span class="bool-val">false</span>),
+<a href=#286 id=286 data-nosnippet>286</a>        };
+<a href=#287 id=287 data-nosnippet>287</a>        <span class="self">Self </span>{
+<a href=#288 id=288 data-nosnippet>288</a>            name: rule.name.clone(),
+<a href=#289 id=289 data-nosnippet>289</a>            pattern,
+<a href=#290 id=290 data-nosnippet>290</a>            regex,
+<a href=#291 id=291 data-nosnippet>291</a>            from: rule.from.clone().unwrap_or_default(),
+<a href=#292 id=292 data-nosnippet>292</a>            fighting: rule.fighting,
+<a href=#293 id=293 data-nosnippet>293</a>            looting: rule.looting,
+<a href=#294 id=294 data-nosnippet>294</a>            marked: rule.marked,
+<a href=#295 id=295 data-nosnippet>295</a>            creature: rule.creature.clone(),
+<a href=#296 id=296 data-nosnippet>296</a>            to: rule.to.clone(),
+<a href=#297 id=297 data-nosnippet>297</a>            copy: rule.copy,
+<a href=#298 id=298 data-nosnippet>298</a>            off: rule.off,
+<a href=#299 id=299 data-nosnippet>299</a>            commands: words_of(rule.commands.as_ref(), rule.commands_built_in()),
+<a href=#300 id=300 data-nosnippet>300</a>            setup: words_of(rule.setup.as_ref(), SETUP_COMMANDS),
+<a href=#301 id=301 data-nosnippet>301</a>        }
+<a href=#302 id=302 data-nosnippet>302</a>    }
+<a href=#303 id=303 data-nosnippet>303</a>
+<a href=#304 id=304 data-nosnippet>304</a>    <span class="doccomment">/// The rule the form makes.
+<a href=#305 id=305 data-nosnippet>305</a>    </span><span class="kw">fn </span>rule(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Rule {
+<a href=#306 id=306 data-nosnippet>306</a>        <span class="kw">let </span>pattern = <span class="kw">if </span><span class="self">self</span>.regex {
+<a href=#307 id=307 data-nosnippet>307</a>            <span class="prelude-val">Some</span>(<span class="self">self</span>.pattern.clone()).filter(|regex| !regex.trim().is_empty())
+<a href=#308 id=308 data-nosnippet>308</a>        } <span class="kw">else </span>{
+<a href=#309 id=309 data-nosnippet>309</a>            <span class="prelude-val">Some</span>(<span class="self">self</span>.pattern.trim().to_owned()).filter(|words| !words.is_empty())
+<a href=#310 id=310 data-nosnippet>310</a>        };
+<a href=#311 id=311 data-nosnippet>311</a>        <span class="kw">let </span><span class="kw-2">mut </span>rule = Rule {
+<a href=#312 id=312 data-nosnippet>312</a>            name: <span class="self">self</span>.name.trim().to_owned(),
+<a href=#313 id=313 data-nosnippet>313</a>            text: pattern.clone().filter(|<span class="kw">_</span>| !<span class="self">self</span>.regex),
+<a href=#314 id=314 data-nosnippet>314</a>            regex: pattern.filter(|<span class="kw">_</span>| <span class="self">self</span>.regex),
+<a href=#315 id=315 data-nosnippet>315</a>            from: <span class="prelude-val">Some</span>(<span class="self">self</span>.from.trim().to_owned()).filter(|from| !from.is_empty()),
+<a href=#316 id=316 data-nosnippet>316</a>            fighting: <span class="self">self</span>.fighting,
+<a href=#317 id=317 data-nosnippet>317</a>            looting: <span class="self">self</span>.looting,
+<a href=#318 id=318 data-nosnippet>318</a>            marked: <span class="self">self</span>.marked,
+<a href=#319 id=319 data-nosnippet>319</a>            creature: <span class="self">self</span>.creature.clone(),
+<a href=#320 id=320 data-nosnippet>320</a>            to: <span class="self">self</span>.to.trim().to_owned(),
+<a href=#321 id=321 data-nosnippet>321</a>            copy: <span class="self">self</span>.copy,
+<a href=#322 id=322 data-nosnippet>322</a>            off: <span class="self">self</span>.off,
+<a href=#323 id=323 data-nosnippet>323</a>            commands: <span class="prelude-val">None</span>,
+<a href=#324 id=324 data-nosnippet>324</a>            setup: list_of(<span class="kw-2">&amp;</span><span class="self">self</span>.setup, SETUP_COMMANDS),
+<a href=#325 id=325 data-nosnippet>325</a>        };
+<a href=#326 id=326 data-nosnippet>326</a>        <span class="comment">// Either list built in, as the form began with it, is no list of the
+<a href=#327 id=327 data-nosnippet>327</a>        // rule's own: a rule ticked for loot keeps the loot words built in.
+<a href=#328 id=328 data-nosnippet>328</a>        </span><span class="kw">let </span>untouched = [FIGHT_COMMANDS, LOOT_COMMANDS]
+<a href=#329 id=329 data-nosnippet>329</a>            .iter()
+<a href=#330 id=330 data-nosnippet>330</a>            .any(|built_in| list_of(<span class="kw-2">&amp;</span><span class="self">self</span>.commands, built_in).is_none());
+<a href=#331 id=331 data-nosnippet>331</a>        rule.commands = <span class="kw">if </span>untouched {
+<a href=#332 id=332 data-nosnippet>332</a>            <span class="prelude-val">None
+<a href=#333 id=333 data-nosnippet>333</a>        </span>} <span class="kw">else </span>{
+<a href=#334 id=334 data-nosnippet>334</a>            list_of(<span class="kw-2">&amp;</span><span class="self">self</span>.commands, rule.commands_built_in())
+<a href=#335 id=335 data-nosnippet>335</a>        };
+<a href=#336 id=336 data-nosnippet>336</a>        rule
+<a href=#337 id=337 data-nosnippet>337</a>    }
+<a href=#338 id=338 data-nosnippet>338</a>
+<a href=#339 id=339 data-nosnippet>339</a>    <span class="doccomment">/// What the rule does, in a sentence.
+<a href=#340 id=340 data-nosnippet>340</a>    </span><span class="kw">fn </span>sentence(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
+<a href=#341 id=341 data-nosnippet>341</a>        <span class="kw">let </span>rule = <span class="self">self</span>.rule();
+<a href=#342 id=342 data-nosnippet>342</a>        <span class="kw">let </span>from = rule.from.as_deref().map_or_else(
+<a href=#343 id=343 data-nosnippet>343</a>            || <span class="string">"Lines from any stream"</span>.to_owned(),
+<a href=#344 id=344 data-nosnippet>344</a>            |from| <span class="macro">format!</span>(<span class="string">"Lines from {}"</span>, called(from)),
+<a href=#345 id=345 data-nosnippet>345</a>        );
+<a href=#346 id=346 data-nosnippet>346</a>        <span class="kw">let </span><span class="kw-2">mut </span>asks = Vec::new();
+<a href=#347 id=347 data-nosnippet>347</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(words) = <span class="kw-2">&amp;</span>rule.text {
+<a href=#348 id=348 data-nosnippet>348</a>            <span class="kw">let </span>words: Vec&lt;String&gt; = words
+<a href=#349 id=349 data-nosnippet>349</a>                .split(<span class="string">'|'</span>)
+<a href=#350 id=350 data-nosnippet>350</a>                .map(str::trim)
+<a href=#351 id=351 data-nosnippet>351</a>                .filter(|word| !word.is_empty())
+<a href=#352 id=352 data-nosnippet>352</a>                .map(|word| <span class="macro">format!</span>(<span class="string">"\"{word}\""</span>))
+<a href=#353 id=353 data-nosnippet>353</a>                .collect();
+<a href=#354 id=354 data-nosnippet>354</a>            asks.push(<span class="macro">format!</span>(<span class="string">"holding {}"</span>, words.join(<span class="string">" or "</span>)));
 <a href=#355 id=355 data-nosnippet>355</a>        }
-<a href=#356 id=356 data-nosnippet>356</a>    });
-<a href=#357 id=357 data-nosnippet>357</a>    <span class="kw">crate</span>::form::hint(
-<a href=#358 id=358 data-nosnippet>358</a>        ui,
-<a href=#359 id=359 data-nosnippet>359</a>        <span class="string">"Its messages of the kinds ticked, as the bestiary has them: the creature known by the \
-<a href=#360 id=360 data-nosnippet>360</a>         noun the game linked."</span>,
-<a href=#361 id=361 data-nosnippet>361</a>    );
-<a href=#362 id=362 data-nosnippet>362</a>}
-<a href=#363 id=363 data-nosnippet>363</a>
-<a href=#364 id=364 data-nosnippet>364</a><span class="doccomment">/// The stream rules' editor.
-<a href=#365 id=365 data-nosnippet>365</a></span><span class="attr">#[derive(Debug, Default)]
-<a href=#366 id=366 data-nosnippet>366</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>Editor {
-<a href=#367 id=367 data-nosnippet>367</a>    <span class="doccomment">/// The rule in the form, by its place and its name as kept; `None` for
-<a href=#368 id=368 data-nosnippet>368</a>    /// a new one.
-<a href=#369 id=369 data-nosnippet>369</a>    </span>chosen: <span class="prelude-ty">Option</span>&lt;(usize, String)&gt;,
-<a href=#370 id=370 data-nosnippet>370</a>    <span class="doccomment">/// The form.
-<a href=#371 id=371 data-nosnippet>371</a>    </span>draft: Draft,
-<a href=#372 id=372 data-nosnippet>372</a>    <span class="doccomment">/// A line to try its words on.
-<a href=#373 id=373 data-nosnippet>373</a>    </span>trying: String,
-<a href=#374 id=374 data-nosnippet>374</a>    <span class="doccomment">/// What the editor has to say: what a change did, or why it did not.
-<a href=#375 id=375 data-nosnippet>375</a>    </span>notice: <span class="prelude-ty">Option</span>&lt;String&gt;,
-<a href=#376 id=376 data-nosnippet>376</a>}
-<a href=#377 id=377 data-nosnippet>377</a>
-<a href=#378 id=378 data-nosnippet>378</a><span class="kw">impl </span>Editor {
-<a href=#379 id=379 data-nosnippet>379</a>    <span class="doccomment">/// What is said under the form.
-<a href=#380 id=380 data-nosnippet>380</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>said(<span class="kw-2">&amp;mut </span><span class="self">self</span>, notice: String) {
-<a href=#381 id=381 data-nosnippet>381</a>        <span class="self">self</span>.notice = <span class="prelude-val">Some</span>(notice);
-<a href=#382 id=382 data-nosnippet>382</a>    }
-<a href=#383 id=383 data-nosnippet>383</a>
-<a href=#384 id=384 data-nosnippet>384</a>    <span class="doccomment">/// A rule made from a line, in the form as a new one, the line to try
-<a href=#385 id=385 data-nosnippet>385</a>    /// it on.
-<a href=#386 id=386 data-nosnippet>386</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>brought(<span class="kw-2">&amp;mut </span><span class="self">self</span>, brought: Brought) {
-<a href=#387 id=387 data-nosnippet>387</a>        <span class="self">self</span>.chosen = <span class="prelude-val">None</span>;
-<a href=#388 id=388 data-nosnippet>388</a>        <span class="self">self</span>.draft = Draft::of(<span class="kw-2">&amp;</span>brought.rule);
-<a href=#389 id=389 data-nosnippet>389</a>        <span class="self">self</span>.trying = brought.line;
-<a href=#390 id=390 data-nosnippet>390</a>        <span class="self">self</span>.notice = <span class="prelude-val">Some</span>(<span class="kw">if </span>brought.rule.to.is_empty() {
-<a href=#391 id=391 data-nosnippet>391</a>            <span class="string">"Made from the line: name the stream it puts them in, look it over, and save it. \
-<a href=#392 id=392 data-nosnippet>392</a>             It is tried first."
-<a href=#393 id=393 data-nosnippet>393</a>                </span>.to_owned()
-<a href=#394 id=394 data-nosnippet>394</a>        } <span class="kw">else </span>{
-<a href=#395 id=395 data-nosnippet>395</a>            <span class="string">"Made from the line: look it over, and save it. It is tried first."</span>.to_owned()
-<a href=#396 id=396 data-nosnippet>396</a>        });
-<a href=#397 id=397 data-nosnippet>397</a>    }
-<a href=#398 id=398 data-nosnippet>398</a>
-<a href=#399 id=399 data-nosnippet>399</a>    <span class="doccomment">/// `asked` was done: the form follows the rule it was on, wherever it
-<a href=#400 id=400 data-nosnippet>400</a>    /// went.
-<a href=#401 id=401 data-nosnippet>401</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>done(<span class="kw-2">&amp;mut </span><span class="self">self</span>, asked: <span class="kw-2">&amp;</span>Asked) {
-<a href=#402 id=402 data-nosnippet>402</a>        <span class="kw">match </span>asked {
-<a href=#403 id=403 data-nosnippet>403</a>            Asked::Save { at, rule } =&gt; {
-<a href=#404 id=404 data-nosnippet>404</a>                <span class="kw">let </span>at = at.as_ref().map_or(<span class="number">0</span>, |(at, <span class="kw">_</span>)| <span class="kw-2">*</span>at);
-<a href=#405 id=405 data-nosnippet>405</a>                <span class="self">self</span>.chosen = <span class="prelude-val">Some</span>((at, rule.name.trim().to_owned()));
-<a href=#406 id=406 data-nosnippet>406</a>                <span class="self">self</span>.draft = Draft::of(rule);
-<a href=#407 id=407 data-nosnippet>407</a>            }
-<a href=#408 id=408 data-nosnippet>408</a>            Asked::Remove(at, <span class="kw">_</span>) =&gt; <span class="kw">match </span><span class="kw-2">&amp;mut </span><span class="self">self</span>.chosen {
-<a href=#409 id=409 data-nosnippet>409</a>                <span class="prelude-val">Some</span>((chosen, <span class="kw">_</span>)) <span class="kw">if </span>chosen == at =&gt; {
-<a href=#410 id=410 data-nosnippet>410</a>                    <span class="self">self</span>.chosen = <span class="prelude-val">None</span>;
-<a href=#411 id=411 data-nosnippet>411</a>                    <span class="self">self</span>.draft = Draft::default();
-<a href=#412 id=412 data-nosnippet>412</a>                }
-<a href=#413 id=413 data-nosnippet>413</a>                <span class="prelude-val">Some</span>((chosen, <span class="kw">_</span>)) <span class="kw">if </span><span class="kw-2">*</span>chosen &gt; <span class="kw-2">*</span>at =&gt; <span class="kw-2">*</span>chosen -= <span class="number">1</span>,
-<a href=#414 id=414 data-nosnippet>414</a>                <span class="kw">_ </span>=&gt; {}
-<a href=#415 id=415 data-nosnippet>415</a>            },
-<a href=#416 id=416 data-nosnippet>416</a>            Asked::Switch(at, <span class="kw">_</span>, on) =&gt; {
-<a href=#417 id=417 data-nosnippet>417</a>                <span class="kw">if </span><span class="self">self</span>.chosen.as_ref().is_some_and(|(chosen, <span class="kw">_</span>)| chosen == at) {
-<a href=#418 id=418 data-nosnippet>418</a>                    <span class="self">self</span>.draft.off = !on;
-<a href=#419 id=419 data-nosnippet>419</a>                }
-<a href=#420 id=420 data-nosnippet>420</a>            }
-<a href=#421 id=421 data-nosnippet>421</a>            Asked::Move(at, <span class="kw">_</span>, sooner) =&gt; {
-<a href=#422 id=422 data-nosnippet>422</a>                <span class="kw">let </span><span class="prelude-val">Some</span>((chosen, <span class="kw">_</span>)) = <span class="kw-2">&amp;mut </span><span class="self">self</span>.chosen <span class="kw">else </span>{
-<a href=#423 id=423 data-nosnippet>423</a>                    <span class="kw">return</span>;
-<a href=#424 id=424 data-nosnippet>424</a>                };
-<a href=#425 id=425 data-nosnippet>425</a>                <span class="kw">let </span>to = <span class="kw">if </span><span class="kw-2">*</span>sooner {
-<a href=#426 id=426 data-nosnippet>426</a>                    at.saturating_sub(<span class="number">1</span>)
-<a href=#427 id=427 data-nosnippet>427</a>                } <span class="kw">else </span>{
-<a href=#428 id=428 data-nosnippet>428</a>                    at + <span class="number">1
-<a href=#429 id=429 data-nosnippet>429</a>                </span>};
-<a href=#430 id=430 data-nosnippet>430</a>                <span class="kw">if </span>chosen == at {
-<a href=#431 id=431 data-nosnippet>431</a>                    <span class="kw-2">*</span>chosen = to;
-<a href=#432 id=432 data-nosnippet>432</a>                } <span class="kw">else if </span><span class="kw-2">*</span>chosen == to {
-<a href=#433 id=433 data-nosnippet>433</a>                    <span class="kw-2">*</span>chosen = <span class="kw-2">*</span>at;
-<a href=#434 id=434 data-nosnippet>434</a>                }
-<a href=#435 id=435 data-nosnippet>435</a>            }
-<a href=#436 id=436 data-nosnippet>436</a>        }
-<a href=#437 id=437 data-nosnippet>437</a>    }
-<a href=#438 id=438 data-nosnippet>438</a>
-<a href=#439 id=439 data-nosnippet>439</a>    <span class="doccomment">/// Draw the editor into `ui` over `rules`. What it asks of the app.
-<a href=#440 id=440 data-nosnippet>440</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>show(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ui: <span class="kw-2">&amp;mut </span>egui::Ui, rules: <span class="kw-2">&amp;</span>Rules) -&gt; Vec&lt;Asked&gt; {
-<a href=#441 id=441 data-nosnippet>441</a>        <span class="kw">let </span><span class="kw-2">mut </span>asked = Vec::new();
-<a href=#442 id=442 data-nosnippet>442</a>        egui::Panel::left(egui::Id::new(<span class="string">"stream-rules-list"</span>))
-<a href=#443 id=443 data-nosnippet>443</a>            .resizable(<span class="bool-val">true</span>)
-<a href=#444 id=444 data-nosnippet>444</a>            .default_size(<span class="number">300.0</span>)
-<a href=#445 id=445 data-nosnippet>445</a>            .show(ui, |ui| asked.extend(<span class="self">self</span>.list(ui, rules)));
-<a href=#446 id=446 data-nosnippet>446</a>        egui::CentralPanel::default().show(ui, |ui| {
-<a href=#447 id=447 data-nosnippet>447</a>            egui::ScrollArea::vertical()
-<a href=#448 id=448 data-nosnippet>448</a>                .id_salt(<span class="string">"stream-rule-form"</span>)
-<a href=#449 id=449 data-nosnippet>449</a>                .show(ui, |ui| {
-<a href=#450 id=450 data-nosnippet>450</a>                    asked.extend(<span class="self">self</span>.form(ui, rules));
-<a href=#451 id=451 data-nosnippet>451</a>                    <span class="kw">if let </span><span class="prelude-val">Some</span>(notice) = <span class="kw-2">&amp;</span><span class="self">self</span>.notice {
-<a href=#452 id=452 data-nosnippet>452</a>                        ui.separator();
-<a href=#453 id=453 data-nosnippet>453</a>                        ui.label(notice.as_str());
-<a href=#454 id=454 data-nosnippet>454</a>                    }
-<a href=#455 id=455 data-nosnippet>455</a>                });
-<a href=#456 id=456 data-nosnippet>456</a>        });
-<a href=#457 id=457 data-nosnippet>457</a>        <span class="kw">if </span>!asked.is_empty() {
-<a href=#458 id=458 data-nosnippet>458</a>            <span class="self">self</span>.notice = <span class="prelude-val">None</span>;
-<a href=#459 id=459 data-nosnippet>459</a>        }
-<a href=#460 id=460 data-nosnippet>460</a>        asked
-<a href=#461 id=461 data-nosnippet>461</a>    }
-<a href=#462 id=462 data-nosnippet>462</a>
-<a href=#463 id=463 data-nosnippet>463</a>    <span class="doccomment">/// The list: *New*, and every rule in the order they are tried, each
-<a href=#464 id=464 data-nosnippet>464</a>    /// switched on or off where it is listed, one that cannot be used said.
-<a href=#465 id=465 data-nosnippet>465</a>    </span><span class="kw">fn </span>list(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ui: <span class="kw-2">&amp;mut </span>egui::Ui, rules: <span class="kw-2">&amp;</span>Rules) -&gt; Vec&lt;Asked&gt; {
-<a href=#466 id=466 data-nosnippet>466</a>        <span class="kw">let </span><span class="kw-2">mut </span>asked = Vec::new();
-<a href=#467 id=467 data-nosnippet>467</a>        ui.horizontal(|ui| {
-<a href=#468 id=468 data-nosnippet>468</a>            <span class="kw">if </span>ui
-<a href=#469 id=469 data-nosnippet>469</a>                .button(<span class="string">"New"</span>)
-<a href=#470 id=470 data-nosnippet>470</a>                .on_hover_text(<span class="string">"A new rule, tried first"</span>)
-<a href=#471 id=471 data-nosnippet>471</a>                .clicked()
-<a href=#472 id=472 data-nosnippet>472</a>            {
-<a href=#473 id=473 data-nosnippet>473</a>                <span class="self">self</span>.chosen = <span class="prelude-val">None</span>;
-<a href=#474 id=474 data-nosnippet>474</a>                <span class="self">self</span>.draft = Draft::default();
-<a href=#475 id=475 data-nosnippet>475</a>                <span class="self">self</span>.notice = <span class="prelude-val">None</span>;
+<a href=#356 id=356 data-nosnippet>356</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(regex) = <span class="kw-2">&amp;</span>rule.regex {
+<a href=#357 id=357 data-nosnippet>357</a>            asks.push(<span class="macro">format!</span>(<span class="string">"matching {regex}"</span>));
+<a href=#358 id=358 data-nosnippet>358</a>        }
+<a href=#359 id=359 data-nosnippet>359</a>        <span class="kw">if </span>rule.fighting {
+<a href=#360 id=360 data-nosnippet>360</a>            asks.push(<span class="string">"while there is fighting"</span>.to_owned());
+<a href=#361 id=361 data-nosnippet>361</a>        }
+<a href=#362 id=362 data-nosnippet>362</a>        <span class="kw">if </span>rule.looting {
+<a href=#363 id=363 data-nosnippet>363</a>            asks.push(<span class="string">"while a creature is searched or skinned"</span>.to_owned());
+<a href=#364 id=364 data-nosnippet>364</a>        }
+<a href=#365 id=365 data-nosnippet>365</a>        <span class="kw">if </span>rule.marked {
+<a href=#366 id=366 data-nosnippet>366</a>            asks.push(<span class="string">"that the combat reader marked"</span>.to_owned());
+<a href=#367 id=367 data-nosnippet>367</a>        }
+<a href=#368 id=368 data-nosnippet>368</a>        <span class="kw">if </span>!rule.creature.is_empty() {
+<a href=#369 id=369 data-nosnippet>369</a>            <span class="kw">let </span>kinds: Vec&lt;String&gt; = rule
+<a href=#370 id=370 data-nosnippet>370</a>                .creature
+<a href=#371 id=371 data-nosnippet>371</a>                .iter()
+<a href=#372 id=372 data-nosnippet>372</a>                .map(|kind| kind.replace(<span class="string">'_'</span>, <span class="string">" "</span>))
+<a href=#373 id=373 data-nosnippet>373</a>                .collect();
+<a href=#374 id=374 data-nosnippet>374</a>            asks.push(<span class="macro">format!</span>(<span class="string">"that are a creature's {}"</span>, kinds.join(<span class="string">" or "</span>)));
+<a href=#375 id=375 data-nosnippet>375</a>        }
+<a href=#376 id=376 data-nosnippet>376</a>        <span class="kw">let </span>to = <span class="kw">if </span>rule.to.is_empty() {
+<a href=#377 id=377 data-nosnippet>377</a>            <span class="string">"go nowhere yet: name the stream to put them in"</span>.to_owned()
+<a href=#378 id=378 data-nosnippet>378</a>        } <span class="kw">else if </span>rule.copy {
+<a href=#379 id=379 data-nosnippet>379</a>            <span class="macro">format!</span>(<span class="string">"go to {} as well"</span>, called(<span class="kw-2">&amp;</span>rule.to))
+<a href=#380 id=380 data-nosnippet>380</a>        } <span class="kw">else </span>{
+<a href=#381 id=381 data-nosnippet>381</a>            <span class="macro">format!</span>(<span class="string">"go to {}"</span>, called(<span class="kw-2">&amp;</span>rule.to))
+<a href=#382 id=382 data-nosnippet>382</a>        };
+<a href=#383 id=383 data-nosnippet>383</a>        <span class="kw">let </span>said = <span class="kw">if </span>asks.is_empty() {
+<a href=#384 id=384 data-nosnippet>384</a>            <span class="macro">format!</span>(<span class="string">"{from} {to}."</span>)
+<a href=#385 id=385 data-nosnippet>385</a>        } <span class="kw">else </span>{
+<a href=#386 id=386 data-nosnippet>386</a>            <span class="macro">format!</span>(<span class="string">"{from}, {}, {to}."</span>, asks.join(<span class="string">", "</span>))
+<a href=#387 id=387 data-nosnippet>387</a>        };
+<a href=#388 id=388 data-nosnippet>388</a>        <span class="kw">if </span>rule.off {
+<a href=#389 id=389 data-nosnippet>389</a>            <span class="macro">format!</span>(<span class="string">"Off. {said}"</span>)
+<a href=#390 id=390 data-nosnippet>390</a>        } <span class="kw">else </span>{
+<a href=#391 id=391 data-nosnippet>391</a>            said
+<a href=#392 id=392 data-nosnippet>392</a>        }
+<a href=#393 id=393 data-nosnippet>393</a>    }
+<a href=#394 id=394 data-nosnippet>394</a>}
+<a href=#395 id=395 data-nosnippet>395</a>
+<a href=#396 id=396 data-nosnippet>396</a><span class="doccomment">/// The kinds of a creature's messages, `kinds` those ticked, as the file
+<a href=#397 id=397 data-nosnippet>397</a>/// spells them: a box each.
+<a href=#398 id=398 data-nosnippet>398</a></span><span class="kw">fn </span>creature_kinds(ui: <span class="kw-2">&amp;mut </span>egui::Ui, kinds: <span class="kw-2">&amp;mut </span>Vec&lt;String&gt;) {
+<a href=#399 id=399 data-nosnippet>399</a>    ui.horizontal_wrapped(|ui| {
+<a href=#400 id=400 data-nosnippet>400</a>        <span class="kw">for </span>kind <span class="kw">in </span>MessageKind::ALL {
+<a href=#401 id=401 data-nosnippet>401</a>            <span class="kw">let </span>spelled = kind.as_str();
+<a href=#402 id=402 data-nosnippet>402</a>            <span class="kw">let </span><span class="kw-2">mut </span>on = kinds.iter().any(|kept| kept == spelled);
+<a href=#403 id=403 data-nosnippet>403</a>            <span class="kw">if </span>ui.checkbox(<span class="kw-2">&amp;mut </span>on, spelled.replace(<span class="string">'_'</span>, <span class="string">" "</span>)).changed() {
+<a href=#404 id=404 data-nosnippet>404</a>                kinds.retain(|kept| kept != spelled);
+<a href=#405 id=405 data-nosnippet>405</a>                <span class="kw">if </span>on {
+<a href=#406 id=406 data-nosnippet>406</a>                    kinds.push(spelled.to_owned());
+<a href=#407 id=407 data-nosnippet>407</a>                }
+<a href=#408 id=408 data-nosnippet>408</a>            }
+<a href=#409 id=409 data-nosnippet>409</a>        }
+<a href=#410 id=410 data-nosnippet>410</a>    });
+<a href=#411 id=411 data-nosnippet>411</a>    <span class="kw">crate</span>::form::hint(
+<a href=#412 id=412 data-nosnippet>412</a>        ui,
+<a href=#413 id=413 data-nosnippet>413</a>        <span class="string">"Its messages of the kinds ticked, as the bestiary has them: the creature known by the \
+<a href=#414 id=414 data-nosnippet>414</a>         noun the game linked."</span>,
+<a href=#415 id=415 data-nosnippet>415</a>    );
+<a href=#416 id=416 data-nosnippet>416</a>}
+<a href=#417 id=417 data-nosnippet>417</a>
+<a href=#418 id=418 data-nosnippet>418</a><span class="doccomment">/// The stream rules' editor.
+<a href=#419 id=419 data-nosnippet>419</a></span><span class="attr">#[derive(Debug, Default)]
+<a href=#420 id=420 data-nosnippet>420</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>Editor {
+<a href=#421 id=421 data-nosnippet>421</a>    <span class="doccomment">/// The rule in the form, by its place and its name as kept; `None` for
+<a href=#422 id=422 data-nosnippet>422</a>    /// a new one.
+<a href=#423 id=423 data-nosnippet>423</a>    </span>chosen: <span class="prelude-ty">Option</span>&lt;(usize, String)&gt;,
+<a href=#424 id=424 data-nosnippet>424</a>    <span class="doccomment">/// The form.
+<a href=#425 id=425 data-nosnippet>425</a>    </span>draft: Draft,
+<a href=#426 id=426 data-nosnippet>426</a>    <span class="doccomment">/// A line to try its words on.
+<a href=#427 id=427 data-nosnippet>427</a>    </span>trying: String,
+<a href=#428 id=428 data-nosnippet>428</a>    <span class="doccomment">/// What the editor has to say: what a change did, or why it did not.
+<a href=#429 id=429 data-nosnippet>429</a>    </span>notice: <span class="prelude-ty">Option</span>&lt;String&gt;,
+<a href=#430 id=430 data-nosnippet>430</a>    <span class="doccomment">/// The rules picked in the list, by place and name, to take away.
+<a href=#431 id=431 data-nosnippet>431</a>    </span>picks: <span class="kw">crate</span>::picks::Picks&lt;(usize, String)&gt;,
+<a href=#432 id=432 data-nosnippet>432</a>}
+<a href=#433 id=433 data-nosnippet>433</a>
+<a href=#434 id=434 data-nosnippet>434</a><span class="kw">impl </span>Editor {
+<a href=#435 id=435 data-nosnippet>435</a>    <span class="doccomment">/// What is said under the form.
+<a href=#436 id=436 data-nosnippet>436</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>said(<span class="kw-2">&amp;mut </span><span class="self">self</span>, notice: String) {
+<a href=#437 id=437 data-nosnippet>437</a>        <span class="self">self</span>.notice = <span class="prelude-val">Some</span>(notice);
+<a href=#438 id=438 data-nosnippet>438</a>    }
+<a href=#439 id=439 data-nosnippet>439</a>
+<a href=#440 id=440 data-nosnippet>440</a>    <span class="doccomment">/// A rule made from a line, in the form as a new one, the line to try
+<a href=#441 id=441 data-nosnippet>441</a>    /// it on.
+<a href=#442 id=442 data-nosnippet>442</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>brought(<span class="kw-2">&amp;mut </span><span class="self">self</span>, brought: Brought) {
+<a href=#443 id=443 data-nosnippet>443</a>        <span class="self">self</span>.chosen = <span class="prelude-val">None</span>;
+<a href=#444 id=444 data-nosnippet>444</a>        <span class="self">self</span>.draft = Draft::of(<span class="kw-2">&amp;</span>brought.rule);
+<a href=#445 id=445 data-nosnippet>445</a>        <span class="self">self</span>.trying = brought.line;
+<a href=#446 id=446 data-nosnippet>446</a>        <span class="self">self</span>.notice = <span class="prelude-val">Some</span>(<span class="kw">if </span>brought.rule.to.is_empty() {
+<a href=#447 id=447 data-nosnippet>447</a>            <span class="string">"Made from the line: name the stream it puts them in, look it over, and save it. \
+<a href=#448 id=448 data-nosnippet>448</a>             It is tried first."
+<a href=#449 id=449 data-nosnippet>449</a>                </span>.to_owned()
+<a href=#450 id=450 data-nosnippet>450</a>        } <span class="kw">else </span>{
+<a href=#451 id=451 data-nosnippet>451</a>            <span class="string">"Made from the line: look it over, and save it. It is tried first."</span>.to_owned()
+<a href=#452 id=452 data-nosnippet>452</a>        });
+<a href=#453 id=453 data-nosnippet>453</a>    }
+<a href=#454 id=454 data-nosnippet>454</a>
+<a href=#455 id=455 data-nosnippet>455</a>    <span class="doccomment">/// `asked` was done: the form follows the rule it was on, wherever it
+<a href=#456 id=456 data-nosnippet>456</a>    /// went.
+<a href=#457 id=457 data-nosnippet>457</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>done(<span class="kw-2">&amp;mut </span><span class="self">self</span>, asked: <span class="kw-2">&amp;</span>Asked) {
+<a href=#458 id=458 data-nosnippet>458</a>        <span class="kw">match </span>asked {
+<a href=#459 id=459 data-nosnippet>459</a>            Asked::Save { at, rule } =&gt; {
+<a href=#460 id=460 data-nosnippet>460</a>                <span class="kw">let </span>at = at.as_ref().map_or(<span class="number">0</span>, |(at, <span class="kw">_</span>)| <span class="kw-2">*</span>at);
+<a href=#461 id=461 data-nosnippet>461</a>                <span class="self">self</span>.chosen = <span class="prelude-val">Some</span>((at, rule.name.trim().to_owned()));
+<a href=#462 id=462 data-nosnippet>462</a>                <span class="self">self</span>.draft = Draft::of(rule);
+<a href=#463 id=463 data-nosnippet>463</a>            }
+<a href=#464 id=464 data-nosnippet>464</a>            Asked::Remove(at, <span class="kw">_</span>) =&gt; <span class="kw">match </span><span class="kw-2">&amp;mut </span><span class="self">self</span>.chosen {
+<a href=#465 id=465 data-nosnippet>465</a>                <span class="prelude-val">Some</span>((chosen, <span class="kw">_</span>)) <span class="kw">if </span>chosen == at =&gt; {
+<a href=#466 id=466 data-nosnippet>466</a>                    <span class="self">self</span>.chosen = <span class="prelude-val">None</span>;
+<a href=#467 id=467 data-nosnippet>467</a>                    <span class="self">self</span>.draft = Draft::default();
+<a href=#468 id=468 data-nosnippet>468</a>                }
+<a href=#469 id=469 data-nosnippet>469</a>                <span class="prelude-val">Some</span>((chosen, <span class="kw">_</span>)) <span class="kw">if </span><span class="kw-2">*</span>chosen &gt; <span class="kw-2">*</span>at =&gt; <span class="kw-2">*</span>chosen -= <span class="number">1</span>,
+<a href=#470 id=470 data-nosnippet>470</a>                <span class="kw">_ </span>=&gt; {}
+<a href=#471 id=471 data-nosnippet>471</a>            },
+<a href=#472 id=472 data-nosnippet>472</a>            Asked::Switch(at, <span class="kw">_</span>, on) =&gt; {
+<a href=#473 id=473 data-nosnippet>473</a>                <span class="kw">if </span><span class="self">self</span>.chosen.as_ref().is_some_and(|(chosen, <span class="kw">_</span>)| chosen == at) {
+<a href=#474 id=474 data-nosnippet>474</a>                    <span class="self">self</span>.draft.off = !on;
+<a href=#475 id=475 data-nosnippet>475</a>                }
 <a href=#476 id=476 data-nosnippet>476</a>            }
-<a href=#477 id=477 data-nosnippet>477</a>            ui.label(<span class="macro">format!</span>(<span class="string">"{} rule(s)"</span>, rules.rules.len()));
-<a href=#478 id=478 data-nosnippet>478</a>        });
-<a href=#479 id=479 data-nosnippet>479</a>        <span class="kw">crate</span>::form::hint(
-<a href=#480 id=480 data-nosnippet>480</a>            ui,
-<a href=#481 id=481 data-nosnippet>481</a>            <span class="string">"Tried in this order: the first that matches a line sorts it."</span>,
-<a href=#482 id=482 data-nosnippet>482</a>        );
-<a href=#483 id=483 data-nosnippet>483</a>        ui.separator();
-<a href=#484 id=484 data-nosnippet>484</a>        <span class="kw">let </span>wrong = <span class="kw">crate</span>::theme::color(ui.ctx(), T::Wrong);
-<a href=#485 id=485 data-nosnippet>485</a>        egui::ScrollArea::vertical()
-<a href=#486 id=486 data-nosnippet>486</a>            .id_salt(<span class="string">"stream-rules-scroll"</span>)
-<a href=#487 id=487 data-nosnippet>487</a>            .auto_shrink(<span class="bool-val">false</span>)
-<a href=#488 id=488 data-nosnippet>488</a>            .show(ui, |ui| {
-<a href=#489 id=489 data-nosnippet>489</a>                <span class="kw">for </span>(at, rule) <span class="kw">in </span>rules.rules.iter().enumerate() {
-<a href=#490 id=490 data-nosnippet>490</a>                    ui.horizontal(|ui| {
-<a href=#491 id=491 data-nosnippet>491</a>                        <span class="kw">let </span><span class="kw-2">mut </span>on = !rule.off;
-<a href=#492 id=492 data-nosnippet>492</a>                        <span class="kw">if </span>ui
-<a href=#493 id=493 data-nosnippet>493</a>                            .checkbox(<span class="kw-2">&amp;mut </span>on, <span class="string">""</span>)
-<a href=#494 id=494 data-nosnippet>494</a>                            .on_hover_text(<span class="string">"On or off"</span>)
-<a href=#495 id=495 data-nosnippet>495</a>                            .changed()
-<a href=#496 id=496 data-nosnippet>496</a>                        {
-<a href=#497 id=497 data-nosnippet>497</a>                            asked.push(Asked::Switch(at, rule.name.clone(), on));
-<a href=#498 id=498 data-nosnippet>498</a>                        }
-<a href=#499 id=499 data-nosnippet>499</a>                        <span class="kw">let </span>chosen = <span class="self">self</span>.chosen.as_ref().is_some_and(|(place, <span class="kw">_</span>)| <span class="kw-2">*</span>place == at);
-<a href=#500 id=500 data-nosnippet>500</a>                        <span class="kw">if </span>ui.selectable_label(chosen, <span class="kw-2">&amp;</span>rule.name).clicked() &amp;&amp; !chosen {
-<a href=#501 id=501 data-nosnippet>501</a>                            <span class="self">self</span>.chosen = <span class="prelude-val">Some</span>((at, rule.name.clone()));
-<a href=#502 id=502 data-nosnippet>502</a>                            <span class="self">self</span>.draft = Draft::of(rule);
-<a href=#503 id=503 data-nosnippet>503</a>                            <span class="self">self</span>.notice = <span class="prelude-val">None</span>;
-<a href=#504 id=504 data-nosnippet>504</a>                        }
-<a href=#505 id=505 data-nosnippet>505</a>                        <span class="kw">let </span>copied = <span class="kw">if </span>rule.copy { <span class="string">", copied" </span>} <span class="kw">else </span>{ <span class="string">"" </span>};
-<a href=#506 id=506 data-nosnippet>506</a>                        <span class="kw">crate</span>::form::hint(ui, <span class="macro">format!</span>(<span class="string">"to {}{copied}"</span>, rule.to));
-<a href=#507 id=507 data-nosnippet>507</a>                        <span class="kw">if </span>!rule.off
-<a href=#508 id=508 data-nosnippet>508</a>                            &amp;&amp; <span class="kw">let </span><span class="prelude-val">Err</span>(why) = rule.check()
-<a href=#509 id=509 data-nosnippet>509</a>                        {
-<a href=#510 id=510 data-nosnippet>510</a>                            ui.colored_label(wrong, <span class="string">"not used"</span>)
-<a href=#511 id=511 data-nosnippet>511</a>                                .on_hover_text(<span class="macro">format!</span>(<span class="string">"It cannot be used: {why}."</span>));
-<a href=#512 id=512 data-nosnippet>512</a>                        }
-<a href=#513 id=513 data-nosnippet>513</a>                    });
-<a href=#514 id=514 data-nosnippet>514</a>                }
-<a href=#515 id=515 data-nosnippet>515</a>            });
+<a href=#477 id=477 data-nosnippet>477</a>            Asked::Move(at, <span class="kw">_</span>, sooner) =&gt; {
+<a href=#478 id=478 data-nosnippet>478</a>                <span class="kw">let </span><span class="prelude-val">Some</span>((chosen, <span class="kw">_</span>)) = <span class="kw-2">&amp;mut </span><span class="self">self</span>.chosen <span class="kw">else </span>{
+<a href=#479 id=479 data-nosnippet>479</a>                    <span class="kw">return</span>;
+<a href=#480 id=480 data-nosnippet>480</a>                };
+<a href=#481 id=481 data-nosnippet>481</a>                <span class="kw">let </span>to = <span class="kw">if </span><span class="kw-2">*</span>sooner {
+<a href=#482 id=482 data-nosnippet>482</a>                    at.saturating_sub(<span class="number">1</span>)
+<a href=#483 id=483 data-nosnippet>483</a>                } <span class="kw">else </span>{
+<a href=#484 id=484 data-nosnippet>484</a>                    at + <span class="number">1
+<a href=#485 id=485 data-nosnippet>485</a>                </span>};
+<a href=#486 id=486 data-nosnippet>486</a>                <span class="kw">if </span>chosen == at {
+<a href=#487 id=487 data-nosnippet>487</a>                    <span class="kw-2">*</span>chosen = to;
+<a href=#488 id=488 data-nosnippet>488</a>                } <span class="kw">else if </span><span class="kw-2">*</span>chosen == to {
+<a href=#489 id=489 data-nosnippet>489</a>                    <span class="kw-2">*</span>chosen = <span class="kw-2">*</span>at;
+<a href=#490 id=490 data-nosnippet>490</a>                }
+<a href=#491 id=491 data-nosnippet>491</a>            }
+<a href=#492 id=492 data-nosnippet>492</a>        }
+<a href=#493 id=493 data-nosnippet>493</a>    }
+<a href=#494 id=494 data-nosnippet>494</a>
+<a href=#495 id=495 data-nosnippet>495</a>    <span class="doccomment">/// Draw the editor into `ui` over `rules`. What it asks of the app.
+<a href=#496 id=496 data-nosnippet>496</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>show(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ui: <span class="kw-2">&amp;mut </span>egui::Ui, rules: <span class="kw-2">&amp;</span>Rules) -&gt; Vec&lt;Asked&gt; {
+<a href=#497 id=497 data-nosnippet>497</a>        <span class="kw">let </span><span class="kw-2">mut </span>asked = Vec::new();
+<a href=#498 id=498 data-nosnippet>498</a>        egui::Panel::left(egui::Id::new(<span class="string">"stream-rules-list"</span>))
+<a href=#499 id=499 data-nosnippet>499</a>            .resizable(<span class="bool-val">true</span>)
+<a href=#500 id=500 data-nosnippet>500</a>            .default_size(<span class="number">300.0</span>)
+<a href=#501 id=501 data-nosnippet>501</a>            .show(ui, |ui| asked.extend(<span class="self">self</span>.list(ui, rules)));
+<a href=#502 id=502 data-nosnippet>502</a>        egui::CentralPanel::default().show(ui, |ui| {
+<a href=#503 id=503 data-nosnippet>503</a>            egui::ScrollArea::vertical()
+<a href=#504 id=504 data-nosnippet>504</a>                .id_salt(<span class="string">"stream-rule-form"</span>)
+<a href=#505 id=505 data-nosnippet>505</a>                .show(ui, |ui| {
+<a href=#506 id=506 data-nosnippet>506</a>                    asked.extend(<span class="self">self</span>.form(ui, rules));
+<a href=#507 id=507 data-nosnippet>507</a>                    <span class="kw">if let </span><span class="prelude-val">Some</span>(notice) = <span class="kw-2">&amp;</span><span class="self">self</span>.notice {
+<a href=#508 id=508 data-nosnippet>508</a>                        ui.separator();
+<a href=#509 id=509 data-nosnippet>509</a>                        ui.label(notice.as_str());
+<a href=#510 id=510 data-nosnippet>510</a>                    }
+<a href=#511 id=511 data-nosnippet>511</a>                });
+<a href=#512 id=512 data-nosnippet>512</a>        });
+<a href=#513 id=513 data-nosnippet>513</a>        <span class="kw">if </span>!asked.is_empty() {
+<a href=#514 id=514 data-nosnippet>514</a>            <span class="self">self</span>.notice = <span class="prelude-val">None</span>;
+<a href=#515 id=515 data-nosnippet>515</a>        }
 <a href=#516 id=516 data-nosnippet>516</a>        asked
 <a href=#517 id=517 data-nosnippet>517</a>    }
 <a href=#518 id=518 data-nosnippet>518</a>
-<a href=#519 id=519 data-nosnippet>519</a>    <span class="doccomment">/// The form: every part of the rule, a line to try its words on, and
-<a href=#520 id=520 data-nosnippet>520</a>    /// *Save*, the moves and *Remove*.
-<a href=#521 id=521 data-nosnippet>521</a>    </span><span class="kw">fn </span>form(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ui: <span class="kw-2">&amp;mut </span>egui::Ui, rules: <span class="kw-2">&amp;</span>Rules) -&gt; Vec&lt;Asked&gt; {
+<a href=#519 id=519 data-nosnippet>519</a>    <span class="doccomment">/// The list: *New*, and every rule in the order they are tried, each
+<a href=#520 id=520 data-nosnippet>520</a>    /// switched on or off where it is listed, one that cannot be used said.
+<a href=#521 id=521 data-nosnippet>521</a>    </span><span class="kw">fn </span>list(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ui: <span class="kw-2">&amp;mut </span>egui::Ui, rules: <span class="kw-2">&amp;</span>Rules) -&gt; Vec&lt;Asked&gt; {
 <a href=#522 id=522 data-nosnippet>522</a>        <span class="kw">let </span><span class="kw-2">mut </span>asked = Vec::new();
-<a href=#523 id=523 data-nosnippet>523</a>        ui.heading(
-<a href=#524 id=524 data-nosnippet>524</a>            <span class="self">self</span>.chosen
-<a href=#525 id=525 data-nosnippet>525</a>                .as_ref()
-<a href=#526 id=526 data-nosnippet>526</a>                .map_or_else(|| <span class="string">"A new rule"</span>.to_owned(), |(<span class="kw">_</span>, name)| name.clone()),
-<a href=#527 id=527 data-nosnippet>527</a>        );
-<a href=#528 id=528 data-nosnippet>528</a>        ui.label(egui::RichText::new(<span class="self">self</span>.draft.sentence()).italics());
-<a href=#529 id=529 data-nosnippet>529</a>        ui.add_space(<span class="number">4.0</span>);
-<a href=#530 id=530 data-nosnippet>530</a>        <span class="kw">let </span>offered = streams(rules.rules.iter().map(|rule| rule.to.as_str()));
-<a href=#531 id=531 data-nosnippet>531</a>        egui::Grid::new(<span class="string">"stream-rule-form"</span>)
-<a href=#532 id=532 data-nosnippet>532</a>            .num_columns(<span class="number">2</span>)
-<a href=#533 id=533 data-nosnippet>533</a>            .min_col_width(<span class="number">104.0</span>)
-<a href=#534 id=534 data-nosnippet>534</a>            .spacing([<span class="number">12.0</span>, <span class="number">6.0</span>])
-<a href=#535 id=535 data-nosnippet>535</a>            .show(ui, |ui| <span class="self">self</span>.fields(ui, <span class="kw-2">&amp;</span>offered));
-<a href=#536 id=536 data-nosnippet>536</a>        <span class="kw">crate</span>::form::section(ui, <span class="string">"Try it"</span>);
-<a href=#537 id=537 data-nosnippet>537</a>        ui.add(
-<a href=#538 id=538 data-nosnippet>538</a>            egui::TextEdit::singleline(<span class="kw-2">&amp;mut </span><span class="self">self</span>.trying)
-<a href=#539 id=539 data-nosnippet>539</a>                .hint_text(<span class="string">"A line of the game's"</span>)
-<a href=#540 id=540 data-nosnippet>540</a>                .desired_width(f32::INFINITY),
-<a href=#541 id=541 data-nosnippet>541</a>        );
-<a href=#542 id=542 data-nosnippet>542</a>        <span class="kw">if </span>!<span class="self">self</span>.trying.is_empty() {
-<a href=#543 id=543 data-nosnippet>543</a>            ui.label(<span class="self">self</span>.tried());
-<a href=#544 id=544 data-nosnippet>544</a>        }
-<a href=#545 id=545 data-nosnippet>545</a>        <span class="kw">crate</span>::form::hint(
-<a href=#546 id=546 data-nosnippet>546</a>            ui,
-<a href=#547 id=547 data-nosnippet>547</a>            <span class="string">"Only its words are tried here: fighting, a mark and a creature's message are known \
-<a href=#548 id=548 data-nosnippet>548</a>             as the lines come."</span>,
-<a href=#549 id=549 data-nosnippet>549</a>        );
-<a href=#550 id=550 data-nosnippet>550</a>        ui.add_space(<span class="number">8.0</span>);
-<a href=#551 id=551 data-nosnippet>551</a>        ui.separator();
-<a href=#552 id=552 data-nosnippet>552</a>        ui.horizontal(|ui| {
-<a href=#553 id=553 data-nosnippet>553</a>            <span class="kw">if </span>ui.button(<span class="string">"Save"</span>).clicked() {
-<a href=#554 id=554 data-nosnippet>554</a>                asked.push(Asked::Save {
-<a href=#555 id=555 data-nosnippet>555</a>                    at: <span class="self">self</span>.chosen.clone(),
-<a href=#556 id=556 data-nosnippet>556</a>                    rule: Box::new(<span class="self">self</span>.draft.rule()),
-<a href=#557 id=557 data-nosnippet>557</a>                });
-<a href=#558 id=558 data-nosnippet>558</a>            }
-<a href=#559 id=559 data-nosnippet>559</a>            <span class="kw">if let </span><span class="prelude-val">Some</span>((at, name)) = <span class="kw-2">&amp;</span><span class="self">self</span>.chosen {
-<a href=#560 id=560 data-nosnippet>560</a>                <span class="kw">let </span>count = rules.rules.len();
-<a href=#561 id=561 data-nosnippet>561</a>                <span class="kw">for </span>(label, sooner, about) <span class="kw">in </span>[
-<a href=#562 id=562 data-nosnippet>562</a>                    (<span class="string">"Move up"</span>, <span class="bool-val">true</span>, <span class="string">"Tried before the rule above it"</span>),
-<a href=#563 id=563 data-nosnippet>563</a>                    (<span class="string">"Move down"</span>, <span class="bool-val">false</span>, <span class="string">"Tried after the rule below it"</span>),
-<a href=#564 id=564 data-nosnippet>564</a>                ] {
-<a href=#565 id=565 data-nosnippet>565</a>                    <span class="kw">if </span>ui
-<a href=#566 id=566 data-nosnippet>566</a>                        .add_enabled(
-<a href=#567 id=567 data-nosnippet>567</a>                            moved(<span class="kw-2">*</span>at, sooner, count).is_some(),
-<a href=#568 id=568 data-nosnippet>568</a>                            egui::Button::new(label),
-<a href=#569 id=569 data-nosnippet>569</a>                        )
-<a href=#570 id=570 data-nosnippet>570</a>                        .on_hover_text(about)
-<a href=#571 id=571 data-nosnippet>571</a>                        .clicked()
-<a href=#572 id=572 data-nosnippet>572</a>                    {
-<a href=#573 id=573 data-nosnippet>573</a>                        asked.push(Asked::Move(<span class="kw-2">*</span>at, name.clone(), sooner));
-<a href=#574 id=574 data-nosnippet>574</a>                    }
-<a href=#575 id=575 data-nosnippet>575</a>                }
-<a href=#576 id=576 data-nosnippet>576</a>                <span class="kw">if </span>ui.button(<span class="string">"Remove"</span>).clicked() {
-<a href=#577 id=577 data-nosnippet>577</a>                    asked.push(Asked::Remove(<span class="kw-2">*</span>at, name.clone()));
-<a href=#578 id=578 data-nosnippet>578</a>                }
-<a href=#579 id=579 data-nosnippet>579</a>            }
-<a href=#580 id=580 data-nosnippet>580</a>        });
-<a href=#581 id=581 data-nosnippet>581</a>        asked
-<a href=#582 id=582 data-nosnippet>582</a>    }
-<a href=#583 id=583 data-nosnippet>583</a>
-<a href=#584 id=584 data-nosnippet>584</a>    <span class="doccomment">/// The form's fields, a row each, the streams `offered` to choose from.
-<a href=#585 id=585 data-nosnippet>585</a>    </span><span class="kw">fn </span>fields(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ui: <span class="kw-2">&amp;mut </span>egui::Ui, offered: <span class="kw-2">&amp;</span>[(String, String)]) {
-<a href=#586 id=586 data-nosnippet>586</a>        <span class="kw">let </span>draft = <span class="kw-2">&amp;mut </span><span class="self">self</span>.draft;
-<a href=#587 id=587 data-nosnippet>587</a>        ui.label(<span class="string">"Name"</span>);
-<a href=#588 id=588 data-nosnippet>588</a>        ui.add(
-<a href=#589 id=589 data-nosnippet>589</a>            egui::TextEdit::singleline(<span class="kw-2">&amp;mut </span>draft.name)
-<a href=#590 id=590 data-nosnippet>590</a>                .hint_text(<span class="string">"What you call it"</span>)
-<a href=#591 id=591 data-nosnippet>591</a>                .desired_width(<span class="number">280.0</span>),
-<a href=#592 id=592 data-nosnippet>592</a>        );
-<a href=#593 id=593 data-nosnippet>593</a>        ui.end_row();
-<a href=#594 id=594 data-nosnippet>594</a>        ui.label(<span class="string">"Lines from"</span>);
-<a href=#595 id=595 data-nosnippet>595</a>        <span class="kw">let </span>shown = <span class="kw">if </span>draft.from.trim().is_empty() {
-<a href=#596 id=596 data-nosnippet>596</a>            <span class="string">"Any stream"</span>.to_owned()
-<a href=#597 id=597 data-nosnippet>597</a>        } <span class="kw">else </span>{
-<a href=#598 id=598 data-nosnippet>598</a>            called(draft.from.trim())
-<a href=#599 id=599 data-nosnippet>599</a>        };
-<a href=#600 id=600 data-nosnippet>600</a>        egui::ComboBox::from_id_salt(<span class="string">"stream-rule-from"</span>)
-<a href=#601 id=601 data-nosnippet>601</a>            .selected_text(shown)
-<a href=#602 id=602 data-nosnippet>602</a>            .show_ui(ui, |ui| {
-<a href=#603 id=603 data-nosnippet>603</a>                ui.selectable_value(<span class="kw-2">&amp;mut </span>draft.from, String::new(), <span class="string">"Any stream"</span>);
-<a href=#604 id=604 data-nosnippet>604</a>                ui.selectable_value(<span class="kw-2">&amp;mut </span>draft.from, MAIN.to_owned(), <span class="string">"The story"</span>);
-<a href=#605 id=605 data-nosnippet>605</a>                <span class="kw">for </span>(id, name) <span class="kw">in </span>offered {
-<a href=#606 id=606 data-nosnippet>606</a>                    ui.selectable_value(<span class="kw-2">&amp;mut </span>draft.from, id.clone(), name);
-<a href=#607 id=607 data-nosnippet>607</a>                }
-<a href=#608 id=608 data-nosnippet>608</a>            });
-<a href=#609 id=609 data-nosnippet>609</a>        ui.end_row();
-<a href=#610 id=610 data-nosnippet>610</a>        ui.label(<span class="string">"Holding"</span>);
-<a href=#611 id=611 data-nosnippet>611</a>        ui.vertical(|ui| {
-<a href=#612 id=612 data-nosnippet>612</a>            ui.horizontal(|ui| {
-<a href=#613 id=613 data-nosnippet>613</a>                ui.radio_value(<span class="kw-2">&amp;mut </span>draft.regex, <span class="bool-val">false</span>, <span class="string">"Words"</span>);
-<a href=#614 id=614 data-nosnippet>614</a>                ui.radio_value(<span class="kw-2">&amp;mut </span>draft.regex, <span class="bool-val">true</span>, <span class="string">"A regex"</span>);
-<a href=#615 id=615 data-nosnippet>615</a>            });
-<a href=#616 id=616 data-nosnippet>616</a>            ui.add(
-<a href=#617 id=617 data-nosnippet>617</a>                egui::TextEdit::singleline(<span class="kw-2">&amp;mut </span>draft.pattern)
-<a href=#618 id=618 data-nosnippet>618</a>                    .hint_text(<span class="kw">if </span>draft.regex {
-<a href=#619 id=619 data-nosnippet>619</a>                        <span class="string">"^A .+ howls"
-<a href=#620 id=620 data-nosnippet>620</a>                    </span>} <span class="kw">else </span>{
-<a href=#621 id=621 data-nosnippet>621</a>                        <span class="string">"howl | shiver"
-<a href=#622 id=622 data-nosnippet>622</a>                    </span>})
-<a href=#623 id=623 data-nosnippet>623</a>                    .desired_width(f32::INFINITY),
-<a href=#624 id=624 data-nosnippet>624</a>            );
-<a href=#625 id=625 data-nosnippet>625</a>            <span class="kw">crate</span>::form::hint(
-<a href=#626 id=626 data-nosnippet>626</a>                ui,
-<a href=#627 id=627 data-nosnippet>627</a>                <span class="kw">if </span>draft.regex {
-<a href=#628 id=628 data-nosnippet>628</a>                    <span class="string">"A regular expression: capitals count, unless it starts (?i)."
-<a href=#629 id=629 data-nosnippet>629</a>                </span>} <span class="kw">else </span>{
-<a href=#630 id=630 data-nosnippet>630</a>                    <span class="string">"Words anywhere in the line, whatever their case; | between words any of \
-<a href=#631 id=631 data-nosnippet>631</a>                     which will do. None, and the rule takes lines by what else it asks."
-<a href=#632 id=632 data-nosnippet>632</a>                </span>},
-<a href=#633 id=633 data-nosnippet>633</a>            );
-<a href=#634 id=634 data-nosnippet>634</a>        });
-<a href=#635 id=635 data-nosnippet>635</a>        ui.end_row();
-<a href=#636 id=636 data-nosnippet>636</a>        ui.label(<span class="string">"Only when"</span>);
-<a href=#637 id=637 data-nosnippet>637</a>        ui.vertical(|ui| {
-<a href=#638 id=638 data-nosnippet>638</a>            ui.checkbox(<span class="kw-2">&amp;mut </span>draft.fighting, <span class="string">"there is fighting"</span>)
-<a href=#639 id=639 data-nosnippet>639</a>                .on_hover_text(
-<a href=#640 id=640 data-nosnippet>640</a>                    <span class="string">"The combat reader found an attack, or what one did -- a status, a death, a \
-<a href=#641 id=641 data-nosnippet>641</a>                     stun -- in the lines up to the game's prompt"</span>,
-<a href=#642 id=642 data-nosnippet>642</a>                );
-<a href=#643 id=643 data-nosnippet>643</a>            ui.checkbox(<span class="kw-2">&amp;mut </span>draft.marked, <span class="string">"the combat reader marked the line"</span>)
-<a href=#644 id=644 data-nosnippet>644</a>                .on_hover_text(<span class="string">"A flare, a status landing on you, a killing blow"</span>);
-<a href=#645 id=645 data-nosnippet>645</a>        });
-<a href=#646 id=646 data-nosnippet>646</a>        ui.end_row();
-<a href=#647 id=647 data-nosnippet>647</a>        ui.label(<span class="string">"A creature's"</span>);
-<a href=#648 id=648 data-nosnippet>648</a>        ui.vertical(|ui| creature_kinds(ui, <span class="kw-2">&amp;mut </span>draft.creature));
-<a href=#649 id=649 data-nosnippet>649</a>        ui.end_row();
-<a href=#650 id=650 data-nosnippet>650</a>        ui.label(<span class="string">"Put in"</span>);
-<a href=#651 id=651 data-nosnippet>651</a>        ui.horizontal(|ui| {
-<a href=#652 id=652 data-nosnippet>652</a>            ui.add(
-<a href=#653 id=653 data-nosnippet>653</a>                egui::TextEdit::singleline(<span class="kw-2">&amp;mut </span>draft.to)
-<a href=#654 id=654 data-nosnippet>654</a>                    .hint_text(<span class="string">"ambients, or one of your own: combat, loot"</span>)
-<a href=#655 id=655 data-nosnippet>655</a>                    .desired_width(<span class="number">240.0</span>),
-<a href=#656 id=656 data-nosnippet>656</a>            );
-<a href=#657 id=657 data-nosnippet>657</a>            ui.menu_button(<span class="string">"Streams"</span>, |ui| {
-<a href=#658 id=658 data-nosnippet>658</a>                <span class="kw">for </span>(id, name) <span class="kw">in </span>offered {
-<a href=#659 id=659 data-nosnippet>659</a>                    <span class="kw">if </span>ui.button(name).clicked() {
-<a href=#660 id=660 data-nosnippet>660</a>                        draft.to.clone_from(id);
-<a href=#661 id=661 data-nosnippet>661</a>                        ui.close();
-<a href=#662 id=662 data-nosnippet>662</a>                    }
-<a href=#663 id=663 data-nosnippet>663</a>                }
-<a href=#664 id=664 data-nosnippet>664</a>            });
-<a href=#665 id=665 data-nosnippet>665</a>        });
-<a href=#666 id=666 data-nosnippet>666</a>        ui.end_row();
-<a href=#667 id=667 data-nosnippet>667</a>        ui.label(<span class="string">""</span>);
-<a href=#668 id=668 data-nosnippet>668</a>        ui.checkbox(<span class="kw-2">&amp;mut </span>draft.copy, <span class="string">"Keep it where the game sent it too"</span>)
-<a href=#669 id=669 data-nosnippet>669</a>            .on_hover_text(<span class="string">"Copied, not moved: the line shows in both"</span>);
-<a href=#670 id=670 data-nosnippet>670</a>        ui.end_row();
-<a href=#671 id=671 data-nosnippet>671</a>        ui.label(<span class="string">""</span>);
-<a href=#672 id=672 data-nosnippet>672</a>        ui.checkbox(<span class="kw-2">&amp;mut </span>draft.off, <span class="string">"Off"</span>);
-<a href=#673 id=673 data-nosnippet>673</a>        ui.end_row();
-<a href=#674 id=674 data-nosnippet>674</a>    }
-<a href=#675 id=675 data-nosnippet>675</a>
-<a href=#676 id=676 data-nosnippet>676</a>    <span class="doccomment">/// Whether the form's words find the line being tried, as said.
-<a href=#677 id=677 data-nosnippet>677</a>    </span><span class="kw">fn </span>tried(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
-<a href=#678 id=678 data-nosnippet>678</a>        <span class="kw">let </span>rule = <span class="self">self</span>.draft.rule();
-<a href=#679 id=679 data-nosnippet>679</a>        <span class="kw">if </span>rule.text.is_none() &amp;&amp; rule.regex.is_none() {
-<a href=#680 id=680 data-nosnippet>680</a>            <span class="kw">return </span><span class="string">"It looks for no words: what else it asks decides."</span>.to_owned();
-<a href=#681 id=681 data-nosnippet>681</a>        }
-<a href=#682 id=682 data-nosnippet>682</a>        <span class="kw">match </span>rule.finds(<span class="kw-2">&amp;</span><span class="self">self</span>.trying) {
-<a href=#683 id=683 data-nosnippet>683</a>            <span class="prelude-val">Ok</span>(<span class="bool-val">true</span>) =&gt; <span class="string">"Its words find this line."</span>.to_owned(),
-<a href=#684 id=684 data-nosnippet>684</a>            <span class="prelude-val">Ok</span>(<span class="bool-val">false</span>) =&gt; <span class="string">"Its words do not find this line."</span>.to_owned(),
-<a href=#685 id=685 data-nosnippet>685</a>            <span class="prelude-val">Err</span>(why) =&gt; <span class="macro">format!</span>(<span class="string">"Not tried: {why}."</span>),
-<a href=#686 id=686 data-nosnippet>686</a>        }
-<a href=#687 id=687 data-nosnippet>687</a>    }
-<a href=#688 id=688 data-nosnippet>688</a>}
-<a href=#689 id=689 data-nosnippet>689</a>
-<a href=#690 id=690 data-nosnippet>690</a><span class="attr">#[cfg(test)]
-<a href=#691 id=691 data-nosnippet>691</a></span><span class="kw">mod </span>tests;
+<a href=#523 id=523 data-nosnippet>523</a>        ui.horizontal(|ui| {
+<a href=#524 id=524 data-nosnippet>524</a>            <span class="kw">if </span>ui
+<a href=#525 id=525 data-nosnippet>525</a>                .button(<span class="string">"New"</span>)
+<a href=#526 id=526 data-nosnippet>526</a>                .on_hover_text(<span class="string">"A new rule, tried first"</span>)
+<a href=#527 id=527 data-nosnippet>527</a>                .clicked()
+<a href=#528 id=528 data-nosnippet>528</a>            {
+<a href=#529 id=529 data-nosnippet>529</a>                <span class="self">self</span>.chosen = <span class="prelude-val">None</span>;
+<a href=#530 id=530 data-nosnippet>530</a>                <span class="self">self</span>.picks.clear();
+<a href=#531 id=531 data-nosnippet>531</a>                <span class="self">self</span>.draft = Draft::default();
+<a href=#532 id=532 data-nosnippet>532</a>                <span class="self">self</span>.notice = <span class="prelude-val">None</span>;
+<a href=#533 id=533 data-nosnippet>533</a>            }
+<a href=#534 id=534 data-nosnippet>534</a>            ui.label(<span class="macro">format!</span>(<span class="string">"{} rule(s)"</span>, rules.rules.len()));
+<a href=#535 id=535 data-nosnippet>535</a>        });
+<a href=#536 id=536 data-nosnippet>536</a>        <span class="kw">crate</span>::form::hint(
+<a href=#537 id=537 data-nosnippet>537</a>            ui,
+<a href=#538 id=538 data-nosnippet>538</a>            <span class="string">"Tried in this order: the first that matches a line sorts it."</span>,
+<a href=#539 id=539 data-nosnippet>539</a>        );
+<a href=#540 id=540 data-nosnippet>540</a>        <span class="kw">let </span>order: Vec&lt;(usize, String)&gt; = rules
+<a href=#541 id=541 data-nosnippet>541</a>            .rules
+<a href=#542 id=542 data-nosnippet>542</a>            .iter()
+<a href=#543 id=543 data-nosnippet>543</a>            .enumerate()
+<a href=#544 id=544 data-nosnippet>544</a>            .map(|(at, rule)| (at, rule.name.clone()))
+<a href=#545 id=545 data-nosnippet>545</a>            .collect();
+<a href=#546 id=546 data-nosnippet>546</a>        <span class="self">self</span>.picks.keep(<span class="kw-2">&amp;</span>order);
+<a href=#547 id=547 data-nosnippet>547</a>        <span class="kw">let </span><span class="kw-2">mut </span>gone = <span class="self">self</span>.picks.remove_bar(ui, <span class="string">"rules"</span>);
+<a href=#548 id=548 data-nosnippet>548</a>        <span class="comment">// The latest first, so each place taken away leaves the others' as
+<a href=#549 id=549 data-nosnippet>549</a>        // they were.
+<a href=#550 id=550 data-nosnippet>550</a>        </span>gone.sort_by_key(|(at, <span class="kw">_</span>)| std::cmp::Reverse(<span class="kw-2">*</span>at));
+<a href=#551 id=551 data-nosnippet>551</a>        asked.extend(gone.into_iter().map(|(at, name)| Asked::Remove(at, name)));
+<a href=#552 id=552 data-nosnippet>552</a>        ui.separator();
+<a href=#553 id=553 data-nosnippet>553</a>        <span class="kw">let </span>wrong = <span class="kw">crate</span>::theme::color(ui.ctx(), T::Wrong);
+<a href=#554 id=554 data-nosnippet>554</a>        egui::ScrollArea::vertical()
+<a href=#555 id=555 data-nosnippet>555</a>            .id_salt(<span class="string">"stream-rules-scroll"</span>)
+<a href=#556 id=556 data-nosnippet>556</a>            .auto_shrink(<span class="bool-val">false</span>)
+<a href=#557 id=557 data-nosnippet>557</a>            .show(ui, |ui| {
+<a href=#558 id=558 data-nosnippet>558</a>                <span class="kw">for </span>(at, rule) <span class="kw">in </span>rules.rules.iter().enumerate() {
+<a href=#559 id=559 data-nosnippet>559</a>                    ui.horizontal(|ui| {
+<a href=#560 id=560 data-nosnippet>560</a>                        <span class="kw">let </span><span class="kw-2">mut </span>on = !rule.off;
+<a href=#561 id=561 data-nosnippet>561</a>                        <span class="kw">if </span>ui
+<a href=#562 id=562 data-nosnippet>562</a>                            .checkbox(<span class="kw-2">&amp;mut </span>on, <span class="string">""</span>)
+<a href=#563 id=563 data-nosnippet>563</a>                            .on_hover_text(<span class="string">"On or off"</span>)
+<a href=#564 id=564 data-nosnippet>564</a>                            .changed()
+<a href=#565 id=565 data-nosnippet>565</a>                        {
+<a href=#566 id=566 data-nosnippet>566</a>                            asked.push(Asked::Switch(at, rule.name.clone(), on));
+<a href=#567 id=567 data-nosnippet>567</a>                        }
+<a href=#568 id=568 data-nosnippet>568</a>                        <span class="kw">let </span>chosen = <span class="self">self</span>.chosen.as_ref().is_some_and(|(place, <span class="kw">_</span>)| <span class="kw-2">*</span>place == at);
+<a href=#569 id=569 data-nosnippet>569</a>                        <span class="kw">let </span>key = (at, rule.name.clone());
+<a href=#570 id=570 data-nosnippet>570</a>                        <span class="kw">if </span>ui
+<a href=#571 id=571 data-nosnippet>571</a>                            .selectable_label(chosen || <span class="self">self</span>.picks.has(<span class="kw-2">&amp;</span>key), <span class="kw-2">&amp;</span>rule.name)
+<a href=#572 id=572 data-nosnippet>572</a>                            .clicked()
+<a href=#573 id=573 data-nosnippet>573</a>                            &amp;&amp; <span class="self">self</span>.picks.click(ui, <span class="kw-2">&amp;</span>key, <span class="kw-2">&amp;</span>order)
+<a href=#574 id=574 data-nosnippet>574</a>                            &amp;&amp; !chosen
+<a href=#575 id=575 data-nosnippet>575</a>                        {
+<a href=#576 id=576 data-nosnippet>576</a>                            <span class="self">self</span>.chosen = <span class="prelude-val">Some</span>(key);
+<a href=#577 id=577 data-nosnippet>577</a>                            <span class="self">self</span>.draft = Draft::of(rule);
+<a href=#578 id=578 data-nosnippet>578</a>                            <span class="self">self</span>.notice = <span class="prelude-val">None</span>;
+<a href=#579 id=579 data-nosnippet>579</a>                        }
+<a href=#580 id=580 data-nosnippet>580</a>                        <span class="kw">let </span>copied = <span class="kw">if </span>rule.copy { <span class="string">", copied" </span>} <span class="kw">else </span>{ <span class="string">"" </span>};
+<a href=#581 id=581 data-nosnippet>581</a>                        <span class="kw">crate</span>::form::hint(ui, <span class="macro">format!</span>(<span class="string">"to {}{copied}"</span>, rule.to));
+<a href=#582 id=582 data-nosnippet>582</a>                        <span class="kw">if </span>!rule.off
+<a href=#583 id=583 data-nosnippet>583</a>                            &amp;&amp; <span class="kw">let </span><span class="prelude-val">Err</span>(why) = rule.check()
+<a href=#584 id=584 data-nosnippet>584</a>                        {
+<a href=#585 id=585 data-nosnippet>585</a>                            ui.colored_label(wrong, <span class="string">"not used"</span>)
+<a href=#586 id=586 data-nosnippet>586</a>                                .on_hover_text(<span class="macro">format!</span>(<span class="string">"It cannot be used: {why}."</span>));
+<a href=#587 id=587 data-nosnippet>587</a>                        }
+<a href=#588 id=588 data-nosnippet>588</a>                    });
+<a href=#589 id=589 data-nosnippet>589</a>                }
+<a href=#590 id=590 data-nosnippet>590</a>            });
+<a href=#591 id=591 data-nosnippet>591</a>        asked
+<a href=#592 id=592 data-nosnippet>592</a>    }
+<a href=#593 id=593 data-nosnippet>593</a>
+<a href=#594 id=594 data-nosnippet>594</a>    <span class="doccomment">/// The form: every part of the rule, a line to try its words on, and
+<a href=#595 id=595 data-nosnippet>595</a>    /// *Save*, the moves and *Remove*.
+<a href=#596 id=596 data-nosnippet>596</a>    </span><span class="kw">fn </span>form(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ui: <span class="kw-2">&amp;mut </span>egui::Ui, rules: <span class="kw-2">&amp;</span>Rules) -&gt; Vec&lt;Asked&gt; {
+<a href=#597 id=597 data-nosnippet>597</a>        <span class="kw">let </span><span class="kw-2">mut </span>asked = Vec::new();
+<a href=#598 id=598 data-nosnippet>598</a>        ui.heading(
+<a href=#599 id=599 data-nosnippet>599</a>            <span class="self">self</span>.chosen
+<a href=#600 id=600 data-nosnippet>600</a>                .as_ref()
+<a href=#601 id=601 data-nosnippet>601</a>                .map_or_else(|| <span class="string">"A new rule"</span>.to_owned(), |(<span class="kw">_</span>, name)| name.clone()),
+<a href=#602 id=602 data-nosnippet>602</a>        );
+<a href=#603 id=603 data-nosnippet>603</a>        ui.label(egui::RichText::new(<span class="self">self</span>.draft.sentence()).italics());
+<a href=#604 id=604 data-nosnippet>604</a>        ui.add_space(<span class="number">4.0</span>);
+<a href=#605 id=605 data-nosnippet>605</a>        <span class="kw">let </span>offered = streams(rules.rules.iter().map(|rule| rule.to.as_str()));
+<a href=#606 id=606 data-nosnippet>606</a>        egui::Grid::new(<span class="string">"stream-rule-form"</span>)
+<a href=#607 id=607 data-nosnippet>607</a>            .num_columns(<span class="number">2</span>)
+<a href=#608 id=608 data-nosnippet>608</a>            .min_col_width(<span class="number">104.0</span>)
+<a href=#609 id=609 data-nosnippet>609</a>            .spacing([<span class="number">12.0</span>, <span class="number">6.0</span>])
+<a href=#610 id=610 data-nosnippet>610</a>            .show(ui, |ui| <span class="self">self</span>.fields(ui, <span class="kw-2">&amp;</span>offered));
+<a href=#611 id=611 data-nosnippet>611</a>        <span class="kw">crate</span>::form::section(ui, <span class="string">"Try it"</span>);
+<a href=#612 id=612 data-nosnippet>612</a>        ui.add(
+<a href=#613 id=613 data-nosnippet>613</a>            egui::TextEdit::singleline(<span class="kw-2">&amp;mut </span><span class="self">self</span>.trying)
+<a href=#614 id=614 data-nosnippet>614</a>                .hint_text(<span class="string">"A line of the game's"</span>)
+<a href=#615 id=615 data-nosnippet>615</a>                .desired_width(f32::INFINITY),
+<a href=#616 id=616 data-nosnippet>616</a>        );
+<a href=#617 id=617 data-nosnippet>617</a>        <span class="kw">if </span>!<span class="self">self</span>.trying.is_empty() {
+<a href=#618 id=618 data-nosnippet>618</a>            ui.label(<span class="self">self</span>.tried());
+<a href=#619 id=619 data-nosnippet>619</a>        }
+<a href=#620 id=620 data-nosnippet>620</a>        <span class="kw">crate</span>::form::hint(
+<a href=#621 id=621 data-nosnippet>621</a>            ui,
+<a href=#622 id=622 data-nosnippet>622</a>            <span class="string">"Only its words are tried here: fighting, a mark and a creature's message are known \
+<a href=#623 id=623 data-nosnippet>623</a>             as the lines come."</span>,
+<a href=#624 id=624 data-nosnippet>624</a>        );
+<a href=#625 id=625 data-nosnippet>625</a>        ui.add_space(<span class="number">8.0</span>);
+<a href=#626 id=626 data-nosnippet>626</a>        ui.separator();
+<a href=#627 id=627 data-nosnippet>627</a>        ui.horizontal(|ui| {
+<a href=#628 id=628 data-nosnippet>628</a>            <span class="kw">if </span>ui.button(<span class="string">"Save"</span>).clicked() {
+<a href=#629 id=629 data-nosnippet>629</a>                asked.push(Asked::Save {
+<a href=#630 id=630 data-nosnippet>630</a>                    at: <span class="self">self</span>.chosen.clone(),
+<a href=#631 id=631 data-nosnippet>631</a>                    rule: Box::new(<span class="self">self</span>.draft.rule()),
+<a href=#632 id=632 data-nosnippet>632</a>                });
+<a href=#633 id=633 data-nosnippet>633</a>            }
+<a href=#634 id=634 data-nosnippet>634</a>            <span class="kw">if let </span><span class="prelude-val">Some</span>((at, name)) = <span class="kw-2">&amp;</span><span class="self">self</span>.chosen {
+<a href=#635 id=635 data-nosnippet>635</a>                <span class="kw">let </span>count = rules.rules.len();
+<a href=#636 id=636 data-nosnippet>636</a>                <span class="kw">for </span>(label, sooner, about) <span class="kw">in </span>[
+<a href=#637 id=637 data-nosnippet>637</a>                    (<span class="string">"Move up"</span>, <span class="bool-val">true</span>, <span class="string">"Tried before the rule above it"</span>),
+<a href=#638 id=638 data-nosnippet>638</a>                    (<span class="string">"Move down"</span>, <span class="bool-val">false</span>, <span class="string">"Tried after the rule below it"</span>),
+<a href=#639 id=639 data-nosnippet>639</a>                ] {
+<a href=#640 id=640 data-nosnippet>640</a>                    <span class="kw">if </span>ui
+<a href=#641 id=641 data-nosnippet>641</a>                        .add_enabled(
+<a href=#642 id=642 data-nosnippet>642</a>                            moved(<span class="kw-2">*</span>at, sooner, count).is_some(),
+<a href=#643 id=643 data-nosnippet>643</a>                            egui::Button::new(label),
+<a href=#644 id=644 data-nosnippet>644</a>                        )
+<a href=#645 id=645 data-nosnippet>645</a>                        .on_hover_text(about)
+<a href=#646 id=646 data-nosnippet>646</a>                        .clicked()
+<a href=#647 id=647 data-nosnippet>647</a>                    {
+<a href=#648 id=648 data-nosnippet>648</a>                        asked.push(Asked::Move(<span class="kw-2">*</span>at, name.clone(), sooner));
+<a href=#649 id=649 data-nosnippet>649</a>                    }
+<a href=#650 id=650 data-nosnippet>650</a>                }
+<a href=#651 id=651 data-nosnippet>651</a>                <span class="kw">if </span>ui.button(<span class="string">"Remove"</span>).clicked() {
+<a href=#652 id=652 data-nosnippet>652</a>                    asked.push(Asked::Remove(<span class="kw-2">*</span>at, name.clone()));
+<a href=#653 id=653 data-nosnippet>653</a>                }
+<a href=#654 id=654 data-nosnippet>654</a>            }
+<a href=#655 id=655 data-nosnippet>655</a>        });
+<a href=#656 id=656 data-nosnippet>656</a>        asked
+<a href=#657 id=657 data-nosnippet>657</a>    }
+<a href=#658 id=658 data-nosnippet>658</a>
+<a href=#659 id=659 data-nosnippet>659</a>    <span class="doccomment">/// The form's fields, a row each, the streams `offered` to choose from.
+<a href=#660 id=660 data-nosnippet>660</a>    </span><span class="kw">fn </span>fields(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ui: <span class="kw-2">&amp;mut </span>egui::Ui, offered: <span class="kw-2">&amp;</span>[(String, String)]) {
+<a href=#661 id=661 data-nosnippet>661</a>        <span class="kw">let </span>draft = <span class="kw-2">&amp;mut </span><span class="self">self</span>.draft;
+<a href=#662 id=662 data-nosnippet>662</a>        ui.label(<span class="string">"Name"</span>);
+<a href=#663 id=663 data-nosnippet>663</a>        ui.add(
+<a href=#664 id=664 data-nosnippet>664</a>            egui::TextEdit::singleline(<span class="kw-2">&amp;mut </span>draft.name)
+<a href=#665 id=665 data-nosnippet>665</a>                .hint_text(<span class="string">"What you call it"</span>)
+<a href=#666 id=666 data-nosnippet>666</a>                .desired_width(<span class="number">280.0</span>),
+<a href=#667 id=667 data-nosnippet>667</a>        );
+<a href=#668 id=668 data-nosnippet>668</a>        ui.end_row();
+<a href=#669 id=669 data-nosnippet>669</a>        ui.label(<span class="string">"Lines from"</span>);
+<a href=#670 id=670 data-nosnippet>670</a>        <span class="kw">let </span>shown = <span class="kw">if </span>draft.from.trim().is_empty() {
+<a href=#671 id=671 data-nosnippet>671</a>            <span class="string">"Any stream"</span>.to_owned()
+<a href=#672 id=672 data-nosnippet>672</a>        } <span class="kw">else </span>{
+<a href=#673 id=673 data-nosnippet>673</a>            called(draft.from.trim())
+<a href=#674 id=674 data-nosnippet>674</a>        };
+<a href=#675 id=675 data-nosnippet>675</a>        egui::ComboBox::from_id_salt(<span class="string">"stream-rule-from"</span>)
+<a href=#676 id=676 data-nosnippet>676</a>            .selected_text(shown)
+<a href=#677 id=677 data-nosnippet>677</a>            .show_ui(ui, |ui| {
+<a href=#678 id=678 data-nosnippet>678</a>                ui.selectable_value(<span class="kw-2">&amp;mut </span>draft.from, String::new(), <span class="string">"Any stream"</span>);
+<a href=#679 id=679 data-nosnippet>679</a>                ui.selectable_value(<span class="kw-2">&amp;mut </span>draft.from, MAIN.to_owned(), <span class="string">"The story"</span>);
+<a href=#680 id=680 data-nosnippet>680</a>                <span class="kw">for </span>(id, name) <span class="kw">in </span>offered {
+<a href=#681 id=681 data-nosnippet>681</a>                    ui.selectable_value(<span class="kw-2">&amp;mut </span>draft.from, id.clone(), name);
+<a href=#682 id=682 data-nosnippet>682</a>                }
+<a href=#683 id=683 data-nosnippet>683</a>            });
+<a href=#684 id=684 data-nosnippet>684</a>        ui.end_row();
+<a href=#685 id=685 data-nosnippet>685</a>        ui.label(<span class="string">"Holding"</span>);
+<a href=#686 id=686 data-nosnippet>686</a>        ui.vertical(|ui| {
+<a href=#687 id=687 data-nosnippet>687</a>            ui.horizontal(|ui| {
+<a href=#688 id=688 data-nosnippet>688</a>                ui.radio_value(<span class="kw-2">&amp;mut </span>draft.regex, <span class="bool-val">false</span>, <span class="string">"Words"</span>);
+<a href=#689 id=689 data-nosnippet>689</a>                ui.radio_value(<span class="kw-2">&amp;mut </span>draft.regex, <span class="bool-val">true</span>, <span class="string">"A regex"</span>);
+<a href=#690 id=690 data-nosnippet>690</a>            });
+<a href=#691 id=691 data-nosnippet>691</a>            ui.add(
+<a href=#692 id=692 data-nosnippet>692</a>                egui::TextEdit::singleline(<span class="kw-2">&amp;mut </span>draft.pattern)
+<a href=#693 id=693 data-nosnippet>693</a>                    .hint_text(<span class="kw">if </span>draft.regex {
+<a href=#694 id=694 data-nosnippet>694</a>                        <span class="string">"^A .+ howls"
+<a href=#695 id=695 data-nosnippet>695</a>                    </span>} <span class="kw">else </span>{
+<a href=#696 id=696 data-nosnippet>696</a>                        <span class="string">"howl | shiver"
+<a href=#697 id=697 data-nosnippet>697</a>                    </span>})
+<a href=#698 id=698 data-nosnippet>698</a>                    .desired_width(f32::INFINITY),
+<a href=#699 id=699 data-nosnippet>699</a>            );
+<a href=#700 id=700 data-nosnippet>700</a>            <span class="kw">crate</span>::form::hint(
+<a href=#701 id=701 data-nosnippet>701</a>                ui,
+<a href=#702 id=702 data-nosnippet>702</a>                <span class="kw">if </span>draft.regex {
+<a href=#703 id=703 data-nosnippet>703</a>                    <span class="string">"A regular expression: capitals count, unless it starts (?i)."
+<a href=#704 id=704 data-nosnippet>704</a>                </span>} <span class="kw">else </span>{
+<a href=#705 id=705 data-nosnippet>705</a>                    <span class="string">"Words anywhere in the line, whatever their case; | between words any of \
+<a href=#706 id=706 data-nosnippet>706</a>                     which will do. None, and the rule takes lines by what else it asks."
+<a href=#707 id=707 data-nosnippet>707</a>                </span>},
+<a href=#708 id=708 data-nosnippet>708</a>            );
+<a href=#709 id=709 data-nosnippet>709</a>        });
+<a href=#710 id=710 data-nosnippet>710</a>        ui.end_row();
+<a href=#711 id=711 data-nosnippet>711</a>        when_rows(ui, draft);
+<a href=#712 id=712 data-nosnippet>712</a>        ui.label(<span class="string">"A creature's"</span>);
+<a href=#713 id=713 data-nosnippet>713</a>        ui.vertical(|ui| creature_kinds(ui, <span class="kw-2">&amp;mut </span>draft.creature));
+<a href=#714 id=714 data-nosnippet>714</a>        ui.end_row();
+<a href=#715 id=715 data-nosnippet>715</a>        ui.label(<span class="string">"Put in"</span>);
+<a href=#716 id=716 data-nosnippet>716</a>        ui.horizontal(|ui| {
+<a href=#717 id=717 data-nosnippet>717</a>            ui.add(
+<a href=#718 id=718 data-nosnippet>718</a>                egui::TextEdit::singleline(<span class="kw-2">&amp;mut </span>draft.to)
+<a href=#719 id=719 data-nosnippet>719</a>                    .hint_text(<span class="string">"ambients, or one of your own: combat, loot"</span>)
+<a href=#720 id=720 data-nosnippet>720</a>                    .desired_width(<span class="number">240.0</span>),
+<a href=#721 id=721 data-nosnippet>721</a>            );
+<a href=#722 id=722 data-nosnippet>722</a>            ui.menu_button(<span class="string">"Streams"</span>, |ui| {
+<a href=#723 id=723 data-nosnippet>723</a>                <span class="kw">for </span>(id, name) <span class="kw">in </span>offered {
+<a href=#724 id=724 data-nosnippet>724</a>                    <span class="kw">if </span>ui.button(name).clicked() {
+<a href=#725 id=725 data-nosnippet>725</a>                        draft.to.clone_from(id);
+<a href=#726 id=726 data-nosnippet>726</a>                        ui.close();
+<a href=#727 id=727 data-nosnippet>727</a>                    }
+<a href=#728 id=728 data-nosnippet>728</a>                }
+<a href=#729 id=729 data-nosnippet>729</a>            });
+<a href=#730 id=730 data-nosnippet>730</a>        });
+<a href=#731 id=731 data-nosnippet>731</a>        ui.end_row();
+<a href=#732 id=732 data-nosnippet>732</a>        ui.label(<span class="string">""</span>);
+<a href=#733 id=733 data-nosnippet>733</a>        ui.checkbox(<span class="kw-2">&amp;mut </span>draft.copy, <span class="string">"Keep it where the game sent it too"</span>)
+<a href=#734 id=734 data-nosnippet>734</a>            .on_hover_text(<span class="string">"Copied, not moved: the line shows in both"</span>);
+<a href=#735 id=735 data-nosnippet>735</a>        ui.end_row();
+<a href=#736 id=736 data-nosnippet>736</a>        ui.label(<span class="string">""</span>);
+<a href=#737 id=737 data-nosnippet>737</a>        ui.checkbox(<span class="kw-2">&amp;mut </span>draft.off, <span class="string">"Off"</span>);
+<a href=#738 id=738 data-nosnippet>738</a>        ui.end_row();
+<a href=#739 id=739 data-nosnippet>739</a>    }
+<a href=#740 id=740 data-nosnippet>740</a>
+<a href=#741 id=741 data-nosnippet>741</a>    <span class="doccomment">/// Whether the form's words find the line being tried, as said.
+<a href=#742 id=742 data-nosnippet>742</a>    </span><span class="kw">fn </span>tried(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
+<a href=#743 id=743 data-nosnippet>743</a>        <span class="kw">let </span>rule = <span class="self">self</span>.draft.rule();
+<a href=#744 id=744 data-nosnippet>744</a>        <span class="kw">if </span>rule.text.is_none() &amp;&amp; rule.regex.is_none() {
+<a href=#745 id=745 data-nosnippet>745</a>            <span class="kw">return </span><span class="string">"It looks for no words: what else it asks decides."</span>.to_owned();
+<a href=#746 id=746 data-nosnippet>746</a>        }
+<a href=#747 id=747 data-nosnippet>747</a>        <span class="kw">match </span>rule.finds(<span class="kw-2">&amp;</span><span class="self">self</span>.trying) {
+<a href=#748 id=748 data-nosnippet>748</a>            <span class="prelude-val">Ok</span>(<span class="bool-val">true</span>) =&gt; <span class="string">"Its words find this line."</span>.to_owned(),
+<a href=#749 id=749 data-nosnippet>749</a>            <span class="prelude-val">Ok</span>(<span class="bool-val">false</span>) =&gt; <span class="string">"Its words do not find this line."</span>.to_owned(),
+<a href=#750 id=750 data-nosnippet>750</a>            <span class="prelude-val">Err</span>(why) =&gt; <span class="macro">format!</span>(<span class="string">"Not tried: {why}."</span>),
+<a href=#751 id=751 data-nosnippet>751</a>        }
+<a href=#752 id=752 data-nosnippet>752</a>    }
+<a href=#753 id=753 data-nosnippet>753</a>}
+<a href=#754 id=754 data-nosnippet>754</a>
+<a href=#755 id=755 data-nosnippet>755</a><span class="doccomment">/// The form's rows for what else a rule asks: fighting, looting, a marked
+<a href=#756 id=756 data-nosnippet>756</a>/// line, and the commands that go with a fight or a search.
+<a href=#757 id=757 data-nosnippet>757</a></span><span class="kw">fn </span>when_rows(ui: <span class="kw-2">&amp;mut </span>egui::Ui, draft: <span class="kw-2">&amp;mut </span>Draft) {
+<a href=#758 id=758 data-nosnippet>758</a>    ui.label(<span class="string">"Only when"</span>);
+<a href=#759 id=759 data-nosnippet>759</a>    ui.vertical(|ui| {
+<a href=#760 id=760 data-nosnippet>760</a>        ui.checkbox(<span class="kw-2">&amp;mut </span>draft.fighting, <span class="string">"there is fighting"</span>)
+<a href=#761 id=761 data-nosnippet>761</a>            .on_hover_text(
+<a href=#762 id=762 data-nosnippet>762</a>                <span class="string">"The combat reader found an attack, or what one did -- a status, a death, a \
+<a href=#763 id=763 data-nosnippet>763</a>                     stun -- in the lines up to the game's prompt"</span>,
+<a href=#764 id=764 data-nosnippet>764</a>            );
+<a href=#765 id=765 data-nosnippet>765</a>        ui.checkbox(<span class="kw-2">&amp;mut </span>draft.looting, <span class="string">"a creature is searched or skinned"</span>)
+<a href=#766 id=766 data-nosnippet>766</a>            .on_hover_text(<span class="string">"The lines up to the game's prompt hold a search or a skin"</span>);
+<a href=#767 id=767 data-nosnippet>767</a>        ui.checkbox(<span class="kw-2">&amp;mut </span>draft.marked, <span class="string">"the combat reader marked the line"</span>)
+<a href=#768 id=768 data-nosnippet>768</a>            .on_hover_text(<span class="string">"A flare, a status landing on you, a killing blow"</span>);
+<a href=#769 id=769 data-nosnippet>769</a>    });
+<a href=#770 id=770 data-nosnippet>770</a>    ui.end_row();
+<a href=#771 id=771 data-nosnippet>771</a>    <span class="kw">if </span>draft.looting &amp;&amp; !draft.fighting {
+<a href=#772 id=772 data-nosnippet>772</a>        ui.label(<span class="string">"Its commands"</span>);
+<a href=#773 id=773 data-nosnippet>773</a>        ui.vertical(|ui| {
+<a href=#774 id=774 data-nosnippet>774</a>            ui.add(egui::TextEdit::singleline(<span class="kw-2">&amp;mut </span>draft.commands).desired_width(f32::INFINITY));
+<a href=#775 id=775 data-nosnippet>775</a>            <span class="kw">crate</span>::form::hint(
+<a href=#776 id=776 data-nosnippet>776</a>                ui,
+<a href=#777 id=777 data-nosnippet>777</a>                <span class="string">"Commands starting with these words, yours or a script's, go with their \
+<a href=#778 id=778 data-nosnippet>778</a>                     search or skin, when the rule takes every line of one."</span>,
+<a href=#779 id=779 data-nosnippet>779</a>            );
+<a href=#780 id=780 data-nosnippet>780</a>        });
+<a href=#781 id=781 data-nosnippet>781</a>        ui.end_row();
+<a href=#782 id=782 data-nosnippet>782</a>    }
+<a href=#783 id=783 data-nosnippet>783</a>    <span class="kw">if </span>draft.fighting {
+<a href=#784 id=784 data-nosnippet>784</a>        ui.label(<span class="string">"Script attacks"</span>);
+<a href=#785 id=785 data-nosnippet>785</a>        ui.vertical(|ui| {
+<a href=#786 id=786 data-nosnippet>786</a>            ui.add(egui::TextEdit::singleline(<span class="kw-2">&amp;mut </span>draft.commands).desired_width(f32::INFINITY));
+<a href=#787 id=787 data-nosnippet>787</a>            <span class="kw">crate</span>::form::hint(
+<a href=#788 id=788 data-nosnippet>788</a>                ui,
+<a href=#789 id=789 data-nosnippet>789</a>                <span class="string">"A script's commands starting with these words go with their fight, when \
+<a href=#790 id=790 data-nosnippet>790</a>                     the rule takes every line of one. A spell number alone counts as incant. \
+<a href=#791 id=791 data-nosnippet>791</a>                     Your own typing stays where you typed it."</span>,
+<a href=#792 id=792 data-nosnippet>792</a>            );
+<a href=#793 id=793 data-nosnippet>793</a>        });
+<a href=#794 id=794 data-nosnippet>794</a>        ui.end_row();
+<a href=#795 id=795 data-nosnippet>795</a>        ui.label(<span class="string">"Setting up"</span>);
+<a href=#796 id=796 data-nosnippet>796</a>        ui.vertical(|ui| {
+<a href=#797 id=797 data-nosnippet>797</a>            ui.add(egui::TextEdit::singleline(<span class="kw-2">&amp;mut </span>draft.setup).desired_width(f32::INFINITY));
+<a href=#798 id=798 data-nosnippet>798</a>            <span class="kw">crate</span>::form::hint(
+<a href=#799 id=799 data-nosnippet>799</a>                ui,
+<a href=#800 id=800 data-nosnippet>800</a>                <span class="string">"Commands starting with these words, yours or a script's, take their \
+<a href=#801 id=801 data-nosnippet>801</a>                     answer with them while a hostile creature is in the room."</span>,
+<a href=#802 id=802 data-nosnippet>802</a>            );
+<a href=#803 id=803 data-nosnippet>803</a>        });
+<a href=#804 id=804 data-nosnippet>804</a>        ui.end_row();
+<a href=#805 id=805 data-nosnippet>805</a>    }
+<a href=#806 id=806 data-nosnippet>806</a>}
+<a href=#807 id=807 data-nosnippet>807</a>
+<a href=#808 id=808 data-nosnippet>808</a><span class="attr">#[cfg(test)]
+<a href=#809 id=809 data-nosnippet>809</a></span><span class="kw">mod </span>tests;
 </code></pre></div></section></main></body></html>

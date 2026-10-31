@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["HELP"],"enum":["Asked"],"fn":["answer","parse","parse_time","read","run"]};
+window.SIDEBAR_ITEMS = {"constant":["HELP"],"enum":["Asked","HuntPick","Span"],"fn":["answer","parse","parse_time","read","read_report","run","run_report"]};

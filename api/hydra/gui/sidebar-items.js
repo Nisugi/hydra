@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FILES_SETTLE","GAME_STOPS","GAME_THREADS"],"enum":["Rested"],"fn":["claim","claim_rewards","game_runtime","run","seat","serve_page","start_next","stop_everything","stop_on_ctrl_c"],"struct":["Told"]};
+window.SIDEBAR_ITEMS = {"constant":["FILES_SETTLE","GAME_STOPS","GAME_THREADS"],"enum":["Rested"],"fn":["answer","board","claim","claim_rewards","game_runtime","open_hub","run","serve_page","start_logins","start_next","stop_everything","stop_on_ctrl_c","table","windows_opener"],"struct":["Told"]};

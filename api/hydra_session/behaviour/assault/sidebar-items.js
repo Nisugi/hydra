@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["HEARD_FOR"],"enum":["Answer"],"fn":["find","run"],"struct":["Assault"]};

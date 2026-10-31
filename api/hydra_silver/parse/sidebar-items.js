@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["CHARM"],"fn":["is_hand_pickup","is_note_withdrawal","is_own_gather","line","withdraw_typed"],"struct":["Stated"]};

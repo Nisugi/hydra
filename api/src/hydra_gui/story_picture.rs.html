@@ -603,7 +603,7 @@
 <a href=#603 id=603 data-nosnippet>603</a>        <span class="kw">let </span>shown = placed(<span class="kw-2">&amp;</span>data_uri(), <span class="prelude-val">Some</span>(<span class="number">48</span>));
 <a href=#604 id=604 data-nosnippet>604</a>        <span class="kw">let </span><span class="kw-2">mut </span>harness = Harness::builder()
 <a href=#605 id=605 data-nosnippet>605</a>            .with_size((<span class="number">240.0</span>, <span class="number">120.0</span>))
-<a href=#606 id=606 data-nosnippet>606</a>            .wgpu()
+<a href=#606 id=606 data-nosnippet>606</a>            .renderer(<span class="kw">crate</span>::test_gpu::renderer())
 <a href=#607 id=607 data-nosnippet>607</a>            .build_ui(<span class="kw">move </span>|ui| {
 <a href=#608 id=608 data-nosnippet>608</a>                ui.label(<span class="string">"A gnomish tinker sets out her wares."</span>);
 <a href=#609 id=609 data-nosnippet>609</a>                draw(ui, <span class="kw-2">&amp;</span>shown);

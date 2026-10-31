@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["EVERY","FIGHTS"],"fn":["change","every_change","every_page","page"]};

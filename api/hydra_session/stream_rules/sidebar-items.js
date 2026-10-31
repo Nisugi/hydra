@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["COMBAT","FILE"],"fn":["fought","like"],"struct":["Compiled","Line","Rule","Rules","Sorted","SortedLine","StreamRules"]};
+window.SIDEBAR_ITEMS = {"constant":["COMBAT","FIGHT_COMMANDS","FILE","LOOT","LOOT_COMMANDS","SETUP_COMMANDS"],"fn":["fought","like","ours"],"struct":["Command","Compiled","Line","Rule","Rules","Sorted","SortedLine","StreamRules"]};

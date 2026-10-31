@@ -14,7 +14,7 @@
 <a href=#14 id=14 data-nosnippet>14</a>//! button says so; of two buttons on one key, the first in the bars' order
 <a href=#15 id=15 data-nosnippet>15</a>//! has it.
 <a href=#16 id=16 data-nosnippet>16</a>//!
-<a href=#17 id=17 data-nosnippet>17</a>//! **`.hotbar &lt;bar&gt; &lt;button&gt;`** presses a button by its id or nickname,
+<a href=#17 id=17 data-nosnippet>17</a>//! **`.hotbar &lt;bar&gt; &lt;button&gt;`** presses a button by its id, macro or nickname,
 <a href=#18 id=18 data-nosnippet>18</a>//! whatever slot it is in: what it sends is what a click would, the
 <a href=#19 id=19 data-nosnippet>19</a>//! command its state now chooses.
 <a href=#20 id=20 data-nosnippet>20</a>
@@ -27,7 +27,7 @@
 <a href=#27 id=27 data-nosnippet>27</a><span class="kw">use </span>hydra_ui::hotbar::{Bar, FILE, HotbarFile, SHEETS};
 <a href=#28 id=28 data-nosnippet>28</a><span class="kw">use </span>toml_edit::{DocumentMut, Item, Value};
 <a href=#29 id=29 data-nosnippet>29</a>
-<a href=#30 id=30 data-nosnippet>30</a><span class="kw">use </span><span class="kw">crate</span>::keys::{Chord, Macro};
+<a href=#30 id=30 data-nosnippet>30</a><span class="kw">use </span><span class="kw">crate</span>::keys::{Chord, ChordOf, Macro};
 <a href=#31 id=31 data-nosnippet>31</a>
 <a href=#32 id=32 data-nosnippet>32</a><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">use </span>hydra_board::hotbars::{character_path, named, press};
 <a href=#33 id=33 data-nosnippet>33</a>
@@ -472,308 +472,311 @@
 <a href=#472 id=472 data-nosnippet>472</a>        own: bool,
 <a href=#473 id=473 data-nosnippet>473</a>        was: <span class="prelude-ty">Option</span>&lt;(<span class="kw-2">&amp;</span>str, bool)&gt;,
 <a href=#474 id=474 data-nosnippet>474</a>    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), String&gt; {
-<a href=#475 id=475 data-nosnippet>475</a>        <span class="kw">let </span>file = |own: bool| <span class="kw">if </span>own { Text::Own } <span class="kw">else </span>{ Text::Every };
-<a href=#476 id=476 data-nosnippet>476</a>        <span class="kw">let </span>replacing = was
-<a href=#477 id=477 data-nosnippet>477</a>            .filter(|(<span class="kw">_</span>, was_own)| <span class="kw-2">*</span>was_own == own)
-<a href=#478 id=478 data-nosnippet>478</a>            .map(|(name, <span class="kw">_</span>)| name.to_owned());
-<a href=#479 id=479 data-nosnippet>479</a>        <span class="kw">let </span>kept = bar.clone();
-<a href=#480 id=480 data-nosnippet>480</a>        <span class="self">self</span>.change(file(own), <span class="kw">move </span>|now| {
-<a href=#481 id=481 data-nosnippet>481</a>            with_bar(now, <span class="kw-2">&amp;</span>kept, replacing.as_deref())
-<a href=#482 id=482 data-nosnippet>482</a>        })<span class="question-mark">?</span>;
-<a href=#483 id=483 data-nosnippet>483</a>        <span class="comment">// Moved to the other file: taken out of the one it was in.
-<a href=#484 id=484 data-nosnippet>484</a>        </span><span class="kw">if let </span><span class="prelude-val">Some</span>((name, was_own)) = was.filter(|(<span class="kw">_</span>, was_own)| <span class="kw-2">*</span>was_own != own) {
-<a href=#485 id=485 data-nosnippet>485</a>            <span class="kw">let </span>name = name.to_owned();
-<a href=#486 id=486 data-nosnippet>486</a>            <span class="self">self</span>.change(file(was_own), <span class="kw">move </span>|now| without_bar(now, <span class="kw-2">&amp;</span>name))<span class="question-mark">?</span>;
-<a href=#487 id=487 data-nosnippet>487</a>        }
-<a href=#488 id=488 data-nosnippet>488</a>        <span class="prelude-val">Ok</span>(())
-<a href=#489 id=489 data-nosnippet>489</a>    }
-<a href=#490 id=490 data-nosnippet>490</a>
-<a href=#491 id=491 data-nosnippet>491</a>    <span class="doccomment">/// The bar `name` taken out of the character's own file (`own`) or
-<a href=#492 id=492 data-nosnippet>492</a>    /// every character's: at once, and with the next batch of saves.
-<a href=#493 id=493 data-nosnippet>493</a>    ///
-<a href=#494 id=494 data-nosnippet>494</a>    /// # Errors
-<a href=#495 id=495 data-nosnippet>495</a>    ///
-<a href=#496 id=496 data-nosnippet>496</a>    /// Nothing is saved here, or the file does not read.
-<a href=#497 id=497 data-nosnippet>497</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>remove_bar(<span class="kw-2">&amp;mut </span><span class="self">self</span>, name: <span class="kw-2">&amp;</span>str, own: bool) -&gt; <span class="prelude-ty">Result</span>&lt;(), String&gt; {
-<a href=#498 id=498 data-nosnippet>498</a>        <span class="kw">let </span>file = <span class="kw">if </span>own { Text::Own } <span class="kw">else </span>{ Text::Every };
-<a href=#499 id=499 data-nosnippet>499</a>        <span class="kw">let </span>name = name.to_owned();
-<a href=#500 id=500 data-nosnippet>500</a>        <span class="self">self</span>.change(file, <span class="kw">move </span>|now| without_bar(now, <span class="kw-2">&amp;</span>name))
-<a href=#501 id=501 data-nosnippet>501</a>    }
-<a href=#502 id=502 data-nosnippet>502</a>
-<a href=#503 id=503 data-nosnippet>503</a>    <span class="doccomment">/// The image at `file` copied into the icons folder, and named a sheet
-<a href=#504 id=504 data-nosnippet>504</a>    /// of cells `cell` pixels on edge in its `icons.toml` when `sheet`
-<a href=#505 id=505 data-nosnippet>505</a>    /// names one, with the next batch of saves: what was done.
-<a href=#506 id=506 data-nosnippet>506</a>    ///
-<a href=#507 id=507 data-nosnippet>507</a>    /// # Errors
-<a href=#508 id=508 data-nosnippet>508</a>    ///
-<a href=#509 id=509 data-nosnippet>509</a>    /// The file is not a PNG, or the manifest does not read or would not.
-<a href=#510 id=510 data-nosnippet>510</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>copy_in(
-<a href=#511 id=511 data-nosnippet>511</a>        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-<a href=#512 id=512 data-nosnippet>512</a>        file: <span class="kw-2">&amp;</span>Path,
-<a href=#513 id=513 data-nosnippet>513</a>        sheet: <span class="prelude-ty">Option</span>&lt;(<span class="kw-2">&amp;</span>str, u32)&gt;,
-<a href=#514 id=514 data-nosnippet>514</a>    ) -&gt; <span class="prelude-ty">Result</span>&lt;String, String&gt; {
-<a href=#515 id=515 data-nosnippet>515</a>        <span class="kw">let </span>name = file
-<a href=#516 id=516 data-nosnippet>516</a>            .file_name()
-<a href=#517 id=517 data-nosnippet>517</a>            .map(|name| name.to_string_lossy().into_owned())
-<a href=#518 id=518 data-nosnippet>518</a>            .filter(|name| name.to_ascii_lowercase().ends_with(<span class="string">".png"</span>))
-<a href=#519 id=519 data-nosnippet>519</a>            .ok_or(<span class="string">"an icon is a PNG file"</span>)<span class="question-mark">?</span>;
-<a href=#520 id=520 data-nosnippet>520</a>        <span class="comment">// The manifest's change made, or refused, before the image is
-<a href=#521 id=521 data-nosnippet>521</a>        // copied: a refusal copies nothing, so an icon of that name is
-<a href=#522 id=522 data-nosnippet>522</a>        // never replaced by an import said not to be done.
-<a href=#523 id=523 data-nosnippet>523</a>        </span><span class="kw">let </span>said = <span class="kw">match </span>sheet {
-<a href=#524 id=524 data-nosnippet>524</a>            <span class="prelude-val">Some</span>((sheet, cell)) =&gt; {
-<a href=#525 id=525 data-nosnippet>525</a>                <span class="kw">let </span>(named, path) = (sheet.to_owned(), name.clone());
-<a href=#526 id=526 data-nosnippet>526</a>                <span class="self">self</span>.change(Text::Sheets, <span class="kw">move </span>|now| {
-<a href=#527 id=527 data-nosnippet>527</a>                    with_sheet(now, <span class="kw-2">&amp;</span>named, (<span class="kw-2">&amp;</span>path, cell))
-<a href=#528 id=528 data-nosnippet>528</a>                })<span class="question-mark">?</span>;
-<a href=#529 id=529 data-nosnippet>529</a>                <span class="macro">format!</span>(<span class="string">"{name} is the sheet {sheet}, in cells of {cell} px."</span>)
-<a href=#530 id=530 data-nosnippet>530</a>            }
-<a href=#531 id=531 data-nosnippet>531</a>            <span class="prelude-val">None </span>=&gt; <span class="macro">format!</span>(<span class="string">"{name} is in the icons folder."</span>),
-<a href=#532 id=532 data-nosnippet>532</a>        };
-<a href=#533 id=533 data-nosnippet>533</a>        <span class="kw">let </span>dir = <span class="self">self</span>.icons_dir();
-<a href=#534 id=534 data-nosnippet>534</a>        <span class="kw">let </span>into = dir.join(<span class="kw-2">&amp;</span>name);
-<a href=#535 id=535 data-nosnippet>535</a>        <span class="kw">if </span>file != into {
-<a href=#536 id=536 data-nosnippet>536</a>            <span class="kw">crate</span>::store::copy(<span class="kw-2">&amp;</span>dir, <span class="kw-2">&amp;</span>into, file.to_owned());
-<a href=#537 id=537 data-nosnippet>537</a>        }
-<a href=#538 id=538 data-nosnippet>538</a>        <span class="prelude-val">Ok</span>(said)
-<a href=#539 id=539 data-nosnippet>539</a>    }
-<a href=#540 id=540 data-nosnippet>540</a>}
-<a href=#541 id=541 data-nosnippet>541</a>
-<a href=#542 id=542 data-nosnippet>542</a><span class="doccomment">/// The icons manifest `old` with the sheet `name` its picture `path` in
-<a href=#543 id=543 data-nosnippet>543</a>/// cells of `cell` pixels, in place of one of that name; the rest as it
-<a href=#544 id=544 data-nosnippet>544</a>/// was.
-<a href=#545 id=545 data-nosnippet>545</a>///
-<a href=#546 id=546 data-nosnippet>546</a>/// # Errors
-<a href=#547 id=547 data-nosnippet>547</a>///
-<a href=#548 id=548 data-nosnippet>548</a>/// The manifest does not read, or would not.
-<a href=#549 id=549 data-nosnippet>549</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>with_sheet(
-<a href=#550 id=550 data-nosnippet>550</a>    old: <span class="kw-2">&amp;</span>str,
-<a href=#551 id=551 data-nosnippet>551</a>    name: <span class="kw-2">&amp;</span>str,
-<a href=#552 id=552 data-nosnippet>552</a>    (path, cell): (<span class="kw-2">&amp;</span>str, u32),
-<a href=#553 id=553 data-nosnippet>553</a>) -&gt; <span class="prelude-ty">Result</span>&lt;String, String&gt; {
-<a href=#554 id=554 data-nosnippet>554</a>    <span class="kw">let </span><span class="kw-2">mut </span>document: DocumentMut = old.parse().map_err(|why| <span class="macro">format!</span>(<span class="string">"{why}"</span>))<span class="question-mark">?</span>;
-<a href=#555 id=555 data-nosnippet>555</a>    <span class="kw">let </span>sheets = document
-<a href=#556 id=556 data-nosnippet>556</a>        .entry(<span class="string">"sheets"</span>)
-<a href=#557 id=557 data-nosnippet>557</a>        .or_insert_with(|| {
-<a href=#558 id=558 data-nosnippet>558</a>            <span class="kw">let </span><span class="kw-2">mut </span>table = toml_edit::Table::new();
-<a href=#559 id=559 data-nosnippet>559</a>            table.set_implicit(<span class="bool-val">true</span>);
-<a href=#560 id=560 data-nosnippet>560</a>            Item::Table(table)
-<a href=#561 id=561 data-nosnippet>561</a>        })
-<a href=#562 id=562 data-nosnippet>562</a>        .as_table_mut()
-<a href=#563 id=563 data-nosnippet>563</a>        .ok_or(<span class="string">"the manifest's sheets are not a [sheets] table"</span>)<span class="question-mark">?</span>;
-<a href=#564 id=564 data-nosnippet>564</a>    <span class="kw">let </span><span class="kw-2">mut </span>sheet = toml_edit::Table::new();
-<a href=#565 id=565 data-nosnippet>565</a>    sheet[<span class="string">"path"</span>] = toml_edit::value(path);
-<a href=#566 id=566 data-nosnippet>566</a>    sheet[<span class="string">"cell"</span>] = toml_edit::value(i64::from(cell));
-<a href=#567 id=567 data-nosnippet>567</a>    sheets[name] = Item::Table(sheet);
-<a href=#568 id=568 data-nosnippet>568</a>    <span class="kw">let </span>text = document.to_string();
-<a href=#569 id=569 data-nosnippet>569</a>    hydra_ui::hotbar::Sheets::parse(<span class="kw-2">&amp;</span>text).map_err(|why| <span class="macro">format!</span>(<span class="string">"it would not read: {why}"</span>))<span class="question-mark">?</span>;
-<a href=#570 id=570 data-nosnippet>570</a>    <span class="prelude-val">Ok</span>(text)
-<a href=#571 id=571 data-nosnippet>571</a>}
-<a href=#572 id=572 data-nosnippet>572</a>
-<a href=#573 id=573 data-nosnippet>573</a><span class="doccomment">/// The file at `path`, or nothing when there is none yet.
-<a href=#574 id=574 data-nosnippet>574</a></span><span class="kw">fn </span>read_or_empty(path: <span class="kw-2">&amp;</span>Path) -&gt; <span class="prelude-ty">Result</span>&lt;String, String&gt; {
-<a href=#575 id=575 data-nosnippet>575</a>    <span class="kw">match </span>std::fs::read_to_string(path) {
-<a href=#576 id=576 data-nosnippet>576</a>        <span class="prelude-val">Ok</span>(text) =&gt; <span class="prelude-val">Ok</span>(text),
-<a href=#577 id=577 data-nosnippet>577</a>        <span class="prelude-val">Err</span>(why) <span class="kw">if </span>why.kind() == std::io::ErrorKind::NotFound =&gt; <span class="prelude-val">Ok</span>(String::new()),
-<a href=#578 id=578 data-nosnippet>578</a>        <span class="prelude-val">Err</span>(why) =&gt; <span class="prelude-val">Err</span>(why.to_string()),
-<a href=#579 id=579 data-nosnippet>579</a>    }
-<a href=#580 id=580 data-nosnippet>580</a>}
-<a href=#581 id=581 data-nosnippet>581</a>
-<a href=#582 id=582 data-nosnippet>582</a><span class="doccomment">/// The bars of `document`, as tables.
-<a href=#583 id=583 data-nosnippet>583</a></span><span class="kw">fn </span>bars_of(document: <span class="kw-2">&amp;mut </span>DocumentMut) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;mut </span>toml_edit::ArrayOfTables, String&gt; {
-<a href=#584 id=584 data-nosnippet>584</a>    document
-<a href=#585 id=585 data-nosnippet>585</a>        .entry(<span class="string">"bars"</span>)
-<a href=#586 id=586 data-nosnippet>586</a>        .or_insert_with(|| Item::ArrayOfTables(toml_edit::ArrayOfTables::new()))
-<a href=#587 id=587 data-nosnippet>587</a>        .as_array_of_tables_mut()
-<a href=#588 id=588 data-nosnippet>588</a>        .ok_or_else(|| <span class="string">"the file's bars are not [[bars]] tables"</span>.to_owned())
-<a href=#589 id=589 data-nosnippet>589</a>}
-<a href=#590 id=590 data-nosnippet>590</a>
-<a href=#591 id=591 data-nosnippet>591</a><span class="doccomment">/// `old` with `bar` in place of the bar `replacing`, or of its own name,
-<a href=#592 id=592 data-nosnippet>592</a>/// or added after the rest; the rest of the file as it was.
-<a href=#593 id=593 data-nosnippet>593</a>///
-<a href=#594 id=594 data-nosnippet>594</a>/// # Errors
-<a href=#595 id=595 data-nosnippet>595</a>///
-<a href=#596 id=596 data-nosnippet>596</a>/// The file does not read or would not, or another bar has the name.
-<a href=#597 id=597 data-nosnippet>597</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>with_bar(old: <span class="kw-2">&amp;</span>str, bar: <span class="kw-2">&amp;</span>Bar, replacing: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;String, String&gt; {
-<a href=#598 id=598 data-nosnippet>598</a>    <span class="kw">let </span><span class="kw-2">mut </span>document: DocumentMut = old.parse().map_err(|why| <span class="macro">format!</span>(<span class="string">"{why}"</span>))<span class="question-mark">?</span>;
-<a href=#599 id=599 data-nosnippet>599</a>    <span class="kw">let </span>written = toml::to_string(<span class="kw-2">&amp;</span>HotbarFile {
-<a href=#600 id=600 data-nosnippet>600</a>        bars: <span class="macro">vec!</span>[bar.clone()],
-<a href=#601 id=601 data-nosnippet>601</a>    })
-<a href=#602 id=602 data-nosnippet>602</a>    .map_err(|why| why.to_string())<span class="question-mark">?</span>;
-<a href=#603 id=603 data-nosnippet>603</a>    <span class="kw">let </span><span class="kw-2">mut </span>fresh: DocumentMut = written.parse().map_err(|why| <span class="macro">format!</span>(<span class="string">"{why}"</span>))<span class="question-mark">?</span>;
-<a href=#604 id=604 data-nosnippet>604</a>    <span class="kw">let </span>table = bars_of(<span class="kw-2">&amp;mut </span>fresh)<span class="question-mark">?
-<a href=#605 id=605 data-nosnippet>605</a>        </span>.get(<span class="number">0</span>)
-<a href=#606 id=606 data-nosnippet>606</a>        .cloned()
-<a href=#607 id=607 data-nosnippet>607</a>        .ok_or(<span class="string">"the bar was not written"</span>)<span class="question-mark">?</span>;
-<a href=#608 id=608 data-nosnippet>608</a>    <span class="kw">let </span>bars = bars_of(<span class="kw-2">&amp;mut </span>document)<span class="question-mark">?</span>;
-<a href=#609 id=609 data-nosnippet>609</a>    <span class="kw">let </span>named = |name: <span class="kw-2">&amp;</span>str| {
-<a href=#610 id=610 data-nosnippet>610</a>        bars.iter()
-<a href=#611 id=611 data-nosnippet>611</a>            .position(|one| one.get(<span class="string">"name"</span>).and_then(Item::as_str) == <span class="prelude-val">Some</span>(name))
-<a href=#612 id=612 data-nosnippet>612</a>    };
-<a href=#613 id=613 data-nosnippet>613</a>    <span class="comment">// Only the bar it was takes its place: a new one (`replacing` none)
-<a href=#614 id=614 data-nosnippet>614</a>    // never takes the place of a bar that has its name.
-<a href=#615 id=615 data-nosnippet>615</a>    </span><span class="kw">let </span>at = replacing.and_then(named);
-<a href=#616 id=616 data-nosnippet>616</a>    <span class="kw">if let </span><span class="prelude-val">Some</span>(other) = named(<span class="kw-2">&amp;</span>bar.name)
-<a href=#617 id=617 data-nosnippet>617</a>        &amp;&amp; <span class="prelude-val">Some</span>(other) != at
-<a href=#618 id=618 data-nosnippet>618</a>    {
-<a href=#619 id=619 data-nosnippet>619</a>        <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">"There is a hotbar {} already."</span>, bar.name));
-<a href=#620 id=620 data-nosnippet>620</a>    }
-<a href=#621 id=621 data-nosnippet>621</a>    <span class="kw">let </span><span class="kw-2">mut </span>table = table;
-<a href=#622 id=622 data-nosnippet>622</a>    <span class="comment">// Where it was, with what was written above it: the file's own words
-<a href=#623 id=623 data-nosnippet>623</a>    // before its first bar among them.
-<a href=#624 id=624 data-nosnippet>624</a>    </span><span class="kw">if let </span><span class="prelude-val">Some</span>(place) = at.and_then(|at| bars.get_mut(at)) {
-<a href=#625 id=625 data-nosnippet>625</a>        table.decor_mut().clone_from(place.decor());
-<a href=#626 id=626 data-nosnippet>626</a>        table.set_position(place.position());
-<a href=#627 id=627 data-nosnippet>627</a>        <span class="kw-2">*</span>place = table;
-<a href=#628 id=628 data-nosnippet>628</a>    } <span class="kw">else </span>{
-<a href=#629 id=629 data-nosnippet>629</a>        table.set_position(<span class="prelude-val">None</span>);
-<a href=#630 id=630 data-nosnippet>630</a>        bars.push(table);
-<a href=#631 id=631 data-nosnippet>631</a>    }
-<a href=#632 id=632 data-nosnippet>632</a>    <span class="kw">let </span>text = document.to_string();
-<a href=#633 id=633 data-nosnippet>633</a>    HotbarFile::parse(<span class="kw-2">&amp;</span>text).map_err(|why| <span class="macro">format!</span>(<span class="string">"it would not read: {why}"</span>))<span class="question-mark">?</span>;
-<a href=#634 id=634 data-nosnippet>634</a>    <span class="prelude-val">Ok</span>(text)
-<a href=#635 id=635 data-nosnippet>635</a>}
-<a href=#636 id=636 data-nosnippet>636</a>
-<a href=#637 id=637 data-nosnippet>637</a><span class="doccomment">/// `old` without the bar `name`; the rest of the file as it was.
-<a href=#638 id=638 data-nosnippet>638</a>///
-<a href=#639 id=639 data-nosnippet>639</a>/// # Errors
-<a href=#640 id=640 data-nosnippet>640</a>///
-<a href=#641 id=641 data-nosnippet>641</a>/// The file does not read.
-<a href=#642 id=642 data-nosnippet>642</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>without_bar(old: <span class="kw-2">&amp;</span>str, name: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, String&gt; {
-<a href=#643 id=643 data-nosnippet>643</a>    <span class="kw">let </span><span class="kw-2">mut </span>document: DocumentMut = old.parse().map_err(|why| <span class="macro">format!</span>(<span class="string">"{why}"</span>))<span class="question-mark">?</span>;
-<a href=#644 id=644 data-nosnippet>644</a>    <span class="kw">if </span>document.get(<span class="string">"bars"</span>).is_none() {
-<a href=#645 id=645 data-nosnippet>645</a>        <span class="kw">return </span><span class="prelude-val">Ok</span>(old.to_owned());
-<a href=#646 id=646 data-nosnippet>646</a>    }
-<a href=#647 id=647 data-nosnippet>647</a>    <span class="kw">let </span>bars = bars_of(<span class="kw-2">&amp;mut </span>document)<span class="question-mark">?</span>;
-<a href=#648 id=648 data-nosnippet>648</a>    <span class="kw">let </span><span class="prelude-val">Some</span>(at) = bars
-<a href=#649 id=649 data-nosnippet>649</a>        .iter()
-<a href=#650 id=650 data-nosnippet>650</a>        .position(|one| one.get(<span class="string">"name"</span>).and_then(Item::as_str) == <span class="prelude-val">Some</span>(name))
-<a href=#651 id=651 data-nosnippet>651</a>    <span class="kw">else </span>{
-<a href=#652 id=652 data-nosnippet>652</a>        <span class="kw">return </span><span class="prelude-val">Ok</span>(old.to_owned());
-<a href=#653 id=653 data-nosnippet>653</a>    };
-<a href=#654 id=654 data-nosnippet>654</a>    <span class="comment">// What was written above it stays, above the bar after it.
-<a href=#655 id=655 data-nosnippet>655</a>    </span><span class="kw">let </span>above = bars
-<a href=#656 id=656 data-nosnippet>656</a>        .get(at)
-<a href=#657 id=657 data-nosnippet>657</a>        .and_then(|gone| gone.decor().prefix())
-<a href=#658 id=658 data-nosnippet>658</a>        .and_then(|prefix| prefix.as_str())
-<a href=#659 id=659 data-nosnippet>659</a>        .unwrap_or_default()
-<a href=#660 id=660 data-nosnippet>660</a>        .to_owned();
-<a href=#661 id=661 data-nosnippet>661</a>    bars.remove(at);
-<a href=#662 id=662 data-nosnippet>662</a>    <span class="kw">let </span><span class="kw-2">mut </span>text = <span class="kw">match </span>bars.get_mut(at) {
-<a href=#663 id=663 data-nosnippet>663</a>        <span class="prelude-val">Some</span>(next) =&gt; {
-<a href=#664 id=664 data-nosnippet>664</a>            <span class="kw">let </span>own = next
-<a href=#665 id=665 data-nosnippet>665</a>                .decor()
-<a href=#666 id=666 data-nosnippet>666</a>                .prefix()
-<a href=#667 id=667 data-nosnippet>667</a>                .and_then(|prefix| prefix.as_str())
-<a href=#668 id=668 data-nosnippet>668</a>                .unwrap_or_default()
-<a href=#669 id=669 data-nosnippet>669</a>                .to_owned();
-<a href=#670 id=670 data-nosnippet>670</a>            next.decor_mut().set_prefix(<span class="macro">format!</span>(<span class="string">"{above}{own}"</span>));
-<a href=#671 id=671 data-nosnippet>671</a>            document.to_string()
-<a href=#672 id=672 data-nosnippet>672</a>        }
-<a href=#673 id=673 data-nosnippet>673</a>        <span class="prelude-val">None </span>=&gt; <span class="macro">format!</span>(<span class="string">"{document}{above}"</span>),
-<a href=#674 id=674 data-nosnippet>674</a>    };
-<a href=#675 id=675 data-nosnippet>675</a>    <span class="kw">if </span>!text.ends_with(<span class="string">'\n'</span>) &amp;&amp; !text.is_empty() {
-<a href=#676 id=676 data-nosnippet>676</a>        text.push(<span class="string">'\n'</span>);
-<a href=#677 id=677 data-nosnippet>677</a>    }
-<a href=#678 id=678 data-nosnippet>678</a>    <span class="prelude-val">Ok</span>(text)
-<a href=#679 id=679 data-nosnippet>679</a>}
-<a href=#680 id=680 data-nosnippet>680</a>
-<a href=#681 id=681 data-nosnippet>681</a><span class="doccomment">/// `old` with the bar `name`'s buttons given `slots`, in their order; the
-<a href=#682 id=682 data-nosnippet>682</a>/// rest of the file as it was.
-<a href=#683 id=683 data-nosnippet>683</a>///
-<a href=#684 id=684 data-nosnippet>684</a>/// # Errors
-<a href=#685 id=685 data-nosnippet>685</a>///
-<a href=#686 id=686 data-nosnippet>686</a>/// The file does not read, has no such bar, or a different count of
-<a href=#687 id=687 data-nosnippet>687</a>/// buttons.
-<a href=#688 id=688 data-nosnippet>688</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>slotted(old: <span class="kw-2">&amp;</span>str, name: <span class="kw-2">&amp;</span>str, slots: <span class="kw-2">&amp;</span>[<span class="prelude-ty">Option</span>&lt;u16&gt;]) -&gt; <span class="prelude-ty">Result</span>&lt;String, String&gt; {
-<a href=#689 id=689 data-nosnippet>689</a>    <span class="kw">let </span><span class="kw-2">mut </span>document: DocumentMut = old.parse().map_err(|why| <span class="macro">format!</span>(<span class="string">"{why}"</span>))<span class="question-mark">?</span>;
-<a href=#690 id=690 data-nosnippet>690</a>    <span class="kw">let </span>bars = document
-<a href=#691 id=691 data-nosnippet>691</a>        .get_mut(<span class="string">"bars"</span>)
-<a href=#692 id=692 data-nosnippet>692</a>        .and_then(Item::as_array_of_tables_mut)
-<a href=#693 id=693 data-nosnippet>693</a>        .ok_or_else(|| <span class="string">"the file has no [[bars]]"</span>.to_owned())<span class="question-mark">?</span>;
-<a href=#694 id=694 data-nosnippet>694</a>    <span class="kw">let </span>bar = bars
-<a href=#695 id=695 data-nosnippet>695</a>        .iter_mut()
-<a href=#696 id=696 data-nosnippet>696</a>        .find(|bar| bar.get(<span class="string">"name"</span>).and_then(Item::as_str) == <span class="prelude-val">Some</span>(name))
-<a href=#697 id=697 data-nosnippet>697</a>        .ok_or_else(|| <span class="macro">format!</span>(<span class="string">"the file has no bar {name}"</span>))<span class="question-mark">?</span>;
-<a href=#698 id=698 data-nosnippet>698</a>    <span class="kw">let </span>buttons = bar
-<a href=#699 id=699 data-nosnippet>699</a>        .get_mut(<span class="string">"buttons"</span>)
-<a href=#700 id=700 data-nosnippet>700</a>        .ok_or_else(|| <span class="macro">format!</span>(<span class="string">"the bar {name} has no buttons"</span>))<span class="question-mark">?</span>;
-<a href=#701 id=701 data-nosnippet>701</a>    <span class="kw">let </span>put = |slot: <span class="prelude-ty">Option</span>&lt;u16&gt;| slot.map(|slot| Value::from(i64::from(slot)));
-<a href=#702 id=702 data-nosnippet>702</a>    <span class="kw">match </span>buttons {
-<a href=#703 id=703 data-nosnippet>703</a>        Item::ArrayOfTables(tables) <span class="kw">if </span>tables.len() == slots.len() =&gt; {
-<a href=#704 id=704 data-nosnippet>704</a>            <span class="kw">for </span>(table, slot) <span class="kw">in </span>tables.iter_mut().zip(slots) {
-<a href=#705 id=705 data-nosnippet>705</a>                <span class="kw">match </span>put(<span class="kw-2">*</span>slot) {
-<a href=#706 id=706 data-nosnippet>706</a>                    <span class="prelude-val">Some</span>(slot) =&gt; table[<span class="string">"slot"</span>] = Item::Value(slot),
-<a href=#707 id=707 data-nosnippet>707</a>                    <span class="prelude-val">None </span>=&gt; <span class="kw">_ </span>= table.remove(<span class="string">"slot"</span>),
-<a href=#708 id=708 data-nosnippet>708</a>                }
-<a href=#709 id=709 data-nosnippet>709</a>            }
-<a href=#710 id=710 data-nosnippet>710</a>        }
-<a href=#711 id=711 data-nosnippet>711</a>        Item::Value(Value::Array(array)) <span class="kw">if </span>array.len() == slots.len() =&gt; {
-<a href=#712 id=712 data-nosnippet>712</a>            <span class="kw">for </span>(button, slot) <span class="kw">in </span>array.iter_mut().zip(slots) {
-<a href=#713 id=713 data-nosnippet>713</a>                <span class="kw">let </span><span class="prelude-val">Some</span>(button) = button.as_inline_table_mut() <span class="kw">else </span>{
-<a href=#714 id=714 data-nosnippet>714</a>                    <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">"the bar {name}'s buttons are not tables"</span>));
-<a href=#715 id=715 data-nosnippet>715</a>                };
-<a href=#716 id=716 data-nosnippet>716</a>                <span class="kw">match </span>put(<span class="kw-2">*</span>slot) {
-<a href=#717 id=717 data-nosnippet>717</a>                    <span class="prelude-val">Some</span>(slot) =&gt; <span class="kw">_ </span>= button.insert(<span class="string">"slot"</span>, slot),
-<a href=#718 id=718 data-nosnippet>718</a>                    <span class="prelude-val">None </span>=&gt; <span class="kw">_ </span>= button.remove(<span class="string">"slot"</span>),
-<a href=#719 id=719 data-nosnippet>719</a>                }
-<a href=#720 id=720 data-nosnippet>720</a>            }
-<a href=#721 id=721 data-nosnippet>721</a>        }
-<a href=#722 id=722 data-nosnippet>722</a>        <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">"the bar {name}'s buttons are not as read"</span>)),
-<a href=#723 id=723 data-nosnippet>723</a>    }
-<a href=#724 id=724 data-nosnippet>724</a>    <span class="kw">let </span>text = document.to_string();
-<a href=#725 id=725 data-nosnippet>725</a>    HotbarFile::parse(<span class="kw-2">&amp;</span>text).map_err(|why| <span class="macro">format!</span>(<span class="string">"it would not read: {why}"</span>))<span class="question-mark">?</span>;
-<a href=#726 id=726 data-nosnippet>726</a>    <span class="prelude-val">Ok</span>(text)
-<a href=#727 id=727 data-nosnippet>727</a>}
-<a href=#728 id=728 data-nosnippet>728</a>
-<a href=#729 id=729 data-nosnippet>729</a><span class="doccomment">/// A hotkey as a hotbar file writes it -- `alt+h`, `f5`, `ctrl+up`, or as
-<a href=#730 id=730 data-nosnippet>730</a>/// the keybinds file does, `Alt+KeyH` -- as a key with its modifiers.
-<a href=#731 id=731 data-nosnippet>731</a>///
-<a href=#732 id=732 data-nosnippet>732</a>/// # Errors
-<a href=#733 id=733 data-nosnippet>733</a>///
-<a href=#734 id=734 data-nosnippet>734</a>/// A key Hydra does not know, or one that types rather than commands.
-<a href=#735 id=735 data-nosnippet>735</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>hotkey(written: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Chord, String&gt; {
-<a href=#736 id=736 data-nosnippet>736</a>    <span class="kw">let </span><span class="kw-2">mut </span>parts: Vec&lt;String&gt; = written
-<a href=#737 id=737 data-nosnippet>737</a>        .split(<span class="string">'+'</span>)
-<a href=#738 id=738 data-nosnippet>738</a>        .map(|part| part.trim().to_owned())
-<a href=#739 id=739 data-nosnippet>739</a>        .collect();
-<a href=#740 id=740 data-nosnippet>740</a>    <span class="kw">if let </span><span class="prelude-val">Some</span>(key) = parts.last_mut() {
-<a href=#741 id=741 data-nosnippet>741</a>        <span class="kw">let </span>lower = key.to_ascii_lowercase();
-<a href=#742 id=742 data-nosnippet>742</a>        <span class="kw">let </span>named = <span class="kw">match </span>lower.as_str() {
-<a href=#743 id=743 data-nosnippet>743</a>            one <span class="kw">if </span>one.len() == <span class="number">1 </span>&amp;&amp; one.chars().all(|c| c.is_ascii_alphabetic()) =&gt; {
-<a href=#744 id=744 data-nosnippet>744</a>                <span class="prelude-val">Some</span>(<span class="macro">format!</span>(<span class="string">"Key{}"</span>, one.to_ascii_uppercase()))
-<a href=#745 id=745 data-nosnippet>745</a>            }
-<a href=#746 id=746 data-nosnippet>746</a>            one <span class="kw">if </span>one.len() == <span class="number">1 </span>&amp;&amp; one.chars().all(|c| c.is_ascii_digit()) =&gt; {
-<a href=#747 id=747 data-nosnippet>747</a>                <span class="prelude-val">Some</span>(<span class="macro">format!</span>(<span class="string">"Digit{one}"</span>))
+<a href=#475 id=475 data-nosnippet>475</a>        <span class="kw">if </span>bar.name.trim().is_empty() {
+<a href=#476 id=476 data-nosnippet>476</a>            <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="string">"a bar needs a name."</span>.to_owned());
+<a href=#477 id=477 data-nosnippet>477</a>        }
+<a href=#478 id=478 data-nosnippet>478</a>        <span class="kw">let </span>file = |own: bool| <span class="kw">if </span>own { Text::Own } <span class="kw">else </span>{ Text::Every };
+<a href=#479 id=479 data-nosnippet>479</a>        <span class="kw">let </span>replacing = was
+<a href=#480 id=480 data-nosnippet>480</a>            .filter(|(<span class="kw">_</span>, was_own)| <span class="kw-2">*</span>was_own == own)
+<a href=#481 id=481 data-nosnippet>481</a>            .map(|(name, <span class="kw">_</span>)| name.to_owned());
+<a href=#482 id=482 data-nosnippet>482</a>        <span class="kw">let </span>kept = bar.clone();
+<a href=#483 id=483 data-nosnippet>483</a>        <span class="self">self</span>.change(file(own), <span class="kw">move </span>|now| {
+<a href=#484 id=484 data-nosnippet>484</a>            with_bar(now, <span class="kw-2">&amp;</span>kept, replacing.as_deref())
+<a href=#485 id=485 data-nosnippet>485</a>        })<span class="question-mark">?</span>;
+<a href=#486 id=486 data-nosnippet>486</a>        <span class="comment">// Moved to the other file: taken out of the one it was in.
+<a href=#487 id=487 data-nosnippet>487</a>        </span><span class="kw">if let </span><span class="prelude-val">Some</span>((name, was_own)) = was.filter(|(<span class="kw">_</span>, was_own)| <span class="kw-2">*</span>was_own != own) {
+<a href=#488 id=488 data-nosnippet>488</a>            <span class="kw">let </span>name = name.to_owned();
+<a href=#489 id=489 data-nosnippet>489</a>            <span class="self">self</span>.change(file(was_own), <span class="kw">move </span>|now| without_bar(now, <span class="kw-2">&amp;</span>name))<span class="question-mark">?</span>;
+<a href=#490 id=490 data-nosnippet>490</a>        }
+<a href=#491 id=491 data-nosnippet>491</a>        <span class="prelude-val">Ok</span>(())
+<a href=#492 id=492 data-nosnippet>492</a>    }
+<a href=#493 id=493 data-nosnippet>493</a>
+<a href=#494 id=494 data-nosnippet>494</a>    <span class="doccomment">/// The bar `name` taken out of the character's own file (`own`) or
+<a href=#495 id=495 data-nosnippet>495</a>    /// every character's: at once, and with the next batch of saves.
+<a href=#496 id=496 data-nosnippet>496</a>    ///
+<a href=#497 id=497 data-nosnippet>497</a>    /// # Errors
+<a href=#498 id=498 data-nosnippet>498</a>    ///
+<a href=#499 id=499 data-nosnippet>499</a>    /// Nothing is saved here, or the file does not read.
+<a href=#500 id=500 data-nosnippet>500</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>remove_bar(<span class="kw-2">&amp;mut </span><span class="self">self</span>, name: <span class="kw-2">&amp;</span>str, own: bool) -&gt; <span class="prelude-ty">Result</span>&lt;(), String&gt; {
+<a href=#501 id=501 data-nosnippet>501</a>        <span class="kw">let </span>file = <span class="kw">if </span>own { Text::Own } <span class="kw">else </span>{ Text::Every };
+<a href=#502 id=502 data-nosnippet>502</a>        <span class="kw">let </span>name = name.to_owned();
+<a href=#503 id=503 data-nosnippet>503</a>        <span class="self">self</span>.change(file, <span class="kw">move </span>|now| without_bar(now, <span class="kw-2">&amp;</span>name))
+<a href=#504 id=504 data-nosnippet>504</a>    }
+<a href=#505 id=505 data-nosnippet>505</a>
+<a href=#506 id=506 data-nosnippet>506</a>    <span class="doccomment">/// The image at `file` copied into the icons folder, and named a sheet
+<a href=#507 id=507 data-nosnippet>507</a>    /// of cells `cell` pixels on edge in its `icons.toml` when `sheet`
+<a href=#508 id=508 data-nosnippet>508</a>    /// names one, with the next batch of saves: what was done.
+<a href=#509 id=509 data-nosnippet>509</a>    ///
+<a href=#510 id=510 data-nosnippet>510</a>    /// # Errors
+<a href=#511 id=511 data-nosnippet>511</a>    ///
+<a href=#512 id=512 data-nosnippet>512</a>    /// The file is not a PNG, or the manifest does not read or would not.
+<a href=#513 id=513 data-nosnippet>513</a>    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>copy_in(
+<a href=#514 id=514 data-nosnippet>514</a>        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+<a href=#515 id=515 data-nosnippet>515</a>        file: <span class="kw-2">&amp;</span>Path,
+<a href=#516 id=516 data-nosnippet>516</a>        sheet: <span class="prelude-ty">Option</span>&lt;(<span class="kw-2">&amp;</span>str, u32)&gt;,
+<a href=#517 id=517 data-nosnippet>517</a>    ) -&gt; <span class="prelude-ty">Result</span>&lt;String, String&gt; {
+<a href=#518 id=518 data-nosnippet>518</a>        <span class="kw">let </span>name = file
+<a href=#519 id=519 data-nosnippet>519</a>            .file_name()
+<a href=#520 id=520 data-nosnippet>520</a>            .map(|name| name.to_string_lossy().into_owned())
+<a href=#521 id=521 data-nosnippet>521</a>            .filter(|name| name.to_ascii_lowercase().ends_with(<span class="string">".png"</span>))
+<a href=#522 id=522 data-nosnippet>522</a>            .ok_or(<span class="string">"an icon is a PNG file"</span>)<span class="question-mark">?</span>;
+<a href=#523 id=523 data-nosnippet>523</a>        <span class="comment">// The manifest's change made, or refused, before the image is
+<a href=#524 id=524 data-nosnippet>524</a>        // copied: a refusal copies nothing, so an icon of that name is
+<a href=#525 id=525 data-nosnippet>525</a>        // never replaced by an import said not to be done.
+<a href=#526 id=526 data-nosnippet>526</a>        </span><span class="kw">let </span>said = <span class="kw">match </span>sheet {
+<a href=#527 id=527 data-nosnippet>527</a>            <span class="prelude-val">Some</span>((sheet, cell)) =&gt; {
+<a href=#528 id=528 data-nosnippet>528</a>                <span class="kw">let </span>(named, path) = (sheet.to_owned(), name.clone());
+<a href=#529 id=529 data-nosnippet>529</a>                <span class="self">self</span>.change(Text::Sheets, <span class="kw">move </span>|now| {
+<a href=#530 id=530 data-nosnippet>530</a>                    with_sheet(now, <span class="kw-2">&amp;</span>named, (<span class="kw-2">&amp;</span>path, cell))
+<a href=#531 id=531 data-nosnippet>531</a>                })<span class="question-mark">?</span>;
+<a href=#532 id=532 data-nosnippet>532</a>                <span class="macro">format!</span>(<span class="string">"{name} is the sheet {sheet}, in cells of {cell} px."</span>)
+<a href=#533 id=533 data-nosnippet>533</a>            }
+<a href=#534 id=534 data-nosnippet>534</a>            <span class="prelude-val">None </span>=&gt; <span class="macro">format!</span>(<span class="string">"{name} is in the icons folder."</span>),
+<a href=#535 id=535 data-nosnippet>535</a>        };
+<a href=#536 id=536 data-nosnippet>536</a>        <span class="kw">let </span>dir = <span class="self">self</span>.icons_dir();
+<a href=#537 id=537 data-nosnippet>537</a>        <span class="kw">let </span>into = dir.join(<span class="kw-2">&amp;</span>name);
+<a href=#538 id=538 data-nosnippet>538</a>        <span class="kw">if </span>file != into {
+<a href=#539 id=539 data-nosnippet>539</a>            <span class="kw">crate</span>::store::copy(<span class="kw-2">&amp;</span>dir, <span class="kw-2">&amp;</span>into, file.to_owned());
+<a href=#540 id=540 data-nosnippet>540</a>        }
+<a href=#541 id=541 data-nosnippet>541</a>        <span class="prelude-val">Ok</span>(said)
+<a href=#542 id=542 data-nosnippet>542</a>    }
+<a href=#543 id=543 data-nosnippet>543</a>}
+<a href=#544 id=544 data-nosnippet>544</a>
+<a href=#545 id=545 data-nosnippet>545</a><span class="doccomment">/// The icons manifest `old` with the sheet `name` its picture `path` in
+<a href=#546 id=546 data-nosnippet>546</a>/// cells of `cell` pixels, in place of one of that name; the rest as it
+<a href=#547 id=547 data-nosnippet>547</a>/// was.
+<a href=#548 id=548 data-nosnippet>548</a>///
+<a href=#549 id=549 data-nosnippet>549</a>/// # Errors
+<a href=#550 id=550 data-nosnippet>550</a>///
+<a href=#551 id=551 data-nosnippet>551</a>/// The manifest does not read, or would not.
+<a href=#552 id=552 data-nosnippet>552</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>with_sheet(
+<a href=#553 id=553 data-nosnippet>553</a>    old: <span class="kw-2">&amp;</span>str,
+<a href=#554 id=554 data-nosnippet>554</a>    name: <span class="kw-2">&amp;</span>str,
+<a href=#555 id=555 data-nosnippet>555</a>    (path, cell): (<span class="kw-2">&amp;</span>str, u32),
+<a href=#556 id=556 data-nosnippet>556</a>) -&gt; <span class="prelude-ty">Result</span>&lt;String, String&gt; {
+<a href=#557 id=557 data-nosnippet>557</a>    <span class="kw">let </span><span class="kw-2">mut </span>document: DocumentMut = old.parse().map_err(|why| <span class="macro">format!</span>(<span class="string">"{why}"</span>))<span class="question-mark">?</span>;
+<a href=#558 id=558 data-nosnippet>558</a>    <span class="kw">let </span>sheets = document
+<a href=#559 id=559 data-nosnippet>559</a>        .entry(<span class="string">"sheets"</span>)
+<a href=#560 id=560 data-nosnippet>560</a>        .or_insert_with(|| {
+<a href=#561 id=561 data-nosnippet>561</a>            <span class="kw">let </span><span class="kw-2">mut </span>table = toml_edit::Table::new();
+<a href=#562 id=562 data-nosnippet>562</a>            table.set_implicit(<span class="bool-val">true</span>);
+<a href=#563 id=563 data-nosnippet>563</a>            Item::Table(table)
+<a href=#564 id=564 data-nosnippet>564</a>        })
+<a href=#565 id=565 data-nosnippet>565</a>        .as_table_mut()
+<a href=#566 id=566 data-nosnippet>566</a>        .ok_or(<span class="string">"the manifest's sheets are not a [sheets] table"</span>)<span class="question-mark">?</span>;
+<a href=#567 id=567 data-nosnippet>567</a>    <span class="kw">let </span><span class="kw-2">mut </span>sheet = toml_edit::Table::new();
+<a href=#568 id=568 data-nosnippet>568</a>    sheet[<span class="string">"path"</span>] = toml_edit::value(path);
+<a href=#569 id=569 data-nosnippet>569</a>    sheet[<span class="string">"cell"</span>] = toml_edit::value(i64::from(cell));
+<a href=#570 id=570 data-nosnippet>570</a>    sheets[name] = Item::Table(sheet);
+<a href=#571 id=571 data-nosnippet>571</a>    <span class="kw">let </span>text = document.to_string();
+<a href=#572 id=572 data-nosnippet>572</a>    hydra_ui::hotbar::Sheets::parse(<span class="kw-2">&amp;</span>text).map_err(|why| <span class="macro">format!</span>(<span class="string">"it would not read: {why}"</span>))<span class="question-mark">?</span>;
+<a href=#573 id=573 data-nosnippet>573</a>    <span class="prelude-val">Ok</span>(text)
+<a href=#574 id=574 data-nosnippet>574</a>}
+<a href=#575 id=575 data-nosnippet>575</a>
+<a href=#576 id=576 data-nosnippet>576</a><span class="doccomment">/// The file at `path`, or nothing when there is none yet.
+<a href=#577 id=577 data-nosnippet>577</a></span><span class="kw">fn </span>read_or_empty(path: <span class="kw-2">&amp;</span>Path) -&gt; <span class="prelude-ty">Result</span>&lt;String, String&gt; {
+<a href=#578 id=578 data-nosnippet>578</a>    <span class="kw">match </span>std::fs::read_to_string(path) {
+<a href=#579 id=579 data-nosnippet>579</a>        <span class="prelude-val">Ok</span>(text) =&gt; <span class="prelude-val">Ok</span>(text),
+<a href=#580 id=580 data-nosnippet>580</a>        <span class="prelude-val">Err</span>(why) <span class="kw">if </span>why.kind() == std::io::ErrorKind::NotFound =&gt; <span class="prelude-val">Ok</span>(String::new()),
+<a href=#581 id=581 data-nosnippet>581</a>        <span class="prelude-val">Err</span>(why) =&gt; <span class="prelude-val">Err</span>(why.to_string()),
+<a href=#582 id=582 data-nosnippet>582</a>    }
+<a href=#583 id=583 data-nosnippet>583</a>}
+<a href=#584 id=584 data-nosnippet>584</a>
+<a href=#585 id=585 data-nosnippet>585</a><span class="doccomment">/// The bars of `document`, as tables.
+<a href=#586 id=586 data-nosnippet>586</a></span><span class="kw">fn </span>bars_of(document: <span class="kw-2">&amp;mut </span>DocumentMut) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;mut </span>toml_edit::ArrayOfTables, String&gt; {
+<a href=#587 id=587 data-nosnippet>587</a>    document
+<a href=#588 id=588 data-nosnippet>588</a>        .entry(<span class="string">"bars"</span>)
+<a href=#589 id=589 data-nosnippet>589</a>        .or_insert_with(|| Item::ArrayOfTables(toml_edit::ArrayOfTables::new()))
+<a href=#590 id=590 data-nosnippet>590</a>        .as_array_of_tables_mut()
+<a href=#591 id=591 data-nosnippet>591</a>        .ok_or_else(|| <span class="string">"the file's bars are not [[bars]] tables"</span>.to_owned())
+<a href=#592 id=592 data-nosnippet>592</a>}
+<a href=#593 id=593 data-nosnippet>593</a>
+<a href=#594 id=594 data-nosnippet>594</a><span class="doccomment">/// `old` with `bar` in place of the bar `replacing`, or of its own name,
+<a href=#595 id=595 data-nosnippet>595</a>/// or added after the rest; the rest of the file as it was.
+<a href=#596 id=596 data-nosnippet>596</a>///
+<a href=#597 id=597 data-nosnippet>597</a>/// # Errors
+<a href=#598 id=598 data-nosnippet>598</a>///
+<a href=#599 id=599 data-nosnippet>599</a>/// The file does not read or would not, or another bar has the name.
+<a href=#600 id=600 data-nosnippet>600</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>with_bar(old: <span class="kw-2">&amp;</span>str, bar: <span class="kw-2">&amp;</span>Bar, replacing: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;String, String&gt; {
+<a href=#601 id=601 data-nosnippet>601</a>    <span class="kw">let </span><span class="kw-2">mut </span>document: DocumentMut = old.parse().map_err(|why| <span class="macro">format!</span>(<span class="string">"{why}"</span>))<span class="question-mark">?</span>;
+<a href=#602 id=602 data-nosnippet>602</a>    <span class="kw">let </span>written = toml::to_string(<span class="kw-2">&amp;</span>HotbarFile {
+<a href=#603 id=603 data-nosnippet>603</a>        bars: <span class="macro">vec!</span>[bar.clone()],
+<a href=#604 id=604 data-nosnippet>604</a>    })
+<a href=#605 id=605 data-nosnippet>605</a>    .map_err(|why| why.to_string())<span class="question-mark">?</span>;
+<a href=#606 id=606 data-nosnippet>606</a>    <span class="kw">let </span><span class="kw-2">mut </span>fresh: DocumentMut = written.parse().map_err(|why| <span class="macro">format!</span>(<span class="string">"{why}"</span>))<span class="question-mark">?</span>;
+<a href=#607 id=607 data-nosnippet>607</a>    <span class="kw">let </span>table = bars_of(<span class="kw-2">&amp;mut </span>fresh)<span class="question-mark">?
+<a href=#608 id=608 data-nosnippet>608</a>        </span>.get(<span class="number">0</span>)
+<a href=#609 id=609 data-nosnippet>609</a>        .cloned()
+<a href=#610 id=610 data-nosnippet>610</a>        .ok_or(<span class="string">"the bar was not written"</span>)<span class="question-mark">?</span>;
+<a href=#611 id=611 data-nosnippet>611</a>    <span class="kw">let </span>bars = bars_of(<span class="kw-2">&amp;mut </span>document)<span class="question-mark">?</span>;
+<a href=#612 id=612 data-nosnippet>612</a>    <span class="kw">let </span>named = |name: <span class="kw-2">&amp;</span>str| {
+<a href=#613 id=613 data-nosnippet>613</a>        bars.iter()
+<a href=#614 id=614 data-nosnippet>614</a>            .position(|one| one.get(<span class="string">"name"</span>).and_then(Item::as_str) == <span class="prelude-val">Some</span>(name))
+<a href=#615 id=615 data-nosnippet>615</a>    };
+<a href=#616 id=616 data-nosnippet>616</a>    <span class="comment">// Only the bar it was takes its place: a new one (`replacing` none)
+<a href=#617 id=617 data-nosnippet>617</a>    // never takes the place of a bar that has its name.
+<a href=#618 id=618 data-nosnippet>618</a>    </span><span class="kw">let </span>at = replacing.and_then(named);
+<a href=#619 id=619 data-nosnippet>619</a>    <span class="kw">if let </span><span class="prelude-val">Some</span>(other) = named(<span class="kw-2">&amp;</span>bar.name)
+<a href=#620 id=620 data-nosnippet>620</a>        &amp;&amp; <span class="prelude-val">Some</span>(other) != at
+<a href=#621 id=621 data-nosnippet>621</a>    {
+<a href=#622 id=622 data-nosnippet>622</a>        <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">"There is a hotbar {} already."</span>, bar.name));
+<a href=#623 id=623 data-nosnippet>623</a>    }
+<a href=#624 id=624 data-nosnippet>624</a>    <span class="kw">let </span><span class="kw-2">mut </span>table = table;
+<a href=#625 id=625 data-nosnippet>625</a>    <span class="comment">// Where it was, with what was written above it: the file's own words
+<a href=#626 id=626 data-nosnippet>626</a>    // before its first bar among them.
+<a href=#627 id=627 data-nosnippet>627</a>    </span><span class="kw">if let </span><span class="prelude-val">Some</span>(place) = at.and_then(|at| bars.get_mut(at)) {
+<a href=#628 id=628 data-nosnippet>628</a>        table.decor_mut().clone_from(place.decor());
+<a href=#629 id=629 data-nosnippet>629</a>        table.set_position(place.position());
+<a href=#630 id=630 data-nosnippet>630</a>        <span class="kw-2">*</span>place = table;
+<a href=#631 id=631 data-nosnippet>631</a>    } <span class="kw">else </span>{
+<a href=#632 id=632 data-nosnippet>632</a>        table.set_position(<span class="prelude-val">None</span>);
+<a href=#633 id=633 data-nosnippet>633</a>        bars.push(table);
+<a href=#634 id=634 data-nosnippet>634</a>    }
+<a href=#635 id=635 data-nosnippet>635</a>    <span class="kw">let </span>text = document.to_string();
+<a href=#636 id=636 data-nosnippet>636</a>    HotbarFile::parse(<span class="kw-2">&amp;</span>text).map_err(|why| <span class="macro">format!</span>(<span class="string">"it would not read: {why}"</span>))<span class="question-mark">?</span>;
+<a href=#637 id=637 data-nosnippet>637</a>    <span class="prelude-val">Ok</span>(text)
+<a href=#638 id=638 data-nosnippet>638</a>}
+<a href=#639 id=639 data-nosnippet>639</a>
+<a href=#640 id=640 data-nosnippet>640</a><span class="doccomment">/// `old` without the bar `name`; the rest of the file as it was.
+<a href=#641 id=641 data-nosnippet>641</a>///
+<a href=#642 id=642 data-nosnippet>642</a>/// # Errors
+<a href=#643 id=643 data-nosnippet>643</a>///
+<a href=#644 id=644 data-nosnippet>644</a>/// The file does not read.
+<a href=#645 id=645 data-nosnippet>645</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>without_bar(old: <span class="kw-2">&amp;</span>str, name: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, String&gt; {
+<a href=#646 id=646 data-nosnippet>646</a>    <span class="kw">let </span><span class="kw-2">mut </span>document: DocumentMut = old.parse().map_err(|why| <span class="macro">format!</span>(<span class="string">"{why}"</span>))<span class="question-mark">?</span>;
+<a href=#647 id=647 data-nosnippet>647</a>    <span class="kw">if </span>document.get(<span class="string">"bars"</span>).is_none() {
+<a href=#648 id=648 data-nosnippet>648</a>        <span class="kw">return </span><span class="prelude-val">Ok</span>(old.to_owned());
+<a href=#649 id=649 data-nosnippet>649</a>    }
+<a href=#650 id=650 data-nosnippet>650</a>    <span class="kw">let </span>bars = bars_of(<span class="kw-2">&amp;mut </span>document)<span class="question-mark">?</span>;
+<a href=#651 id=651 data-nosnippet>651</a>    <span class="kw">let </span><span class="prelude-val">Some</span>(at) = bars
+<a href=#652 id=652 data-nosnippet>652</a>        .iter()
+<a href=#653 id=653 data-nosnippet>653</a>        .position(|one| one.get(<span class="string">"name"</span>).and_then(Item::as_str) == <span class="prelude-val">Some</span>(name))
+<a href=#654 id=654 data-nosnippet>654</a>    <span class="kw">else </span>{
+<a href=#655 id=655 data-nosnippet>655</a>        <span class="kw">return </span><span class="prelude-val">Ok</span>(old.to_owned());
+<a href=#656 id=656 data-nosnippet>656</a>    };
+<a href=#657 id=657 data-nosnippet>657</a>    <span class="comment">// What was written above it stays, above the bar after it.
+<a href=#658 id=658 data-nosnippet>658</a>    </span><span class="kw">let </span>above = bars
+<a href=#659 id=659 data-nosnippet>659</a>        .get(at)
+<a href=#660 id=660 data-nosnippet>660</a>        .and_then(|gone| gone.decor().prefix())
+<a href=#661 id=661 data-nosnippet>661</a>        .and_then(|prefix| prefix.as_str())
+<a href=#662 id=662 data-nosnippet>662</a>        .unwrap_or_default()
+<a href=#663 id=663 data-nosnippet>663</a>        .to_owned();
+<a href=#664 id=664 data-nosnippet>664</a>    bars.remove(at);
+<a href=#665 id=665 data-nosnippet>665</a>    <span class="kw">let </span><span class="kw-2">mut </span>text = <span class="kw">match </span>bars.get_mut(at) {
+<a href=#666 id=666 data-nosnippet>666</a>        <span class="prelude-val">Some</span>(next) =&gt; {
+<a href=#667 id=667 data-nosnippet>667</a>            <span class="kw">let </span>own = next
+<a href=#668 id=668 data-nosnippet>668</a>                .decor()
+<a href=#669 id=669 data-nosnippet>669</a>                .prefix()
+<a href=#670 id=670 data-nosnippet>670</a>                .and_then(|prefix| prefix.as_str())
+<a href=#671 id=671 data-nosnippet>671</a>                .unwrap_or_default()
+<a href=#672 id=672 data-nosnippet>672</a>                .to_owned();
+<a href=#673 id=673 data-nosnippet>673</a>            next.decor_mut().set_prefix(<span class="macro">format!</span>(<span class="string">"{above}{own}"</span>));
+<a href=#674 id=674 data-nosnippet>674</a>            document.to_string()
+<a href=#675 id=675 data-nosnippet>675</a>        }
+<a href=#676 id=676 data-nosnippet>676</a>        <span class="prelude-val">None </span>=&gt; <span class="macro">format!</span>(<span class="string">"{document}{above}"</span>),
+<a href=#677 id=677 data-nosnippet>677</a>    };
+<a href=#678 id=678 data-nosnippet>678</a>    <span class="kw">if </span>!text.ends_with(<span class="string">'\n'</span>) &amp;&amp; !text.is_empty() {
+<a href=#679 id=679 data-nosnippet>679</a>        text.push(<span class="string">'\n'</span>);
+<a href=#680 id=680 data-nosnippet>680</a>    }
+<a href=#681 id=681 data-nosnippet>681</a>    <span class="prelude-val">Ok</span>(text)
+<a href=#682 id=682 data-nosnippet>682</a>}
+<a href=#683 id=683 data-nosnippet>683</a>
+<a href=#684 id=684 data-nosnippet>684</a><span class="doccomment">/// `old` with the bar `name`'s buttons given `slots`, in their order; the
+<a href=#685 id=685 data-nosnippet>685</a>/// rest of the file as it was.
+<a href=#686 id=686 data-nosnippet>686</a>///
+<a href=#687 id=687 data-nosnippet>687</a>/// # Errors
+<a href=#688 id=688 data-nosnippet>688</a>///
+<a href=#689 id=689 data-nosnippet>689</a>/// The file does not read, has no such bar, or a different count of
+<a href=#690 id=690 data-nosnippet>690</a>/// buttons.
+<a href=#691 id=691 data-nosnippet>691</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>slotted(old: <span class="kw-2">&amp;</span>str, name: <span class="kw-2">&amp;</span>str, slots: <span class="kw-2">&amp;</span>[<span class="prelude-ty">Option</span>&lt;u16&gt;]) -&gt; <span class="prelude-ty">Result</span>&lt;String, String&gt; {
+<a href=#692 id=692 data-nosnippet>692</a>    <span class="kw">let </span><span class="kw-2">mut </span>document: DocumentMut = old.parse().map_err(|why| <span class="macro">format!</span>(<span class="string">"{why}"</span>))<span class="question-mark">?</span>;
+<a href=#693 id=693 data-nosnippet>693</a>    <span class="kw">let </span>bars = document
+<a href=#694 id=694 data-nosnippet>694</a>        .get_mut(<span class="string">"bars"</span>)
+<a href=#695 id=695 data-nosnippet>695</a>        .and_then(Item::as_array_of_tables_mut)
+<a href=#696 id=696 data-nosnippet>696</a>        .ok_or_else(|| <span class="string">"the file has no [[bars]]"</span>.to_owned())<span class="question-mark">?</span>;
+<a href=#697 id=697 data-nosnippet>697</a>    <span class="kw">let </span>bar = bars
+<a href=#698 id=698 data-nosnippet>698</a>        .iter_mut()
+<a href=#699 id=699 data-nosnippet>699</a>        .find(|bar| bar.get(<span class="string">"name"</span>).and_then(Item::as_str) == <span class="prelude-val">Some</span>(name))
+<a href=#700 id=700 data-nosnippet>700</a>        .ok_or_else(|| <span class="macro">format!</span>(<span class="string">"the file has no bar {name}"</span>))<span class="question-mark">?</span>;
+<a href=#701 id=701 data-nosnippet>701</a>    <span class="kw">let </span>buttons = bar
+<a href=#702 id=702 data-nosnippet>702</a>        .get_mut(<span class="string">"buttons"</span>)
+<a href=#703 id=703 data-nosnippet>703</a>        .ok_or_else(|| <span class="macro">format!</span>(<span class="string">"the bar {name} has no buttons"</span>))<span class="question-mark">?</span>;
+<a href=#704 id=704 data-nosnippet>704</a>    <span class="kw">let </span>put = |slot: <span class="prelude-ty">Option</span>&lt;u16&gt;| slot.map(|slot| Value::from(i64::from(slot)));
+<a href=#705 id=705 data-nosnippet>705</a>    <span class="kw">match </span>buttons {
+<a href=#706 id=706 data-nosnippet>706</a>        Item::ArrayOfTables(tables) <span class="kw">if </span>tables.len() == slots.len() =&gt; {
+<a href=#707 id=707 data-nosnippet>707</a>            <span class="kw">for </span>(table, slot) <span class="kw">in </span>tables.iter_mut().zip(slots) {
+<a href=#708 id=708 data-nosnippet>708</a>                <span class="kw">match </span>put(<span class="kw-2">*</span>slot) {
+<a href=#709 id=709 data-nosnippet>709</a>                    <span class="prelude-val">Some</span>(slot) =&gt; table[<span class="string">"slot"</span>] = Item::Value(slot),
+<a href=#710 id=710 data-nosnippet>710</a>                    <span class="prelude-val">None </span>=&gt; <span class="kw">_ </span>= table.remove(<span class="string">"slot"</span>),
+<a href=#711 id=711 data-nosnippet>711</a>                }
+<a href=#712 id=712 data-nosnippet>712</a>            }
+<a href=#713 id=713 data-nosnippet>713</a>        }
+<a href=#714 id=714 data-nosnippet>714</a>        Item::Value(Value::Array(array)) <span class="kw">if </span>array.len() == slots.len() =&gt; {
+<a href=#715 id=715 data-nosnippet>715</a>            <span class="kw">for </span>(button, slot) <span class="kw">in </span>array.iter_mut().zip(slots) {
+<a href=#716 id=716 data-nosnippet>716</a>                <span class="kw">let </span><span class="prelude-val">Some</span>(button) = button.as_inline_table_mut() <span class="kw">else </span>{
+<a href=#717 id=717 data-nosnippet>717</a>                    <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">"the bar {name}'s buttons are not tables"</span>));
+<a href=#718 id=718 data-nosnippet>718</a>                };
+<a href=#719 id=719 data-nosnippet>719</a>                <span class="kw">match </span>put(<span class="kw-2">*</span>slot) {
+<a href=#720 id=720 data-nosnippet>720</a>                    <span class="prelude-val">Some</span>(slot) =&gt; <span class="kw">_ </span>= button.insert(<span class="string">"slot"</span>, slot),
+<a href=#721 id=721 data-nosnippet>721</a>                    <span class="prelude-val">None </span>=&gt; <span class="kw">_ </span>= button.remove(<span class="string">"slot"</span>),
+<a href=#722 id=722 data-nosnippet>722</a>                }
+<a href=#723 id=723 data-nosnippet>723</a>            }
+<a href=#724 id=724 data-nosnippet>724</a>        }
+<a href=#725 id=725 data-nosnippet>725</a>        <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">"the bar {name}'s buttons are not as read"</span>)),
+<a href=#726 id=726 data-nosnippet>726</a>    }
+<a href=#727 id=727 data-nosnippet>727</a>    <span class="kw">let </span>text = document.to_string();
+<a href=#728 id=728 data-nosnippet>728</a>    HotbarFile::parse(<span class="kw-2">&amp;</span>text).map_err(|why| <span class="macro">format!</span>(<span class="string">"it would not read: {why}"</span>))<span class="question-mark">?</span>;
+<a href=#729 id=729 data-nosnippet>729</a>    <span class="prelude-val">Ok</span>(text)
+<a href=#730 id=730 data-nosnippet>730</a>}
+<a href=#731 id=731 data-nosnippet>731</a>
+<a href=#732 id=732 data-nosnippet>732</a><span class="doccomment">/// A hotkey as a hotbar file writes it -- `alt+h`, `f5`, `ctrl+up`, or as
+<a href=#733 id=733 data-nosnippet>733</a>/// the keybinds file does, `Alt+KeyH` -- as a key with its modifiers.
+<a href=#734 id=734 data-nosnippet>734</a>///
+<a href=#735 id=735 data-nosnippet>735</a>/// # Errors
+<a href=#736 id=736 data-nosnippet>736</a>///
+<a href=#737 id=737 data-nosnippet>737</a>/// A key Hydra does not know, or one that types rather than commands.
+<a href=#738 id=738 data-nosnippet>738</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>hotkey(written: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Chord, String&gt; {
+<a href=#739 id=739 data-nosnippet>739</a>    <span class="kw">let </span><span class="kw-2">mut </span>parts: Vec&lt;String&gt; = written
+<a href=#740 id=740 data-nosnippet>740</a>        .split(<span class="string">'+'</span>)
+<a href=#741 id=741 data-nosnippet>741</a>        .map(|part| part.trim().to_owned())
+<a href=#742 id=742 data-nosnippet>742</a>        .collect();
+<a href=#743 id=743 data-nosnippet>743</a>    <span class="kw">if let </span><span class="prelude-val">Some</span>(key) = parts.last_mut() {
+<a href=#744 id=744 data-nosnippet>744</a>        <span class="kw">let </span>lower = key.to_ascii_lowercase();
+<a href=#745 id=745 data-nosnippet>745</a>        <span class="kw">let </span>named = <span class="kw">match </span>lower.as_str() {
+<a href=#746 id=746 data-nosnippet>746</a>            one <span class="kw">if </span>one.len() == <span class="number">1 </span>&amp;&amp; one.chars().all(|c| c.is_ascii_alphabetic()) =&gt; {
+<a href=#747 id=747 data-nosnippet>747</a>                <span class="prelude-val">Some</span>(<span class="macro">format!</span>(<span class="string">"Key{}"</span>, one.to_ascii_uppercase()))
 <a href=#748 id=748 data-nosnippet>748</a>            }
-<a href=#749 id=749 data-nosnippet>749</a>            <span class="string">"up" </span>| <span class="string">"down" </span>| <span class="string">"left" </span>| <span class="string">"right" </span>=&gt; <span class="prelude-val">Some</span>(<span class="macro">format!</span>(<span class="string">"Arrow{}"</span>, capital(<span class="kw-2">&amp;</span>lower))),
-<a href=#750 id=750 data-nosnippet>750</a>            <span class="string">"pageup" </span>| <span class="string">"page_up" </span>| <span class="string">"pgup" </span>=&gt; <span class="prelude-val">Some</span>(<span class="string">"PageUp"</span>.to_owned()),
-<a href=#751 id=751 data-nosnippet>751</a>            <span class="string">"pagedown" </span>| <span class="string">"page_down" </span>| <span class="string">"pgdn" </span>=&gt; <span class="prelude-val">Some</span>(<span class="string">"PageDown"</span>.to_owned()),
-<a href=#752 id=752 data-nosnippet>752</a>            <span class="string">"esc" </span>=&gt; <span class="prelude-val">Some</span>(<span class="string">"Escape"</span>.to_owned()),
-<a href=#753 id=753 data-nosnippet>753</a>            <span class="string">"return" </span>=&gt; <span class="prelude-val">Some</span>(<span class="string">"Enter"</span>.to_owned()),
-<a href=#754 id=754 data-nosnippet>754</a>            <span class="string">"del" </span>=&gt; <span class="prelude-val">Some</span>(<span class="string">"Delete"</span>.to_owned()),
-<a href=#755 id=755 data-nosnippet>755</a>            <span class="string">"ins" </span>=&gt; <span class="prelude-val">Some</span>(<span class="string">"Insert"</span>.to_owned()),
-<a href=#756 id=756 data-nosnippet>756</a>            <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
-<a href=#757 id=757 data-nosnippet>757</a>        };
-<a href=#758 id=758 data-nosnippet>758</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(named) = named {
-<a href=#759 id=759 data-nosnippet>759</a>            <span class="kw-2">*</span>key = named;
-<a href=#760 id=760 data-nosnippet>760</a>        }
-<a href=#761 id=761 data-nosnippet>761</a>    }
-<a href=#762 id=762 data-nosnippet>762</a>    <span class="kw">let </span>chord = Chord::parse(<span class="kw-2">&amp;</span>parts.join(<span class="string">"+"</span>))<span class="question-mark">?</span>;
-<a href=#763 id=763 data-nosnippet>763</a>    <span class="kw">match </span>chord.refused() {
-<a href=#764 id=764 data-nosnippet>764</a>        <span class="prelude-val">Some</span>(why) =&gt; <span class="prelude-val">Err</span>(why),
-<a href=#765 id=765 data-nosnippet>765</a>        <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Ok</span>(chord),
-<a href=#766 id=766 data-nosnippet>766</a>    }
-<a href=#767 id=767 data-nosnippet>767</a>}
-<a href=#768 id=768 data-nosnippet>768</a>
-<a href=#769 id=769 data-nosnippet>769</a><span class="doccomment">/// `word` with its first letter a capital.
-<a href=#770 id=770 data-nosnippet>770</a></span><span class="kw">fn </span>capital(word: <span class="kw-2">&amp;</span>str) -&gt; String {
-<a href=#771 id=771 data-nosnippet>771</a>    <span class="kw">let </span><span class="kw-2">mut </span>chars = word.chars();
-<a href=#772 id=772 data-nosnippet>772</a>    chars.next().map_or_else(String::new, |first| {
-<a href=#773 id=773 data-nosnippet>773</a>        first.to_ascii_uppercase().to_string() + chars.as_str()
-<a href=#774 id=774 data-nosnippet>774</a>    })
-<a href=#775 id=775 data-nosnippet>775</a>}
-<a href=#776 id=776 data-nosnippet>776</a>
-<a href=#777 id=777 data-nosnippet>777</a><span class="attr">#[cfg(test)]
-<a href=#778 id=778 data-nosnippet>778</a></span><span class="kw">mod </span>tests;
+<a href=#749 id=749 data-nosnippet>749</a>            one <span class="kw">if </span>one.len() == <span class="number">1 </span>&amp;&amp; one.chars().all(|c| c.is_ascii_digit()) =&gt; {
+<a href=#750 id=750 data-nosnippet>750</a>                <span class="prelude-val">Some</span>(<span class="macro">format!</span>(<span class="string">"Digit{one}"</span>))
+<a href=#751 id=751 data-nosnippet>751</a>            }
+<a href=#752 id=752 data-nosnippet>752</a>            <span class="string">"up" </span>| <span class="string">"down" </span>| <span class="string">"left" </span>| <span class="string">"right" </span>=&gt; <span class="prelude-val">Some</span>(<span class="macro">format!</span>(<span class="string">"Arrow{}"</span>, capital(<span class="kw-2">&amp;</span>lower))),
+<a href=#753 id=753 data-nosnippet>753</a>            <span class="string">"pageup" </span>| <span class="string">"page_up" </span>| <span class="string">"pgup" </span>=&gt; <span class="prelude-val">Some</span>(<span class="string">"PageUp"</span>.to_owned()),
+<a href=#754 id=754 data-nosnippet>754</a>            <span class="string">"pagedown" </span>| <span class="string">"page_down" </span>| <span class="string">"pgdn" </span>=&gt; <span class="prelude-val">Some</span>(<span class="string">"PageDown"</span>.to_owned()),
+<a href=#755 id=755 data-nosnippet>755</a>            <span class="string">"esc" </span>=&gt; <span class="prelude-val">Some</span>(<span class="string">"Escape"</span>.to_owned()),
+<a href=#756 id=756 data-nosnippet>756</a>            <span class="string">"return" </span>=&gt; <span class="prelude-val">Some</span>(<span class="string">"Enter"</span>.to_owned()),
+<a href=#757 id=757 data-nosnippet>757</a>            <span class="string">"del" </span>=&gt; <span class="prelude-val">Some</span>(<span class="string">"Delete"</span>.to_owned()),
+<a href=#758 id=758 data-nosnippet>758</a>            <span class="string">"ins" </span>=&gt; <span class="prelude-val">Some</span>(<span class="string">"Insert"</span>.to_owned()),
+<a href=#759 id=759 data-nosnippet>759</a>            <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
+<a href=#760 id=760 data-nosnippet>760</a>        };
+<a href=#761 id=761 data-nosnippet>761</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(named) = named {
+<a href=#762 id=762 data-nosnippet>762</a>            <span class="kw-2">*</span>key = named;
+<a href=#763 id=763 data-nosnippet>763</a>        }
+<a href=#764 id=764 data-nosnippet>764</a>    }
+<a href=#765 id=765 data-nosnippet>765</a>    <span class="kw">let </span>chord = Chord::parse(<span class="kw-2">&amp;</span>parts.join(<span class="string">"+"</span>))<span class="question-mark">?</span>;
+<a href=#766 id=766 data-nosnippet>766</a>    <span class="kw">match </span>chord.refused() {
+<a href=#767 id=767 data-nosnippet>767</a>        <span class="prelude-val">Some</span>(why) =&gt; <span class="prelude-val">Err</span>(why),
+<a href=#768 id=768 data-nosnippet>768</a>        <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Ok</span>(chord),
+<a href=#769 id=769 data-nosnippet>769</a>    }
+<a href=#770 id=770 data-nosnippet>770</a>}
+<a href=#771 id=771 data-nosnippet>771</a>
+<a href=#772 id=772 data-nosnippet>772</a><span class="doccomment">/// `word` with its first letter a capital.
+<a href=#773 id=773 data-nosnippet>773</a></span><span class="kw">fn </span>capital(word: <span class="kw-2">&amp;</span>str) -&gt; String {
+<a href=#774 id=774 data-nosnippet>774</a>    <span class="kw">let </span><span class="kw-2">mut </span>chars = word.chars();
+<a href=#775 id=775 data-nosnippet>775</a>    chars.next().map_or_else(String::new, |first| {
+<a href=#776 id=776 data-nosnippet>776</a>        first.to_ascii_uppercase().to_string() + chars.as_str()
+<a href=#777 id=777 data-nosnippet>777</a>    })
+<a href=#778 id=778 data-nosnippet>778</a>}
+<a href=#779 id=779 data-nosnippet>779</a>
+<a href=#780 id=780 data-nosnippet>780</a><span class="attr">#[cfg(test)]
+<a href=#781 id=781 data-nosnippet>781</a></span><span class="kw">mod </span>tests;
 </code></pre></div></section></main></body></html>

@@ -199,173 +199,179 @@
 <a href=#199 id=199 data-nosnippet>199</a>            <span class="self">self</span>.note_incidents(<span class="kw">super</span>::incident::classify(<span class="kw-2">&amp;</span>chunk));
 <a href=#200 id=200 data-nosnippet>200</a>            <span class="self">self</span>.kits.read_chunk(<span class="kw-2">&amp;</span>chunk);
 <a href=#201 id=201 data-nosnippet>201</a>            <span class="self">self</span>.order_menu.read_chunk(<span class="kw-2">&amp;</span>chunk);
-<a href=#202 id=202 data-nosnippet>202</a>            <span class="comment">// Counted on its own: its patterns' matching keeps memory.
-<a href=#203 id=203 data-nosnippet>203</a>            </span>hydra_mem::part(hydra_mem::Part::Combat, || {
-<a href=#204 id=204 data-nosnippet>204</a>                <span class="self">self</span>.combat.parse_chunk(<span class="kw-2">&amp;</span>chunk, at)
-<a href=#205 id=205 data-nosnippet>205</a>            })
-<a href=#206 id=206 data-nosnippet>206</a>        };
-<a href=#207 id=207 data-nosnippet>207</a>        <span class="self">self</span>.ship.prompted();
-<a href=#208 id=208 data-nosnippet>208</a>        <span class="comment">// Counted before the chunk's kills land: what its flares could reach.
-<a href=#209 id=209 data-nosnippet>209</a>        </span>facts.room_targets = <span class="self">self</span>.creatures.targets().count();
-<a href=#210 id=210 data-nosnippet>210</a>        <span class="comment">// The gemstones go with the first chunk after they move; the worn
-<a href=#211 id=211 data-nosnippet>211</a>        // list likewise.
-<a href=#212 id=212 data-nosnippet>212</a>        </span><span class="kw">let </span>generation = <span class="self">self</span>.character.gemstones.generation;
-<a href=#213 id=213 data-nosnippet>213</a>        <span class="kw">if </span>generation != <span class="self">self</span>.gemstones_published {
-<a href=#214 id=214 data-nosnippet>214</a>            <span class="self">self</span>.gemstones_published = generation;
-<a href=#215 id=215 data-nosnippet>215</a>            facts.gemstones = <span class="prelude-val">Some</span>(std::sync::Arc::new(<span class="self">self</span>.character.gemstones.clone()));
-<a href=#216 id=216 data-nosnippet>216</a>        }
-<a href=#217 id=217 data-nosnippet>217</a>        <span class="kw">if </span><span class="self">self</span>.worn.generation != <span class="self">self</span>.worn_published
-<a href=#218 id=218 data-nosnippet>218</a>            &amp;&amp; <span class="kw">let </span><span class="prelude-val">Some</span>(items) = <span class="self">self</span>.worn.items()
-<a href=#219 id=219 data-nosnippet>219</a>        {
-<a href=#220 id=220 data-nosnippet>220</a>            <span class="self">self</span>.worn_published = <span class="self">self</span>.worn.generation;
-<a href=#221 id=221 data-nosnippet>221</a>            facts.worn = <span class="prelude-val">Some</span>(std::sync::Arc::new(items.to_vec()));
-<a href=#222 id=222 data-nosnippet>222</a>        }
-<a href=#223 id=223 data-nosnippet>223</a>        <span class="comment">// The effects up go with the first chunk after the set changes. The
-<a href=#224 id=224 data-nosnippet>224</a>        // bark shows no bar while up, so it is listed from its lines.
-<a href=#225 id=225 data-nosnippet>225</a>        </span><span class="kw">let </span><span class="kw-2">mut </span>effects = <span class="self">self</span>.effects.snapshot();
-<a href=#226 id=226 data-nosnippet>226</a>        <span class="kw">if </span><span class="self">self</span>.bark_up {
-<a href=#227 id=227 data-nosnippet>227</a>            effects.push(<span class="kw">super</span>::effects::ActiveEffect {
-<a href=#228 id=228 data-nosnippet>228</a>                category: <span class="string">"Active Spells"</span>.to_owned(),
-<a href=#229 id=229 data-nosnippet>229</a>                id: <span class="string">"605"</span>.to_owned(),
-<a href=#230 id=230 data-nosnippet>230</a>                text: <span class="string">"Barkskin"</span>.to_owned(),
-<a href=#231 id=231 data-nosnippet>231</a>            });
-<a href=#232 id=232 data-nosnippet>232</a>        }
-<a href=#233 id=233 data-nosnippet>233</a>        <span class="kw">if </span><span class="self">self</span>.effects_published.as_deref() != <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>effects) {
-<a href=#234 id=234 data-nosnippet>234</a>            <span class="kw">let </span>effects = std::sync::Arc::new(effects);
-<a href=#235 id=235 data-nosnippet>235</a>            <span class="self">self</span>.effects_published = <span class="prelude-val">Some</span>(std::sync::Arc::clone(<span class="kw-2">&amp;</span>effects));
-<a href=#236 id=236 data-nosnippet>236</a>            facts.effects = <span class="prelude-val">Some</span>(effects);
-<a href=#237 id=237 data-nosnippet>237</a>        }
-<a href=#238 id=238 data-nosnippet>238</a>        <span class="comment">// Every creature is named as its record names it, by id: a line
-<a href=#239 id=239 data-nosnippet>239</a>        // that shortens the name (the thorns' block says "the giant warg"
-<a href=#240 id=240 data-nosnippet>240</a>        // of a niveous giant warg) must not make a second creature of it.
-<a href=#241 id=241 data-nosnippet>241</a>        </span><span class="kw">for </span>ev <span class="kw">in </span><span class="kw-2">&amp;mut </span>facts.events {
-<a href=#242 id=242 data-nosnippet>242</a>            <span class="kw">if let </span><span class="prelude-val">Some</span>(actor) = <span class="kw-2">&amp;mut </span>ev.attacker {
-<a href=#243 id=243 data-nosnippet>243</a>                <span class="self">self</span>.creatures.rename_actor(actor);
-<a href=#244 id=244 data-nosnippet>244</a>            }
-<a href=#245 id=245 data-nosnippet>245</a>            <span class="kw">if let </span><span class="kw">super</span>::combat::event::EventTarget::Creature(actor) = <span class="kw-2">&amp;mut </span>ev.target {
-<a href=#246 id=246 data-nosnippet>246</a>                <span class="self">self</span>.creatures.rename_actor(actor);
-<a href=#247 id=247 data-nosnippet>247</a>            }
-<a href=#248 id=248 data-nosnippet>248</a>            <span class="kw">for </span>flare <span class="kw">in </span><span class="kw-2">&amp;mut </span>ev.flares {
-<a href=#249 id=249 data-nosnippet>249</a>                <span class="kw">if let </span><span class="prelude-val">Some</span>(actor) = <span class="kw-2">&amp;mut </span>flare.attacker {
-<a href=#250 id=250 data-nosnippet>250</a>                    <span class="self">self</span>.creatures.rename_actor(actor);
-<a href=#251 id=251 data-nosnippet>251</a>                }
-<a href=#252 id=252 data-nosnippet>252</a>                <span class="kw">if let </span><span class="prelude-val">Some</span>(actor) = <span class="kw-2">&amp;mut </span>flare.target {
-<a href=#253 id=253 data-nosnippet>253</a>                    <span class="self">self</span>.creatures.rename_actor(actor);
-<a href=#254 id=254 data-nosnippet>254</a>                }
-<a href=#255 id=255 data-nosnippet>255</a>            }
-<a href=#256 id=256 data-nosnippet>256</a>        }
-<a href=#257 id=257 data-nosnippet>257</a>        <span class="comment">// Our swings are stamped with the hands as the chunk closed: the
-<a href=#258 id=258 data-nosnippet>258</a>        // tags come with every change, so a swap lands before the swing
-<a href=#259 id=259 data-nosnippet>259</a>        // after it.
-<a href=#260 id=260 data-nosnippet>260</a>        </span><span class="kw">let </span>held = <span class="kw">super</span>::combat::event::Held {
-<a href=#261 id=261 data-nosnippet>261</a>            right: held_item(<span class="kw-2">&amp;</span><span class="self">self</span>.right_hand),
-<a href=#262 id=262 data-nosnippet>262</a>            left: held_item(<span class="kw-2">&amp;</span><span class="self">self</span>.left_hand),
-<a href=#263 id=263 data-nosnippet>263</a>        };
-<a href=#264 id=264 data-nosnippet>264</a>        <span class="comment">// A creature's attack is stamped with the barriers up as it came.
-<a href=#265 id=265 data-nosnippet>265</a>        </span><span class="kw">let </span>barriers = <span class="kw">super</span>::combat::event::Barriers {
-<a href=#266 id=266 data-nosnippet>266</a>            thorns: <span class="self">self</span>.spell_is_up(<span class="string">"Wall of Thorns"</span>),
-<a href=#267 id=267 data-nosnippet>267</a>            bark: <span class="self">self</span>.bark_up,
-<a href=#268 id=268 data-nosnippet>268</a>        };
-<a href=#269 id=269 data-nosnippet>269</a>        <span class="comment">// The game rolls nothing against the dead: a creature's attack
-<a href=#270 id=270 data-nosnippet>270</a>        // while we lie dead has no result of ours, and any roll under it
-<a href=#271 id=271 data-nosnippet>271</a>        // is a living companion's.
-<a href=#272 id=272 data-nosnippet>272</a>        </span><span class="kw">let </span>dead = <span class="self">self</span>.status.dead();
-<a href=#273 id=273 data-nosnippet>273</a>        <span class="kw">for </span>ev <span class="kw">in </span><span class="kw-2">&amp;mut </span>facts.events {
-<a href=#274 id=274 data-nosnippet>274</a>            <span class="kw">if </span>ev.inbound {
-<a href=#275 id=275 data-nosnippet>275</a>                ev.barriers = <span class="prelude-val">Some</span>(barriers);
-<a href=#276 id=276 data-nosnippet>276</a>                <span class="kw">if </span>dead &amp;&amp; ev.outcomes.is_empty() &amp;&amp; ev.hits.is_empty() {
-<a href=#277 id=277 data-nosnippet>277</a>                    ev.outcomes.push(<span class="kw">crate</span>::OutcomeKind::AlreadyDead);
-<a href=#278 id=278 data-nosnippet>278</a>                    ev.resolutions.clear();
-<a href=#279 id=279 data-nosnippet>279</a>                }
-<a href=#280 id=280 data-nosnippet>280</a>            } <span class="kw">else </span>{
-<a href=#281 id=281 data-nosnippet>281</a>                ev.hands = <span class="prelude-val">Some</span>(held.clone());
-<a href=#282 id=282 data-nosnippet>282</a>            }
-<a href=#283 id=283 data-nosnippet>283</a>        }
-<a href=#284 id=284 data-nosnippet>284</a>        <span class="self">self</span>.creatures.apply_chunk(<span class="kw-2">&amp;mut </span>facts, at);
-<a href=#285 id=285 data-nosnippet>285</a>        <span class="self">self</span>.combat.publish(facts);
-<a href=#286 id=286 data-nosnippet>286</a>    }
-<a href=#287 id=287 data-nosnippet>287</a>
-<a href=#288 id=288 data-nosnippet>288</a>    <span class="doccomment">/// One closed line, for the readers that take a line at a time.
-<a href=#289 id=289 data-nosnippet>289</a>    </span><span class="kw">fn </span>read_chunk_line(<span class="kw-2">&amp;mut </span><span class="self">self</span>, line: <span class="kw-2">&amp;</span>ChunkLine, text: <span class="kw-2">&amp;</span>str, at: <span class="prelude-ty">Option</span>&lt;u32&gt;) {
-<a href=#290 id=290 data-nosnippet>290</a>        <span class="comment">// The bounty task and the guild's answers.
-<a href=#291 id=291 data-nosnippet>291</a>        </span><span class="self">self</span>.bounty.read_line(text);
-<a href=#292 id=292 data-nosnippet>292</a>        <span class="comment">// Barkskin, from the line that forms it to the one that ends it:
-<a href=#293 id=293 data-nosnippet>293</a>        // worn off, crumbled on an absorb, or never there.
-<a href=#294 id=294 data-nosnippet>294</a>        </span><span class="kw">let </span>text_trim = text.trim();
-<a href=#295 id=295 data-nosnippet>295</a>        <span class="kw">if </span>text_trim == BARK_FORMS {
-<a href=#296 id=296 data-nosnippet>296</a>            <span class="self">self</span>.bark_up = <span class="bool-val">true</span>;
-<a href=#297 id=297 data-nosnippet>297</a>        } <span class="kw">else if </span>text_trim == BARK_FAILS
-<a href=#298 id=298 data-nosnippet>298</a>            || text_trim == BARK_WEARS_OFF
-<a href=#299 id=299 data-nosnippet>299</a>            || text_trim.ends_with(BARK_CRUMBLES)
-<a href=#300 id=300 data-nosnippet>300</a>        {
-<a href=#301 id=301 data-nosnippet>301</a>            <span class="self">self</span>.bark_up = <span class="bool-val">false</span>;
-<a href=#302 id=302 data-nosnippet>302</a>        }
-<a href=#303 id=303 data-nosnippet>303</a>        <span class="comment">// Experience absorbed at once, and the brooch rubbed for it.
-<a href=#304 id=304 data-nosnippet>304</a>        </span><span class="self">self</span>.character.experience.read_line(text);
-<a href=#305 id=305 data-nosnippet>305</a>        <span class="comment">// The character's own stun, in rounds.
-<a href=#306 id=306 data-nosnippet>306</a>        </span><span class="self">self</span>.read_stun(text, at);
-<a href=#307 id=307 data-nosnippet>307</a>        <span class="comment">// The six statuses that arrive only as prose, never as an indicator.
-<a href=#308 id=308 data-nosnippet>308</a>        </span><span class="kw">if let </span><span class="prelude-val">Some</span>((affliction, active)) = <span class="kw">super</span>::afflictions::classify(text) {
-<a href=#309 id=309 data-nosnippet>309</a>            <span class="self">self</span>.status.set(affliction.id(), active);
-<a href=#310 id=310 data-nosnippet>310</a>        }
-<a href=#311 id=311 data-nosnippet>311</a>        <span class="comment">// A maneuver ready again, or refused while it cools.
-<a href=#312 id=312 data-nosnippet>312</a>        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(name) = <span class="kw">super</span>::maneuvers::ready_line(text) {
-<a href=#313 id=313 data-nosnippet>313</a>            <span class="self">self</span>.maneuvers.note_ready(name);
+<a href=#202 id=202 data-nosnippet>202</a>            <span class="comment">// A box opened this chunk: its listing, as the inventory keeps it.
+<a href=#203 id=203 data-nosnippet>203</a>            </span><span class="kw">let </span>inventory = <span class="kw-2">&amp;</span><span class="self">self</span>.inventory;
+<a href=#204 id=204 data-nosnippet>204</a>            <span class="self">self</span>.loot
+<a href=#205 id=205 data-nosnippet>205</a>                .read_chunk(<span class="kw-2">&amp;</span>chunk, |id| <span class="kw">super</span>::loot::listing(inventory, id));
+<a href=#206 id=206 data-nosnippet>206</a>            <span class="comment">// Counted on its own: its patterns' matching keeps memory.
+<a href=#207 id=207 data-nosnippet>207</a>            </span>hydra_mem::part(hydra_mem::Part::Combat, || {
+<a href=#208 id=208 data-nosnippet>208</a>                <span class="self">self</span>.combat.parse_chunk(<span class="kw-2">&amp;</span>chunk, at)
+<a href=#209 id=209 data-nosnippet>209</a>            })
+<a href=#210 id=210 data-nosnippet>210</a>        };
+<a href=#211 id=211 data-nosnippet>211</a>        <span class="self">self</span>.ship.prompted();
+<a href=#212 id=212 data-nosnippet>212</a>        <span class="comment">// Counted before the chunk's kills land: what its flares could reach.
+<a href=#213 id=213 data-nosnippet>213</a>        </span>facts.room_targets = <span class="self">self</span>.creatures.targets().count();
+<a href=#214 id=214 data-nosnippet>214</a>        <span class="comment">// The gemstones go with the first chunk after they move; the worn
+<a href=#215 id=215 data-nosnippet>215</a>        // list likewise.
+<a href=#216 id=216 data-nosnippet>216</a>        </span><span class="kw">let </span>generation = <span class="self">self</span>.character.gemstones.generation;
+<a href=#217 id=217 data-nosnippet>217</a>        <span class="kw">if </span>generation != <span class="self">self</span>.gemstones_published {
+<a href=#218 id=218 data-nosnippet>218</a>            <span class="self">self</span>.gemstones_published = generation;
+<a href=#219 id=219 data-nosnippet>219</a>            facts.gemstones = <span class="prelude-val">Some</span>(std::sync::Arc::new(<span class="self">self</span>.character.gemstones.clone()));
+<a href=#220 id=220 data-nosnippet>220</a>        }
+<a href=#221 id=221 data-nosnippet>221</a>        <span class="kw">if </span><span class="self">self</span>.worn.generation != <span class="self">self</span>.worn_published
+<a href=#222 id=222 data-nosnippet>222</a>            &amp;&amp; <span class="kw">let </span><span class="prelude-val">Some</span>(items) = <span class="self">self</span>.worn.items()
+<a href=#223 id=223 data-nosnippet>223</a>        {
+<a href=#224 id=224 data-nosnippet>224</a>            <span class="self">self</span>.worn_published = <span class="self">self</span>.worn.generation;
+<a href=#225 id=225 data-nosnippet>225</a>            facts.worn = <span class="prelude-val">Some</span>(std::sync::Arc::new(items.to_vec()));
+<a href=#226 id=226 data-nosnippet>226</a>        }
+<a href=#227 id=227 data-nosnippet>227</a>        <span class="comment">// The effects up go with the first chunk after the set changes. The
+<a href=#228 id=228 data-nosnippet>228</a>        // bark shows no bar while up, so it is listed from its lines.
+<a href=#229 id=229 data-nosnippet>229</a>        </span><span class="kw">let </span><span class="kw-2">mut </span>effects = <span class="self">self</span>.effects.snapshot();
+<a href=#230 id=230 data-nosnippet>230</a>        <span class="kw">if </span><span class="self">self</span>.bark_up {
+<a href=#231 id=231 data-nosnippet>231</a>            effects.push(<span class="kw">super</span>::effects::ActiveEffect {
+<a href=#232 id=232 data-nosnippet>232</a>                category: <span class="string">"Active Spells"</span>.to_owned(),
+<a href=#233 id=233 data-nosnippet>233</a>                id: <span class="string">"605"</span>.to_owned(),
+<a href=#234 id=234 data-nosnippet>234</a>                text: <span class="string">"Barkskin"</span>.to_owned(),
+<a href=#235 id=235 data-nosnippet>235</a>            });
+<a href=#236 id=236 data-nosnippet>236</a>        }
+<a href=#237 id=237 data-nosnippet>237</a>        <span class="kw">if </span><span class="self">self</span>.effects_published.as_deref() != <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>effects) {
+<a href=#238 id=238 data-nosnippet>238</a>            <span class="kw">let </span>effects = std::sync::Arc::new(effects);
+<a href=#239 id=239 data-nosnippet>239</a>            <span class="self">self</span>.effects_published = <span class="prelude-val">Some</span>(std::sync::Arc::clone(<span class="kw-2">&amp;</span>effects));
+<a href=#240 id=240 data-nosnippet>240</a>            facts.effects = <span class="prelude-val">Some</span>(effects);
+<a href=#241 id=241 data-nosnippet>241</a>        }
+<a href=#242 id=242 data-nosnippet>242</a>        <span class="comment">// Every creature is named as its record names it, by id: a line
+<a href=#243 id=243 data-nosnippet>243</a>        // that shortens the name (the thorns' block says "the giant warg"
+<a href=#244 id=244 data-nosnippet>244</a>        // of a niveous giant warg) must not make a second creature of it.
+<a href=#245 id=245 data-nosnippet>245</a>        </span><span class="kw">for </span>ev <span class="kw">in </span><span class="kw-2">&amp;mut </span>facts.events {
+<a href=#246 id=246 data-nosnippet>246</a>            <span class="kw">if let </span><span class="prelude-val">Some</span>(actor) = <span class="kw-2">&amp;mut </span>ev.attacker {
+<a href=#247 id=247 data-nosnippet>247</a>                <span class="self">self</span>.creatures.rename_actor(actor);
+<a href=#248 id=248 data-nosnippet>248</a>            }
+<a href=#249 id=249 data-nosnippet>249</a>            <span class="kw">if let </span><span class="kw">super</span>::combat::event::EventTarget::Creature(actor) = <span class="kw-2">&amp;mut </span>ev.target {
+<a href=#250 id=250 data-nosnippet>250</a>                <span class="self">self</span>.creatures.rename_actor(actor);
+<a href=#251 id=251 data-nosnippet>251</a>            }
+<a href=#252 id=252 data-nosnippet>252</a>            <span class="kw">for </span>flare <span class="kw">in </span><span class="kw-2">&amp;mut </span>ev.flares {
+<a href=#253 id=253 data-nosnippet>253</a>                <span class="kw">if let </span><span class="prelude-val">Some</span>(actor) = <span class="kw-2">&amp;mut </span>flare.attacker {
+<a href=#254 id=254 data-nosnippet>254</a>                    <span class="self">self</span>.creatures.rename_actor(actor);
+<a href=#255 id=255 data-nosnippet>255</a>                }
+<a href=#256 id=256 data-nosnippet>256</a>                <span class="kw">if let </span><span class="prelude-val">Some</span>(actor) = <span class="kw-2">&amp;mut </span>flare.target {
+<a href=#257 id=257 data-nosnippet>257</a>                    <span class="self">self</span>.creatures.rename_actor(actor);
+<a href=#258 id=258 data-nosnippet>258</a>                }
+<a href=#259 id=259 data-nosnippet>259</a>            }
+<a href=#260 id=260 data-nosnippet>260</a>        }
+<a href=#261 id=261 data-nosnippet>261</a>        <span class="comment">// Our swings are stamped with the hands as the chunk closed: the
+<a href=#262 id=262 data-nosnippet>262</a>        // tags come with every change, so a swap lands before the swing
+<a href=#263 id=263 data-nosnippet>263</a>        // after it.
+<a href=#264 id=264 data-nosnippet>264</a>        </span><span class="kw">let </span>held = <span class="kw">super</span>::combat::event::Held {
+<a href=#265 id=265 data-nosnippet>265</a>            right: held_item(<span class="kw-2">&amp;</span><span class="self">self</span>.right_hand),
+<a href=#266 id=266 data-nosnippet>266</a>            left: held_item(<span class="kw-2">&amp;</span><span class="self">self</span>.left_hand),
+<a href=#267 id=267 data-nosnippet>267</a>        };
+<a href=#268 id=268 data-nosnippet>268</a>        <span class="comment">// A creature's attack is stamped with the barriers up as it came.
+<a href=#269 id=269 data-nosnippet>269</a>        </span><span class="kw">let </span>barriers = <span class="kw">super</span>::combat::event::Barriers {
+<a href=#270 id=270 data-nosnippet>270</a>            thorns: <span class="self">self</span>.spell_is_up(<span class="string">"Wall of Thorns"</span>),
+<a href=#271 id=271 data-nosnippet>271</a>            bark: <span class="self">self</span>.bark_up,
+<a href=#272 id=272 data-nosnippet>272</a>        };
+<a href=#273 id=273 data-nosnippet>273</a>        <span class="comment">// The game rolls nothing against the dead: a creature's attack
+<a href=#274 id=274 data-nosnippet>274</a>        // while we lie dead has no result of ours, and any roll under it
+<a href=#275 id=275 data-nosnippet>275</a>        // is a living companion's.
+<a href=#276 id=276 data-nosnippet>276</a>        </span><span class="kw">let </span>dead = <span class="self">self</span>.status.dead();
+<a href=#277 id=277 data-nosnippet>277</a>        <span class="kw">for </span>ev <span class="kw">in </span><span class="kw-2">&amp;mut </span>facts.events {
+<a href=#278 id=278 data-nosnippet>278</a>            <span class="kw">if </span>ev.inbound {
+<a href=#279 id=279 data-nosnippet>279</a>                ev.barriers = <span class="prelude-val">Some</span>(barriers);
+<a href=#280 id=280 data-nosnippet>280</a>                <span class="kw">if </span>dead &amp;&amp; ev.outcomes.is_empty() &amp;&amp; ev.hits.is_empty() {
+<a href=#281 id=281 data-nosnippet>281</a>                    ev.outcomes.push(<span class="kw">crate</span>::OutcomeKind::AlreadyDead);
+<a href=#282 id=282 data-nosnippet>282</a>                    ev.resolutions.clear();
+<a href=#283 id=283 data-nosnippet>283</a>                }
+<a href=#284 id=284 data-nosnippet>284</a>            } <span class="kw">else </span>{
+<a href=#285 id=285 data-nosnippet>285</a>                ev.hands = <span class="prelude-val">Some</span>(held.clone());
+<a href=#286 id=286 data-nosnippet>286</a>            }
+<a href=#287 id=287 data-nosnippet>287</a>        }
+<a href=#288 id=288 data-nosnippet>288</a>        <span class="self">self</span>.creatures.apply_chunk(<span class="kw-2">&amp;mut </span>facts, at);
+<a href=#289 id=289 data-nosnippet>289</a>        <span class="self">self</span>.combat.publish(facts);
+<a href=#290 id=290 data-nosnippet>290</a>    }
+<a href=#291 id=291 data-nosnippet>291</a>
+<a href=#292 id=292 data-nosnippet>292</a>    <span class="doccomment">/// One closed line, for the readers that take a line at a time.
+<a href=#293 id=293 data-nosnippet>293</a>    </span><span class="kw">fn </span>read_chunk_line(<span class="kw-2">&amp;mut </span><span class="self">self</span>, line: <span class="kw-2">&amp;</span>ChunkLine, text: <span class="kw-2">&amp;</span>str, at: <span class="prelude-ty">Option</span>&lt;u32&gt;) {
+<a href=#294 id=294 data-nosnippet>294</a>        <span class="comment">// The bounty task and the guild's answers.
+<a href=#295 id=295 data-nosnippet>295</a>        </span><span class="self">self</span>.bounty.read_line(text);
+<a href=#296 id=296 data-nosnippet>296</a>        <span class="comment">// Barkskin, from the line that forms it to the one that ends it:
+<a href=#297 id=297 data-nosnippet>297</a>        // worn off, crumbled on an absorb, or never there.
+<a href=#298 id=298 data-nosnippet>298</a>        </span><span class="kw">let </span>text_trim = text.trim();
+<a href=#299 id=299 data-nosnippet>299</a>        <span class="kw">if </span>text_trim == BARK_FORMS {
+<a href=#300 id=300 data-nosnippet>300</a>            <span class="self">self</span>.bark_up = <span class="bool-val">true</span>;
+<a href=#301 id=301 data-nosnippet>301</a>        } <span class="kw">else if </span>text_trim == BARK_FAILS
+<a href=#302 id=302 data-nosnippet>302</a>            || text_trim == BARK_WEARS_OFF
+<a href=#303 id=303 data-nosnippet>303</a>            || text_trim.ends_with(BARK_CRUMBLES)
+<a href=#304 id=304 data-nosnippet>304</a>        {
+<a href=#305 id=305 data-nosnippet>305</a>            <span class="self">self</span>.bark_up = <span class="bool-val">false</span>;
+<a href=#306 id=306 data-nosnippet>306</a>        }
+<a href=#307 id=307 data-nosnippet>307</a>        <span class="comment">// Experience absorbed at once, and the brooch rubbed for it.
+<a href=#308 id=308 data-nosnippet>308</a>        </span><span class="self">self</span>.character.experience.read_line(text);
+<a href=#309 id=309 data-nosnippet>309</a>        <span class="comment">// The character's own stun, in rounds.
+<a href=#310 id=310 data-nosnippet>310</a>        </span><span class="self">self</span>.read_stun(text, at);
+<a href=#311 id=311 data-nosnippet>311</a>        <span class="comment">// The six statuses that arrive only as prose, never as an indicator.
+<a href=#312 id=312 data-nosnippet>312</a>        </span><span class="kw">if let </span><span class="prelude-val">Some</span>((affliction, active)) = <span class="kw">super</span>::afflictions::classify(text) {
+<a href=#313 id=313 data-nosnippet>313</a>            <span class="self">self</span>.status.set(affliction.id(), active);
 <a href=#314 id=314 data-nosnippet>314</a>        }
-<a href=#315 id=315 data-nosnippet>315</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(name) = <span class="kw">super</span>::maneuvers::cooldown_refusal(text) {
-<a href=#316 id=316 data-nosnippet>316</a>            <span class="self">self</span>.maneuvers.note_cooling(name, at);
-<a href=#317 id=317 data-nosnippet>317</a>        }
-<a href=#318 id=318 data-nosnippet>318</a>        <span class="comment">// A creature the feed showed leaving, read off the link and the `&lt;d&gt;`.
-<a href=#319 id=319 data-nosnippet>319</a>        </span><span class="self">self</span>.creatures.read_departure(line);
-<a href=#320 id=320 data-nosnippet>320</a>        <span class="comment">// A spell that locks its recipients out, stamped with this prompt.
-<a href=#321 id=321 data-nosnippet>321</a>        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(now) = at
-<a href=#322 id=322 data-nosnippet>322</a>            &amp;&amp; <span class="kw">let </span><span class="prelude-val">Some</span>(landing) = <span class="kw">crate</span>::spells::cooldown_landing(text)
-<a href=#323 id=323 data-nosnippet>323</a>        {
-<a href=#324 id=324 data-nosnippet>324</a>            <span class="self">self</span>.record_cooldown(<span class="kw-2">&amp;</span>landing, now);
-<a href=#325 id=325 data-nosnippet>325</a>        }
-<a href=#326 id=326 data-nosnippet>326</a>        <span class="comment">// A timer effect the game never lists, up or down by its message
-<a href=#327 id=327 data-nosnippet>327</a>        // alone: kept among the buffs by its number, as a dialog would.
-<a href=#328 id=328 data-nosnippet>328</a>        </span><span class="kw">match </span><span class="kw">crate</span>::spells::timer_change(text) {
-<a href=#329 id=329 data-nosnippet>329</a>            <span class="prelude-val">Some</span>(<span class="kw">crate</span>::spells::TimerChange::Up { spell, name, secs }) =&gt; {
-<a href=#330 id=330 data-nosnippet>330</a>                <span class="kw">let </span>effect = <span class="kw">super</span>::effects::Effect {
-<a href=#331 id=331 data-nosnippet>331</a>                    category: <span class="string">"Buffs"</span>.to_owned(),
-<a href=#332 id=332 data-nosnippet>332</a>                    text: name,
-<a href=#333 id=333 data-nosnippet>333</a>                    ends_at: <span class="prelude-val">None</span>,
-<a href=#334 id=334 data-nosnippet>334</a>                    percent: <span class="number">100</span>,
-<a href=#335 id=335 data-nosnippet>335</a>                };
-<a href=#336 id=336 data-nosnippet>336</a>                <span class="self">self</span>.effects
-<a href=#337 id=337 data-nosnippet>337</a>                    .insert_by_message(spell.to_string(), effect, secs, at);
-<a href=#338 id=338 data-nosnippet>338</a>            }
-<a href=#339 id=339 data-nosnippet>339</a>            <span class="prelude-val">Some</span>(<span class="kw">crate</span>::spells::TimerChange::Down { spell }) =&gt; {
-<a href=#340 id=340 data-nosnippet>340</a>                <span class="self">self</span>.effects.remove(<span class="kw-2">&amp;</span>spell.to_string());
-<a href=#341 id=341 data-nosnippet>341</a>            }
-<a href=#342 id=342 data-nosnippet>342</a>            <span class="prelude-val">None </span>=&gt; {}
-<a href=#343 id=343 data-nosnippet>343</a>        }
-<a href=#344 id=344 data-nosnippet>344</a>        <span class="comment">// The stow and ready lists.
-<a href=#345 id=345 data-nosnippet>345</a>        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(event) = <span class="kw">super</span>::containers::classify_text(line, text) {
-<a href=#346 id=346 data-nosnippet>346</a>            <span class="self">self</span>.containers.apply(<span class="kw-2">&amp;</span>event);
-<a href=#347 id=347 data-nosnippet>347</a>        }
-<a href=#348 id=348 data-nosnippet>348</a>    }
-<a href=#349 id=349 data-nosnippet>349</a>}
-<a href=#350 id=350 data-nosnippet>350</a>
-<a href=#351 id=351 data-nosnippet>351</a><span class="doccomment">/// A hand as a swing's record keeps it: the item when holding one.
-<a href=#352 id=352 data-nosnippet>352</a></span><span class="kw">fn </span>held_item(hand: <span class="kw-2">&amp;</span><span class="kw">super</span>::hands::Hand) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw">super</span>::combat::event::HeldItem&gt; {
-<a href=#353 id=353 data-nosnippet>353</a>    <span class="kw">match </span>hand {
-<a href=#354 id=354 data-nosnippet>354</a>        <span class="kw">super</span>::hands::Hand::Holding { id, name, .. } =&gt; <span class="prelude-val">Some</span>(<span class="kw">super</span>::combat::event::HeldItem {
-<a href=#355 id=355 data-nosnippet>355</a>            id: id.as_deref().and_then(|id| id.parse().ok()),
-<a href=#356 id=356 data-nosnippet>356</a>            name: name.clone(),
-<a href=#357 id=357 data-nosnippet>357</a>        }),
-<a href=#358 id=358 data-nosnippet>358</a>        <span class="kw">super</span>::hands::Hand::Unknown | <span class="kw">super</span>::hands::Hand::Empty =&gt; <span class="prelude-val">None</span>,
-<a href=#359 id=359 data-nosnippet>359</a>    }
-<a href=#360 id=360 data-nosnippet>360</a>}
-<a href=#361 id=361 data-nosnippet>361</a>
-<a href=#362 id=362 data-nosnippet>362</a><span class="doccomment">/// Barkskin formed.
-<a href=#363 id=363 data-nosnippet>363</a></span><span class="kw">const </span>BARK_FORMS: <span class="kw-2">&amp;</span>str = <span class="string">"A knobby layer of bark swiftly forms on you."</span>;
-<a href=#364 id=364 data-nosnippet>364</a><span class="doccomment">/// Barkskin failed to form.
-<a href=#365 id=365 data-nosnippet>365</a></span><span class="kw">const </span>BARK_FAILS: <span class="kw-2">&amp;</span>str = <span class="string">"A knobby layer of bark begins to form on you, but rapidly crumbles away."</span>;
-<a href=#366 id=366 data-nosnippet>366</a><span class="doccomment">/// Barkskin wore off.
-<a href=#367 id=367 data-nosnippet>367</a></span><span class="kw">const </span>BARK_WEARS_OFF: <span class="kw-2">&amp;</span>str =
-<a href=#368 id=368 data-nosnippet>368</a>    <span class="string">"The knobby layer of bark on you creaks and twists briefly before disintegrating."</span>;
-<a href=#369 id=369 data-nosnippet>369</a><span class="doccomment">/// The bark absorbed and crumbled: gone.
-<a href=#370 id=370 data-nosnippet>370</a></span><span class="kw">const </span>BARK_CRUMBLES: <span class="kw-2">&amp;</span>str = <span class="string">"The bark crackles as it crumbles to dust."</span>;
+<a href=#315 id=315 data-nosnippet>315</a>        <span class="comment">// A maneuver ready again, or refused while it cools.
+<a href=#316 id=316 data-nosnippet>316</a>        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(name) = <span class="kw">super</span>::maneuvers::ready_line(text) {
+<a href=#317 id=317 data-nosnippet>317</a>            <span class="self">self</span>.maneuvers.note_ready(name);
+<a href=#318 id=318 data-nosnippet>318</a>        }
+<a href=#319 id=319 data-nosnippet>319</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(name) = <span class="kw">super</span>::maneuvers::cooldown_refusal(text) {
+<a href=#320 id=320 data-nosnippet>320</a>            <span class="self">self</span>.maneuvers.note_cooling(name, at);
+<a href=#321 id=321 data-nosnippet>321</a>        }
+<a href=#322 id=322 data-nosnippet>322</a>        <span class="comment">// A spell laid on the room, there still, or ended.
+<a href=#323 id=323 data-nosnippet>323</a>        </span><span class="self">self</span>.read_room_spell(text, at);
+<a href=#324 id=324 data-nosnippet>324</a>        <span class="comment">// A creature the feed showed leaving, read off the link and the `&lt;d&gt;`.
+<a href=#325 id=325 data-nosnippet>325</a>        </span><span class="self">self</span>.creatures.read_departure(line);
+<a href=#326 id=326 data-nosnippet>326</a>        <span class="comment">// A spell that locks its recipients out, stamped with this prompt.
+<a href=#327 id=327 data-nosnippet>327</a>        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(now) = at
+<a href=#328 id=328 data-nosnippet>328</a>            &amp;&amp; <span class="kw">let </span><span class="prelude-val">Some</span>(landing) = <span class="kw">crate</span>::spells::cooldown_landing(text)
+<a href=#329 id=329 data-nosnippet>329</a>        {
+<a href=#330 id=330 data-nosnippet>330</a>            <span class="self">self</span>.record_cooldown(<span class="kw-2">&amp;</span>landing, now);
+<a href=#331 id=331 data-nosnippet>331</a>        }
+<a href=#332 id=332 data-nosnippet>332</a>        <span class="comment">// A timer effect the game never lists, up or down by its message
+<a href=#333 id=333 data-nosnippet>333</a>        // alone: kept among the buffs by its number, as a dialog would.
+<a href=#334 id=334 data-nosnippet>334</a>        </span><span class="kw">match </span><span class="kw">crate</span>::spells::timer_change(text) {
+<a href=#335 id=335 data-nosnippet>335</a>            <span class="prelude-val">Some</span>(<span class="kw">crate</span>::spells::TimerChange::Up { spell, name, secs }) =&gt; {
+<a href=#336 id=336 data-nosnippet>336</a>                <span class="kw">let </span>effect = <span class="kw">super</span>::effects::Effect {
+<a href=#337 id=337 data-nosnippet>337</a>                    category: <span class="string">"Buffs"</span>.to_owned(),
+<a href=#338 id=338 data-nosnippet>338</a>                    text: name,
+<a href=#339 id=339 data-nosnippet>339</a>                    ends_at: <span class="prelude-val">None</span>,
+<a href=#340 id=340 data-nosnippet>340</a>                    percent: <span class="number">100</span>,
+<a href=#341 id=341 data-nosnippet>341</a>                };
+<a href=#342 id=342 data-nosnippet>342</a>                <span class="self">self</span>.effects
+<a href=#343 id=343 data-nosnippet>343</a>                    .insert_by_message(spell.to_string(), effect, secs, at);
+<a href=#344 id=344 data-nosnippet>344</a>            }
+<a href=#345 id=345 data-nosnippet>345</a>            <span class="prelude-val">Some</span>(<span class="kw">crate</span>::spells::TimerChange::Down { spell }) =&gt; {
+<a href=#346 id=346 data-nosnippet>346</a>                <span class="self">self</span>.effects.remove(<span class="kw-2">&amp;</span>spell.to_string());
+<a href=#347 id=347 data-nosnippet>347</a>            }
+<a href=#348 id=348 data-nosnippet>348</a>            <span class="prelude-val">None </span>=&gt; {}
+<a href=#349 id=349 data-nosnippet>349</a>        }
+<a href=#350 id=350 data-nosnippet>350</a>        <span class="comment">// The stow and ready lists.
+<a href=#351 id=351 data-nosnippet>351</a>        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(event) = <span class="kw">super</span>::containers::classify_text(line, text) {
+<a href=#352 id=352 data-nosnippet>352</a>            <span class="self">self</span>.containers.apply(<span class="kw-2">&amp;</span>event);
+<a href=#353 id=353 data-nosnippet>353</a>        }
+<a href=#354 id=354 data-nosnippet>354</a>    }
+<a href=#355 id=355 data-nosnippet>355</a>}
+<a href=#356 id=356 data-nosnippet>356</a>
+<a href=#357 id=357 data-nosnippet>357</a><span class="doccomment">/// A hand as a swing's record keeps it: the item when holding one.
+<a href=#358 id=358 data-nosnippet>358</a></span><span class="kw">fn </span>held_item(hand: <span class="kw-2">&amp;</span><span class="kw">super</span>::hands::Hand) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw">super</span>::combat::event::HeldItem&gt; {
+<a href=#359 id=359 data-nosnippet>359</a>    <span class="kw">match </span>hand {
+<a href=#360 id=360 data-nosnippet>360</a>        <span class="kw">super</span>::hands::Hand::Holding { id, name, .. } =&gt; <span class="prelude-val">Some</span>(<span class="kw">super</span>::combat::event::HeldItem {
+<a href=#361 id=361 data-nosnippet>361</a>            id: id.as_deref().and_then(|id| id.parse().ok()),
+<a href=#362 id=362 data-nosnippet>362</a>            name: name.clone(),
+<a href=#363 id=363 data-nosnippet>363</a>        }),
+<a href=#364 id=364 data-nosnippet>364</a>        <span class="kw">super</span>::hands::Hand::Unknown | <span class="kw">super</span>::hands::Hand::Empty =&gt; <span class="prelude-val">None</span>,
+<a href=#365 id=365 data-nosnippet>365</a>    }
+<a href=#366 id=366 data-nosnippet>366</a>}
+<a href=#367 id=367 data-nosnippet>367</a>
+<a href=#368 id=368 data-nosnippet>368</a><span class="doccomment">/// Barkskin formed.
+<a href=#369 id=369 data-nosnippet>369</a></span><span class="kw">const </span>BARK_FORMS: <span class="kw-2">&amp;</span>str = <span class="string">"A knobby layer of bark swiftly forms on you."</span>;
+<a href=#370 id=370 data-nosnippet>370</a><span class="doccomment">/// Barkskin failed to form.
+<a href=#371 id=371 data-nosnippet>371</a></span><span class="kw">const </span>BARK_FAILS: <span class="kw-2">&amp;</span>str = <span class="string">"A knobby layer of bark begins to form on you, but rapidly crumbles away."</span>;
+<a href=#372 id=372 data-nosnippet>372</a><span class="doccomment">/// Barkskin wore off.
+<a href=#373 id=373 data-nosnippet>373</a></span><span class="kw">const </span>BARK_WEARS_OFF: <span class="kw-2">&amp;</span>str =
+<a href=#374 id=374 data-nosnippet>374</a>    <span class="string">"The knobby layer of bark on you creaks and twists briefly before disintegrating."</span>;
+<a href=#375 id=375 data-nosnippet>375</a><span class="doccomment">/// The bark absorbed and crumbled: gone.
+<a href=#376 id=376 data-nosnippet>376</a></span><span class="kw">const </span>BARK_CRUMBLES: <span class="kw-2">&amp;</span>str = <span class="string">"The bark crackles as it crumbles to dust."</span>;
 </code></pre></div></section></main></body></html>

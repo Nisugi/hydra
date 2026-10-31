@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["CELL","FILE","MOST_COLUMNS","MOST_ROWS","SHEETS"],"enum":["Art","Countdown","GradientDir","IconMode"],"fn":["cell_in","source"],"struct":["Bar","Button","ButtonState","Grid","HotbarFile","Icon","Look","Sheet","Sheets","Style"]};
+window.SIDEBAR_ITEMS = {"constant":["CELL","FILE","MOST_COLUMNS","MOST_ROWS","SHEETS"],"enum":["Art","Countdown","GradientDir","IconMode"],"fn":["cell_in","source"],"struct":["Bar","Button","ButtonState","Countdowns","Grid","HotbarFile","Icon","Look","Sheet","Sheets","Style","Timer"]};
