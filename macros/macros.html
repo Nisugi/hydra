@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-3cff4ebc.js";
+            window.path_to_searchindex_js = "../searchindex-59d3ea33.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-a2047d87.js"></script>
+        <script src="../toc-5938e476.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -198,13 +198,19 @@ when you rest the pointer on it.</p>
 <tr><td>Commands</td><td>What it does, a piece per line or with commas between, in <a href="index.html#the-chain-language">the chain language</a>. The syntax is under the box; rest the pointer on it for the whole of it. Under that the commands are read back as a sentence, or refused with why, as you type.</td></tr>
 <tr><td>Runs only when</td><td>The condition. With none, the macro always runs.</td></tr>
 <tr><td>On a hotbar</td><td>How its button looks on every bar it is on: its <strong>Label</strong> (its name unless given), its <strong>Face</strong> (the label, an icon, or both), the <strong>Icon</strong>, and folded under it, its look while no state holds: what it reads, its colours, dimmed.</td></tr>
-<tr><td>Advanced</td><td>Folded: a tooltip for its button, what its button counts down, how often it may run, and the states.</td></tr>
+<tr><td>Advanced</td><td>Folded: a tooltip for its button, what its button <a href="countdowns.html">counts down</a>, how often it may run, and the states.</td></tr>
 </tbody>
 </table>
 </div>
 <p><strong>Save macro</strong> keeps it where <em>Kept for</em> says. <strong>Try</strong> runs the commands
 on the character now, as the form has them, before you save. <strong>Remove
 macro</strong> takes it out of its file.</p>
+<p>To take several away at once, pick them in the list: Ctrl and a click adds
+a macro to the picked, Shift and a click picks every one from the last
+clicked to it. <strong>Remove</strong> at the top of the list takes the picked ones
+away, asked first, and the Delete key does the same while no field is
+being typed in. Every editor’s list works this way: aliases, hotbars,
+highlights and stream rules too.</p>
 <h2 id="the-condition"><a class="header" href="#the-condition">The condition</a></h2>
 <p>A macro runs only when its condition holds. Not holding, the macro is
 <strong>unavailable</strong>: its button greys, and a press, its key or its word sends

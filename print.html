@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-3cff4ebc.js";
+            window.path_to_searchindex_js = "searchindex-59d3ea33.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-a2047d87.js"></script>
+        <script src="toc-5938e476.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -1136,6 +1136,242 @@ parts stay with the trigger, and a trigger that did nothing but move its
 line goes. A rule made this way is every character’s, whoever the trigger
 was for.</p>
 <div style="break-before: page; page-break-before: always;"></div>
+<h1 id="travel"><a class="header" href="#travel">Travel</a></h1>
+<p>Hydra walks a character anywhere its built-in map reaches: <code>.go2 bank</code>
+takes the nearest bank, <code>.go2 228</code> a room by number, <code>.go2 to Ashryn</code> the
+room one of your other characters stands in. The way is priced for <em>this</em>
+character: an exit that needs a spell it cannot cast, a society it is not
+in, or a setting it has not turned on is shut, and the route goes round
+it. The walk stops with <code>.go2 stop</code>, or with <code>.stop</code>, which stops
+everything.</p>
+<p>Every travel command may be shortened to its first two letters or more:
+<code>.go</code> is <code>.go2</code>, <code>.ro</code> is <code>.route2</code>, <code>.sa</code> is <code>.sail</code>.</p>
+<h2 id="going-somewhere"><a class="header" href="#going-somewhere">Going somewhere</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Line</th><th>What it does</th></tr>
+</thead>
+<tbody>
+<tr><td><code>.go2 bank</code></td><td>Walk to the nearest place of that name: <code>bank</code>, <code>town</code>, <code>gemshop</code>, <code>pawnshop</code>, <code>inn</code>, and every tag the map carries.</td></tr>
+<tr><td><code>.go2 228</code>, <code>.go2 u7120</code></td><td>Walk to a room, by the map’s number or the game’s.</td></tr>
+<tr><td><code>.go2 to Ashryn</code></td><td>Walk to the room another character running in this Hydra is in.</td></tr>
+<tr><td><code>.go2 targets</code></td><td>The places there are to go.</td></tr>
+<tr><td><code>.go2 stop</code></td><td>Stop walking.</td></tr>
+<tr><td><code>.go2 coverage</code></td><td>How much of the map Hydra walks yet.</td></tr>
+<tr><td><code>.go2 confluence</code></td><td>Into the Elemental Confluence by an instability of your element; <code>confluence-hot</code> or <code>confluence-cold</code> for that half. <code>.go2 instability</code> stops at the instability; <code>--instability=&lt;room&gt;</code> picks which.</td></tr>
+<tr><td><code>.go2 help</code></td><td>All of these.</td></tr>
+</tbody>
+</table>
+</div>
+<p>Before the first step Hydra asks the game what the map needs to know and
+nothing has said yet – the spells you know, what is in your hands, where
+your ship lies – quietly, and once. A walk that cannot start says why in
+the story.</p>
+<h2 id="names-of-your-own"><a class="header" href="#names-of-your-own">Names of your own</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Line</th><th>What it does</th></tr>
+</thead>
+<tbody>
+<tr><td><code>.go2 save den</code></td><td>This room is <code>den</code>, for this character.</td></tr>
+<tr><td><code>.go2 save den --global</code></td><td>…for every character.</td></tr>
+<tr><td><code>.go2 save den=228,current</code></td><td><code>den</code> is these rooms; the nearest is meant.</td></tr>
+<tr><td><code>.go2 list</code></td><td>The names you have saved.</td></tr>
+<tr><td><code>.go2 delete den</code></td><td>Forget it; <code>--global</code> for everyone’s.</td></tr>
+</tbody>
+</table>
+</div>
+<p>Names are kept in <code>travel.json</code> in the data folder: everyone’s at the top,
+each character’s under its own entry, with the room it was last known in
+and what earlier crossings taught it (which town it entered Duskruin from,
+for instance). A character’s own name is looked for first. A file Hydra
+cannot read, or that a newer Hydra wrote, is left alone rather than
+written over: what is in it the game never teaches again.</p>
+<h2 id="seeing-the-way-first"><a class="header" href="#seeing-the-way-first">Seeing the way first</a></h2>
+<p><code>.route2 bank</code> shows the way and sends nothing: room by room, what would
+be taken, each scripted crossing as its steps, and at every room what was
+<em>not</em> taken and why – a fact the game has not told yet, a setting that
+says no, a crossing Hydra does not walk yet. The same route is drawn on
+the minimap; <code>.route2 clear</code> takes it off. <code>--brief</code> gives it in a line,
+which is what a click on a minimap room asks; a click on the route’s goal
+walks it.</p>
+<h2 id="sailing"><a class="header" href="#sailing">Sailing</a></h2>
+<p>A character with a ship of its own sails it. <code>.sail kraken</code> makes the ship
+ready and takes it to that port; <code>.sail 7143382</code> to a room of the ocean,
+anchor dropped; <code>.sail help</code> lists the ports and how far each is.</p>
+<p>Making ready is read off the ship each time, never run as a script: the
+white flag from the crow’s nest, the gangplank in, the sail let out and
+wind called into it by a character who can, the anchor up, and <code>DEPART</code>.
+Start it anywhere aboard or on the pier, with any of it already done, and
+it does what is still undone. At sea the wheel is touched only where the
+course bends; between rooms the character is free to walk the ship, and is
+given a moment to come to the wheel or the anchor itself before Hydra
+walks it there. A swell that drops the anchor, a sail come loose, a wheel
+spun free are each seen and set right.</p>
+<p><code>.sail route kraken</code> shows the course on the chart as you sail it yourself
+and sends nothing.</p>
+<p>The ships a character owns and the port each is docked at are kept in
+<code>travel.json</code> once seen, so a route by sea needs no <code>ship info</code> asked
+again at the next login. A route that may take the ship asks for it
+quietly the first time, when nothing has said where it lies.</p>
+<h2 id="portals"><a class="header" href="#portals">Portals</a></h2>
+<p><code>.portal</code> lists the ways out of this room that are no compass direction –
+a gate, a rope, a hole in the wall – and goes through at once when there
+is one. <code>.portal 2</code> or <code>.portal gate</code> takes that one. The controller’s
+portals wheel is the same list on a stick.</p>
+<h2 id="the-travel-page"><a class="header" href="#the-travel-page">The Travel page</a></h2>
+<p>Each setting the map asks about is on the character’s <strong>Travel</strong> page of
+the settings menu. A setting never set is simply off, and the map’s
+questions about it always have an answer.</p>
+<ul>
+<li><strong>Ice</strong>: <em>Auto</em> waits on ice when a slip is likely, <em>Run</em> never waits,
+<em>Wait</em> always does.</li>
+<li><strong>Use the urchin guides</strong>, while the game says they are paid for; <strong>Use
+the portmasters</strong>; <strong>Use your own ship</strong>, and <strong>Call wind into the sail</strong>.</li>
+<li><strong>Use Voln’s symbol of seeking</strong>; <strong>Vaalor shortcut</strong>, the rocky trail
+into Ta’Vaalor; <strong>Allow Vornavis</strong>; the <strong>caravan</strong> to and from the
+Sanctum of Scales.</li>
+<li><strong>Day passes</strong>: use them, the sack they are kept in, and whether to buy
+one when none held serves, or only for some routes (<code>imt,wl</code>).</li>
+<li><strong>Mist Harbor trinket</strong>, by its name; the <strong>rogue guild password</strong>.</li>
+<li><strong>House key</strong> and its sack, for a private property’s door; and each
+property you may pass through, by name.</li>
+<li><strong>Send the familiar home</strong> once it has opened the Vaalorn ring doors.</li>
+</ul>
+<h2 id="what-is-not-walked-yet"><a class="header" href="#what-is-not-walked-yet">What is not walked yet</a></h2>
+<p>Hydra walks every crossing the map holds that it has been taught; <code>.go2  coverage</code> counts the rest, down to none. A crossing not yet walked is shut
+to every route and said so under the room it leaves in <code>.route2</code>’s table,
+so a route never promises a step Hydra cannot take.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="typed-casting"><a class="header" href="#typed-casting">Typed casting</a></h1>
+<p>With a character’s caster on, a spell number typed is a cast. <code>901</code> sends
+<code>incant 901</code>; <code>901 kobold</code> prepares 901 and casts it at the kobold; <code>zap kobold</code> does the same when <code>zap</code> is an alias of 901. The caster is off
+until you turn it on, with <code>.ec on</code>.</p>
+<pre><code class="language-text">901                  incant 901
+901 kobold           prepare 901, then cast kobold
+901 second kobold 3  prepare 901, then cast second kobold 3
+zap kobold           the same, with zap an alias of 901
+</code></pre>
+<p>A target is found as the game finds it: <code>kobold</code> the last that fits,
+<code>second kobold</code> or <code>other kobold</code> the second, two words the first then
+anything then the second (<code>great kobold</code>). A count after the target is
+sent on.</p>
+<h2 id="what-it-checks-first"><a class="header" href="#what-it-checks-first">What it checks first</a></h2>
+<p>In order; a refusal is said in the story and nothing is sent:</p>
+<ol>
+<li><strong>The spell is known.</strong> Refused only when the game’s own list of your
+spells says it is not; a society power is not on that list and is never
+refused here.</li>
+<li><strong>Conserve</strong>, when on: mana enough for every cast asked for (Mana
+Leech, 516, needs only one), and an attack spell’s target a live one in
+the room.</li>
+<li><strong>Safety</strong>, when on: an attack spell only with a live target in the
+room.</li>
+</ol>
+<p>A live target is one the game lists here and not dead, leaving out an
+animated one (but for animated slush) and a creature’s limb (but for a
+kraken’s named tentacle). An attack spell is any whose roles include
+attack, <code>attack/area</code> and <code>attack/utility</code> as well.</p>
+<h2 id="how-it-is-cast"><a class="header" href="#how-it-is-cast">How it is cast</a></h2>
+<ul>
+<li><strong>The verb</strong>: the spell’s own, or its alias’s, else <code>cast</code>. With the
+<strong>channel</strong> option on, a spell that can be channeled is channeled.</li>
+<li><strong>The stance</strong>: the spell’s own, or its alias’s; else offensive for an
+aimed spell while the <strong>stance</strong> option is on, back to guarded after;
+else none.</li>
+<li><strong>Hide</strong>: with the option on, a spell on the hide list is followed by
+<code>hide</code>.</li>
+</ul>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Target</th><th>Verb</th><th>Sent</th></tr>
+</thead>
+<tbody>
+<tr><td>none</td><td>cast</td><td><code>incant N [count]</code></td></tr>
+<tr><td>none</td><td>another</td><td><code>incant N &lt;verb&gt; [count]</code></td></tr>
+<tr><td>one</td><td>cast</td><td><code>prepare N</code>, then <code>cast &lt;target&gt; [count]</code></td></tr>
+<tr><td>one</td><td>another</td><td><code>target &lt;target&gt;</code>, then <code>incant N &lt;verb&gt; [count]</code></td></tr>
+</tbody>
+</table>
+</div>
+<p>A spell that is never incanted (410) is prepared and cast instead. A
+society power sends the line the game knows it by, its target after.</p>
+<p>The caster waits where the game says to: a <code>...wait</code> is waited out and the
+cast sent again, and the cast roundtime is watched before the stance comes
+back.</p>
+<h2 id="the-commands"><a class="header" href="#the-commands">The commands</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Line</th><th>What it does</th></tr>
+</thead>
+<tbody>
+<tr><td><code>.ec on</code>, <code>.ec off</code>, <code>.ec status</code></td><td>Whether typed spells are cast at all.</td></tr>
+<tr><td><code>.ec alias 901 zap</code></td><td><code>zap</code> casts 901. <code>.ec alias clear zap</code> forgets it.</td></tr>
+<tr><td><code>.ec verb 901 channel</code></td><td>Always cast 901 that way: <code>cast</code>, <code>channel</code>, <code>evoke</code>, or <code>clear</code>. An alias may have a verb of its own, which wins over its spell’s.</td></tr>
+<tr><td><code>.ec stance 901 offensive</code></td><td>Cast 901 from that stance, back to guarded after; <code>clear</code> to stop.</td></tr>
+<tr><td><code>.ec hide 901</code></td><td>On the hide list, or off it again.</td></tr>
+<tr><td><code>.ec set channel on</code></td><td>The options: <code>channel</code>, <code>conserve</code>, <code>safety</code>, <code>stance</code>, <code>hide</code>.</td></tr>
+<tr><td><code>.ec help</code></td><td>What there is, and the settings as they are.</td></tr>
+</tbody>
+</table>
+</div>
+<p><code>.ecaster</code> is the same command. Everything is kept in the character’s
+settings file, read again whenever it changes.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="the-sorter"><a class="header" href="#the-sorter">The sorter</a></h1>
+<p>A look into a container lists everything in one long line. The sorter
+shows it by kind instead:</p>
+<pre><code class="language-text">In the mahogany box you see a bright gold ingot, some silver coins, a smooth
+amber wand, a piece of brown jade, a steel lockpick, a pinch of electrum dust
+and a tar black tourmaline.
+</code></pre>
+<p>becomes</p>
+<pre><code class="language-text">In the mahogany box:
+valuable (1): a bright gold ingot
+other (1): some silver coins
+wand (1): a smooth amber wand
+gem (3): a pinch of electrum dust, a piece of brown jade, a tar black tourmaline
+lockpick (1): a steel lockpick
+</code></pre>
+<p>Every item keeps its link, so a click or a right-click on it works as it
+did in the long line. Given a width, each kind’s label sits on a line of
+its own and its items under it in columns that fit.</p>
+<h2 id="what-is-sorted"><a class="header" href="#what-is-sorted">What is sorted</a></h2>
+<p>A look that starts <code>In the</code>, <code>On the</code> or <code>Peering into</code> and lists its
+items whole: the container, <code>you see</code>, the items with <code>, </code> and <code>and</code>
+between, and a full stop. Anything of another shape is shown as it came –
+the herb kit’s look goes on past its list to say how many doses each herb
+holds, and sorting it would lose them. What the game says after an item’s
+name stays with it: <code>a leather journal embossed with a peacock feather</code>.</p>
+<ul>
+<li><strong>The kind</strong> is every type the item’s noun and name belong to, joined
+by commas, or <code>other</code>.</li>
+<li><strong>Names</strong> are each item whole, as the game’s inventory lines say it: its
+article, its name, and what follows; with long names off, its name alone.
+An item holding something says so in brackets, <code>a glass vial (some red liquid)</code>; a crystalline flask is named by what it holds.</li>
+<li><strong>Order</strong>: kinds as first seen; within one, items by the last word of
+the name; the same item twice is one, with its count.</li>
+</ul>
+<h2 id="turning-it-on"><a class="header" href="#turning-it-on">Turning it on</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Line</th><th>What it does</th></tr>
+</thead>
+<tbody>
+<tr><td><code>.sorter</code></td><td>On if off, off if on. <code>.sorter on</code>, <code>.sorter off</code>, <code>.sorter status</code>.</td></tr>
+<tr><td><code>.sorter width=80</code></td><td>Columns 80 characters wide. <code>.sorter width=nil</code> (or <code>0</code>) lays it out as a list.</td></tr>
+<tr><td><code>.sorter long</code></td><td>Each item in full: its article and what follows its name. <code>.sorter short</code>: its name alone.</td></tr>
+</tbody>
+</table>
+</div>
+<p>The choice is this character’s, kept in its settings file and on its
+<strong>General</strong> page.</p>
+<div style="break-before: page; page-break-before: always;"></div>
 <h1 id="the-lookout"><a class="header" href="#the-lookout">The lookout</a></h1>
 <p>A script check is something out of the ordinary that asks you to answer:
 proof that someone is at the keyboard. Mid-hunt it is one line among
@@ -1743,7 +1979,8 @@ word all point at it.</p>
 <p>Macros are made on the <strong>Macros</strong> page of the Editors window, in an editor with
 every field explained on hover. This chapter goes through <a href="#the-chain-language">the chain
 language</a>, <a href="#macros">macros</a> and what they keep,
-and <a href="#keybinds-and-hotbars">keybinds and hotbars</a>, the faces.</p>
+<a href="#keybinds-and-hotbars">keybinds and hotbars</a>, the faces, and
+<a href="#countdowns">countdowns</a>, what a button counts on its face.</p>
 <h2 id="aliases"><a class="header" href="#aliases">Aliases</a></h2>
 <p>An <strong>alias</strong> is the plainest of the words: a trigger typed in place of one
 or more commands, with no logic. <code>ls</code> for <code>look</code>; <code>s</code> for <code>get \1 from my  \2</code>, <code>sell \1</code>, <code>stow all</code>, typed as <code>s sword back</code>. Its target is the
@@ -1853,13 +2090,19 @@ when you rest the pointer on it.</p>
 <tr><td>Commands</td><td>What it does, a piece per line or with commas between, in <a href="#the-chain-language">the chain language</a>. The syntax is under the box; rest the pointer on it for the whole of it. Under that the commands are read back as a sentence, or refused with why, as you type.</td></tr>
 <tr><td>Runs only when</td><td>The condition. With none, the macro always runs.</td></tr>
 <tr><td>On a hotbar</td><td>How its button looks on every bar it is on: its <strong>Label</strong> (its name unless given), its <strong>Face</strong> (the label, an icon, or both), the <strong>Icon</strong>, and folded under it, its look while no state holds: what it reads, its colours, dimmed.</td></tr>
-<tr><td>Advanced</td><td>Folded: a tooltip for its button, what its button counts down, how often it may run, and the states.</td></tr>
+<tr><td>Advanced</td><td>Folded: a tooltip for its button, what its button <a href="#countdowns">counts down</a>, how often it may run, and the states.</td></tr>
 </tbody>
 </table>
 </div>
 <p><strong>Save macro</strong> keeps it where <em>Kept for</em> says. <strong>Try</strong> runs the commands
 on the character now, as the form has them, before you save. <strong>Remove
 macro</strong> takes it out of its file.</p>
+<p>To take several away at once, pick them in the list: Ctrl and a click adds
+a macro to the picked, Shift and a click picks every one from the last
+clicked to it. <strong>Remove</strong> at the top of the list takes the picked ones
+away, asked first, and the Delete key does the same while no field is
+being typed in. Every editor’s list works this way: aliases, hotbars,
+highlights and stream rules too.</p>
 <h2 id="the-condition"><a class="header" href="#the-condition">The condition</a></h2>
 <p>A macro runs only when its condition holds. Not holding, the macro is
 <strong>unavailable</strong>: its button greys, and a press, its key or its word sends
@@ -2029,6 +2272,152 @@ macro. The <strong>Controller</strong> page of the Editors window holds them.</p
 </tbody>
 </table>
 </div>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="countdowns"><a class="header" href="#countdowns">Countdowns</a></h1>
+<p>A button counts something down on its face: the seconds left of a
+roundtime, a cast roundtime, an effect, or a spell laid on the room. The
+countdown is the macro’s, set under <em>Advanced › Counts down</em> on the Macros
+page, so every button that runs the macro shows the same seconds, in the
+window, on the web page and in the terminal alike.</p>
+<h2 id="what-can-be-counted"><a class="header" href="#what-can-be-counted">What can be counted</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Source</th><th>What it counts</th></tr>
+</thead>
+<tbody>
+<tr><td>Roundtime</td><td>Your roundtime.</td></tr>
+<tr><td>Cast roundtime</td><td>Your cast roundtime.</td></tr>
+<tr><td>An effect</td><td>The time left of a spell, buff, debuff or cooldown, by its name – as written, or as the start or part of it.</td></tr>
+<tr><td>A spell on the room</td><td>The time left of a spell you laid on this room: Breeze, and the others the room-spell table knows.</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="timers-in-order"><a class="header" href="#timers-in-order">Timers in order</a></h2>
+<p>A macro may count several things, in order: the first that is running is
+shown. A buff’s time while it is up, then its cooldown’s once it has gone,
+is the usual pair. Each timer has a colour of its own, so the seconds say
+which they are at a glance – green while the buff holds, red while it
+cools; with none, the theme’s. <em>+ then</em> on the Macros page adds the next
+timer.</p>
+<pre><code class="language-toml">[[macros]]
+name = "barrage"
+commands = "barrage"
+countdown = [
+  { source = "effect", category = "Buffs", name = "Enh. Dexterity", colour = "#4caf50" },
+  { source = "effect", category = "Cooldowns", name = "Barrage", colour = "#c0392b" },
+]
+</code></pre>
+<p>One timer is written as a table, <code>countdown = { source = "roundtime" }</code>;
+more than one as a list.</p>
+<h2 id="a-states-own-countdown"><a class="header" href="#a-states-own-countdown">A state’s own countdown</a></h2>
+<p>A state may count down something else while it holds – <em>Counts down
+instead</em> under the state – so a button can show a spell’s time while it
+is up and the roundtime once it is not.</p>
+<h2 id="spells-laid-on-a-room"><a class="header" href="#spells-laid-on-a-room">Spells laid on a room</a></h2>
+<p>Some spells stay in the room they were cast in and cannot be cast there
+again until they end. Hydra knows these by a table, <code>data/room_spells.tsv</code>:
+for each, the line that lays it, the line said while it lasts, the line
+that ends it, the refusal when you cast it where one already lies, and
+how long it lasts by its caster’s level. Breeze is the first row: a level
+100’s blows for 297 seconds, in nine-second beats, and ends on the last
+beat inside its time.</p>
+<p>The time left is known for a spell you laid yourself; one laid by someone
+else, or only heard by its beats, lasts until its stop line, or at most
+what a level 100’s would. The countdown uses it, and so does the trigger
+and macro condition <strong>room spell</strong>, so a button greys while Breeze already
+blows here, and a trigger can say when it is about to stop.</p>
+<p>A spell not yet in the table is added from the lines seen in play.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="a-game-controller"><a class="header" href="#a-game-controller">A game controller</a></h1>
+<p>A controller plugged in works on the character whose play window has the
+keyboard. Its buttons do what a key does: send commands, fill the command
+input, or do one of Hydra’s own actions. One stick walks, the other
+scrolls, and a wheel of commands opens under a held button. The pad is
+read while it is connected, and the story says when one is connected or
+gone.</p>
+<h2 id="what-a-button-does"><a class="header" href="#what-a-button-does">What a button does</a></h2>
+<p>Binds are written in <code>controller.toml</code>: one in the data folder for every
+character, and <code>&lt;game&gt;_&lt;name&gt;.controller.toml</code> beside a character’s layout
+for that one, whose binds are taken over everyone’s button by button. With
+no file at all Hydra’s own binds are used, and a file written for Vellum
+works as it is.</p>
+<pre><code class="language-toml">[controller]
+start = "interact_mode"                  # Interact mode, begun or left
+dpad_up = { macro_text = "up\r" }
+south = { macro_text = "look\r" }
+l2 = "controller_modifier"               # Held: chords another button
+r2 = "controller_wheel"                  # Held: the command wheel
+r3 = "controller_wheel:portals"          # Held: the room's ways out
+select = "controller_overlay"            # The legend, shown or put away
+
+"l2+south" = { macro_text = "stand\r" }  # a chord
+</code></pre>
+<p>The buttons are <code>south</code>, <code>east</code>, <code>north</code>, <code>west</code>, the four <code>dpad_</code>
+directions, <code>l1</code>, <code>r1</code>, <code>l2</code>, <code>r2</code>, <code>l3</code>, <code>r3</code>, <code>select</code>, <code>start</code> and
+<code>guide</code>. A value is an action’s name, or <code>{ macro_text = "..." }</code> for
+commands sent as typed. A macro naming <code>&lt;target_id&gt;</code> or <code>&lt;target_noun&gt;</code>
+acts on the thing interact mode has in focus, and is not sent with none.</p>
+<p><strong>A chord</strong> is a button pressed while modifiers are held. A button bound
+to <code>controller_modifier</code> does nothing on its own; held, it makes another
+button’s chord, <code>l2+south</code>. Only the bind with exactly the modifiers held
+is done, so holding <code>l2</code> and pressing South never does South’s own bind.</p>
+<h2 id="the-sticks"><a class="header" href="#the-sticks">The sticks</a></h2>
+<p>One stick walks, a step each time it is pushed a new way, in eight
+directions. The other scrolls the window in use, faster the further it is
+pushed. Which is which is set under <em>Tuning</em>. A push has to be firm and
+the return fair, so a stick wobbling at the edge of a direction does not
+step twice.</p>
+<p>While a menu is open, the d-pad moves in it, South chooses and East
+closes, and no stick walks.</p>
+<h2 id="interact-mode"><a class="header" href="#interact-mode">Interact mode</a></h2>
+<p>The <code>interact_mode</code> button begins it. The d-pad steps a focus through the
+things in the room and on you – up and down within a kind, left and right
+from kind to kind – and the scrolling stick does the same. South acts on
+the thing in focus, East leaves. The mode’s line shows at the window’s
+foot, and the thing in focus is marked wherever it is drawn.</p>
+<h2 id="the-wheel"><a class="header" href="#the-wheel">The wheel</a></h2>
+<p>A button bound to <code>controller_wheel</code> holds a ring of commands open. Aim
+at a slice with the stick that does not walk, hold it there, and let go to
+fire. A slice with slices of its own is a folder: hold on it to open it,
+and on Back to come out. An analog trigger opens the wheel once pulled far
+enough and lets it go only when well released, so one resting near the
+point does not flicker it.</p>
+<pre><code class="language-toml">[[controller_wheel]]
+label = "stance"
+
+  [[controller_wheel.slices]]
+  label = "offensive"
+  command = "stance offensive"
+  color = "#b03030"
+</code></pre>
+<p>A wheel of your own is <code>controller_wheel:&lt;name&gt;</code>. <strong>The portals wheel</strong>,
+<code>controller_wheel:portals</code>, is made from the room as it opens: every way
+out that is not a compass direction, and its doors and gates by their
+nouns; a crossing Hydra walks itself is fired as its <code>go2</code>.</p>
+<h2 id="rumble-and-the-legend"><a class="header" href="#rumble-and-the-legend">Rumble and the legend</a></h2>
+<p>The pad rumbles when roundtime ends, when you are stunned, when you die,
+and for a highlight that asks for it. <code>controller_overlay</code> shows the
+legend down the play window’s right edge: the binds the file lists, a
+chord’s drawn strong while its modifiers are held.</p>
+<h2 id="the-controller-page"><a class="header" href="#the-controller-page">The Controller page</a></h2>
+<p><strong>Menu › Settings › Controller</strong> is tabs. <em>Bindings</em> lists every
+bind in effect, whose it is, what it does, and whether the legend lists
+it; a bind is added or changed in a form, its button picked from a list or
+captured by pressing it, up to two modifiers held with it, and what it
+does. <em>Rumble</em> picks the pattern for each moment, each tried on the pad
+with <em>Test</em>. <em>Tuning</em> is every field of <code>[controller_tuning]</code>, written as
+it is let go. <em>Wheels</em> picks a wheel, the button that opens it, the stick
+that aims it and the angle of its first slice, and lays its slices out as
+a tree beside a drawing of the ring, where a slice is dragged, split with
+a right click or joined with its neighbour.</p>
+<p>On Hydra’s own settings the page changes every character’s file; on a
+character’s, that character’s own.</p>
+<p>On Windows a pad’s buttons reach a program only while one of its windows
+has the focus, so click the play window once after plugging in.</p>
+<p>The web page on a phone has a wheel of its own, drawn for a thumb; it is
+kept with the phone’s buttons and copied to this computer and back on the
+page’s own terms.</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="reports"><a class="header" href="#reports">Reports</a></h1>
 <p>Hydra keeps a ledger of what each character does: every experience pulse
